@@ -1,0 +1,219 @@
+.icon-camera {
+  mask-image: url("/images/icons/camera.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  background-color: currentColor;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+.icon-hand-heart {
+  mask-image: url("/images/icons/hand-heart.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  background-color: currentColor;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+.icon-eco {
+  mask-image: url("/images/icons/eco.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  background-color: currentColor;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+} 
+
+.diamond-icon {
+  mask-image: url("/images/icons/diamond.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  background-color: currentColor;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+.icon-photo {
+  mask-image: url("/images/icons/photo.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  background-color: currentColor;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+} 
+
+.icon-calendar {
+  mask-image: url("/images/icons/calendar.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  background-color: currentColor;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+.clock-icon {
+  mask-image: url("/images/icons/clock.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  background-color: currentColor;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+.quote-icon {
+  mask-image: url("/images/icons/quote.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  background-color: currentColor;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+.icon-heart {
+  mask-image: url("/images/icons/heart.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  background-color: currentColor;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+.icon-happy-smile {
+  mask-image: url("/images/icons/happy-smile.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  background-color: currentColor;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+.icon-meh {
+  mask-image: url("/images/icons/meh.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  background-color: currentColor;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+.icon-smile {
+  mask-image: url("/images/icons/smile.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  background-color: currentColor;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+.icon-icecream {
+  mask-image: url("/images/icons/icecream.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  background-color: currentColor;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+.icon-laptop {
+  mask-image: url("/images/icons/laptop.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  background-color: currentColor;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+.icon-location {
+  mask-image: url("/images/icons/location.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  background-color: currentColor;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+.icon-place {
+  mask-image: url("/images/icons/place.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  background-color: currentColor;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+.icon-search {
+  mask-image: url("/images/icons/search.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  background-color: currentColor;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+.icon-star {
+  mask-image: url("/images/icons/star.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  background-color: currentColor;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+.icon-lock {
+  mask-image: url("/images/icons/lock.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  background-color: currentColor;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+.icon-message {
+  mask-image: url("/images/icons/message.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  background-color: currentColor;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Direct Image Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .test { margin: 20px 0; padding: 10px; border: 2px solid #ccc; }
+        img { border: 3px solid red; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Direct Model Image Test</h1>
+    
+    <div class="test">
+        <h2>Test 1: Storage symlink URLs</h2>
+        <p>Tyto URL by měl server načítat přes symlink storage/</p>
+        <img src="/storage/26/model1.png" width="200">
+        <p>URL: <a href="/storage/26/model1.png" target="_blank">/storage/26/model1.png</a></p>
+        
+        <img src="/storage/27/model2.png" width="200">
+        <p>URL: <a href="/storage/27/model2.png" target="_blank">/storage/27/model2.png</a></p>
+    </div>
+    
+    <div class="test">
+        <h2>Test 2: Direct public folder URLs</h2>
+        <p>Tyto URL jsou přímo v public/images/models/</p>
+        <img src="/images/models/model1.png" width="200">
+        <p>URL: <a href="/images/models/model1.png" target="_blank">/images/models/model1.png</a></p>
+        
+        <img src="/images/models/model2.png" width="200">
+        <p>URL: <a href="/images/models/model2.png" target="_blank">/images/models/model2.png</a></p>
+    </div>
+    
+    <div class="test">
+        <h2>Instrukce</h2>
+        <ol>
+            <li>Otevři DevTools (F12) → Network tab</li>
+            <li>Refresh tuto stránku</li>
+            <li>Podívej se na status code pro model1.png a model2.png</li>
+            <li>Pokud je červené (404 nebo ERR), klikni na link a podívej se na response</li>
+        </ol>
+    </div>
+</body>
+</html>

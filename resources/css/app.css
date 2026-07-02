@@ -1,0 +1,136 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Bungee&family=Plus+Jakarta+Sans:wght@400;600&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+@import 'tailwindcss';
+
+:root {
+
+  /* Font Family Configuration */
+  --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+
+  /* Brand Primary Colors */
+  --color-primary-50: rgb(253, 242, 248);
+  --color-primary-100: rgb(252, 231, 243);
+  --color-primary-200: rgb(249, 208, 231);
+  --color-primary-300: rgb(244, 176, 213);
+  --color-primary-400: rgb(236, 116, 174);
+  --color-primary-500: rgb(221, 56, 136);
+  --color-primary-600: rgb(190, 24, 93);
+  --color-primary-700: rgb(157, 23, 77);
+  --color-primary-800: rgb(131, 25, 67);
+  --color-primary-900: rgb(112, 26, 60);
+  --color-primary-950: rgb(69, 10, 33);
+  --color-primary: rgb(221, 56, 136);
+
+  /* Secondary Colors */
+  --color-secondary-50: rgb(248, 246, 248);
+  --color-secondary-100: rgb(238, 234, 239);
+  --color-secondary-200: rgb(221, 213, 223);
+  --color-secondary-300: rgb(196, 183, 199);
+  --color-secondary-400: rgb(162, 144, 166);
+  --color-secondary-500: rgb(92, 45, 98);
+  --color-secondary-600: rgb(76, 37, 81);
+  --color-secondary-700: rgb(62, 30, 66);
+  --color-secondary-800: rgb(52, 26, 55);
+  --color-secondary-900: rgb(45, 22, 47);
+  --color-secondary-950: rgb(25, 12, 27);
+  --color-secondary: rgb(92, 45, 98);
+
+  /* Success/Green Colors */
+  --color-success: rgb(0, 184, 15);
+
+  /* Gray Colors */
+  --color-gray: rgb(232, 232, 232);
+  --color-dark-gray: rgb(150, 150, 150);
+
+  /* Gold/VIP Colors */
+  --color-gold-400: rgb(251, 191, 36);
+  --color-gold-500: rgb(245, 158, 11);
+  --color-gold-600: rgb(217, 119, 6);
+  --color-gold: #A07613;
+  --color-gold-light: #F5E4B8;
+
+  /* Specific Colors */
+  --color-light-bg: rgb(248, 249, 249);
+  --color-text-default: rgb(80, 80, 80);
+  --color-gray-disabled: rgb(242, 242, 242);
+
+
+  /* Swiper JS Variables */
+  --swiper-theme-color: var(--color-primary);
+
+  /* --shadow-lg: var(0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)); */
+
+}
+
+/* Headings Component Styles */
+@layer base {
+
+  /* Hide elements with x-cloak until Alpine.js initializes */
+  [x-cloak] {
+    display: none !important;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  h1 {
+    font-size: var(--text-3xl);
+  }
+
+  h2 {
+    font-size: var(--text-2xl);
+  }
+
+  h3 {
+    font-size: var(--text-xl);
+  }
+
+  h4 {
+    font-size: var(--text-lg);
+  }
+
+}
+
+.container {
+  @apply max-w-[80rem];
+}
+
+
+@import './components.css';
+@import './icons.css';
+
+/* Swiper Custom Styles */
+.swiper-button-next,
+.swiper-button-prev {
+  color: white !important;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  width: 30px !important;
+  height: 30px !important;
+  margin-top: -15px !important;
+}
+
+.swiper-button-next:after,
+.swiper-button-prev:after {
+  font-size: 12px !important;
+  font-weight: bold;
+}
+
+.swiper-pagination-bullet {
+  background: rgba(255, 255, 255, 0.5) !important;
+  opacity: 1 !important;
+}
+
+.swiper-pagination-bullet-active {
+  background: white !important;
+}
+
+.swiper-pagination {
+  bottom: 10px !important;
+}
