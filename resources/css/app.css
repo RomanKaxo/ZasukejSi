@@ -71,6 +71,14 @@
     display: none !important;
   }
 
+  html {
+    overflow-y: auto !important;
+  }
+
+  body {
+    overflow-y: visible !important;
+  }
+
   h1,
   h2,
   h3,

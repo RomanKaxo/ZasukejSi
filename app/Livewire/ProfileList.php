@@ -297,7 +297,11 @@ class ProfileList extends Component
                   ->orderBy('ratings_count', 'desc');
         }
 
-        return $query->paginate($this->perPage);
+        $profiles = $query->paginate($this->perPage);
+        if (app()->environment('local') || request()->query('debug_profiles')) {
+            logger()->debug('ProfileList profiles count: '.$profiles->count().' total: '.$profiles->total().' page: '.$profiles->currentPage());
+        }
+        return $profiles;
     }
 
     protected function applyRegionFilter($query, string $region): void

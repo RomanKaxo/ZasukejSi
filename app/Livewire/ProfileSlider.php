@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Profile;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
+use Illuminate\Support\Facades\Log;
 
 class ProfileSlider extends Component
 {
@@ -107,7 +108,14 @@ class ProfileSlider extends Component
 
         $sortedQuery = clone $query;
         $this->applySorting($sortedQuery);
+        
+        // Debug: Log the SQL query
+        Log::info('ProfileSlider SQL: ' . $sortedQuery->toSql());
+        Log::info('ProfileSlider Bindings: ' . json_encode($sortedQuery->getBindings()));
+        
         $profiles = $sortedQuery->limit($this->limit)->get();
+        
+        Log::info('ProfileSlider debug: Found ' . $profiles->count() . ' profiles. Filters: vipOnly=' . ($this->vipOnly ? 'true' : 'false') . ', verifiedOnly=' . ($this->verifiedOnly ? 'true' : 'false') . ', hasVideoOnly=' . ($this->hasVideoOnly ? 'true' : 'false') . ', city=' . ($this->city ?? 'null'));
 
         if ($profiles->isEmpty() && $this->sortBy === 'rating_this_month') {
             $fallbackQuery = clone $query;

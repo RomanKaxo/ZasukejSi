@@ -13,7 +13,7 @@
                 @foreach($this->profiles as $profile)
                 @if($profile->display_name && ($profile->getAllImages()->count() > 0 || $profile->getFirstImageUrl()))
                 <div class="swiper-slide h-auto">
-                    <x-profile-card :profile="$profile" :variant="$cardVariant" />
+                    <x-profile-card :profile="$profile" :variant="$cardVariant" card-height="782px" image-height="537px" />
                 </div>
                 @endif
                 @endforeach
@@ -65,8 +65,8 @@
 
             // Initialize Swiper - pass the element directly
             new Swiper(swiperElement, {
-                slidesPerView: window.innerWidth <= 425 ? 2 : 1,
-                spaceBetween: window.innerWidth <= 425 ? 8 : 16,
+                slidesPerView: 4, // Default to 4 on desktop
+                spaceBetween: 20,
                 
                 // Observer enabled for dynamic updates
                 observer: true,

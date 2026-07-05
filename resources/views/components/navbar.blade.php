@@ -212,7 +212,7 @@
                         <button @click="$dispatch('show-register-modal')" type="button" class="px-6 py-3 bg-[#DD3888] text-white rounded-lg font-semibold hover:opacity-90 transition">
                             {{ __('front.nav.register') }}
                         </button>
-                        <button @click="$dispatch('show-login-modal')" type="button" class="px-6 py-3 border-2 border-[#DD3888] text-[#DD3888] rounded-lg font-semibold hover:bg-[#DD3888] hover:text-white transition">
+                        <button @click="$dispatch('show-login-modal')" type="button" class="px-6 py-3 border-2 border-[#DD3888] bg-white text-[#DD3888] rounded-lg font-semibold hover:bg-[#DD3888] hover:text-white transition">
                             {{ __('front.nav.login') }}
                         </button>
                     </div>

@@ -110,7 +110,7 @@
                     </h1>
 
                     <!-- Profile Cards Grid -->
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 profile-list-cards-grid">
+                    <div class="flex flex-col md:grid md:grid-cols-3 lg:grid-cols-4 gap-4 profile-list-cards-grid">
                         @php
                             // Mock data for testing - replace with actual favorites from database
                             $mockProfiles = collect([

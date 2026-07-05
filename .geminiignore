@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+dist/
+build/
+public/build/
+public/hot
+
+# Version control
+.git/
+
+# Logs
+*.log
+storage/logs/
+
+# Cache
+.cache/
+bootstrap/cache/
+storage/framework/cache/
+storage/framework/sessions/
+storage/framework/views/
+
+# Coverage / testing
+coverage/
+.phpunit.cache/
+
+# Minified assets
+*.min.js
+*.min.css
+
+# Uploads / media (velké binární soubory)
+public/uploads/
+storage/app/public/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -22,18 +22,11 @@ class ProfileController extends Controller
         // Record impressions for profiles shown in listing (don't track for authenticated female users viewing their own)
         $this->recordListingImpressions($profiles);
         
-        // Get published blog posts
-        $blogPosts = Page::blog()
-            ->published()
-            ->orderBy('created_at', 'desc')
-            ->take(4)
-            ->get();
-
         // Get user counts by gender
         $girlsCount = User::where('gender', 'female')->count();
         $gentsCount = User::where('gender', 'male')->count();
 
-        return view('profiles.index', compact('profiles', 'blogPosts', 'girlsCount', 'gentsCount'));
+        return view('profiles.index', compact('profiles', 'girlsCount', 'gentsCount'));
     }
 
     /**

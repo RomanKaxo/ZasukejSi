@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth overflow-x-hidden">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -23,7 +23,7 @@
         }
     </style>
 </head>
-<body class="font-poppins antialiased text-text-default relative overflow-x-hidden bg-white md:bg-transparent">
+<body class="font-poppins antialiased text-text-default relative bg-white md:bg-transparent">
     <div id="app" class="overflow-x-hidden bg-white md:bg-transparent">
         <!-- Navigation -->
         <x-navbar /> 
@@ -45,9 +45,9 @@
     </div>
 
     <!-- Additional Scripts -->
-    @stack('scripts')
-
     @livewireScripts
+
+    @stack('scripts')
 
     <!-- Auth Modal Scripts -->
     @guest
@@ -64,6 +64,37 @@
         });
     </script>
     @endguest
+    <script>
+        // Small visual debug badge to show Livewire client presence
+        (function(){
+            try {
+                var d = document.createElement('div');
+                d.id = 'lw-debug-badge';
+                d.style.position = 'fixed';
+                d.style.right = '12px';
+                d.style.bottom = '12px';
+                d.style.zIndex = 99999;
+                d.style.background = 'rgba(255,255,255,0.95)';
+                d.style.border = '1px solid #eee';
+                d.style.padding = '6px 10px';
+                d.style.fontSize = '12px';
+                d.style.color = '#222';
+                d.style.borderRadius = '6px';
+                d.style.boxShadow = '0 6px 18px rgba(0,0,0,0.06)';
+                d.innerText = 'Livewire: checking...';
+                document.body.appendChild(d);
+
+                function update() {
+                    var present = typeof Livewire !== 'undefined' ? 'loaded' : 'missing';
+                    d.innerText = 'Livewire: ' + present;
+                }
+
+                // Update on load and when Livewire fires its load event
+                update();
+                document.addEventListener('livewire:load', update);
+            } catch (err) {}
+        })();
+    </script>
     <script>
         // Global fallback for opening the English fullscreen country picker on mobile
         (function () {

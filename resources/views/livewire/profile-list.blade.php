@@ -1,8 +1,8 @@
 @php
     $isEnglishHomepage = app()->getLocale() === 'en' && request()->routeIs('profiles.index');
     $profileGridClasses = $isEnglishHomepage
-        ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 profile-list-cards-grid'
-        : 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 profile-list-cards-grid';
+        ? 'flex flex-col md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 profile-list-cards-grid'
+        : 'flex flex-col md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 profile-list-cards-grid';
     $ecoBadgeInsertAt = $isEnglishHomepage ? 5 : 6;
     $advertInsertAt = $isEnglishHomepage ? 9 : 11;
     $hasSelectedLocation = filled($region) || filled($country);
@@ -15,8 +15,8 @@
 <div>
     @unless($isEnglishHomepage)
     <div class="mt-1 md:mt-2 md:px-8 lg:px-12 py-4 md:py-9 flex items-center gap-2 md:gap-4">
-        <x-icons name="search" class="w-5 h-5 md:w-7 md:h-7 text-primary-600" />
-        <h1 class="text-2xl md:text-4xl font-bold text-secondary">{{ __('front.profiles.list.topresults') }}</h1>
+        <x-icons name="search" class="w-5 h-5 md:w-7 md:h-7" style="color: #DD3888;" />
+        <h1 class="text-2xl md:text-4xl font-bold" style="color: #5C2D62;">{{ __('front.profiles.list.topresults') }}</h1>
     </div>
     @endunless
 
@@ -66,8 +66,8 @@
             }
 
             .filter-pill.active {
-                background-color: #F2F2F2;
-                border-color: #F2F2F2;
+                background-color: #FFFFFF;
+                border-color: #DD3888;
                 color: #374151;
             }
 
@@ -651,7 +651,7 @@
         @endif
     </div>
 
-    @if ($this->profiles() && $this->profiles()->count() > 0)
+    @if ($this->profiles && $this->profiles->count() > 0)
         <!-- Profiles Grid -->
         <div class="space-y-4 md:space-y-6 relative px-0 md:px-8 lg:px-12">
             <!-- Loading Overlay -->
@@ -671,7 +671,7 @@
             </div>
 
             <div class="{{ $profileGridClasses }}">
-                @foreach ($this->profiles() as $profile)
+                @foreach ($this->profiles as $profile)
                     @if ($loop->iteration === $ecoBadgeInsertAt)
                         <div class="col-span-full my-4 flex justify-center px-2">
                             <x-ecobadge />
@@ -710,116 +710,7 @@
             </div>
 
             <!-- Pagination -->
-            @php
-                $paginator = $this->profiles();
-                $currentPage = $paginator->currentPage();
-                $lastPage = $paginator->lastPage();
-            @endphp
-
-            @if ($lastPage > 1)
-                @php
-                    $arrowSvgPath = public_path('images/icons/arrowFilled.svg');
-                    if (file_exists($arrowSvgPath)) {
-                        $arrowSvg = file_get_contents($arrowSvgPath);
-                        $arrowSvg = preg_replace([
-                            '/\bwidth="[^"]*"/',
-                            '/\bheight="[^"]*"/',
-                            '/\bfill="[^"]*"/',
-                            '/<svg/'
-                        ], [
-                            '',
-                            '',
-                            'fill="currentColor"',
-                            '<svg '
-                        ], $arrowSvg);
-                        $arrowSvg = preg_replace('/<svg([^>]*)>/', '<svg$1 width="16" height="16">', $arrowSvg, 1);
-                    } else {
-                        // Fallback minimal SVG (same shape) with currentColor fill
-                        $arrowSvg = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10.6667 12.6668V3.3335L3.33335 8.00016L10.6667 12.6668Z"/></svg>';
-                    }
-                @endphp
-
-                @php
-                    // Compute mobile pagination window (max 4 pages visible)
-                    $mobileWindow = 4;
-                    if ($lastPage <= $mobileWindow) {
-                        $mobileStart = 1;
-                        $mobileEnd = $lastPage;
-                    } else {
-                        $half = floor($mobileWindow / 2);
-                        $mobileStart = max(1, min($currentPage - $half, $lastPage - $mobileWindow + 1));
-                        $mobileEnd = min($lastPage, $mobileStart + $mobileWindow - 1);
-                    }
-                @endphp
-
-                {{-- Mobile: show limited window of pages, hide full pagination --}}
-                <div class="flex items-center justify-center gap-2 mt-16 md:mt-20 lg:hidden">
-                    @php $prevDisabled = $currentPage <= 1; @endphp
-                    <button
-                        wire:click="gotoPage({{ max(1, $currentPage - 1) }})"
-                        @if($prevDisabled) disabled aria-disabled="true" @endif
-                        class="flex items-center justify-center"
-                        style="width:40px;height:40px;border-radius:8px;{{ $prevDisabled ? 'background:#F2F2F2;' : 'background:#5C2D62;' }}">
-                        <span class="inline-block transform {{ $prevDisabled ? 'text-[#5C2D62]' : 'text-white' }}">
-                            {!! $arrowSvg !!}
-                        </span>
-                    </button>
-
-                    @for ($i = $mobileStart; $i <= $mobileEnd; $i++)
-                        @php $isActive = $i == $currentPage; @endphp
-                        <button wire:click="gotoPage({{ $i }})"
-                            class="flex items-center justify-center font-semibold"
-                            style="width:40px;height:40px;border-radius:8px;{{ $isActive ? 'background:#DD3888;color:#FFFFFF;' : 'background:transparent;color:#505050;' }}font-family: 'Poppins', sans-serif; font-size:14px;">
-                            {{ $i }}
-                        </button>
-                    @endfor
-
-                    @php $nextDisabled = $currentPage >= $lastPage; @endphp
-                    <button
-                        wire:click="gotoPage({{ min($lastPage, $currentPage + 1) }})"
-                        @if($nextDisabled) disabled @endif
-                        class="flex items-center justify-center"
-                        style="width:40px;height:40px;border-radius:8px;{{ $nextDisabled ? 'background:#F2F2F2;' : 'background:#5C2D62;' }}">
-                        <span class="inline-block transform rotate-180 {{ $nextDisabled ? 'text-[#5C2D62]' : 'text-white' }}">
-                            {!! $arrowSvg !!}
-                        </span>
-                    </button>
-                </div>
-
-                {{-- Desktop / full pagination (hidden on mobile) --}}
-                <div class="hidden lg:flex items-center justify-center gap-3 mt-16 md:mt-20 lg:mt-24">
-                    @php $prevDisabled = $currentPage <= 1; @endphp
-                    <button
-                        wire:click="gotoPage({{ max(1, $currentPage - 1) }})"
-                        @if($prevDisabled) disabled aria-disabled="true" @endif
-                        class="flex items-center justify-center"
-                        style="width:45px;height:45px;border-radius:8px;{{ $prevDisabled ? 'background:#F2F2F2;' : 'background:#5C2D62;' }}">
-                        <span class="inline-block transform {{ $prevDisabled ? 'text-[#5C2D62]' : 'text-white' }}">
-                            {!! $arrowSvg !!}
-                        </span>
-                    </button>
-
-                    @for ($i = 1; $i <= $lastPage; $i++)
-                        @php $isActive = $i == $currentPage; @endphp
-                        <button wire:click="gotoPage({{ $i }})"
-                            class="flex items-center justify-center font-semibold"
-                            style="width:45px;height:45px;border-radius:8px;{{ $isActive ? 'background:#DD3888;color:#FFFFFF;' : 'background:transparent;color:#505050;' }}font-family: 'Poppins', sans-serif; font-size:14px;">
-                            {{ $i }}
-                        </button>
-                    @endfor
-
-                    @php $nextDisabled = $currentPage >= $lastPage; @endphp
-                    <button
-                        wire:click="gotoPage({{ min($lastPage, $currentPage + 1) }})"
-                        @if($nextDisabled) disabled @endif
-                        class="flex items-center justify-center"
-                        style="width:45px;height:45px;border-radius:8px;{{ $nextDisabled ? 'background:#F2F2F2;' : 'background:#5C2D62;' }}">
-                        <span class="inline-block transform rotate-180 {{ $nextDisabled ? 'text-[#5C2D62]' : 'text-white' }}">
-                            {!! $arrowSvg !!}
-                        </span>
-                    </button>
-                </div>
-            @endif
+            {{ $this->profiles()->links('livewire.pagination-links') }}
         </div>
     @else
         <!-- Empty State -->
@@ -926,8 +817,8 @@
             setTimeout(initializeSwipers, 100);
         });
 
-        // For Livewire v3 - when content is updated via AJAX
-        if (typeof Livewire !== 'undefined') {
+        // Register Livewire hooks after Livewire is loaded
+        document.addEventListener('livewire:load', function() {
             Livewire.hook('morph.updated', () => {
                 setTimeout(initializeSwipers, 100);
             });
@@ -936,6 +827,6 @@
             Livewire.on('profiles-updated', () => {
                 setTimeout(initializeSwipers, 100);
             });
-        }
+        });
     </script>
 @endpush

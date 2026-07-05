@@ -1,4 +1,4 @@
-@props(['profile', 'imageOverride' => null, 'imagesOverride' => null, 'variant' => null, 'showRemoveButton' => false])
+@props(['profile', 'imageOverride' => null, 'imagesOverride' => null, 'variant' => null, 'showRemoveButton' => false, 'cardHeight' => '510px', 'imageHeight' => '265px'])
 
 @php
     $shouldBlur = $variant === 'vip-detail';
@@ -21,7 +21,23 @@
     $isVip = $isModel ? $profile->isVip() : ($profile->is_vip ?? false);
 @endphp
 
-<div class="bg-white rounded-lg overflow-hidden transition-all duration-300 cursor-pointer group relative z-10 home-profile-card" style="width: 210px; height: 510px; border-radius: 15px; box-shadow: 0 15px 15px 0 rgba(92, 45, 98, 0.1);" x-data="{ removed: false, showBtn: false }" x-show="!removed" @mouseenter="showBtn = true" @mouseleave="showBtn = false">
+@php
+    // Prepare image URLs for simple Alpine-based slideshow
+    $imageUrls = [];
+    if($imagesOverride && is_array($imagesOverride)) {
+        $imageUrls = $imagesOverride;
+    } elseif($imageOverride) {
+        $imageUrls = [$imageOverride];
+    } elseif($isModel && $profile->getAllImages()->count() > 0) {
+        $imageUrls = $profile->getAllImages()->map(function($i){ return $i->getUrl('thumb'); })->all();
+    } elseif($isModel && method_exists($profile, 'getFirstImageThumbUrl') && $profile->getFirstImageThumbUrl()) {
+        $imageUrls = [$profile->getFirstImageThumbUrl()];
+    } elseif(isset($profile->image_url)) {
+        $imageUrls = [$profile->image_url];
+    }
+@endphp
+
+<div class="bg-white rounded-lg overflow-hidden transition-all duration-300 cursor-pointer group relative z-10 home-profile-card" style="width: 210px; height: {{ $cardHeight }}; border-radius: 15px; box-shadow: 0 15px 15px 0 rgba(92, 45, 98, 0.1);" x-cloak x-data="{ removed: false, showBtn: false, currentIndex: 0, imageUrls: [] }" data-image-urls='@json($imageUrls)' x-init="imageUrls = JSON.parse($el.getAttribute('data-image-urls') || '[]')" x-show="!removed" @mouseenter="showBtn = true" @mouseleave="showBtn = false">
     @if($showRemoveButton)
     <!-- Remove Button - Hidden by default, shown on hover -->
     <button @click.stop="removed = true" x-show="showBtn" class="absolute top-2 right-2 z-30 w-7 h-7 flex items-center justify-center rounded-full transition-opacity duration-200" style="background-color: #DD3888;">
@@ -32,7 +48,7 @@
     @endif
     
     <!-- Profile Image -->
-    <div class="relative overflow-hidden home-profile-card-media" style="width: 210px; height: 265px; border-radius: 15px;">
+    <div class="relative overflow-hidden home-profile-card-media" style="width: 210px; height: {{ $imageHeight }}; border-radius: 15px;">
 
         @if((!$shouldBlur) && ($isVerified || $isVip))
         <div class="absolute top-3 left-3 z-20 home-profile-card-badge-stack">
@@ -68,32 +84,12 @@
         </div>
         @endif
 
-        <!-- Profile Photo -->
+        <!-- Profile Photo (Alpine-driven simple slideshow) -->
         <div class="w-full h-full bg-gradient-to-br from-primary-100 to-secondary-100 relative overflow-hidden {{ $shouldBlur ? 'blur-md' : '' }}">
-            @if($imageOverride)
-                <img src="{{ $imageOverride }}" alt="{{ $profileName }}" class="w-full h-full object-cover home-profile-card-image">
-            @elseif($isModel && $profile->getAllImages()->count() > 0)
-                @if($profile->hasMultipleImages())
-                <!-- Swiper for multiple images -->
-                <div class="swiper profile-swiper-{{ $profile->id }} h-full w-full" style="margin-left: 0 !important;">
-                    <div class="swiper-wrapper" style="transform: translate3d(0, 0, 0) !important;">
-                        @foreach($profile->getAllImages() as $image)
-                        <div class="swiper-slide" style="width: 100% !important; flex-shrink: 0;">
-                            <img src="{{ $image->getUrl() }}" alt="{{ $profileName }}"
-                                class="w-full h-full object-cover home-profile-card-image">
-                        </div>
-                        @endforeach
-                    </div>
-                    <!-- Pagination -->
-                    <div class="swiper-pagination swiper-pagination-{{ $profile->id }}"></div>
-                </div>
-                @else
-                <!-- Single image -->
-                <img src="{{ $profile->getFirstImageUrl() }}" alt="{{ $profileName }}"
-                    class="w-full h-full object-cover home-profile-card-image">
-                @endif
+            @php $firstImageUrl = $imageUrls[0] ?? null; @endphp
+            @if($firstImageUrl)
+                <img src="{{ $firstImageUrl }}" x-bind:src="imageUrls[currentIndex]" alt="{{ $profileName }}" class="w-full h-full object-cover home-profile-card-image absolute inset-0" />
             @else
-                <!-- No image placeholder -->
                 <div class="flex items-center justify-center w-full h-full">
                     <svg class="w-16 h-16 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -102,6 +98,27 @@
                 </div>
             @endif
 
+        </div>
+        
+        @php
+            $imagesCount = null;
+            if($imagesOverride && is_array($imagesOverride)) {
+                $imagesCount = count($imagesOverride);
+            } elseif($isModel) {
+                $imagesCount = $profile->getAllImages()->count();
+            } else {
+                $imagesCount = $profile->images_count ?? 1;
+            }
+            $visibleDots = min(5, max(1, (int) $imagesCount));
+        @endphp
+
+        <!-- Photo count dots (5 total) -->
+        <div class="absolute left-0 right-0 bottom-3 flex justify-center z-30" style="gap:3px;">
+            @for($i = 0; $i < 5; $i++)
+                <button type="button" @click.prevent="currentIndex = {{ min($i, $visibleDots - 1) }}" class="w-2.5 h-2.5 rounded-full bg-white flex items-center justify-center" style="box-shadow: 0 0 0 1px rgba(0,0,0,0.04);">
+                    <span class="w-1.5 h-1.5 rounded-full" :class="{ 'bg-transparent': currentIndex !== {{ $i }}, 'bg-[#DD3888]': currentIndex === {{ $i }} }" style="display:block;"></span>
+                </button>
+            @endfor
         </div>
     </div>
 

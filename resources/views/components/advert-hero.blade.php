@@ -80,7 +80,7 @@
     <div class="hidden lg:block">
         <div class="absolute inset-0">
             <img 
-                src="{{ asset('images/dvert.png') }}" 
+                src="{{ asset('images/dvert.png') }}"
                 alt="Advert background" 
                 class="w-full h-full object-cover"
             >

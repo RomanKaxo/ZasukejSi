@@ -240,7 +240,7 @@
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <div class="flex flex-col md:grid md:grid-cols-3 xl:grid-cols-4 gap-4">
                         @foreach($profiles as $profile)
                         <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 cursor-pointer group">
                             <!-- Profile Image -->
