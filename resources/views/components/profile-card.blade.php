@@ -1,4 +1,4 @@
-@props(['profile', 'imageOverride' => null, 'imagesOverride' => null, 'variant' => null, 'showRemoveButton' => false, 'cardHeight' => '510px', 'imageHeight' => '265px'])
+@props(['profile', 'imageOverride' => null, 'imagesOverride' => null, 'variant' => null, 'showRemoveButton' => false, 'cardHeight' => '520px', 'imageHeight' => '265px'])
 
 @php
     $shouldBlur = $variant === 'vip-detail';
@@ -88,7 +88,7 @@
         <div class="w-full h-full bg-gradient-to-br from-primary-100 to-secondary-100 relative overflow-hidden {{ $shouldBlur ? 'blur-md' : '' }}">
             @php $firstImageUrl = $imageUrls[0] ?? null; @endphp
             @if($firstImageUrl)
-                <img src="{{ $firstImageUrl }}" x-bind:src="imageUrls[currentIndex]" alt="{{ $profileName }}" class="w-full h-full object-cover home-profile-card-image absolute inset-0" />
+                <img src="{{ $firstImageUrl }}" x-bind:src="imageUrls[currentIndex]" alt="{{ $profileName }}" class="w-[210px] h-[265px] object-cover home-profile-card-image absolute inset-0" />
             @else
                 <div class="flex items-center justify-center w-full h-full">
                     <svg class="w-16 h-16 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

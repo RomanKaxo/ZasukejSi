@@ -660,11 +660,11 @@ unset($__defined_vars, $__key, $__value); ?>
     }
 
     .vip-gallery-desktop-nav.vip-gallery-desktop-prev {
-        left: -14px;
+        left: -20px !important;
     }
 
     .vip-gallery-desktop-nav.vip-gallery-desktop-next {
-        right: -14px;
+        right: 50px !important;
     }
 
     .vip-profile-favorite {

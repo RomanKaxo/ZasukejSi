@@ -1,7 +1,7 @@
 <?php $attributes ??= new \Illuminate\View\ComponentAttributeBag;
 
 $__newAttributes = [];
-$__propNames = \Illuminate\View\ComponentAttributeBag::extractPropNames((['profile', 'imageOverride' => null, 'imagesOverride' => null, 'variant' => null, 'showRemoveButton' => false, 'cardHeight' => '510px', 'imageHeight' => '265px']));
+$__propNames = \Illuminate\View\ComponentAttributeBag::extractPropNames((['profile', 'imageOverride' => null, 'imagesOverride' => null, 'variant' => null, 'showRemoveButton' => false, 'cardHeight' => '520px', 'imageHeight' => '265px']));
 
 foreach ($attributes->all() as $__key => $__value) {
     if (in_array($__key, $__propNames)) {
@@ -16,7 +16,7 @@ $attributes = new \Illuminate\View\ComponentAttributeBag($__newAttributes);
 unset($__propNames);
 unset($__newAttributes);
 
-foreach (array_filter((['profile', 'imageOverride' => null, 'imagesOverride' => null, 'variant' => null, 'showRemoveButton' => false, 'cardHeight' => '510px', 'imageHeight' => '265px']), 'is_string', ARRAY_FILTER_USE_KEY) as $__key => $__value) {
+foreach (array_filter((['profile', 'imageOverride' => null, 'imagesOverride' => null, 'variant' => null, 'showRemoveButton' => false, 'cardHeight' => '520px', 'imageHeight' => '265px']), 'is_string', ARRAY_FILTER_USE_KEY) as $__key => $__value) {
     $$__key = $$__key ?? $__value;
 }
 
@@ -174,7 +174,7 @@ unset($__defined_vars, $__key, $__value); ?>
         <div class="w-full h-full bg-gradient-to-br from-primary-100 to-secondary-100 relative overflow-hidden <?php echo e($shouldBlur ? 'blur-md' : ''); ?>">
             <?php $firstImageUrl = $imageUrls[0] ?? null; ?>
             <!--[if BLOCK]><![endif]--><?php if($firstImageUrl): ?>
-                <img src="<?php echo e($firstImageUrl); ?>" x-bind:src="imageUrls[currentIndex]" alt="<?php echo e($profileName); ?>" class="w-full h-full object-cover home-profile-card-image absolute inset-0" />
+                <img src="<?php echo e($firstImageUrl); ?>" x-bind:src="imageUrls[currentIndex]" alt="<?php echo e($profileName); ?>" class="w-[210px] h-[265px] object-cover home-profile-card-image absolute inset-0" />
             <?php else: ?>
                 <div class="flex items-center justify-center w-full h-full">
                     <svg class="w-16 h-16 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

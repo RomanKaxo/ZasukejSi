@@ -1,8 +1,8 @@
 <?php
     $isEnglishHomepage = app()->getLocale() === 'en' && request()->routeIs('profiles.index');
     $profileGridClasses = $isEnglishHomepage
-        ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 profile-list-cards-grid'
-        : 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 profile-list-cards-grid';
+        ? 'flex flex-col md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 profile-list-cards-grid'
+        : 'flex flex-col md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 profile-list-cards-grid';
     $ecoBadgeInsertAt = $isEnglishHomepage ? 5 : 6;
     $advertInsertAt = $isEnglishHomepage ? 9 : 11;
     $hasSelectedLocation = filled($region) || filled($country);

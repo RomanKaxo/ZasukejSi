@@ -13,7 +13,7 @@
                 @foreach($this->profiles as $profile)
                 @if($profile->display_name && ($profile->getAllImages()->count() > 0 || $profile->getFirstImageUrl()))
                 <div class="swiper-slide h-auto">
-                    <x-profile-card :profile="$profile" :variant="$cardVariant" card-height="782px" image-height="537px" />
+                    <x-profile-card :profile="$profile" :variant="$cardVariant" card-height="520px" image-height="265px" />
                 </div>
                 @endif
                 @endforeach

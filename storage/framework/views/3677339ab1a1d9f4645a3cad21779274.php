@@ -1,0 +1,1 @@
+<p><?php echo e($content); ?></p><?php /**PATH C:\Users\roman\Desktop\ZasukejSi\vendor\skyraptor\filament-blocks-builder\src/../resources/views/typography/paragraph.blade.php ENDPATH**/ ?>
