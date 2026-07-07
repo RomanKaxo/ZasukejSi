@@ -165,9 +165,14 @@
             </div>
 
             <!-- Rating Badge -->
-            <div class="home-profile-card-rating-badge" style="display:flex;align-items:center;justify-content:center;gap:8px;height:40px;border-radius:8px;background:#E6FEE8;padding:0 12px;">
+            @php
+                $rating = $isModel && $profile->getTotalRatings() > 0 
+                    ? $profile->getAverageRating() 
+                    : (4.5 + ((isset($profile->id) ? $profile->id : 0) % 5) * 0.1);
+            @endphp
+            <div class="home-profile-card-rating-badge" style="display:flex;align-items:center;justify-content:center;gap:8px;height:40px;border-radius:8px;{{ $rating < 4 ? 'background:transparent;border: 2px solid #F2F2F2;' : 'background:#E6FEE8;' }}padding:0 12px;">
                 <div style="font-family:'Plus Jakarta Sans', sans-serif;font-weight:600;font-size:11px;color:#505050;line-height:1;">Hodnocení:</div>
-                <div style="font-family:'Poppins', sans-serif;font-weight:600;font-size:14px;color:#5C2D62;line-height:1;">{{ $isModel && $profile->getTotalRatings() > 0 ? number_format($profile->getAverageRating(), 1) : (4.5 + ((isset($profile->id) ? $profile->id : 0) % 5) * 0.1) }}/5</div>
+                <div style="font-family:'Poppins', sans-serif;font-weight:600;font-size:14px;color:#5C2D62;line-height:1;">{{ number_format($rating, 1) }}/5</div>
                 <x-icons name="HeartFilled" class="inline-block flex-shrink-0" style="width:20px;height:20px;" preserveColors="true" />
             </div>
 

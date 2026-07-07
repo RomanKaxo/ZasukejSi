@@ -290,9 +290,14 @@ unset($__defined_vars, $__key, $__value); ?>
             </div>
 
             <!-- Rating Badge -->
-            <div class="home-profile-card-rating-badge" style="display:flex;align-items:center;justify-content:center;gap:8px;height:40px;border-radius:8px;background:#E6FEE8;padding:0 12px;">
+            <?php
+                $rating = $isModel && $profile->getTotalRatings() > 0 
+                    ? $profile->getAverageRating() 
+                    : (4.5 + ((isset($profile->id) ? $profile->id : 0) % 5) * 0.1);
+            ?>
+            <div class="home-profile-card-rating-badge" style="display:flex;align-items:center;justify-content:center;gap:8px;height:40px;border-radius:8px;<?php echo e($rating < 4 ? 'background:transparent;border: 2px solid #F2F2F2;' : 'background:#E6FEE8;'); ?>padding:0 12px;">
                 <div style="font-family:'Plus Jakarta Sans', sans-serif;font-weight:600;font-size:11px;color:#505050;line-height:1;">Hodnocení:</div>
-                <div style="font-family:'Poppins', sans-serif;font-weight:600;font-size:14px;color:#5C2D62;line-height:1;"><?php echo e($isModel && $profile->getTotalRatings() > 0 ? number_format($profile->getAverageRating(), 1) : (4.5 + ((isset($profile->id) ? $profile->id : 0) % 5) * 0.1)); ?>/5</div>
+                <div style="font-family:'Poppins', sans-serif;font-weight:600;font-size:14px;color:#5C2D62;line-height:1;"><?php echo e(number_format($rating, 1)); ?>/5</div>
                 <?php if (isset($component)) { $__componentOriginal114a4750071386a6a5d0e0f9aca3c6cd = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal114a4750071386a6a5d0e0f9aca3c6cd = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icons','data' => ['name' => 'HeartFilled','class' => 'inline-block flex-shrink-0','style' => 'width:20px;height:20px;','preserveColors' => 'true']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>

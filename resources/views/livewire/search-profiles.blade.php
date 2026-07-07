@@ -231,6 +231,15 @@
         background: #FBE7F2;
     }
 
+    .search-arrow-box.is-selected {
+        background: #DD3888 !important;
+        color: #FFFFFF !important;
+    }
+
+    .search-arrow-box.is-selected svg {
+        stroke: #FFFFFF !important;
+    }
+
     .search-select-wrap.is-open .search-arrow-box svg {
         transform: rotate(180deg);
     }
@@ -967,9 +976,9 @@
                         <button id="country-select" type="button" class="search-select-trigger" @click="openCountryPicker()">
                             <span x-text="countryValue || @js(__('front.profiles.search.select_country'))"></span>
                         </button>
-                        <span class="search-arrow-box">
+                        <span class="search-arrow-box" x-bind:class="{ 'is-selected': countryValue }">
                             <svg width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path d="M1 1L5 4L9 1" stroke="#DD3888" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M1 1L5 4L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </span>
 
@@ -987,9 +996,9 @@
                         <button id="town-select" type="button" class="search-select-trigger" @click="openTownPicker()">
                             <span x-text="townValue || @js(__('front.profiles.search.select_town'))"></span>
                         </button>
-                        <span class="search-arrow-box">
+                        <span class="search-arrow-box" x-bind:class="{ 'is-selected': countryValue }">
                             <svg width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path d="M1 1L5 4L9 1" stroke="#DD3888" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M1 1L5 4L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </span>
 
@@ -1012,9 +1021,9 @@
                         <button id="region-select" type="button" class="search-select-trigger" @click="openRegion = !openRegion; openAge = false">
                             <span x-text="regionValue"></span>
                         </button>
-                        <span class="search-arrow-box">
+                        <span class="search-arrow-box" x-bind:class="{ 'is-selected': countryValue }">
                             <svg width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path d="M1 1L5 4L9 1" stroke="#DD3888" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M1 1L5 4L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </span>
 
@@ -1032,9 +1041,9 @@
                         <button id="age-select" type="button" class="search-select-trigger" @click="openAge = !openAge; openRegion = false">
                             <span x-text="ages[ageValue] || ''"></span>
                         </button>
-                        <span class="search-arrow-box">
+                        <span class="search-arrow-box" x-bind:class="{ 'is-selected': countryValue }">
                             <svg width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path d="M1 1L5 4L9 1" stroke="#DD3888" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M1 1L5 4L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </span>
 

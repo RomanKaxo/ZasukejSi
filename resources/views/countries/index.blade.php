@@ -1,11 +1,18 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', __('front.countries.title'))
 
 @section('content')
 
+@php
+    $heroTitle = __('front.countries.browse_by')
+        . ' <span class="hero-main-highlight">'
+        . __('front.countries.countries_text')
+        . '</span><span class="hero-main-period">.</span>';
+@endphp
+
 <x-hero-section 
-    :title="__('front.countries.browse_by') . ' <span class=\"hero-main-highlight\">' . __('front.countries.countries_text') . '</span><span class=\"hero-main-period\">.</span>'"
+    :title="$heroTitle"
     :subtitle="__('front.countries.subtitle')"
     :showSearch="true"
 >

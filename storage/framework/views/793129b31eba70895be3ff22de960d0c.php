@@ -3,14 +3,14 @@
         wire:click="toggleFavorite"
         wire:loading.attr="disabled"
         class="group flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 
-            {{ $isFavorited 
+            <?php echo e($isFavorited 
                 ? 'bg-pink-100 text-pink-600 hover:bg-pink-200' 
-                : 'bg-gray-100 text-gray-600 hover:bg-pink-50 hover:text-pink-500' }}"
+                : 'bg-gray-100 text-gray-600 hover:bg-pink-50 hover:text-pink-500'); ?>"
     >
         <svg 
-            class="transition-transform duration-200 group-hover:scale-110 {{ $isFavorited ? 'fill-current' : '' }}" 
+            class="transition-transform duration-200 group-hover:scale-110 <?php echo e($isFavorited ? 'fill-current' : ''); ?>" 
             style="width:38px;height:38px;"
-            fill="{{ $isFavorited ? 'currentColor' : 'none' }}" 
+            fill="<?php echo e($isFavorited ? 'currentColor' : 'none'); ?>" 
             stroke="currentColor" 
             viewBox="0 0 24 24"
         >
@@ -29,7 +29,7 @@
         </span>
     </button>
 
-    @if($message)
+    <!--[if BLOCK]><![endif]--><?php if($message): ?>
     <div 
         x-data="{ show: true }" 
         x-show="show" 
@@ -37,9 +37,11 @@
         x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
-        class="mt-2 text-sm {{ str_contains($message, 'error') || str_contains($message, 'Error') ? 'text-red-500' : 'text-green-600' }}"
+        class="mt-2 text-sm <?php echo e(str_contains($message, 'error') || str_contains($message, 'Error') ? 'text-red-500' : 'text-green-600'); ?>"
     >
-        {{ $message }}
+        <?php echo e($message); ?>
+
     </div>
-    @endif
+    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 </div>
+<?php /**PATH C:\Users\roman\Desktop\ZasukejSi\resources\views/livewire/favorite-button.blade.php ENDPATH**/ ?>

@@ -328,13 +328,16 @@
                 transform: translateX(15px);
             }
 
-            @media (max-width: 767px) {
+            @media (max-width: 426px) {
                 .profile-list-cards-grid {
+                    display: grid !important;
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                    gap: 20px !important;
                     justify-items: center;
-                    column-gap: 20px;
-                    row-gap: 60px;
                 }
             }
+
+            @media (max-width: 767px) {
 
             @media (max-width: 320px) {
                 .mobile-top-results {
@@ -704,8 +707,10 @@
                             $mapped = 11 + ($idx - 21); // 21->11, 25->15
                             $imageOverride = asset('images/models/model' . $mapped . '.png');
                         }
+                        
+                        $cardVariant = auth()->check() ? null : 'vip-detail';
                     @endphp
-                    <x-profile-card :profile="$profile" :image-override="$imageOverride" />
+                    <x-profile-card :profile="$profile" :image-override="$imageOverride" :variant="$cardVariant" />
                 @endforeach
             </div>
 

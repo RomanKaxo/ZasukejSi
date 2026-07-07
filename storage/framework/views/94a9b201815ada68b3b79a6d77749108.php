@@ -347,13 +347,16 @@
                 transform: translateX(15px);
             }
 
-            @media (max-width: 767px) {
+            @media (max-width: 426px) {
                 .profile-list-cards-grid {
+                    display: grid !important;
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                    gap: 20px !important;
                     justify-items: center;
-                    column-gap: 20px;
-                    row-gap: 60px;
                 }
             }
+
+            @media (max-width: 767px) {
 
             @media (max-width: 320px) {
                 .mobile-top-results {
@@ -816,17 +819,19 @@ if (isset($__slots)) unset($__slots);
                             $mapped = 11 + ($idx - 21); // 21->11, 25->15
                             $imageOverride = asset('images/models/model' . $mapped . '.png');
                         }
+                        
+                        $cardVariant = auth()->check() ? null : 'vip-detail';
                     ?>
                     <?php if (isset($component)) { $__componentOriginal2299f79f212ad7b2f1b6f23328beba2f = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal2299f79f212ad7b2f1b6f23328beba2f = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.profile-card','data' => ['profile' => $profile,'imageOverride' => $imageOverride]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.profile-card','data' => ['profile' => $profile,'imageOverride' => $imageOverride,'variant' => $cardVariant]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('profile-card'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['profile' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($profile),'image-override' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($imageOverride)]); ?>
+<?php $component->withAttributes(['profile' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($profile),'image-override' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($imageOverride),'variant' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($cardVariant)]); ?>
 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal2299f79f212ad7b2f1b6f23328beba2f)): ?>
