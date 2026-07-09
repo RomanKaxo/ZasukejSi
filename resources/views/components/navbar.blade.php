@@ -202,9 +202,7 @@
                         </a>
                         
                         <!-- User Button -->
-                        <a href="{{ route('account.dashboard') }}" class="w-[60px] h-[60px] bg-[#DD3888] rounded-[8px] flex items-center justify-center">
-                            <img src="{{ asset('images/icons/User.svg') }}" class="w-[26px] h-[26px]" alt="User">
-                        </a>
+                        <x-account-dropdown />
                     </div>
                     @else
                     <!-- Auth Buttons - Guest Only -->

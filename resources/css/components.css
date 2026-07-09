@@ -1088,6 +1088,10 @@ hr {
   color: #00B80F;
 }
 
+.site-footer {
+  background-color: transparent !important;
+}
+
 @media (max-width: 1024px) {
   .site-footer {
     padding-top: 40px;

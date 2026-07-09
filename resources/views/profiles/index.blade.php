@@ -54,40 +54,66 @@
     }
 </style>
 
-@php
-    $heroTitle = __('front.landing.wearecommunity') . '<br>' . __('front.landing.fucking_prefix') . ' <span class="hero-main-highlight">' . __('front.landing.fucking_keyword') . '</span><span class="hero-main-period">.</span>';
-@endphp
+<div class="relative z-0 w-full min-h-screen">
+    <!-- Random Background Bubbles on Edges (Desktop only) -->
+    <div class="absolute inset-0 overflow-hidden hidden md:block pointer-events-none" style="z-index: -1;" aria-hidden="true">
+        @for ($i = 0; $i < 15; $i++)
+            @php
+                $size = rand(50, 180);
+                $top = rand(0, 100);
+                $side = ($i % 2 === 0) ? 'left' : 'right';
+                $offset = rand(-5, 5);
+                $color = (rand(0, 1) === 0) ? '#DD3888' : '#5C2D62';
+            @endphp
+            <div style="
+                position: absolute;
+                top: {{ $top }}%;
+                {{ $side }}: {{ $offset }}%;
+                width: {{ $size }}px;
+                height: {{ $size }}px;
+                background-color: {{ $color }};
+                filter: blur(50px);
+                border-radius: 50%;
+                opacity: 1;
+            "></div>
+        @endfor
+    </div>
 
-<x-hero-section 
-    :title="$heroTitle"
-    :subtitle="__('front.landing.girlsregisternow')"
-    :showSearch="!$isEnglishHomepage"
->
-    @if($isEnglishHomepage)
-        <div class="hero-desktop-badges absolute bottom-8 left-16 hidden md:flex gap-4" aria-hidden="true">
-            <div class="search-badge">
-                <span class="w-2.5 h-2.5 rounded-full bg-green-500 mr-1.5"></span>
-                <span class="font-semibold text-xs text-gray-700">1 420 {{ __('front.profiles.search.girls') }}</span>
-            </div>
-            <div class="search-badge">
-                <span class="w-2.5 h-2.5 rounded-full bg-green-500 mr-1.5"></span>
-                <span class="font-semibold text-xs text-gray-700">382 {{ __('front.profiles.search.men') }}</span>
-            </div>
-        </div>
-    @endif
-</x-hero-section>
+    @php
+        $heroTitle = __('front.landing.wearecommunity') . '<br>' . __('front.landing.fucking_prefix') . ' <span class="hero-main-highlight">' . __('front.landing.fucking_keyword') . '</span><span class="hero-main-period">.</span>';
+    @endphp
 
-<!-- Profiles Section -->
-<div class="container mx-auto px-4 {{ $isEnglishHomepage ? 'pt-8 md:pt-10' : 'pt-10 md:pt-20' }} profiles-section-wrap homepage-profiles-surface">
-    @if($isEnglishHomepage)
-        <div class="lg:grid lg:grid-cols-[208px_minmax(0,1fr)] lg:gap-8 lg:items-start">
-            <x-english-country-sidebar />
-            <div class="min-w-0">
-                <livewire:profile-list />
+    <x-hero-section 
+        :title="$heroTitle"
+        :subtitle="__('front.landing.girlsregisternow')"
+        :showSearch="!$isEnglishHomepage"
+    >
+        @if($isEnglishHomepage)
+            <div class="hero-desktop-badges absolute bottom-8 left-16 hidden md:flex gap-4" aria-hidden="true">
+                <div class="search-badge">
+                    <span class="w-2.5 h-2.5 rounded-full bg-green-500 mr-1.5"></span>
+                    <span class="font-semibold text-xs text-gray-700">1 420 {{ __('front.profiles.search.girls') }}</span>
+                </div>
+                <div class="search-badge">
+                    <span class="w-2.5 h-2.5 rounded-full bg-green-500 mr-1.5"></span>
+                    <span class="font-semibold text-xs text-gray-700">382 {{ __('front.profiles.search.men') }}</span>
+                </div>
             </div>
-        </div>
-    @else
-        <livewire:profile-list />
-    @endif
+        @endif
+    </x-hero-section>
+
+    <!-- Profiles Section -->
+    <div class="container mx-auto px-4 {{ $isEnglishHomepage ? 'pt-8 md:pt-10' : 'pt-10 md:pt-20' }} profiles-section-wrap homepage-profiles-surface">
+        @if($isEnglishHomepage)
+            <div class="lg:grid lg:grid-cols-[208px_minmax(0,1fr)] lg:gap-8 lg:items-start">
+                <x-english-country-sidebar />
+                <div class="min-w-0">
+                    <livewire:profile-list />
+                </div>
+            </div>
+        @else
+            <livewire:profile-list />
+        @endif
+    </div>
 </div>
 @endsection

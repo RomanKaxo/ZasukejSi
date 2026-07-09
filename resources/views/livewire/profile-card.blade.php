@@ -1,4 +1,4 @@
-@props(['profile', 'variant' => 'default'])
+@props(['profile', 'variant' => 'default', 'isReported' => false])
 
 @php
     $shouldBlur = $variant === 'vip-detail';
@@ -56,10 +56,9 @@
 </div>
 @else
 
-<div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 cursor-pointer group relative z-10">
+<div class="{{ $isReported ? 'w-[210px] h-[510px] flex flex-col' : '' }} bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 cursor-pointer group relative z-10">
     <!-- Profile Image -->
     <div class="relative overflow-hidden">
-
         <!-- Verified Badge -->
         @if($profile->isVerified()) 
         <div class="absolute top-3 left-3 flex flex-col items-start gap-1 z-20">
@@ -81,7 +80,7 @@
         @endif
 
         <!-- Profile Photo -->
-        <div class="aspect-[4/5] bg-gradient-to-br from-primary-100 to-secondary-100 relative overflow-hidden {{ $shouldBlur ? 'blur-md' : '' }}">
+        <div class="{{ $isReported ? 'w-[210px] h-[265px]' : 'aspect-[4/5]' }} bg-gradient-to-br from-primary-100 to-secondary-100 relative overflow-hidden {{ $shouldBlur ? 'blur-md' : '' }}">
             @if($profile->getAllImages()->count() > 0)
             @if($profile->hasMultipleImages())
             <!-- Swiper for multiple images -->
@@ -115,8 +114,10 @@
         </div>
     </div>
 
+
     <!-- Profile Info -->
-    <div class="p-4 space-y-3">
+    <div class="p-4 {{ $isReported ? 'flex-1 flex flex-col justify-between' : 'space-y-3' }}">
+
         <!-- Name and VIP Badge -->
         <div class="flex items-center justify-between py-3">
             <h4 class="text-gray-700 flex-grow-0 truncate max-w-[80%]">{{ $profile->display_name }}</h4>
@@ -137,7 +138,7 @@
         </a>
 
         <!-- Rating/Evaluation -->
-        <div>
+        <div class="{{ $isReported ? 'mt-auto' : '' }}">
             <div class="flex bg-gray-200 rounded-lg" style="height:30px;">
                 <div class="bg-gray-100 rounded-lg flex items-center justify-center" style="width:82px;height:100%;padding:0 12px;">
                     <div class="text-sm font-medium text-gray-700 leading-none">{{ __('front.profiles.list.rating') }}</div>
@@ -174,5 +175,6 @@
 
         </div>
     </div>
+
 </div>
 @endif

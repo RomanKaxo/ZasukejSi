@@ -2,30 +2,30 @@
     <button
         wire:click="toggleFavorite"
         wire:loading.attr="disabled"
-        class="group flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 
+        class="group flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg transition-all duration-200 
             {{ $isFavorited 
                 ? 'bg-pink-100 text-pink-600 hover:bg-pink-200' 
                 : 'bg-gray-100 text-gray-600 hover:bg-pink-50 hover:text-pink-500' }}"
     >
         <svg 
-            class="transition-transform duration-200 group-hover:scale-110 {{ $isFavorited ? 'fill-current' : '' }}" 
-            style="width:38px;height:38px;"
-            fill="{{ $isFavorited ? 'currentColor' : 'none' }}" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
+            width="38" height="38" viewBox="0 0 19 18" 
+            class="transition-transform duration-300 group-hover:scale-110"
+            stroke="#DD3888" 
+            stroke-width="2" 
+            stroke-linecap="round" 
+            stroke-linejoin="round"
         >
-            <path 
-                stroke-linecap="round" 
-                stroke-linejoin="round" 
-                stroke-width="2" 
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" 
+            <!-- Background stroked path -->
+            <path d="M15.3814 10.6667C16.6231 9.45 17.8814 7.99167 17.8814 6.08333C17.8814 4.86776 17.3985 3.70197 16.539 2.84243C15.6795 1.98289 14.5137 1.5 13.2981 1.5C11.8314 1.5 10.7981 1.91667 9.54809 3.16667C8.29809 1.91667 7.26475 1.5 5.79809 1.5C4.58251 1.5 3.41672 1.98289 2.55718 2.84243C1.69764 3.70197 1.21475 4.86776 1.21475 6.08333C1.21475 8 2.46475 9.45833 3.71475 10.6667L9.54809 16.5L15.3814 10.6667Z" fill="none" />
+            
+            <!-- Foreground filled path -->
+            <path d="M15.3814 10.6667C16.6231 9.45 17.8814 7.99167 17.8814 6.08333C17.8814 4.86776 17.3985 3.70197 16.539 2.84243C15.6795 1.98289 14.5137 1.5 13.2981 1.5C11.8314 1.5 10.7981 1.91667 9.54809 3.16667C8.29809 1.91667 7.26475 1.5 5.79809 1.5C4.58251 1.5 3.41672 1.98289 2.55718 2.84243C1.69764 3.70197 1.21475 4.86776 1.21475 6.08333C1.21475 8 2.46475 9.45833 3.71475 10.6667L9.54809 16.5L15.3814 10.6667Z" 
+                  fill="#DD3888" 
+                  class="transition-opacity duration-150 ease-in-out {{ $isFavorited ? 'opacity-100' : 'opacity-0' }}" 
             />
         </svg>
-        <span wire:loading wire:target="toggleFavorite">
-            <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
+        <span style="font-family:'Plus Jakarta Sans', sans-serif; font-weight:600; font-size:12px; color:#71717A; text-decoration: underline;">
+            Uložit
         </span>
     </button>
 

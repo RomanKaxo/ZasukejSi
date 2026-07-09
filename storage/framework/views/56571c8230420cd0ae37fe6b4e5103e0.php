@@ -1,7 +1,7 @@
 <?php $attributes ??= new \Illuminate\View\ComponentAttributeBag;
 
 $__newAttributes = [];
-$__propNames = \Illuminate\View\ComponentAttributeBag::extractPropNames((['profile', 'imageOverride' => null, 'imagesOverride' => null, 'variant' => null, 'showRemoveButton' => false, 'cardHeight' => '520px', 'imageHeight' => '265px']));
+$__propNames = \Illuminate\View\ComponentAttributeBag::extractPropNames((['profile', 'imageOverride' => null, 'imagesOverride' => null, 'variant' => null, 'showRemoveButton' => false, 'cardHeight' => '520px', 'imageHeight' => '265px', 'simpleMode' => false, 'isReported' => false]));
 
 foreach ($attributes->all() as $__key => $__value) {
     if (in_array($__key, $__propNames)) {
@@ -16,7 +16,7 @@ $attributes = new \Illuminate\View\ComponentAttributeBag($__newAttributes);
 unset($__propNames);
 unset($__newAttributes);
 
-foreach (array_filter((['profile', 'imageOverride' => null, 'imagesOverride' => null, 'variant' => null, 'showRemoveButton' => false, 'cardHeight' => '520px', 'imageHeight' => '265px']), 'is_string', ARRAY_FILTER_USE_KEY) as $__key => $__value) {
+foreach (array_filter((['profile', 'imageOverride' => null, 'imagesOverride' => null, 'variant' => null, 'showRemoveButton' => false, 'cardHeight' => '520px', 'imageHeight' => '265px', 'simpleMode' => false, 'isReported' => false]), 'is_string', ARRAY_FILTER_USE_KEY) as $__key => $__value) {
     $$__key = $$__key ?? $__value;
 }
 
@@ -30,6 +30,9 @@ unset($__defined_vars, $__key, $__value); ?>
 
 <?php
     $shouldBlur = $variant === 'vip-detail';
+    // Zajistíme, že $isReported je vždy bool
+    $isReported = (bool)($isReported ?? false);
+    
     $cardContent = (isset($profile->content) && is_array($profile->content)) ? $profile->content : [];
     $cardLocation = $cardContent['card_location'] ?? ($profile->city ?? null);
     $cardHeightCm = $cardContent['card_height_cm'] ?? 168;
@@ -63,9 +66,20 @@ unset($__defined_vars, $__key, $__value); ?>
     } elseif(isset($profile->image_url)) {
         $imageUrls = [$profile->image_url];
     }
+    
+    // Fallback if no images found
+    if (empty($imageUrls)) {
+        $imageUrls = [
+            asset('images/models/model6.png'),
+            asset('images/models/model10.png'),
+            asset('images/models/model12.png')
+        ];
+    }
 ?>
 
-<div class="bg-white rounded-lg overflow-hidden transition-all duration-300 cursor-pointer group relative z-10 home-profile-card" style="width: 210px; height: <?php echo e($cardHeight); ?>; border-radius: 15px; box-shadow: 0 15px 15px 0 rgba(92, 45, 98, 0.1);" x-cloak x-data="{ removed: false, showBtn: false, currentIndex: 0, imageUrls: [] }" data-image-urls='<?php echo json_encode($imageUrls, 15, 512) ?>' x-init="imageUrls = JSON.parse($el.getAttribute('data-image-urls') || '[]')" x-show="!removed" @mouseenter="showBtn = true" @mouseleave="showBtn = false">
+<div class="<?php echo e($isReported ? 'h-[510px]' : ''); ?> bg-white rounded-lg overflow-hidden transition-all duration-300 cursor-pointer group relative z-10 home-profile-card" 
+     style="width: 210px; <?php echo e(!$isReported ? 'height: ' . ($simpleMode ? '340px' : $cardHeight) . ';' : ''); ?> border-radius: 15px; box-shadow: 0 15px 15px 0 rgba(92, 45, 98, 0.1);" 
+     x-cloak x-data="{ removed: false, showBtn: false, currentIndex: 0, imageUrls: [] }" data-image-urls='<?php echo json_encode($imageUrls, 15, 512) ?>' x-init="imageUrls = JSON.parse($el.getAttribute('data-image-urls') || '[]')" x-show="!removed" @mouseenter="showBtn = true" @mouseleave="showBtn = false">
     <!--[if BLOCK]><![endif]--><?php if($showRemoveButton): ?>
     <!-- Remove Button - Hidden by default, shown on hover -->
     <button @click.stop="removed = true" x-show="showBtn" class="absolute top-2 right-2 z-30 w-7 h-7 flex items-center justify-center rounded-full transition-opacity duration-200" style="background-color: #DD3888;">
@@ -78,8 +92,8 @@ unset($__defined_vars, $__key, $__value); ?>
     <!-- Profile Image -->
     <div class="relative overflow-hidden home-profile-card-media" style="width: 210px; height: <?php echo e($imageHeight); ?>; border-radius: 15px;">
 
-        <!--[if BLOCK]><![endif]--><?php if((!$shouldBlur) && ($isVerified || $isVip)): ?>
-        <div class="absolute top-3 left-3 z-20 home-profile-card-badge-stack">
+        <!--[if BLOCK]><![endif]--><?php if((!$shouldBlur) && ($isVerified || $isVip) && !$simpleMode): ?>
+        <div class="absolute <?php echo e($isReported ? 'top-1' : 'top-3'); ?> left-3 z-20 home-profile-card-badge-stack">
             <!-- Verified Badge -->
             <!--[if BLOCK]><![endif]--><?php if($isVerified): ?>
             <div class="home-profile-card-badge">
@@ -199,6 +213,7 @@ unset($__defined_vars, $__key, $__value); ?>
         ?>
 
         <!-- Photo count dots (5 total) -->
+        <!--[if BLOCK]><![endif]--><?php if(!$simpleMode): ?>
         <div class="absolute left-0 right-0 bottom-3 flex justify-center z-30" style="gap:3px;">
             <!--[if BLOCK]><![endif]--><?php for($i = 0; $i < 5; $i++): ?>
                 <button type="button" @click.prevent="currentIndex = <?php echo e(min($i, $visibleDots - 1)); ?>" class="w-2.5 h-2.5 rounded-full bg-white flex items-center justify-center" style="box-shadow: 0 0 0 1px rgba(0,0,0,0.04);">
@@ -206,17 +221,18 @@ unset($__defined_vars, $__key, $__value); ?>
                 </button>
             <?php endfor; ?><!--[if ENDBLOCK]><![endif]-->
         </div>
+        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
     </div>
 
     <!-- Profile Info -->
-    <div class="p-4 space-y-3 home-profile-card-content">
+    <div class="p-4 space-y-3 home-profile-card-content <?php echo e($isReported ? 'h-[245px] flex flex-col justify-between' : ''); ?>">
         <!-- Name and VIP Badge -->
         <div class="flex items-center justify-between py-1 home-profile-card-header">
             <h4 class="text-gray-700 flex-grow-0 truncate max-w-[80%] home-profile-card-name <?php echo e($shouldBlur ? 'blur-md' : ''); ?>" style="font-family: 'Poppins', sans-serif; font-weight:700; font-size:18px; color:#333;">
                 <?php echo e($profileName); ?>
 
             </h4>
-            <!--[if BLOCK]><![endif]--><?php if($isVip): ?>
+            <!--[if BLOCK]><![endif]--><?php if($isVip && !$simpleMode): ?>
             <div class="home-profile-card-vip home-profile-card-vip-desktop" style="width:50px;height:26px;border-radius:999px;background:#FFB700;display:flex;align-items:center;justify-content:center;gap:6px;">
                 <?php if (isset($component)) { $__componentOriginal114a4750071386a6a5d0e0f9aca3c6cd = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal114a4750071386a6a5d0e0f9aca3c6cd = $attributes; } ?>
@@ -243,10 +259,11 @@ unset($__defined_vars, $__key, $__value); ?>
             <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
         </div>
 
+        <!--[if BLOCK]><![endif]--><?php if(!$simpleMode): ?>
         <!-- Details Button -->
             <a href="<?php echo e($profileUrl); ?>"
             class="flex items-center justify-between home-profile-card-cta"
-            style="width:170px;height:45px;border-radius:8px;background:#5C2D62;color:#FFFFFF; display:inline-flex; align-items:center; justify-content:space-between; padding:0 16px; font-family:'Poppins', sans-serif; font-weight:600; font-size:16px; text-decoration:none; <?php echo e($shouldBlur ? 'pointer-events:none;' : ''); ?>">
+            style="width:170px;height:45px;border-radius:8px;background:#5C2D62;color:#FFFFFF; display:inline-flex; align-items:center; justify-content:space-between; padding:0 16px; font-family:'Poppins', sans-serif; font-weight:600; font-size:16px; text-decoration:none; <?php echo e($shouldBlur ? 'pointer-events-none;' : ''); ?>">
             <span><?php echo e(__('front.profiles.list.detail')); ?></span>
             <?php if (isset($component)) { $__componentOriginal114a4750071386a6a5d0e0f9aca3c6cd = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal114a4750071386a6a5d0e0f9aca3c6cd = $attributes; } ?>
@@ -269,26 +286,28 @@ unset($__defined_vars, $__key, $__value); ?>
 <?php unset($__componentOriginal114a4750071386a6a5d0e0f9aca3c6cd); ?>
 <?php endif; ?>
         </a>
+        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 
             <!-- Age and Height Stats -->
-        <div class="home-profile-card-rating-wrap">
+        <div class="home-profile-card-rating-wrap <?php echo e($isReported ? 'mt-auto' : ''); ?>">
             <div class="flex justify-between gap-x-3 home-profile-card-stats">
-                <div class="home-profile-card-stat" style="width:82px;height:30px;border-radius:8px;background:#F2F2F2;display:flex;align-items:center;justify-content:center;">
+                <div class="home-profile-card-stat" style="width:<?php echo e($simpleMode ? '95px' : '82px'); ?>;height:30px;border-radius:8px;background:#F2F2F2;display:flex;align-items:center;justify-content:center;">
                     <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:11px;color:#505050;"><?php echo e($cardHeightCm); ?> cm</div>
                 </div>
-                <div class="home-profile-card-stat" style="width:82px;height:30px;border-radius:8px;background:#F2F2F2;display:flex;align-items:center;justify-content:center;">
+                <div class="home-profile-card-stat" style="width:<?php echo e($simpleMode ? '95px' : '82px'); ?>;height:30px;border-radius:8px;background:#F2F2F2;display:flex;align-items:center;justify-content:center;">
                     <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:11px;color:#505050;"><?php echo e($profileAge); ?> <?php echo e(__('front.profiles.list.years')); ?></div>
                 </div>
             </div>
 
             <!-- Location -->
-            <div class="flex py-2 justify-center items-center gap-x-2 home-profile-card-location">
+            <div class="flex py-2 justify-center items-center gap-x-2 home-profile-card-location <?php echo e($isReported ? '-mt-2' : ''); ?>">
                 <!--[if BLOCK]><![endif]--><?php if($cardLocation): ?>
                     <img src="<?php echo e(asset('images/icons/location.svg')); ?>" alt="" aria-hidden="true" class="inline-block" style="width:20px;height:20px;" />
                     <h5 style="margin:0;font-family:'Plus Jakarta Sans', sans-serif;font-weight:600;font-size:11px;color:#505050;"><?php echo e($cardLocation); ?></h5>
                 <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
             </div>
 
+            <!--[if BLOCK]><![endif]--><?php if(!$simpleMode): ?>
             <!-- Rating Badge -->
             <?php
                 $rating = $isModel && $profile->getTotalRatings() > 0 
@@ -319,8 +338,9 @@ unset($__defined_vars, $__key, $__value); ?>
 <?php unset($__componentOriginal114a4750071386a6a5d0e0f9aca3c6cd); ?>
 <?php endif; ?>
             </div>
+            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 
         </div>
     </div>
-</div>
-<?php /**PATH C:\Users\roman\Desktop\ZasukejSi\resources\views/components/profile-card.blade.php ENDPATH**/ ?>
+
+</div><?php /**PATH C:\Users\roman\Desktop\ZasukejSi\resources\views/components/profile-card.blade.php ENDPATH**/ ?>

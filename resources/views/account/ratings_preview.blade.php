@@ -18,7 +18,7 @@
             <div class="flex justify-end mb-8 gap-x-12 w-[1134px] mx-auto max-[426px]:w-[310px] max-[426px]:justify-center">
 
                 <!-- Member Sidebar -->
-                <div class="max-[426px]:hidden mt-[38px]">
+                <div class="max-[426px]:hidden mt-[150px]">
                     <div class="flex flex-col w-[211px] gap-[10px]">
                         <div class="flex flex-col w-[211px] gap-[10px]">
                             <!-- Hodnocení dívek – ACTIVE -->
@@ -30,7 +30,7 @@
                                 Hodnocení dívek
                             </a>
                             <!-- Moje Favoritky -->
-                            <a href="#"
+                            <a href="{{ route('preview.favorites') }}"
                                class="w-[210px] h-[50px] rounded-[8px] border border-[#E6E6E6] text-[#505050] flex items-center px-4 gap-3 font-medium text-[14px]"
                                style="font-family: 'Poppins', sans-serif;">
                                 <img src="{{ asset('images/icons/heart.svg') }}" class="w-[20px] h-[20px]" alt="Heart"
@@ -54,7 +54,7 @@
                                 Archiv dívek
                             </a>
                             <!-- Nahlášené dívky -->
-                            <a href="#"
+                            <a href="{{ route('preview.reported') }}"
                                class="w-[210px] h-[50px] rounded-[8px] border border-[#E6E6E6] text-[#505050] flex items-center px-4 gap-3 font-medium text-[14px]"
                                style="font-family: 'Poppins', sans-serif;">
                                 <img src="{{ asset('images/icons/OctagonAlert.svg') }}" class="w-[20px] h-[20px]" alt="Report"

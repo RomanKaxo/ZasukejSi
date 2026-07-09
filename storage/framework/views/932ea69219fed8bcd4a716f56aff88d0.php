@@ -182,11 +182,13 @@
         });
 
         // For Livewire v3 - when content is updated via AJAX
+        /*
         if (typeof Livewire !== 'undefined') {
             Livewire.hook('morph.updated', () => {
                 setTimeout(initProfileSlider, 100);
             });
         }
+        */
 
         // Re-initialize on window resize
         let resizeTimeout;

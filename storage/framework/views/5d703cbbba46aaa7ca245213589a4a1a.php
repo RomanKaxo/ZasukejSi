@@ -203,9 +203,26 @@
                         </a>
                         
                         <!-- User Button -->
-                        <a href="<?php echo e(route('account.dashboard')); ?>" class="w-[60px] h-[60px] bg-[#DD3888] rounded-[8px] flex items-center justify-center">
-                            <img src="<?php echo e(asset('images/icons/User.svg')); ?>" class="w-[26px] h-[26px]" alt="User">
-                        </a>
+                        <?php if (isset($component)) { $__componentOriginal96d248c4b629118b462f1f3c8ddb0bea = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal96d248c4b629118b462f1f3c8ddb0bea = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.account-dropdown','data' => []] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('account-dropdown'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal96d248c4b629118b462f1f3c8ddb0bea)): ?>
+<?php $attributes = $__attributesOriginal96d248c4b629118b462f1f3c8ddb0bea; ?>
+<?php unset($__attributesOriginal96d248c4b629118b462f1f3c8ddb0bea); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal96d248c4b629118b462f1f3c8ddb0bea)): ?>
+<?php $component = $__componentOriginal96d248c4b629118b462f1f3c8ddb0bea; ?>
+<?php unset($__componentOriginal96d248c4b629118b462f1f3c8ddb0bea); ?>
+<?php endif; ?>
                     </div>
                     <?php else: ?>
                     <!-- Auth Buttons - Guest Only -->

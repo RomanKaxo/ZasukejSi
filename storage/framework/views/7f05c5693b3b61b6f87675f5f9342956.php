@@ -17,8 +17,7 @@
             html,
             body,
             #app,
-            main,
-            footer {
+            main {
                 background-color: #FFFFFF !important;
             }
         }

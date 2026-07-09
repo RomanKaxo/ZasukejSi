@@ -143,6 +143,7 @@
         color: #ffffff;
     }
 
+
     .vip-profile-status-pill--verification {
         width: 131px;
         min-width: 131px;
@@ -150,61 +151,6 @@
         color: #A4A4A4;
         font-family: 'Poppins', sans-serif;
         font-size: 10px;
-    }
-
-    .vip-profile-availability-card {
-        border-radius: 20px;
-        padding: 12px 12px 14px;
-        margin-bottom: 12px;
-        background: linear-gradient(180deg, #7f4aff 0%, #a659f5 100%);
-        color: #ffffff;
-        box-shadow: 0 18px 34px rgba(127, 74, 255, 0.24);
-    }
-
-    .vip-profile-availability-label {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        margin-bottom: 10px;
-        font-size: 9px;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        opacity: 0.92;
-    }
-
-    .vip-profile-availability-label::before {
-        content: '';
-        width: 8px;
-        height: 8px;
-        border-radius: 999px;
-        background: #ffcf48;
-        box-shadow: 0 0 0 5px rgba(255, 207, 72, 0.18);
-    }
-
-    .vip-profile-availability-hours {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 38px;
-        line-height: 1;
-        font-weight: 800;
-        letter-spacing: -0.06em;
-    }
-
-    .vip-profile-availability-hours span:nth-child(2) {
-        font-size: 24px;
-        line-height: 1;
-        opacity: 0.7;
-    }
-
-    .vip-profile-availability-caption {
-        margin-top: 6px;
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        opacity: 0.84;
     }
 
     .vip-profile-badges {
@@ -1387,6 +1333,10 @@
         .vip-gallery-nav {
             display: none;
         }
+
+        .vip-profile-links {
+            display: none;
+        }
     }
 
     @media (min-width: 1280px) {
@@ -1402,12 +1352,9 @@
             padding: 12px;
         }
 
+
         .vip-profile-status-bar {
             margin-bottom: 16px;
-        }
-
-        .vip-profile-availability-card {
-            display: none;
         }
 
         .vip-profile-badges {
@@ -1523,12 +1470,9 @@
             padding: 8px 10px 14px;
         }
 
+
         .vip-profile-status-bar {
             margin-bottom: 16px;
-        }
-
-        .vip-profile-availability-card {
-            display: none;
         }
 
         .vip-profile-badges {
@@ -2416,19 +2360,10 @@
                 </span>
             </div>
 
-            <div class="vip-profile-availability-card">
-                <div class="vip-profile-availability-label">Dostupnost</div>
-                <div class="vip-profile-availability-hours">
-                    <span>{{ $availabilityStart }}</span>
-                    <span>×</span>
-                    <span>{{ $availabilityEnd }}</span>
-                </div>
-                <div class="vip-profile-availability-caption">{{ $availabilityCaption }}</div>
-            </div>
 
             <h1 class="vip-profile-name">{{ $profile->display_name ?? 'Alexandrina' }}</h1>
 
-            <div class="vip-profile-links" aria-label="Profilové akce">
+            <div class="vip-profile-links lg:hidden" aria-label="Profilové akce">
                 <a href="#" class="vip-profile-link">Obnovit přístup</a>
                 <a href="#" class="vip-profile-link">Dát hodnocení</a>
                 <a href="#" class="vip-profile-link">Nahlásit</a>

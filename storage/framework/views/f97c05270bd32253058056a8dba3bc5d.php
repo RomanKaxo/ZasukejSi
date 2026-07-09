@@ -1,4 +1,4 @@
-<footer x-data class="site-footer py-8 md:py-12 pt-12 md:pt-20">
+<footer x-data class="site-footer py-8 md:py-12 pt-12 md:pt-20 bg-transparent">
     <div class="site-footer-container container mx-auto px-4">
         <!-- Logo -->
         <div class="text-center mb-6 md:mb-8">

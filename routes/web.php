@@ -154,8 +154,8 @@ Route::middleware(['auth', 'verified'])->prefix('account')->name('account.')->gr
     Route::get('/password', [AccountController::class, 'showPasswordForm'])->name('password.edit');
     Route::patch('/password', [AccountController::class, 'updatePassword'])->name('password.update');
     
-    // Additional Account Sections (female users only, require profile)
-    Route::middleware(['gender:female', 'profile.exists'])->group(function () {
+    // Additional Account Sections (require profile)
+    Route::middleware(['profile.exists'])->group(function () {
         Route::get('/photos', [AccountController::class, 'showPhotos'])->name('photos');
         Route::get('/services', [AccountController::class, 'showServices'])->name('services');
         Route::get('/statistics', [AccountController::class, 'showStatistics'])->name('statistics');
@@ -219,6 +219,11 @@ Route::get('/preview/ratings', function () {
 Route::get('/preview/favorites', function () {
     return view('account.favorites_preview');
 })->name('preview.favorites');
+
+// Preview route for reported page (added for testing)
+Route::get('/preview/reported', function () {
+    return view('account.reported_preview');
+})->name('preview.reported');
 
 // Preview route for archive page (added for testing)
 Route::get('/preview/archive', function () {

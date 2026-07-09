@@ -54,7 +54,7 @@
                                 Archiv dívek
                             </a>
                             <!-- Nahlášené dívky -->
-                            <a href="#"
+                            <a href="{{ route('preview.reported') }}"
                                class="w-[210px] h-[50px] rounded-[8px] border border-[#E6E6E6] text-[#505050] flex items-center px-4 gap-3 font-medium text-[14px]"
                                style="font-family: 'Poppins', sans-serif;">
                                 <img src="{{ asset('images/icons/OctagonAlert.svg') }}" class="w-[20px] h-[20px]" alt="Report"
