@@ -430,7 +430,7 @@ class CountryProfiles extends Component
     {
         $normalizedRegion = mb_strtolower($region);
 
-        if (in_array($normalizedRegion, ['praha', 'hlavní město praha', 'hlavni mesto praha'], true)) {
+        if ($normalizedRegion === 'praha') {
             return '0';
         }
 

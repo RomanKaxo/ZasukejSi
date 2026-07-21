@@ -80,22 +80,22 @@ unset($__defined_vars, $__key, $__value); ?>
 <div class="<?php echo e($isReported ? 'h-[510px]' : ''); ?> bg-white rounded-lg overflow-hidden transition-all duration-300 cursor-pointer group relative z-10 home-profile-card" 
      style="width: 210px; <?php echo e(!$isReported ? 'height: ' . ($simpleMode ? '340px' : $cardHeight) . ';' : ''); ?> border-radius: 15px; box-shadow: 0 15px 15px 0 rgba(92, 45, 98, 0.1);" 
      x-cloak x-data="{ removed: false, showBtn: false, currentIndex: 0, imageUrls: [] }" data-image-urls='<?php echo json_encode($imageUrls, 15, 512) ?>' x-init="imageUrls = JSON.parse($el.getAttribute('data-image-urls') || '[]')" x-show="!removed" @mouseenter="showBtn = true" @mouseleave="showBtn = false">
-    <!--[if BLOCK]><![endif]--><?php if($showRemoveButton): ?>
+    <?php if($showRemoveButton): ?>
     <!-- Remove Button - Hidden by default, shown on hover -->
     <button @click.stop="removed = true" x-show="showBtn" class="absolute top-2 right-2 z-30 w-7 h-7 flex items-center justify-center rounded-full transition-opacity duration-200" style="background-color: #DD3888;">
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M1 1L9 9M9 1L1 9" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
     </button>
-    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+    <?php endif; ?>
     
     <!-- Profile Image -->
     <div class="relative overflow-hidden home-profile-card-media" style="width: 210px; height: <?php echo e($imageHeight); ?>; border-radius: 15px;">
 
-        <!--[if BLOCK]><![endif]--><?php if((!$shouldBlur) && ($isVerified || $isVip) && !$simpleMode): ?>
+        <?php if((!$shouldBlur) && ($isVerified || $isVip) && !$simpleMode): ?>
         <div class="absolute <?php echo e($isReported ? 'top-1' : 'top-3'); ?> left-3 z-20 home-profile-card-badge-stack">
             <!-- Verified Badge -->
-            <!--[if BLOCK]><![endif]--><?php if($isVerified): ?>
+            <?php if($isVerified): ?>
             <div class="home-profile-card-badge">
                 <div class="bg-green-100 text-green-500 p-1 px-0.5 rounded-xl flex flex-wrap justify-center home-profile-card-verified-badge">
                     <?php if (isset($component)) { $__componentOriginal114a4750071386a6a5d0e0f9aca3c6cd = $component; } ?>
@@ -127,9 +127,9 @@ unset($__defined_vars, $__key, $__value); ?>
                     </span>
                 </div>
             </div>
-            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+            <?php endif; ?>
 
-            <!--[if BLOCK]><![endif]--><?php if($isVip): ?>
+            <?php if($isVip): ?>
             <div class="home-profile-card-vip home-profile-card-vip-mobile" style="width:50px;height:26px;border-radius:999px;background:#FFB700;">
                 <?php if (isset($component)) { $__componentOriginal114a4750071386a6a5d0e0f9aca3c6cd = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal114a4750071386a6a5d0e0f9aca3c6cd = $attributes; } ?>
@@ -153,11 +153,11 @@ unset($__defined_vars, $__key, $__value); ?>
 <?php endif; ?>
                 <span style="font-family:'Poppins', sans-serif; font-weight:900; font-size:10px; color:#FFFFFF; line-height:1;">VIP</span>
             </div>
-            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+            <?php endif; ?>
         </div>
-        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+        <?php endif; ?>
 
-        <!--[if BLOCK]><![endif]--><?php if($shouldBlur): ?>
+        <?php if($shouldBlur): ?>
         <div class="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
             <span class="inline-flex items-center justify-center bg-white rounded-full p-5 shadow-lg">
                 <?php if (isset($component)) { $__componentOriginal114a4750071386a6a5d0e0f9aca3c6cd = $component; } ?>
@@ -182,12 +182,12 @@ unset($__defined_vars, $__key, $__value); ?>
 <?php endif; ?>
             </span>
         </div>
-        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+        <?php endif; ?>
 
         <!-- Profile Photo (Alpine-driven simple slideshow) -->
         <div class="w-full h-full bg-gradient-to-br from-primary-100 to-secondary-100 relative overflow-hidden <?php echo e($shouldBlur ? 'blur-md' : ''); ?>">
             <?php $firstImageUrl = $imageUrls[0] ?? null; ?>
-            <!--[if BLOCK]><![endif]--><?php if($firstImageUrl): ?>
+            <?php if($firstImageUrl): ?>
                 <img src="<?php echo e($firstImageUrl); ?>" x-bind:src="imageUrls[currentIndex]" alt="<?php echo e($profileName); ?>" class="w-[210px] h-[265px] object-cover home-profile-card-image absolute inset-0" />
             <?php else: ?>
                 <div class="flex items-center justify-center w-full h-full">
@@ -196,7 +196,7 @@ unset($__defined_vars, $__key, $__value); ?>
                             d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                 </div>
-            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+            <?php endif; ?>
 
         </div>
         
@@ -213,15 +213,15 @@ unset($__defined_vars, $__key, $__value); ?>
         ?>
 
         <!-- Photo count dots (5 total) -->
-        <!--[if BLOCK]><![endif]--><?php if(!$simpleMode): ?>
+        <?php if(!$simpleMode): ?>
         <div class="absolute left-0 right-0 bottom-3 flex justify-center z-30" style="gap:3px;">
-            <!--[if BLOCK]><![endif]--><?php for($i = 0; $i < 5; $i++): ?>
+            <?php for($i = 0; $i < 5; $i++): ?>
                 <button type="button" @click.prevent="currentIndex = <?php echo e(min($i, $visibleDots - 1)); ?>" class="w-2.5 h-2.5 rounded-full bg-white flex items-center justify-center" style="box-shadow: 0 0 0 1px rgba(0,0,0,0.04);">
                     <span class="w-1.5 h-1.5 rounded-full" :class="{ 'bg-transparent': currentIndex !== <?php echo e($i); ?>, 'bg-[#DD3888]': currentIndex === <?php echo e($i); ?> }" style="display:block;"></span>
                 </button>
-            <?php endfor; ?><!--[if ENDBLOCK]><![endif]-->
+            <?php endfor; ?>
         </div>
-        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+        <?php endif; ?>
     </div>
 
     <!-- Profile Info -->
@@ -232,7 +232,7 @@ unset($__defined_vars, $__key, $__value); ?>
                 <?php echo e($profileName); ?>
 
             </h4>
-            <!--[if BLOCK]><![endif]--><?php if($isVip && !$simpleMode): ?>
+            <?php if($isVip && !$simpleMode): ?>
             <div class="home-profile-card-vip home-profile-card-vip-desktop" style="width:50px;height:26px;border-radius:999px;background:#FFB700;display:flex;align-items:center;justify-content:center;gap:6px;">
                 <?php if (isset($component)) { $__componentOriginal114a4750071386a6a5d0e0f9aca3c6cd = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal114a4750071386a6a5d0e0f9aca3c6cd = $attributes; } ?>
@@ -256,10 +256,10 @@ unset($__defined_vars, $__key, $__value); ?>
 <?php endif; ?>
                 <span style="font-family:'Poppins', sans-serif; font-weight:900; font-size:10px; color:#FFFFFF; line-height:1;">VIP</span>
             </div>
-            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+            <?php endif; ?>
         </div>
 
-        <!--[if BLOCK]><![endif]--><?php if(!$simpleMode): ?>
+        <?php if(!$simpleMode): ?>
         <!-- Details Button -->
             <a href="<?php echo e($profileUrl); ?>"
             class="flex items-center justify-between home-profile-card-cta"
@@ -286,7 +286,7 @@ unset($__defined_vars, $__key, $__value); ?>
 <?php unset($__componentOriginal114a4750071386a6a5d0e0f9aca3c6cd); ?>
 <?php endif; ?>
         </a>
-        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+        <?php endif; ?>
 
             <!-- Age and Height Stats -->
         <div class="home-profile-card-rating-wrap <?php echo e($isReported ? 'mt-auto' : ''); ?>">
@@ -301,13 +301,13 @@ unset($__defined_vars, $__key, $__value); ?>
 
             <!-- Location -->
             <div class="flex py-2 justify-center items-center gap-x-2 home-profile-card-location <?php echo e($isReported ? '-mt-2' : ''); ?>">
-                <!--[if BLOCK]><![endif]--><?php if($cardLocation): ?>
+                <?php if($cardLocation): ?>
                     <img src="<?php echo e(asset('images/icons/location.svg')); ?>" alt="" aria-hidden="true" class="inline-block" style="width:20px;height:20px;" />
                     <h5 style="margin:0;font-family:'Plus Jakarta Sans', sans-serif;font-weight:600;font-size:11px;color:#505050;"><?php echo e($cardLocation); ?></h5>
-                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                <?php endif; ?>
             </div>
 
-            <!--[if BLOCK]><![endif]--><?php if(!$simpleMode): ?>
+            <?php if(!$simpleMode): ?>
             <!-- Rating Badge -->
             <?php
                 $rating = $isModel && $profile->getTotalRatings() > 0 
@@ -338,7 +338,7 @@ unset($__defined_vars, $__key, $__value); ?>
 <?php unset($__componentOriginal114a4750071386a6a5d0e0f9aca3c6cd); ?>
 <?php endif; ?>
             </div>
-            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+            <?php endif; ?>
 
         </div>
     </div>

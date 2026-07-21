@@ -35,6 +35,7 @@ class UserFactory extends Factory
             'name' => $faker->name(),
             'email' => $faker->unique()->safeEmail(),
             'phone' => $faker->boolean(70) ? $faker->phoneNumber() : null,
+            'gender' => $faker->randomElement(['male', 'female']),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),

@@ -19,6 +19,7 @@ class RegisterUser
                 'password' => Hash::make($data['password']),
             ]);
 
+            // Pokud se nepodaří přiřadit roli, vyvolá to výjimku a transakce se vrátí (rollback)
             $user->assignRole('user');
 
             return $user;

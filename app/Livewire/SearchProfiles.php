@@ -43,7 +43,7 @@ class SearchProfiles extends Component
             return;
         }
 
-        $this->region = request('region', request('city', 'Hlavní město Praha'));
+        $this->region = request('region', request('city', 'Praha'));
         $this->age_range = request('age', '18');
     }
 
@@ -98,20 +98,20 @@ class SearchProfiles extends Component
     public function getAllRegionsProperty()
     {
         return [
-            'Hlavní město Praha',
-            'Středočeský kraj',
-            'Jihočeský kraj',
-            'Plzeňský kraj',
-            'Karlovarský kraj',
-            'Ústecký kraj',
-            'Liberecký kraj',
-            'Královéhradecký kraj',
-            'Pardubický kraj',
+            'Praha',
+            'Středočeský Kraj',
+            'Jihočeský Kraj',
+            'Plzeňský Kraj',
+            'Karlovarský Kraj',
+            'Ústecký Kraj',
+            'Liberecký Kraj',
+            'Královéhradecký Kraj',
+            'Pardubický Kraj',
             'Vysočina',
-            'Jihomoravský kraj',
-            'Olomoucký kraj',
-            'Zlínský kraj',
-            'Moravskoslezský kraj',
+            'Jihomoravský Kraj',
+            'Olomoucký Kraj',
+            'Zlínský Kraj',
+            'Moravskoslezský Kraj',
         ];
     }
 
