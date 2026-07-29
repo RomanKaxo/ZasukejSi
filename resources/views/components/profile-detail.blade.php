@@ -29,7 +29,7 @@
         ]);
     $displayServices = ($profile->services && $profile->services->count() > 0)
         ? $profile->services->pluck('name')
-        : collect(['Běžné fotografie', 'Vaginální sex', 'Páry', 'Běžné fotografie', 'Páry', 'Výstřik na tělo', 'Lízaní', 'Nadávání', 'Výstřik na tělo', 'Lízaní', 'Lízaní', 'Nadávání', 'Dominantní', 'Erotická masáž']);
+        : collect(['Běžné fotografie', 'Vaginální sex', 'Páry', 'Výstřik na tělo', 'Lízaní', 'Nadávání', 'Dominantní', 'Erotická masáž']);
     $languages = $profile->languages ?? 'Česky, Rusky, Anglicky';
     $aboutText = trim((string) ($profile->about ?? '')) !== '' ? $profile->about : 'Profesionální VIP profil připravený pro nové klienty.';
     $weightLbs = $profile->weight_lbs ?? ($profile->weight ? (string) round($profile->weight * 2.20462) : null);
@@ -2525,7 +2525,7 @@
 
             <section class="vip-about-card">
                 <h2 class="vip-section-title">Více o mně</h2>
-                <div class="vip-about-copy">FOTO je original – koukni na můj web 🙂  MUJ INSTAGRAM    @arianka.a_     KDE NAJDEŠ MUJ ONLYFANS? NA INSTAGRAMU 🔥  Vítej můj drahý  ☺️  Já jsem Sára Pocházím z České republiky, 🙂 Jsem jedinečná zkušenost, pokud hledáš jedinečné vzrušující potěšení, dobrodružství, jsem tu pro tvoje potřeby. Jako důvěrná, diskrétní, elegantní dáma, která ráda sdílí potěšení, štěstí, jsem připravená společně vytvorit nezapomenutelné okamžiky. Jsem skutečný mladý poklad. Moje teplo, elegance a vášeň učiní  náš společný čas zvlástním. Miluji setkání s novými lidmi a užívám si kazdou chvíli naplno. Napiš mi na WhatsApp, můj  drahý ! Rychle reaguji a muzeme snadno Uspořádat Schůzku, abychom společně zažily něco opravdu úžasného.  🙂</div>
+                <div class="vip-about-copy">{{ $aboutText }}</div>
             </section>
 
             @if($profile->hasVideo() || $displayPrices->isNotEmpty() || $displayServices->isNotEmpty())

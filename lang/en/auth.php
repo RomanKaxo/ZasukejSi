@@ -68,4 +68,5 @@ return [
     'failed' => 'These credentials do not match our records.',
     'password' => 'The provided password is incorrect.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+    'verification_email_failed' => 'Your account was created, but we could not send the verification email. Please request a new one from your account settings.',
 ];

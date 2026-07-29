@@ -146,18 +146,6 @@ Route::middleware(['auth', 'verified'])->prefix('account/member')->name('account
     Route::get('/reported', [\App\Http\Controllers\Auth\MemberController::class, 'reported'])->name('reported');
 });
 
-
-// Previews
-Route::get('/test-components', function () { return view('test-components'); })->name('test.components');
-Route::get('/preview/dashboard', function () { return view('account.dashboard_preview'); })->name('preview.dashboard');
-Route::get('/preview/photos', function () { return view('account.photos_preview'); })->name('preview.photos');
-Route::get('/preview/services', function () { return view('account.services_preview'); })->name('preview.services');
-Route::get('/preview/statistics', function () { return view('account.statistics_preview'); })->name('preview.statistics');
-Route::get('/preview/ratings', function () { return view('account.ratings_preview'); })->name('preview.ratings');
-Route::get('/preview/favorites', function () { return view('account.favorites_preview'); })->name('preview.favorites');
-Route::get('/preview/reported', function () { return view('account.reported_preview'); })->name('preview.reported');
-Route::get('/preview/archive', function () { return view('account.archive_preview'); })->name('preview.archive');
-
 // Dynamic Pages
 Route::get('/{slug}', function ($slug) {
     $page = \App\Models\Page::where('slug', $slug)

@@ -13,6 +13,7 @@ return [
             'features' => [
                 'hand_heart' => 'Verified profiles help build trust and improve response rates.',
                 'icecream' => 'A polished presentation makes it easier to attract new clients quickly.',
+                'laptop' => 'Manage your profile from any desktop or laptop, no app required.',
             ],
         ],
         'findprofiles' => 'Find companionship',
@@ -281,6 +282,7 @@ return [
             'select_country' => 'Select country',
             'select_town' => 'Select town',
             'search_country_placeholder' => 'Search country...',
+            'open_mobile_search' => 'Open country search',
             'clear_mobile_search' => 'Clear search',
             'close_mobile_search' => 'Close country search',
             'no_mobile_countries_found' => 'No countries found.',

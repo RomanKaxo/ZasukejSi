@@ -70,4 +70,5 @@ return [
     'failed' => 'Tyto přihlašovací údaje neodpovídají našim záznamům.',
     'password' => 'Zadané heslo je nesprávné.',
     'throttle' => 'Příliš mnoho pokusů o přihlášení. Zkuste to znovu za :seconds sekund.',
+    'verification_email_failed' => 'Účet byl vytvořen, ale ověřovací e-mail se nepodařilo odeslat. Vyžádejte si prosím nový v nastavení účtu.',
 ];

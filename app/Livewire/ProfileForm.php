@@ -619,17 +619,4 @@ class ProfileForm extends Component
     {
         return view('livewire.profile-form');
     }
-
-    // Debug method to check profile relationship
-    public function checkProfile()
-    {
-        $user = \App\Models\User::with('profile')->find(Auth::id());
-        dd([
-            'user_id' => $user->id,
-            'user_name' => $user->name,
-            'profile_exists' => !is_null($user->profile),
-            'profile_data' => $user->profile,
-            'has_profile_property' => $this->hasProfile
-        ]);
-    }
 }

@@ -130,7 +130,7 @@ class AccountController extends Controller
      */
     public function showReviews()
     {
-        // return view('account.reviews');
+        return view('account.reviews');
     }
 
     /**

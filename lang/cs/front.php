@@ -293,6 +293,7 @@ return [
             'select_country' => 'Vyberte zemi',
             'select_town' => 'Vyberte město',
             'search_country_placeholder' => 'Hledat zemi...',
+            'open_mobile_search' => 'Otevřít hledání zemí',
             'clear_mobile_search' => 'Vymazat hledání',
             'close_mobile_search' => 'Zavřít hledání zemí',
             'no_mobile_countries_found' => 'Žádné země nenalezeny.',
