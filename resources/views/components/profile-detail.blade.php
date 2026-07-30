@@ -29,9 +29,9 @@
         ]);
     $displayServices = ($profile->services && $profile->services->count() > 0)
         ? $profile->services->pluck('name')
-        : collect(['Běžné fotografie', 'Vaginální sex', 'Páry', 'Výstřik na tělo', 'Lízaní', 'Nadávání', 'Dominantní', 'Erotická masáž']);
-    $languages = $profile->languages ?? 'Česky, Rusky, Anglicky';
-    $aboutText = trim((string) ($profile->about ?? '')) !== '' ? $profile->about : 'Profesionální VIP profil připravený pro nové klienty.';
+        : collect(__('front.profiles.detail_page.services_default'));
+    $languages = $profile->languages ?? __('front.profiles.detail_page.languages_default');
+    $aboutText = trim((string) ($profile->about ?? '')) !== '' ? $profile->about : __('front.profiles.detail_page.about_default');
     $weightLbs = $profile->weight_lbs ?? ($profile->weight ? (string) round($profile->weight * 2.20462) : null);
     $heightFeet = $profile->height_feet ?? null;
     $videoPoster = $images->first()?->getUrl() ?: asset('images/models/model16.png');
@@ -42,9 +42,9 @@
     })->values();
     $availabilityStart = '18';
     $availabilityEnd = '18';
-    $availabilityCaption = 'Každý den';
+    $availabilityCaption = __('front.profiles.detail_page.availability_every_day');
     $isVerifiedProfile = $profile->isVerified();
-    $photoStatusLabel = $isVerifiedProfile ? 'FOTO OVĚŘENO' : 'FOTO NEOVĚŘENO';
+    $photoStatusLabel = $isVerifiedProfile ? __('front.profiles.photos.verified_badge') : __('front.profiles.detail_page.photos_unverified');
 
     if ($availabilityEntries->isNotEmpty()) {
         $rawAvailability = $availabilityEntries->first();
@@ -655,7 +655,7 @@
     }
 
     .vip-profile-static-favorite::after {
-        content: 'uložit';
+        content: '{{ __('front.favorites.save') }}';
         font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 12px;
         font-weight: 600;
@@ -2363,10 +2363,10 @@
 
             <h1 class="vip-profile-name">{{ $profile->display_name ?? 'Alexandrina' }}</h1>
 
-            <div class="vip-profile-links lg:hidden" aria-label="Profilové akce">
-                <a href="#" class="vip-profile-link">Obnovit přístup</a>
-                <a href="#" class="vip-profile-link">Dát hodnocení</a>
-                <a href="#" class="vip-profile-link">Nahlásit</a>
+            <div class="vip-profile-links lg:hidden" aria-label="Profile actions">
+                <a href="#" class="vip-profile-link">{{ __('front.profiles.detail_page.refresh_access') }}</a>
+                <a href="#" class="vip-profile-link">{{ __('front.profiles.detail_page.give_rating') }}</a>
+                <a href="#" class="vip-profile-link">{{ __('front.profiles.detail_page.report_profile') }}</a>
             </div>
 
             <div class="vip-profile-rating-summary">
@@ -2390,27 +2390,27 @@
 
             <div class="vip-profile-meta-table">
                 <div class="vip-profile-meta-row">
-                    <span class="vip-profile-meta-label">Věk</span>
-                    <span class="vip-profile-meta-value">{{ $profile->age ?? '19' }} let</span>
+                    <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.age') }}</span>
+                    <span class="vip-profile-meta-value">{{ $profile->age ?? '19' }} {{ __('front.profiles.detail_page.years') }}</span>
                 </div>
                 <div class="vip-profile-meta-row">
-                    <span class="vip-profile-meta-label">Váha</span>
+                    <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.weight') }}</span>
                     <span class="vip-profile-meta-value">
-                        {{ ($profile->weight ?? '57') . ' kg' . ($weightLbs ? ' / ' . $weightLbs . ' lbs' : '') }}
+                        {{ ($profile->weight ?? '57') . ' ' . __('front.profiles.detail_page.kg') . ($weightLbs ? ' / ' . $weightLbs . ' ' . __('front.profiles.detail_page.lbs') : '') }}
                     </span>
                 </div>
                 <div class="vip-profile-meta-row">
-                    <span class="vip-profile-meta-label">Výška</span>
+                    <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.height') }}</span>
                     <span class="vip-profile-meta-value">
-                        {{ ($profile->height ?? '168') . ' cm' . ($heightFeet ? ' / ' . $heightFeet : '') }}
+                        {{ ($profile->height ?? '168') . ' ' . __('front.profiles.detail_page.cm') . ($heightFeet ? ' / ' . $heightFeet : '') }}
                     </span>
                 </div>
                 <div class="vip-profile-meta-row">
-                    <span class="vip-profile-meta-label">Prsa</span>
+                    <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.bust') }}</span>
                     <span class="vip-profile-meta-value">{{ $profile->bust_size ?? 'C' }}</span>
                 </div>
                 <div class="vip-profile-meta-row">
-                    <span class="vip-profile-meta-label">Jazyky</span>
+                    <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.languages') }}</span>
                     <span class="vip-profile-meta-value">{{ $languages }}</span>
                 </div>
             </div>
@@ -2433,15 +2433,15 @@
             @auth
                 @if($profile->user_id && $profile->user_id !== auth()->id() && $messageRouteAvailable)
                     <a href="{{ route('messages.show', $profile->user) }}" class="vip-profile-message">
-                        Poslat zprávu
+                        {{ __('front.profiles.detail_page.send_message') }}
                         <img src="{{ asset('images/icons/message.svg') }}" alt="" aria-hidden="true" class="h-4 w-4 brightness-0 invert">
                     </a>
                 @else
-                    <span class="vip-profile-message" style="opacity:.6;pointer-events:none;">Poslat zprávu</span>
+                    <span class="vip-profile-message" style="opacity:.6;pointer-events:none;">{{ __('front.profiles.detail_page.send_message') }}</span>
                 @endif
             @else
                 <a href="{{ $registerRouteAvailable ? route('register') : route('profiles.index') }}" class="vip-profile-message">
-                    Poslat zprávu
+                    {{ __('front.profiles.detail_page.send_message') }}
                     <img src="{{ asset('images/icons/message.svg') }}" alt="" aria-hidden="true" class="h-4 w-4 brightness-0 invert">
                 </a>
             @endauth
@@ -2524,7 +2524,7 @@
             </div>
 
             <section class="vip-about-card">
-                <h2 class="vip-section-title">Více o mně</h2>
+                <h2 class="vip-section-title">{{ __('front.profiles.detail_page.about_me') }}</h2>
                 <div class="vip-about-copy">{{ $aboutText }}</div>
             </section>
 
@@ -2551,11 +2551,11 @@
                     <div class="vip-pricing-card">
                         @if($displayPrices->isNotEmpty())
                             <div class="vip-prices-block">
-                                <h3>Moje ceny</h3>
+                                <h3>{{ __('front.profiles.detail_page.my_prices') }}</h3>
                                 <table class="vip-pricing-table">
                                     <thead>
                                         <tr>
-                                            <th><span class="vip-price-pill">Čas</span></th>
+                                            <th><span class="vip-price-pill">{{ __('front.profiles.detail_page.time') }}</span></th>
                                             <th>
                                                 <span class="vip-price-pill">
                                                     @if($profile->incall || $prices->isEmpty())
@@ -2605,7 +2605,7 @@
 
                         @if($displayServices->isNotEmpty())
                             <div class="vip-services-block" style="margin-top:24px;">
-                                <h3 style="margin-bottom:14px;">Služby</h3>
+                                <h3 style="margin-bottom:14px;">{{ __('front.profiles.detail_page.services') }}</h3>
                                 <div class="vip-services-grid">
                                     @foreach($displayServices as $serviceName)
                                         <span class="vip-service-pill">{{ $serviceName }}</span>
@@ -2622,12 +2622,12 @@
     <section class="vip-slider-section">
         <div class="vip-slider-head">
             <div>
-                <h2 class="vip-section-title" style="margin-bottom:4px;">Nejlépe hodnocené dívky</h2>
-                <div class="vip-slider-kicker">tento měsíc</div>
+                <h2 class="vip-section-title" style="margin-bottom:4px;">{{ __('front.profiles.detail_page.top_rated_girls') }}</h2>
+                <div class="vip-slider-kicker">{{ __('front.profiles.detail_page.this_month') }}</div>
             </div>
             <div class="vip-slider-note">
                 <img src="{{ asset('images/icons/diamond.svg') }}" alt="" aria-hidden="true" class="h-4 w-4">
-                <span>Premium účet vám odemkne hodnocení</span>
+                <span>{{ __('front.profiles.detail_page.premium_unlocks_rating') }}</span>
             </div>
         </div>
         <div class="vip-rec-slider">
@@ -2638,12 +2638,12 @@
     <section class="vip-slider-section">
         <div class="vip-slider-head">
             <div>
-                <h2 class="vip-section-title" style="margin-bottom:4px;">Nejlépe hodnocené dívky</h2>
-                <div class="vip-slider-kicker">za celou dobu</div>
+                <h2 class="vip-section-title" style="margin-bottom:4px;">{{ __('front.profiles.detail_page.top_rated_girls') }}</h2>
+                <div class="vip-slider-kicker">{{ __('front.profiles.detail_page.all_time') }}</div>
             </div>
             <div class="vip-slider-note">
                 <img src="{{ asset('images/icons/diamond.svg') }}" alt="" aria-hidden="true" class="h-4 w-4">
-                <span>Premium účet vám odemkne hodnocení</span>
+                <span>{{ __('front.profiles.detail_page.premium_unlocks_rating') }}</span>
             </div>
         </div>
         <div class="vip-rec-slider">
@@ -2653,8 +2653,8 @@
 
     <section class="vip-video-section">
         <div class="vip-video-heading">
-            <div class="vip-video-heading-line1">Nový svět na dosah...</div>
-            <div class="vip-video-heading-line2">Staň se členem ZašukejSi.cz</div>
+            <div class="vip-video-heading-line1">{{ __('front.profiles.detail_page.new_world_heading') }}</div>
+            <div class="vip-video-heading-line2">{{ __('front.profiles.detail_page.become_member', ['brand' => app()->getLocale() === 'en' ? 'Escort-Online.com' : 'ZašukejSi.cz']) }}</div>
         </div>
         <div class="vip-video-container">
             <div class="vip-video-play-btn">
@@ -2664,18 +2664,18 @@
         <div class="vip-video-badges">
             <div class="vip-video-badge">
                 <img src="{{ asset('images/icons/Banana.svg') }}" alt="" aria-hidden="true" style="width:40px;height:40px;">
-                <span style="font-family:'Poppins', sans-serif;font-weight:400;font-size:13px;color:#505050;text-align:left;line-height:1.3;">Swingers akce pro členy</span>
+                <span style="font-family:'Poppins', sans-serif;font-weight:400;font-size:13px;color:#505050;text-align:left;line-height:1.3;">{{ __('front.profiles.detail_page.swingers_events') }}</span>
             </div>
             <div class="vip-video-badge">
                 <img src="{{ asset('images/icons/ThumbsUp.svg') }}" alt="" aria-hidden="true" style="width:40px;height:40px;">
-                <span style="font-family:'Poppins', sans-serif;font-weight:400;font-size:13px;color:#505050;text-align:left;line-height:1.3;">Hodnocení dívek od komunity</span>
+                <span style="font-family:'Poppins', sans-serif;font-weight:400;font-size:13px;color:#505050;text-align:left;line-height:1.3;">{{ __('front.profiles.detail_page.community_ratings') }}</span>
             </div>
             <div class="vip-video-badge">
                 <img src="{{ asset('images/icons/icecreamPink.svg') }}" alt="" aria-hidden="true" style="width:40px;height:40px;">
-                <span style="font-family:'Poppins', sans-serif;font-weight:400;font-size:13px;color:#505050;text-align:left;line-height:1.3;">Databáze dívek na jednom místě</span>
+                <span style="font-family:'Poppins', sans-serif;font-weight:400;font-size:13px;color:#505050;text-align:left;line-height:1.3;">{{ __('front.profiles.detail_page.girls_database') }}</span>
             </div>
         </div>
-        <button class="vip-video-register-btn">Registrovat se ZDARMA</button>
+        <button class="vip-video-register-btn">{{ __('auth.register.register_button') }}</button>
     </section>
 </div>
 

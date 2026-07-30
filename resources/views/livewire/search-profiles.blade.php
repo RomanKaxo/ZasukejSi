@@ -941,7 +941,7 @@
             @keydown.escape.window="if (fullscreenTownSearch) { closeTownPicker() } else if (fullscreenCountrySearch) { closeCountryPicker() } else { openCountry = false; openTown = false }">
 @else
 <div class="search-hero-card"
-        x-data="{ openRegion: false, openAge: false, regionValue: @js($region ?: ($this->allRegions[0] ?? '')), ageValue: @js($age_range ?: '18'), ages: @js($this->ageRangeOptions) }"
+        x-data="{ openRegion: false, openAge: false, regionValue: @js($region ?: ($this->allRegions[0] ?? '')), ageValue: @js($age_range ?: '18-25'), ages: @js($this->ageRangeOptions) }"
         @click.outside="openRegion = false; openAge = false"
         @keydown.escape.window="openRegion = false; openAge = false">
 @endif
@@ -996,7 +996,7 @@
                         <button id="town-select" type="button" class="search-select-trigger" @click="openTownPicker()">
                             <span x-text="townValue || @js(__('front.profiles.search.select_town'))"></span>
                         </button>
-                        <span class="search-arrow-box" x-bind:class="{ 'is-selected': countryValue }">
+                        <span class="search-arrow-box" x-bind:class="{ 'is-selected': townValue }">
                             <svg width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                 <path d="M1 1L5 4L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
@@ -1021,7 +1021,7 @@
                         <button id="region-select" type="button" class="search-select-trigger" @click="openRegion = !openRegion; openAge = false">
                             <span x-text="regionValue"></span>
                         </button>
-                        <span class="search-arrow-box" x-bind:class="{ 'is-selected': countryValue }">
+                        <span class="search-arrow-box" x-bind:class="{ 'is-selected': regionValue }">
                             <svg width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                 <path d="M1 1L5 4L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
@@ -1041,7 +1041,7 @@
                         <button id="age-select" type="button" class="search-select-trigger" @click="openAge = !openAge; openRegion = false">
                             <span x-text="ages[ageValue] || ''"></span>
                         </button>
-                        <span class="search-arrow-box" x-bind:class="{ 'is-selected': countryValue }">
+                        <span class="search-arrow-box" x-bind:class="{ 'is-selected': ageValue }">
                             <svg width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                 <path d="M1 1L5 4L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>

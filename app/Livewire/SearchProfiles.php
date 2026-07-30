@@ -44,7 +44,7 @@ class SearchProfiles extends Component
         }
 
         $this->region = request('region', request('city', 'Praha'));
-        $this->age_range = request('age', '18');
+        $this->age_range = request('age', '18-25');
     }
 
     protected function usesEnglishLocationSearch(): bool
@@ -166,26 +166,13 @@ class SearchProfiles extends Component
 
     public function getAgeRangeOptionsProperty()
     {
-        $yearsLabel = Lang::get('front.profiles.list.years');
-
         return [
-            '18' => "18 {$yearsLabel}",
-            '19' => "19 {$yearsLabel}",
-            '20' => "20 {$yearsLabel}",
-            '21' => "21 {$yearsLabel}",
-            '22' => "22 {$yearsLabel}",
-            '23' => "23 {$yearsLabel}",
-            '24' => "24 {$yearsLabel}",
-            '25' => "25 {$yearsLabel}",
-            '26' => "26 {$yearsLabel}",
-            '27' => "27 {$yearsLabel}",
-            '28' => "28 {$yearsLabel}",
-            '29' => "29 {$yearsLabel}",
-            '30' => "30 {$yearsLabel}",
-            '35' => "35 {$yearsLabel}",
-            '40' => "40 {$yearsLabel}",
-            '45' => "45 {$yearsLabel}",
-            '50' => "50 {$yearsLabel}",
+            '18-25' => Lang::get('front.profiles.list.age_18_25'),
+            '26-30' => Lang::get('front.profiles.list.age_26_30'),
+            '31-35' => Lang::get('front.profiles.list.age_31_35'),
+            '36-40' => Lang::get('front.profiles.list.age_36_40'),
+            '40-50' => Lang::get('front.profiles.list.age_40_50'),
+            '50+' => Lang::get('front.profiles.list.age_50_plus'),
         ];
     }
 

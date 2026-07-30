@@ -10,7 +10,11 @@
             <!-- Logo -->
             <a href="{{ route('profiles.index') }}" class="inline-block mb-6">
                 <span class="text-2xl xl:text-3xl font-extrabold">
-                    <span class="text-secondary-500">ZAŠUKEJ</span><span class="text-primary-500">SI</span><span class="text-dark-gray">.CZ</span>
+                    @if(app()->getLocale() === 'en')
+                        <span class="text-secondary-500">ESCORT</span><span class="text-primary-500">-ONLINE</span><span class="text-dark-gray">.COM</span>
+                    @else
+                        <span class="text-secondary-500">ZAŠUKEJ</span><span class="text-primary-500">SI</span><span class="text-dark-gray">.CZ</span>
+                    @endif
                 </span>
             </a>
             

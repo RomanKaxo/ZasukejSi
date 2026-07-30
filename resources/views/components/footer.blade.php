@@ -3,7 +3,11 @@
         <!-- Logo -->
         <div class="text-center mb-6 md:mb-8">
             <h2 class="text-xl md:text-2xl font-extrabold">
-                <span style="color:#5C2D62">ZAŠUKEJ</span><span style="color:#DD3888">SI</span><span style="color:#8C8C8C;opacity:0.78">.CZ</span>
+                @if(app()->getLocale() === 'en')
+                    <span style="color:#5C2D62">ESCORT</span><span style="color:#DD3888">-ONLINE</span><span style="color:#8C8C8C;opacity:0.78">.COM</span>
+                @else
+                    <span style="color:#5C2D62">ZAŠUKEJ</span><span style="color:#DD3888">SI</span><span style="color:#8C8C8C;opacity:0.78">.CZ</span>
+                @endif
             </h2>
         </div>
 
@@ -21,16 +25,16 @@
             <!-- Center: Static Links (3 columns, left-aligned vertically stacked) -->
             <div class="footer-links">
                 <div class="footer-col">
-                    <a href="#" class="footer-link">Časté dotazy</a>
-                    <a href="#" class="footer-link">Kontakt</a>
+                    <a href="#" class="footer-link">{{ __('front.footer.faq') }}</a>
+                    <a href="#" class="footer-link">{{ __('front.footer.contact') }}</a>
                 </div>
                 <div class="footer-col">
-                    <a href="#" class="footer-link">Ochrana osobních údajů</a>
-                    <a href="#" class="footer-link">Etika a bezpečnost</a>
+                    <a href="#" class="footer-link">{{ __('front.footer.privacy') }}</a>
+                    <a href="#" class="footer-link">{{ __('front.footer.ethics') }}</a>
                 </div>
                 <div class="footer-col">
-                    <a href="#" class="footer-link">VIP účet pro dívky</a>
-                    <a href="#" class="footer-link">Prémium účet pro pány</a>
+                    <a href="#" class="footer-link">{{ __('front.footer.vipgirls') }}</a>
+                    <a href="#" class="footer-link">{{ __('front.footer.premiummale') }}</a>
                 </div>
             </div>
 
@@ -38,7 +42,7 @@
             <div class="hidden lg:block flex-shrink-0">
                 <div class="footer-security flex items-center" role="note">
                     <img src="{{ asset('images/icons/lock.svg') }}" alt="lock" width="25" height="25" />
-                    <div class="ml-3 footer-security-text">Jsme 100% diskrétní platforma s<br>profesionální ochranou osobních údajů</div>
+                    <div class="ml-3 footer-security-text">{{ __('front.footer.discreet') }}</div>
                 </div>
             </div>
         </div>
@@ -60,7 +64,7 @@
             <div class="footer-mobile-meta flex flex-col items-center gap-2 lg:hidden">
                 <div class="footer-security footer-security-mobile flex items-center" role="note">
                     <img src="{{ asset('images/icons/lock.svg') }}" alt="lock" width="27" height="30" />
-                    <div class="ml-3 footer-security-text">Jsme 100% diskrétní platforma s<br>profesionální ochranou osobních údajů</div>
+                    <div class="ml-3 footer-security-text">{{ __('front.footer.discreet') }}</div>
                 </div>
 
                 <div class="footer-eco-card" role="note">

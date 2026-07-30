@@ -22,9 +22,9 @@
     <div class="flex gap-4 mb-8">
         @php
             $cards = [
-                ['icon' => 'eye', 'value' => '10 458', 'label' => 'Celkové zobrazení profilu'],
-                ['icon' => 'thumbsup', 'value' => '4.78/5', 'label' => 'Moje hodnocení'],
-                ['icon' => 'MessageCircleMore', 'value' => '12', 'label' => 'moje recenze'],
+                ['icon' => 'eye', 'value' => '10 458', 'label' => __('front.account.statistics.total_profile_views')],
+                ['icon' => 'thumbsup', 'value' => '4.78/5', 'label' => __('front.account.statistics.my_rating')],
+                ['icon' => 'MessageCircleMore', 'value' => '12', 'label' => __('front.account.statistics.my_reviews')],
             ];
         @endphp
         @foreach($cards as $card)

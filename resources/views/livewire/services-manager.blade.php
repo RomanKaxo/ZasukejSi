@@ -72,13 +72,13 @@
         <div class="space-y-4">
             @php
                 $days = [
-                    ['key' => 'monday', 'label' => 'Pondělí'],
-                    ['key' => 'tuesday', 'label' => 'Úterý'],
-                    ['key' => 'wednesday', 'label' => 'Středa'],
-                    ['key' => 'thursday', 'label' => 'Čtvrtek'],
-                    ['key' => 'friday', 'label' => 'Pátek'],
-                    ['key' => 'saturday', 'label' => 'Sobota'],
-                    ['key' => 'sunday', 'label' => 'Neděle'],
+                    ['key' => 'monday', 'label' => __('front.account.weekdays.monday')],
+                    ['key' => 'tuesday', 'label' => __('front.account.weekdays.tuesday')],
+                    ['key' => 'wednesday', 'label' => __('front.account.weekdays.wednesday')],
+                    ['key' => 'thursday', 'label' => __('front.account.weekdays.thursday')],
+                    ['key' => 'friday', 'label' => __('front.account.weekdays.friday')],
+                    ['key' => 'saturday', 'label' => __('front.account.weekdays.saturday')],
+                    ['key' => 'sunday', 'label' => __('front.account.weekdays.sunday')],
                 ];
             @endphp
 
@@ -87,7 +87,7 @@
                 <!-- From Time -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ $day['label'] }} OD
+                        {{ $day['label'] }} {{ __('front.account.services.from') }}
                     </label>
                     <div class="relative">
                         <select 
@@ -131,7 +131,7 @@
                 <!-- To Time -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ $day['label'] }} DO
+                        {{ $day['label'] }} {{ __('front.account.services.to') }}
                     </label>
                     <div class="relative">
                         <select 

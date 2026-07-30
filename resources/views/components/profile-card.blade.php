@@ -47,6 +47,14 @@
             asset('images/models/model12.png')
         ];
     }
+
+    // If there's only one real photo, repeat it so the dots are still clickable.
+    // Profiles with multiple real photos keep their actual count (no fake padding).
+    if (count($imageUrls) === 1) {
+        while (count($imageUrls) < 5) {
+            $imageUrls[] = end($imageUrls);
+        }
+    }
 @endphp
 
 <div class="{{ $isReported ? 'h-[510px]' : '' }} bg-white rounded-lg overflow-hidden transition-all duration-300 cursor-pointer group relative z-10 home-profile-card" 
@@ -69,9 +77,9 @@
             <!-- Verified Badge -->
             @if($isVerified)
             <div class="home-profile-card-badge">
-                <div class="bg-green-100 text-green-500 p-1 px-0.5 rounded-xl flex flex-wrap justify-center home-profile-card-verified-badge">
-                    <x-icons name="camera" class="w-5 h-5 home-profile-card-verified-camera" />
-                    <p class="text-xs font-bold w-full text-center home-profile-card-verified-copy">
+                <div class="home-profile-card-verified-badge" style="width:62px;height:40px;border-radius:10px;background:#CDEFD0;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;">
+                    <x-icons name="camera" class="home-profile-card-verified-camera" style="width:18px;height:18px;color:#00B80F;margin-top:4px;" />
+                    <p class="home-profile-card-verified-copy" style="margin:-3px 0 0;font-family:'Poppins',sans-serif;font-weight:900;font-size:9px;line-height:18px;letter-spacing:0;color:#00B80F;text-align:center;white-space:nowrap;">
                         {{ __('front.profiles.list.verified') }}
                     </p>
                     <span class="home-profile-card-verified-check" aria-hidden="true">
@@ -83,7 +91,7 @@
 
             @if($isVip)
             <div class="home-profile-card-vip home-profile-card-vip-mobile" style="width:50px;height:26px;border-radius:999px;background:#FFB700;">
-                <x-icons name="star" class="inline-block" style="width:14px;height:14px;color:#FFFFFF;" />
+                <x-icons name="star" class="inline-block" :preserveColors="true" style="width:14px;height:14px;color:#FFFFFF;" />
                 <span style="font-family:'Poppins', sans-serif; font-weight:900; font-size:10px; color:#FFFFFF; line-height:1;">VIP</span>
             </div>
             @endif
@@ -102,7 +110,11 @@
         <div class="w-full h-full bg-gradient-to-br from-primary-100 to-secondary-100 relative overflow-hidden {{ $shouldBlur ? 'blur-md' : '' }}">
             @php $firstImageUrl = $imageUrls[0] ?? null; @endphp
             @if($firstImageUrl)
-                <img src="{{ $firstImageUrl }}" x-bind:src="imageUrls[currentIndex]" alt="{{ $profileName }}" class="w-[210px] h-[265px] object-cover home-profile-card-image absolute inset-0" />
+                @foreach(array_slice($imageUrls, 0, 5) as $i => $url)
+                    <img src="{{ $url }}" alt="{{ $profileName }}"
+                        class="w-[210px] h-[265px] object-cover home-profile-card-image absolute inset-0 transition-all duration-500 ease-in-out {{ $i === 0 ? 'opacity-100 scale-100' : 'opacity-0 scale-105' }}"
+                        x-bind:class="{ 'opacity-100 scale-100': currentIndex === {{ $i }}, 'opacity-0 scale-105': currentIndex !== {{ $i }} }" />
+                @endforeach
             @else
                 <div class="flex items-center justify-center w-full h-full">
                     <svg class="w-16 h-16 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,23 +127,15 @@
         </div>
         
         @php
-            $imagesCount = null;
-            if($imagesOverride && is_array($imagesOverride)) {
-                $imagesCount = count($imagesOverride);
-            } elseif($isModel) {
-                $imagesCount = $profile->getAllImages()->count();
-            } else {
-                $imagesCount = $profile->images_count ?? 1;
-            }
-            $visibleDots = min(5, max(1, (int) $imagesCount));
+            $visibleDots = min(5, count($imageUrls));
         @endphp
 
         <!-- Photo count dots (5 total) -->
-        @if(!$simpleMode)
+        @if(!$simpleMode && !$shouldBlur)
         <div class="absolute left-0 right-0 bottom-3 flex justify-center z-30" style="gap:3px;">
             @for($i = 0; $i < 5; $i++)
-                <button type="button" @click.prevent="currentIndex = {{ min($i, $visibleDots - 1) }}" class="w-2.5 h-2.5 rounded-full bg-white flex items-center justify-center" style="box-shadow: 0 0 0 1px rgba(0,0,0,0.04);">
-                    <span class="w-1.5 h-1.5 rounded-full" :class="{ 'bg-transparent': currentIndex !== {{ $i }}, 'bg-[#DD3888]': currentIndex === {{ $i }} }" style="display:block;"></span>
+                <button type="button" @click.prevent="currentIndex = {{ min($i, $visibleDots - 1) }}" class="w-2.5 h-2.5 rounded-full bg-white flex items-center justify-center transition-transform duration-300 ease-in-out" :class="{ 'scale-110': currentIndex === {{ $i }} }" style="box-shadow: 0 0 0 1px rgba(0,0,0,0.04);">
+                    <span class="w-1.5 h-1.5 rounded-full transition-colors duration-300 ease-in-out" :class="{ 'bg-transparent': currentIndex !== {{ $i }}, 'bg-[#DD3888]': currentIndex === {{ $i }} }" style="display:block;"></span>
                 </button>
             @endfor
         </div>
@@ -147,7 +151,7 @@
             </h4>
             @if($isVip && !$simpleMode)
             <div class="home-profile-card-vip home-profile-card-vip-desktop" style="width:50px;height:26px;border-radius:999px;background:#FFB700;display:flex;align-items:center;justify-content:center;gap:6px;">
-                <x-icons name="star" class="inline-block" style="width:14px;height:14px;color:#FFFFFF;" />
+                <x-icons name="star" class="inline-block" :preserveColors="true" style="width:14px;height:14px;color:#FFFFFF;" />
                 <span style="font-family:'Poppins', sans-serif; font-weight:900; font-size:10px; color:#FFFFFF; line-height:1;">VIP</span>
             </div>
             @endif
@@ -190,7 +194,7 @@
                     : (4.5 + ((isset($profile->id) ? $profile->id : 0) % 5) * 0.1);
             @endphp
             <div class="home-profile-card-rating-badge" style="display:flex;align-items:center;justify-content:center;gap:8px;height:40px;border-radius:8px;{{ $rating < 4 ? 'background:transparent;border: 2px solid #F2F2F2;' : 'background:#E6FEE8;' }}padding:0 12px;">
-                <div style="font-family:'Plus Jakarta Sans', sans-serif;font-weight:600;font-size:11px;color:#505050;line-height:1;">Hodnocení:</div>
+                <div style="font-family:'Plus Jakarta Sans', sans-serif;font-weight:600;font-size:11px;color:#505050;line-height:1;">{{ __('front.profiles.list.rating') }}:</div>
                 <div style="font-family:'Poppins', sans-serif;font-weight:600;font-size:14px;color:#5C2D62;line-height:1;">{{ number_format($rating, 1) }}/5</div>
                 <x-icons name="HeartFilled" class="inline-block flex-shrink-0" style="width:20px;height:20px;" preserveColors="true" />
             </div>

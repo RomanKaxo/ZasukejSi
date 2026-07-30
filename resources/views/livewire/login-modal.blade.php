@@ -82,7 +82,7 @@
                 @enderror
                 <!-- Username Field -->
                 <div>
-                    <label class="form-label" style="font-family:'Poppins',sans-serif;font-weight:400;font-size:13px;color:#505050">Vaše uživatelské jméno</label>
+                    <label class="form-label" style="font-family:'Poppins',sans-serif;font-weight:400;font-size:13px;color:#505050">{{ __('auth.login.username_label') }}</label>
                     <input wire:model="email"
                         type="email"
                         required

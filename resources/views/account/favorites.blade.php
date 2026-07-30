@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="cs">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moje favoritky</title>
+    <title>{{ __('front.account.member.favorites') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
@@ -27,7 +27,7 @@
                                style="font-family: 'Poppins', sans-serif;">
                                 <img src="{{ asset('images/icons/star.svg') }}" class="w-[20px] h-[20px]" alt="Star"
                                      style="filter: invert(36%) sepia(87%) saturate(2222%) hue-rotate(309deg) brightness(90%) contrast(92%);">
-                                Hodnocení dívek
+                                {{ __('front.account.member.ratings') }}
                             </a>
                             <!-- Moje Favoritky – ACTIVE -->
                             <a href="{{ route('account.favorites') }}"
@@ -35,7 +35,7 @@
                                style="font-family: 'Poppins', sans-serif;">
                                 <img src="{{ asset('images/icons/heart.svg') }}" class="w-[20px] h-[20px]" alt="Heart"
                                      style="filter: brightness(0) invert(1);">
-                                Moje Favoritky
+                                {{ __('front.account.member.favorites') }}
                             </a>
                             <!-- Dívky měsíc -->
                             <a href="#"
@@ -43,7 +43,7 @@
                                style="font-family: 'Poppins', sans-serif;">
                                 <img src="{{ asset('images/icons/calendar.svg') }}" class="w-[20px] h-[20px]" alt="Calendar"
                                      style="filter: invert(36%) sepia(87%) saturate(2222%) hue-rotate(309deg) brightness(90%) contrast(92%);">
-                                Dívky měsíc
+                                {{ __('front.account.member.girls_of_month') }}
                             </a>
                             <!-- Archiv dívek -->
                             <a href="#"
@@ -51,7 +51,7 @@
                                style="font-family: 'Poppins', sans-serif;">
                                 <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px]" alt="Archive"
                                      style="filter: invert(36%) sepia(87%) saturate(2222%) hue-rotate(309deg) brightness(90%) contrast(92%);">
-                                Archiv dívek
+                                {{ __('front.account.member.archive') }}
                             </a>
                             <!-- Nahlášené dívky -->
                             <a href="#"
@@ -59,7 +59,7 @@
                                style="font-family: 'Poppins', sans-serif;">
                                 <img src="{{ asset('images/icons/OctagonAlert.svg') }}" class="w-[20px] h-[20px]" alt="Report"
                                      style="filter: invert(36%) sepia(87%) saturate(2222%) hue-rotate(309deg) brightness(90%) contrast(92%);">
-                                Nahlášené dívky
+                                {{ __('front.account.member.reported') }}
                             </a>
                             <!-- Základní nastavení -->
                             <a href="{{ route('preview.dashboard') }}"
@@ -67,7 +67,7 @@
                                style="font-family: 'Poppins', sans-serif;">
                                 <img src="{{ asset('images/icons/User.svg') }}" class="w-[20px] h-[20px]" alt="Settings"
                                      style="filter: invert(36%) sepia(87%) saturate(2222%) hue-rotate(309deg) brightness(90%) contrast(92%);">
-                                Základní nastavení
+                                {{ __('front.account.member.basic_settings') }}
                             </a>
                         </div>
                     </div>
@@ -85,7 +85,7 @@
                             <img src="{{ asset('images/icons/diamond.svg') }}" class="w-[20px] h-[20px] flex-shrink-0" alt="Diamond">
                             <p class="text-[13px] text-[#505050] font-medium leading-tight"
                                style="font-family: 'Poppins', sans-serif;">
-                                Máte aktivní členství Premium už jen 5 dní – <span class="underline">prodloužení členství zde</span>
+                                {{ __('front.account.member.premium_expiry_notice', ['days' => 5]) }} – <span class="underline">{{ __('front.account.member.premium_extend_link') }}</span>
                             </p>
                         </div>
                         
@@ -94,7 +94,7 @@
                         
                         <p class="hidden max-[426px]:block text-[13px] text-[#505050] font-medium leading-tight text-left max-[426px]:w-[223px] max-[426px]:h-[59px] max-[426px]:self-center"
                            style="font-family: 'Poppins', sans-serif;">
-                            Máte aktivní členství Premium už jen 5 dní – <span class="underline">prodloužení členství zde</span>
+                            {{ __('front.account.member.premium_expiry_notice', ['days' => 5]) }} – <span class="underline">{{ __('front.account.member.premium_extend_link') }}</span>
                         </p>
                         
                         <!-- Close button -->

@@ -28,7 +28,7 @@
 
                 @foreach($links as $link)
                     <li>
-                        <a href="{{ $link['url'] }}" 
+                        <a href="{{ $link['url'] }}"
                            class="flex items-center px-4 gap-3 transition-colors duration-200"
                            style="width: 230px; height: 50px; border-radius: 8px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; color: #FFFFFF; text-decoration: none; background-color: transparent;"
                            onmouseover="this.style.backgroundColor='#5C2D62'; this.style.color='#FFFFFF';"
@@ -38,6 +38,19 @@
                         </a>
                     </li>
                 @endforeach
+                <li>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                           class="flex items-center px-4 gap-3 transition-colors duration-200"
+                           style="width: 230px; height: 50px; border-radius: 8px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; color: #FFFFFF; text-decoration: none; background-color: transparent;"
+                           onmouseover="this.style.backgroundColor='#5C2D62'; this.style.color='#FFFFFF';"
+                           onmouseout="this.style.backgroundColor='transparent'; this.style.color='#FFFFFF';">
+                            <img src="{{ asset('images/icons/User.svg') }}" class="w-[20px] h-[20px]" alt="{{ __('front.nav.logout') }}" style="filter: brightness(0) invert(1);">
+                            {{ __('front.nav.logout') }}
+                        </button>
+                    </form>
+                </li>
             </ul>
         </nav>
     </div>

@@ -1,5 +1,5 @@
 @php
-    $isEnglishHomepage = app()->getLocale() === 'en' && request()->routeIs('profiles.index');
+    $isEnglishHomepage = app()->getLocale() === 'en';
     $profileGridClasses = $isEnglishHomepage
         ? 'flex flex-col md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 profile-list-cards-grid'
         : 'flex flex-col md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 profile-list-cards-grid';
@@ -708,7 +708,8 @@
                             $imageOverride = asset('images/models/model' . $mapped . '.png');
                         }
                         
-                        $cardVariant = auth()->check() ? null : 'vip-detail';
+                        $isOpenProfile = crc32((string) ($profile->id ?? $loop->index)) % 2 === 0;
+                        $cardVariant = (auth()->check() || $isOpenProfile) ? null : 'vip-detail';
                     @endphp
                     <x-profile-card :profile="$profile" :image-override="$imageOverride" :variant="$cardVariant" />
                 @endforeach
@@ -728,7 +729,7 @@
     <div class="px-4 md:px-8 lg:px-12 mx-auto">
         <div class="flex items-center gap-4 mb-6">
             <img src="{{ asset('images/icons/Newspaper.svg') }}" alt="Novinky" width="36" height="36" class="news-icon" />
-            <h2 class="news-title m-0">Poslední novinky</h2>
+            <h2 class="news-title m-0">{{ __('blogs.latest_news') }}</h2>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -743,7 +744,7 @@
                         </div>
                         <div class="news-badge badge-time">
                             <img src="{{ asset('images/icons/clock.svg') }}" alt="clock" width="16" height="16" />
-                            <span class="badge-text">5 minut čtení</span>
+                            <span class="badge-text">5 {{ __('blogs.min_read') }}</span>
                         </div>
                     </div>
                 </div>
@@ -751,7 +752,7 @@
                 <h3 class="news-card-title">Považována užitého za nesou užitých</h3>
                 <p class="news-card-desc">Oprávněné aniž i odstoupil o snadno osoby vede grafikou osobami úmyslu 60 % poskytovat, dělí způsobem, § 36 veletrhu pověřit spravují zřejmém, k před platbě státu zvláštních tuzemsku. Dohodnou zvláštní provádí o nebezpečí kódech § 6 příjmu vhodným třetím</p>
 
-                <button class="news-button">číst článek</button>
+                <button class="news-button">{{ __('blogs.read_article') }}</button>
             </div>
 
             {{-- Card 2 --}}
@@ -765,7 +766,7 @@
                         </div>
                         <div class="news-badge badge-time">
                             <img src="{{ asset('images/icons/clock.svg') }}" alt="clock" width="16" height="16" />
-                            <span class="badge-text">5 minut čtení</span>
+                            <span class="badge-text">5 {{ __('blogs.min_read') }}</span>
                         </div>
                     </div>
                 </div>
@@ -773,7 +774,7 @@
                 <h3 class="news-card-title">Souhlasem o tato i vždy každý k že nabytí uděleného, vůbec se skončením</h3>
                 <p class="news-card-desc">Oprávněné aniž i odstoupil o snadno osoby vede osobami úmyslu 60 % poskytovat, dělí způsobem, § 36 veletrhu pověřit spravují zřejmém, k před platbě státu zvláštních tuzemsku. Dohodnou zvláštní provádí o nebezpečí kódech § 6 příjmu vhodným třetím</p>
 
-                <button class="news-button">číst článek</button>
+                <button class="news-button">{{ __('blogs.read_article') }}</button>
             </div>
         </div>
     </div>

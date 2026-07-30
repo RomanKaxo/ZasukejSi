@@ -127,7 +127,11 @@
                 <!-- Logo -->
                 <a href="{{ route('profiles.index') }}" class="text-xl font-bold text-text-default hover:text-primary-600 transition-colors justify-self-start" id="nav-logo">
                     <span class="brand-mark">
-                        <span class="brand-main">ZAŠUKEJ</span><span class="brand-si">SI</span><span class="brand-cz">.CZ</span>
+                        @if(app()->getLocale() === 'en')
+                            <span class="brand-main">ESCORT</span><span class="brand-si">-ONLINE</span><span class="brand-cz">.COM</span>
+                        @else
+                            <span class="brand-main">ZAŠUKEJ</span><span class="brand-si">SI</span><span class="brand-cz">.CZ</span>
+                        @endif
                     </span>
                 </a>
 
@@ -219,7 +223,7 @@
                     <!-- Language Switcher - Desktop Only -->
                     <div class="hidden lg:inline" x-data="{ langOpen: false }" @click.outside="langOpen = false">
                         <div class="language-dropdown relative">
-                            <button class="language-dropdown-toggle flex items-center" id="nav-language" @click="langOpen = !langOpen" type="button">
+                            <button class="language-dropdown-toggle flex items-center" id="nav-language" @click.stop="langOpen = !langOpen" type="button">
                                 @if(app()->getLocale() === 'cs')
                                     <img src="{{ asset('flags/cs.png') }}" alt="Czech" class="w-6 h-6 rounded">
                                 @else
@@ -255,7 +259,11 @@
             <div class="flex w-full items-center justify-between lg:hidden">
                 <a href="{{ route('profiles.index') }}" class="text-xl font-bold text-text-default hover:text-primary-600 transition-colors" id="nav-logo-mobile">
                     <span class="brand-mark" style="font-size:20px;">
-                        <span class="brand-main">ZAŠUKEJ</span><span class="brand-si">SI</span><span class="brand-cz">.CZ</span>
+                        @if(app()->getLocale() === 'en')
+                            <span class="brand-main">ESCORT</span><span class="brand-si">-ONLINE</span><span class="brand-cz">.COM</span>
+                        @else
+                            <span class="brand-main">ZAŠUKEJ</span><span class="brand-si">SI</span><span class="brand-cz">.CZ</span>
+                        @endif
                     </span>
                 </a>
                 <!-- Mobile menu button -->
@@ -301,9 +309,9 @@
                     </a>
                     <form method="POST" action="{{ route('logout') }}" class="w-full">
                         @csrf
-                        <button type="submit" class="nav-link-mobile group text-left w-full">
-                            {{ __('front.nav.logout') }}
-                            <span class="underline"></span>
+                        <button type="submit" class="w-full flex items-center justify-center" style="height:60px;border-radius:8px;border:1px solid #DD3888;padding:24px 26px;gap:7px;background:transparent;">
+                            <x-icons name="User" style="width:24px;height:24px;color:#DD3888;" />
+                            <span style="font-family:'Poppins', sans-serif; font-weight:600; font-size:16px; line-height:1; color:#DD3888;">{{ __('front.nav.logout') }}</span>
                         </button>
                     </form>
                 @else

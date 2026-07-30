@@ -22,26 +22,26 @@
     },
     get cities() { return this.countryData[this.zeme] || []; }
 }" class="flex flex-col w-[400px] max-[426px]:!w-[310px] mx-auto">
-    <h3 class="font-bold text-[24px] text-[#5C2D62] mb-8" style="font-family: 'Poppins', sans-serif;">Moje údaje</h3>
-    
+    <h3 class="font-bold text-[24px] text-[#5C2D62] mb-8" style="font-family: 'Poppins', sans-serif;">{{ __('front.account.basic_info_form.title') }}</h3>
+
     <div class="w-[400px] max-[426px]:!w-[310px] h-[84px] flex flex-col gap-2 items-center">
-        <label class="text-[13px] text-[#505050] self-start" style="font-family: 'Poppins', sans-serif;">Vaše přezdívka</label>
-        <input type="text" class="w-[400px] max-[426px]:!w-[310px] h-[50px] rounded-[8px] border-[2px] border-[#E6E6E6] px-4 font-bold text-[15px] text-[#505050]" style="font-family: 'Poppins', sans-serif;" placeholder="Příklad přezdívky">
+        <label class="text-[13px] text-[#505050] self-start" style="font-family: 'Poppins', sans-serif;">{{ __('front.account.basic_info_form.nickname_label') }}</label>
+        <input type="text" class="w-[400px] max-[426px]:!w-[310px] h-[50px] rounded-[8px] border-[2px] border-[#E6E6E6] px-4 font-bold text-[15px] text-[#505050]" style="font-family: 'Poppins', sans-serif;" placeholder="{{ __('front.account.basic_info_form.nickname_placeholder') }}">
     </div>
-    
+
     <!-- Email -->
     <div class="w-[400px] max-[426px]:!w-[310px] h-[84px] flex flex-col gap-2 items-center mt-4">
-        <label class="text-[13px] text-[#505050] self-start" style="font-family: 'Poppins', sans-serif;">Váš email</label>
+        <label class="text-[13px] text-[#505050] self-start" style="font-family: 'Poppins', sans-serif;">{{ __('front.account.basic_info_form.email_label') }}</label>
         <input type="email" class="w-[400px] max-[426px]:!w-[310px] h-[50px] rounded-[8px] border-[2px] border-[#E6E6E6] px-4 font-bold text-[15px] text-[#505050]" style="font-family: 'Poppins', sans-serif;" placeholder="priklad@email.cz">
     </div>
 
     <!-- Země -->
     <div class="w-[400px] max-[426px]:!w-[310px] h-auto flex flex-col gap-2 items-center mt-4">
         <div class="flex justify-between w-[400px] max-[426px]:!w-[310px]">
-            <label class="text-[13px] text-[#505050] self-start" style="font-family: 'Poppins', sans-serif;">Země</label>
+            <label class="text-[13px] text-[#505050] self-start" style="font-family: 'Poppins', sans-serif;">{{ __('front.account.basic_info_form.country_label') }}</label>
             <div x-show="zeme === ''" class="flex items-center gap-1.5">
                 <img src="{{ asset('images/icons/OctagonAlert.svg') }}" class="w-[20px] h-[20px]" alt="Alert">
-                <span class="text-[13px] text-[#D80027]" style="font-family: 'Poppins', sans-serif;">Povinná položka</span>
+                <span class="text-[13px] text-[#D80027]" style="font-family: 'Poppins', sans-serif;">{{ __('front.account.basic_info_form.required_field') }}</span>
             </div>
         </div>
         <div class="relative w-[400px] max-[426px]:!w-[310px]">
@@ -66,10 +66,10 @@
     <!-- Město -->
     <div class="w-[400px] max-[426px]:!w-[310px] h-auto flex flex-col gap-2 items-center mt-4">
         <div class="flex justify-between w-[400px] max-[426px]:!w-[310px]">
-            <label class="text-[13px] text-[#505050] self-start" style="font-family: 'Poppins', sans-serif;">Město</label>
+            <label class="text-[13px] text-[#505050] self-start" style="font-family: 'Poppins', sans-serif;">{{ __('front.account.basic_info_form.city_label') }}</label>
             <div x-show="mesto === ''" class="flex items-center gap-1.5">
                 <img src="{{ asset('images/icons/OctagonAlert.svg') }}" class="w-[20px] h-[20px]" alt="Alert">
-                <span class="text-[13px] text-[#D80027]" style="font-family: 'Poppins', sans-serif;">Povinná položka</span>
+                <span class="text-[13px] text-[#D80027]" style="font-family: 'Poppins', sans-serif;">{{ __('front.account.basic_info_form.required_field') }}</span>
             </div>
         </div>
         <div class="relative w-[400px] max-[426px]:!w-[310px]">
@@ -87,13 +87,13 @@
                     <span x-text="city"></span>
                 </div>
             </template>
-            <div x-show="cities.length === 0" class="p-2 text-gray-500">Nejdříve vyberte zemi</div>
+            <div x-show="cities.length === 0" class="p-2 text-gray-500">{{ __('front.account.basic_info_form.select_country_first') }}</div>
         </div>
     </div>
 
     <!-- Telefon -->
     <div class="w-[400px] max-[426px]:!w-[310px] h-[84px] flex flex-col gap-2 items-center mt-4">
-        <label class="text-[13px] text-[#505050] self-start" style="font-family: 'Poppins', sans-serif;">Telefon</label>
+        <label class="text-[13px] text-[#505050] self-start" style="font-family: 'Poppins', sans-serif;">{{ __('auth.register.form.phone_label') }}</label>
         <input type="tel" class="w-[400px] max-[426px]:!w-[310px] h-[50px] rounded-[8px] border-[2px] border-[#E6E6E6] px-4 font-bold text-[15px] text-[#505050]" style="font-family: 'Poppins', sans-serif;" placeholder="+420 123 456 789">
     </div>
     
@@ -106,7 +106,7 @@
                 <div class="w-[20px] h-[20px] bg-white rounded-full shadow-sm transform transition-transform duration-300"
                      :class="toggled1 ? 'translate-x-[20px]' : 'translate-x-0'"></div>
             </button>
-            <span class="text-[13px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">mám WhatsApp</span>
+            <span class="text-[13px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">{{ __('front.account.basic_info_form.has_whatsapp') }}</span>
         </div>
         <div class="flex items-center gap-3">
             <button @click="toggled2 = !toggled2" 
@@ -115,13 +115,13 @@
                 <div class="w-[20px] h-[20px] bg-white rounded-full shadow-sm transform transition-transform duration-300"
                      :class="toggled2 ? 'translate-x-[20px]' : 'translate-x-0'"></div>
             </button>
-            <span class="text-[13px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">mám Telegram</span>
+            <span class="text-[13px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">{{ __('front.account.basic_info_form.has_telegram') }}</span>
         </div>
     </div>
 
     <!-- Save Button -->
     <button class="w-[400px] max-[426px]:!w-[310px] h-[50px] bg-[#E8E8E8] rounded-[8px] flex items-center justify-center gap-2 mt-8">
         <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px]" alt="Save">
-        <span style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px; color: #A4A4A4;">Uložit změny</span>
+        <span style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px; color: #A4A4A4;">{{ __('front.account.services.save_changes') }}</span>
     </button>
 </div>

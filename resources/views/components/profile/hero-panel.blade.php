@@ -5,7 +5,7 @@
         <div style="display:flex; gap:6px; align-items:center;">
             <span class="vip-profile-status-pill vip-profile-status-pill--primary">
                 <img src="{{ asset('images/icons/star.svg') }}" alt="star" style="width: 18px; height: 18px; margin-right: 6px;">
-                VIP PROFIL
+                {{ strtoupper(__('front.profiles.detail_page.vip') . ' ' . __('common.Profile')) }}
             </span>
             <span class="vip-profile-status-pill vip-profile-status-pill--verification">
                 <img src="{{ asset('images/icons/CameraOff.svg') }}" alt="camera-off" style="width: 18px; height: 18px; margin-right: 4px;">
@@ -53,27 +53,27 @@
 
     <div class="vip-profile-meta-table">
         <div class="vip-profile-meta-row">
-            <span class="vip-profile-meta-label">Věk</span>
-            <span class="vip-profile-meta-value">{{ $profile->age ?? '19' }} let</span>
+            <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.age') }}</span>
+            <span class="vip-profile-meta-value">{{ $profile->age ?? '19' }} {{ __('front.profiles.detail_page.years') }}</span>
         </div>
         <div class="vip-profile-meta-row">
-            <span class="vip-profile-meta-label">Váha</span>
+            <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.weight') }}</span>
             <span class="vip-profile-meta-value">
-                {{ ($profile->weight ?? '57') . ' kg' }}
+                {{ ($profile->weight ?? '57') . ' ' . __('front.profiles.detail_page.kg') }}
             </span>
         </div>
         <div class="vip-profile-meta-row">
-            <span class="vip-profile-meta-label">Výška</span>
+            <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.height') }}</span>
             <span class="vip-profile-meta-value">
-                {{ ($profile->height ?? '168') . ' cm' }}
+                {{ ($profile->height ?? '168') . ' ' . __('front.profiles.detail_page.cm') }}
             </span>
         </div>
         <div class="vip-profile-meta-row">
-            <span class="vip-profile-meta-label">Prsa</span>
+            <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.bust') }}</span>
             <span class="vip-profile-meta-value">{{ $profile->bust_size ?? 'C' }}</span>
         </div>
         <div class="vip-profile-meta-row">
-            <span class="vip-profile-meta-label">Jazyky</span>
+            <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.languages') }}</span>
             <span class="vip-profile-meta-value">{{ $profile->languages ?? 'Česky, Rusky, Anglicky' }}</span>
         </div>
     </div>
@@ -96,15 +96,15 @@
     @auth
         @if($profile->user_id && $profile->user_id !== auth()->id() && $messageRouteAvailable)
             <a href="{{ route('messages.show', $profile->user) }}" class="vip-profile-message">
-                Poslat zprávu
+                {{ __('front.profiles.detail_page.send_message') }}
                 <img src="{{ asset('images/icons/message.svg') }}" alt="" aria-hidden="true" class="h-4 w-4 brightness-0 invert">
             </a>
         @else
-            <span class="vip-profile-message" style="opacity:.6;pointer-events:none;">Poslat zprávu</span>
+            <span class="vip-profile-message" style="opacity:.6;pointer-events:none;">{{ __('front.profiles.detail_page.send_message') }}</span>
         @endif
     @else
         <a href="{{ $registerRouteAvailable ? route('register') : route('profiles.index') }}" class="vip-profile-message">
-            Poslat zprávu
+            {{ __('front.profiles.detail_page.send_message') }}
             <img src="{{ asset('images/icons/message.svg') }}" alt="" aria-hidden="true" class="h-4 w-4 brightness-0 invert">
         </a>
     @endauth

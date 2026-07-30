@@ -89,7 +89,7 @@
         <div class="relative z-10 px-8 py-12 md:px-14 md:py-16 lg:px-36 lg:py-40">
             <div class="max-w-2xl mb-8 md:mb-7 relative">
                 <x-icons name="quote" :preserveColors="true" class="absolute -left-14 -top-6 w-10 h-10 text-[#DD3888]" />
-                <h2 class="advert-hero-title text-secondary mb-3">
+                <h2 class="advert-hero-title text-[#5C2D62] mb-3">
                     {{ __('front.landing.advert.title') }}
                 </h2>
                 <p class="advert-hero-subtitle text-gray-600 text-base md:text-lg leading-relaxed max-w-lg">

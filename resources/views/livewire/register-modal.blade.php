@@ -91,7 +91,7 @@
             .gender-option { width:520px; height:100px; border-radius:15px; background:#FFFFFF; box-shadow:0 5px 15px rgba(92,45,98,0.20); display:flex; align-items:center; justify-content:space-between; padding:18px 20px; box-sizing:border-box; margin:0 auto; border:1px solid rgba(0,0,0,0.02); transition: transform 160ms ease, opacity 160ms ease; position:relative; z-index:50; }
             .gender-icon { background:#F2F2F2 !important; transition: background-color 220ms cubic-bezier(.2,.9,.3,1); }
             .gender-icon.active { background:#DD3888 !important; color:#FEFEFE !important; }
-            .gender-icon svg { transform:rotate(0deg); transform-origin:center; transition: transform 220ms cubic-bezier(.2,.9,.3,1), stroke 220ms cubic-bezier(.2,.9,.3,1); }
+            .gender-icon svg { stroke:#DD3888; transform:rotate(0deg); transform-origin:center; transition: transform 220ms cubic-bezier(.2,.9,.3,1), stroke 220ms cubic-bezier(.2,.9,.3,1); }
             .modal-container.register-step1.expanded .gender-icon.active svg { stroke:#FEFEFE !important; transform:rotate(180deg); }
             .gender-option > .flex { width:100%; }
             .gender-options { display:flex; flex-direction:column; align-items:center; gap:10px; }
@@ -245,15 +245,15 @@
                                 <input wire:model="email" type="email" required
                                     @input="emailValue = $event.target.value; emailHasAt = emailValue.includes('@')"
                                     class="form-field {{ $errors->has('email') ? 'form-field-error' : '' }}" x-bind:class="{ 'form-field-error': (emailValue.length > 0 && !emailHasAt) || {{ $errors->has('email') ? 'true' : 'false' }} }">
-                                <p x-show="(emailValue.length > 0 && !emailHasAt) || {{ $errors->has('email') ? 'true' : 'false' }}" class="form-error" x-cloak>Chybný formát e-mailu</p>
+                                <p x-show="(emailValue.length > 0 && !emailHasAt) || {{ $errors->has('email') ? 'true' : 'false' }}" class="form-error" x-cloak>{{ __('auth.register.form.email_invalid') }}</p>
                             </div>
                             <div>
-                                <label class="form-label">Vymyslete si heslo do platformy</label>
+                                <label class="form-label">{{ __('auth.register.form.password_create_label') }}</label>
                                 <input wire:model="password" type="password" required class="form-field {{ $errors->has('password') ? 'form-field-error' : '' }}">
                                 @error('password')<p class="form-error">{{ $message }}</p>@enderror
                             </div>
                             <div>
-                                <label class="form-label">Potvrďte heslo</label>
+                                <label class="form-label">{{ __('auth.register.form.password_confirmation_label') }}</label>
                                 <input wire:model="password_confirmation" type="password" required class="form-field {{ $errors->has('password_confirmation') ? 'form-field-error' : '' }}">
                                 @error('password_confirmation')<p class="form-error">{{ $message }}</p>@enderror
                             </div>
@@ -311,15 +311,15 @@
                                 <input wire:model="email" type="email" required
                                     @input="emailValue = $event.target.value; emailHasAt = emailValue.includes('@')"
                                     class="form-field {{ $errors->has('email') ? 'form-field-error' : '' }}" x-bind:class="{ 'form-field-error': (emailValue.length > 0 && !emailHasAt) || {{ $errors->has('email') ? 'true' : 'false' }} }">
-                                <p x-show="(emailValue.length > 0 && !emailHasAt) || {{ $errors->has('email') ? 'true' : 'false' }}" class="form-error" x-cloak>Chybný formát e-mailu</p>
+                                <p x-show="(emailValue.length > 0 && !emailHasAt) || {{ $errors->has('email') ? 'true' : 'false' }}" class="form-error" x-cloak>{{ __('auth.register.form.email_invalid') }}</p>
                             </div>
                             <div>
-                                <label class="form-label">Vymyslete si heslo do platformy</label>
+                                <label class="form-label">{{ __('auth.register.form.password_create_label') }}</label>
                                 <input wire:model="password" type="password" required class="form-field {{ $errors->has('password') ? 'form-field-error' : '' }}">
                                 @error('password')<p class="form-error">{{ $message }}</p>@enderror
                             </div>
                             <div>
-                                <label class="form-label">Potvrďte heslo</label>
+                                <label class="form-label">{{ __('auth.register.form.password_confirmation_label') }}</label>
                                 <input wire:model="password_confirmation" type="password" required class="form-field {{ $errors->has('password_confirmation') ? 'form-field-error' : '' }}">
                                 @error('password_confirmation')<p class="form-error">{{ $message }}</p>@enderror
                             </div>
@@ -384,12 +384,12 @@
                             required
                             @input="emailValue = $event.target.value; emailHasAt = emailValue.includes('@')"
                             class="form-field {{ $errors->has('email') ? 'form-field-error' : '' }}" x-bind:class="{ 'form-field-error': (emailValue.length > 0 && !emailHasAt) || {{ $errors->has('email') ? 'true' : 'false' }} }">
-                        <p x-show="(emailValue.length > 0 && !emailHasAt) || {{ $errors->has('email') ? 'true' : 'false' }}" class="form-error" x-cloak>Chybný formát e-mailu</p>
+                        <p x-show="(emailValue.length > 0 && !emailHasAt) || {{ $errors->has('email') ? 'true' : 'false' }}" class="form-error" x-cloak>{{ __('auth.register.form.email_invalid') }}</p>
                     </div>
 
                     <!-- Password -->
                     <div>
-                        <label class="form-label">Vymyslete si heslo do platformy</label>
+                        <label class="form-label">{{ __('auth.register.form.password_create_label') }}</label>
                         <input wire:model="password"
                             type="password"
                             required
@@ -401,7 +401,7 @@
 
                     <!-- Confirm Password -->
                     <div>
-                        <label class="form-label">Potvrďte heslo</label>
+                        <label class="form-label">{{ __('auth.register.form.password_confirmation_label') }}</label>
                         <input wire:model="password_confirmation"
                             type="password"
                             required
@@ -446,8 +446,8 @@
 
                 <div class="register-success-card">
                     <img src="{{ asset('images/icons/MailCheck.svg') }}" alt="Mail check" class="register-success-icon">
-                    <p class="register-success-title">Registrace proběhla<br>úspěšně, děkujeme</p>
-                    <p class="register-success-message">Potvrďte, prosím, ověřovací odkaz, který jsme poslali na {{ $this->maskedEmail }}. Pak můžete začít platformu plně využívat.</p>
+                    <p class="register-success-title">{{ __('auth.register.success.title') }}</p>
+                    <p class="register-success-message">{{ __('auth.register.success.message', ['email' => $this->maskedEmail]) }}</p>
                 </div>
             </div>
             @endif
