@@ -21,7 +21,7 @@
 
 {{-- Sidebar --}}
 <aside
-    class="w-full h-full md:w-[210px] md:relative fixed top-0 left-0 z-40 bg-white transition-transform duration-300 md:translate-x-0 overflow-y-auto pt-28 md:pt-0 md:mt-10"
+    class="w-full h-full md:w-[210px] md:relative fixed top-0 left-0 z-40 bg-white transition-transform duration-300 md:translate-x-0 overflow-y-auto pt-28 md:pt-0 md:mt-[95px]"
     :class="$store.memberSidebar.isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
 >
     <!-- Navigation Menu -->
@@ -31,8 +31,8 @@
             <li>
                 <a href="{{ route('account.member.ratings') }}"
                    class="nav-button !w-[210px] !h-[50px] !p-0 !px-4 !rounded-[8px] !border !border-[#E6E6E6] {{ request()->routeIs('account.member.ratings') ? 'active' : '' }}">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                    <svg class="w-[20px] h-[20px] mr-3" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5.83464 17.5H14.168M10.0013 2.5V17.5M2.5013 5.83333H4.16797C5.83464 5.83333 8.33464 5 10.0013 4.16667C11.668 5 14.168 5.83333 15.8346 5.83333H17.5013M13.3346 13.3333L15.8346 6.66667L18.3346 13.3333C17.6096 13.875 16.7346 14.1667 15.8346 14.1667C14.9346 14.1667 14.0596 13.875 13.3346 13.3333ZM1.66797 13.3333L4.16797 6.66667L6.66797 13.3333C5.94297 13.875 5.06797 14.1667 4.16797 14.1667C3.26797 14.1667 2.39297 13.875 1.66797 13.3333Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     {{ __('front.account.member.ratings') }}
                 </a>
@@ -53,8 +53,8 @@
             <li>
                 <a href="{{ route('account.member.girls-of-month') }}"
                    class="nav-button !w-[210px] !h-[50px] !p-0 !px-4 !rounded-[8px] !border !border-[#E6E6E6] {{ request()->routeIs('account.member.girls-of-month') ? 'active' : '' }}">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    <svg class="w-[20px] h-[20px] mr-3" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6.66667 1.66675V5.00008M13.3333 1.66675V5.00008M2.5 8.33342H17.5M6.66667 11.6667H6.675M10 11.6667H10.0083M13.3333 11.6667H13.3417M6.66667 15.0001H6.675M10 15.0001H10.0083M13.3333 15.0001H13.3417M4.16667 3.33341H15.8333C16.7538 3.33341 17.5 4.07961 17.5 5.00008V16.6667C17.5 17.5872 16.7538 18.3334 15.8333 18.3334H4.16667C3.24619 18.3334 2.5 17.5872 2.5 16.6667V5.00008C2.5 4.07961 3.24619 3.33341 4.16667 3.33341Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     {{ __('front.account.member.girls_of_month') }}
                 </a>
@@ -64,8 +64,8 @@
             <li>
                 <a href="{{ route('account.member.archive') }}"
                    class="nav-button !w-[210px] !h-[50px] !p-0 !px-4 !rounded-[8px] !border !border-[#E6E6E6] {{ request()->routeIs('account.member.archive') ? 'active' : '' }}">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <svg class="w-[20px] h-[20px] mr-3" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2.5 10C2.5 11.4834 2.93987 12.9334 3.76398 14.1668C4.58809 15.4001 5.75943 16.3614 7.12987 16.9291C8.50032 17.4968 10.0083 17.6453 11.4632 17.3559C12.918 17.0665 14.2544 16.3522 15.3033 15.3033C16.3522 14.2544 17.0665 12.918 17.3559 11.4632C17.6453 10.0083 17.4968 8.50032 16.9291 7.12987C16.3614 5.75943 15.4001 4.58809 14.1668 3.76398C12.9334 2.93987 11.4834 2.5 10 2.5C7.90329 2.50789 5.89081 3.32602 4.38333 4.78333L2.5 6.66667M6.66667 6.66667H2.5V2.5M10 5.83333V10L13.3333 11.6667" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     {{ __('front.account.member.archive') }}
                 </a>
@@ -75,8 +75,8 @@
             <li>
                 <a href="{{ route('account.member.reported') }}"
                    class="nav-button !w-[210px] !h-[50px] !p-0 !px-4 !rounded-[8px] !border !border-[#E6E6E6] {{ request()->routeIs('account.member.reported') ? 'active' : '' }}">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    <svg class="w-[20px] h-[20px] mr-3" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10.0007 7.50012V10.8335M10.0007 14.1668H10.0091M18.109 15.0001L11.4423 3.33344C11.297 3.07694 11.0862 2.8636 10.8314 2.71516C10.5767 2.56673 10.2872 2.48853 9.99234 2.48853C9.69752 2.48853 9.40797 2.56673 9.15324 2.71516C8.8985 2.8636 8.6877 3.07694 8.54234 3.33344L1.87567 15.0001C1.72874 15.2546 1.6517 15.5434 1.65235 15.8372C1.653 16.131 1.73132 16.4195 1.87938 16.6733C2.02744 16.9271 2.23996 17.1373 2.49542 17.2825C2.75088 17.4277 3.04018 17.5028 3.33401 17.5001H16.6673C16.9598 17.4998 17.2469 17.4226 17.5001 17.2762C17.7532 17.1298 17.9634 16.9193 18.1094 16.666C18.2555 16.4127 18.3324 16.1254 18.3323 15.833C18.3322 15.5406 18.2552 15.2533 18.109 15.0001Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     {{ __('front.account.member.reported') }}
                 </a>
