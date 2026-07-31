@@ -97,7 +97,8 @@ class MemberController extends Controller
     public function reported()
     {
         $user = Auth::user();
-        $reports = Report::with('profile.media')
+        $reports = Report::with('profile.media', 'profile.activeSubscription')
+            ->whereHas('profile')
             ->where('reporter_id', $user->id)
             ->latest()
             ->get();

@@ -29,7 +29,7 @@
     </p>
 
     <div class="mt-auto space-y-2">
-        @foreach($visibleAllegations as $index => $key)
+        @foreach($visibleAllegations as $key)
             <div style="width:171px;height:30px;border-radius:8px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;">
                 <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:11px;color:#505050;">
                     {{ __('front.account.member.allegations.' . $key) }}
@@ -44,7 +44,7 @@
         @endif
 
         <button type="button"
-            @click="Alpine.store('reportedCase').open({
+            @click="$store.reportedCase.open({
                 name: @js($profile->display_name),
                 reason: @js($report->reason),
                 allegations: @js($allegationLabels),

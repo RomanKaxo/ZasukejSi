@@ -17,7 +17,11 @@ class ReportSeeder extends Seeder
             return;
         }
 
-        $profiles = Profile::inRandomOrder()->limit(3)->get();
+        if (Report::where('reporter_id', $reporter->id)->exists()) {
+            return;
+        }
+
+        $profiles = Profile::approved()->public()->inRandomOrder()->limit(3)->get();
 
         foreach ($profiles as $profile) {
             Report::factory()->create([

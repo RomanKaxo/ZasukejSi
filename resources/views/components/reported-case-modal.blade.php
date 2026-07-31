@@ -1,4 +1,4 @@
-<div x-data x-cloak>
+<div x-data x-cloak @keydown.escape.window="$store.reportedCase.close()">
     <div x-show="$store.reportedCase.isOpen"
         x-transition.opacity
         @click="$store.reportedCase.close()"
@@ -8,6 +8,7 @@
 
     <div x-show="$store.reportedCase.isOpen"
         x-transition.opacity
+        @click.self="$store.reportedCase.close()"
         class="fixed inset-0 z-[110] flex items-start justify-center p-4 pt-24 overflow-y-auto">
         <div @click.stop
             class="relative"

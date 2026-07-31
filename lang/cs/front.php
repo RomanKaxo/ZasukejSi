@@ -93,7 +93,7 @@ return [
             'archive' => 'Archiv dívek',
             'archive_description' => 'Procházejte archiv profilů.',
             'reported' => 'Nahlášené dívky',
-            'reported_description' => 'Oprávněné aniž i odstoupil o snadno osoby vede grafikou osobami úmyslu 60 % před platbě státu zvláštních tuzemsku. Dohodnou zvláštní provádí o nebezpečí kódech § 6 příjmu vhodným třetím',
+            'reported_description' => 'Zobrazte profily, které jste nahlásili.',
             'block_reason' => 'Důvod blokace',
             'read_full_case' => 'Číst celý případ',
             'allegations' => [
