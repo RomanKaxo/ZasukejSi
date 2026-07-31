@@ -7,19 +7,27 @@
 @endphp
 
 @section('account-content')
-    <!-- Warning Banner -->
-    <div class="w-full h-[50px] bg-[#FFE0E5] rounded-[8px] flex items-center justify-between px-4 mb-8">
-        <div class="flex items-center gap-3">
-            <img src="{{ asset('images/icons/OctagonAlert.svg') }}" class="w-[20px] h-[20px]" alt="Alert">
-            <span class="font-medium text-[14px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">
-                Dokončete registraci Oprávněné aniž i odstoupil o <span class="underline">snadno osoby</span> vede grafikou osobami
-            </span>
+    <!-- Mobile Header (shown above stat cards on mobile only) -->
+    <div class="mb-4 md:hidden">
+        <div class="relative flex items-center justify-center py-3">
+            <h1 class="w-[400px] max-w-full text-[38px] text-center" style="font-family:'Poppins',sans-serif; font-weight:700; color:#5C2D62;">
+                {{ __('front.account.dashboard.basic_info') }}
+            </h1>
         </div>
-        <button class="text-[#DD3888] font-bold">X</button>
+        <hr class="w-[312px] mx-auto mb-4">
+        <div class="flex items-center justify-between w-[312px] mx-auto">
+            <div class="flex items-center gap-1.5">
+                <div class="w-[14px] h-[14px] rounded-full {{ auth()->user()->isOnline() ? 'bg-[#00B80F]' : 'bg-gray-300' }}"></div>
+                <span class="text-[13px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">
+                    {{ auth()->user()->isOnline() ? __('front.account.dashboard.online') : __('front.account.dashboard.offline') }}
+                </span>
+            </div>
+            <a href="{{ route('account.dashboard') }}" class="text-[13px] text-[#505050] underline" style="font-family: 'Poppins', sans-serif; color: #DD3888;">{{ __('front.account.dashboard.settings') }}</a>
+        </div>
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-[70px]">
         @php
             $cards = [
                 ['icon' => 'eye', 'value' => '10 458', 'label' => __('front.account.statistics.total_profile_views')],
@@ -28,7 +36,7 @@
             ];
         @endphp
         @foreach($cards as $card)
-            <div class="w-full h-[100px] rounded-[8px] flex flex-col items-center justify-center bg-gradient-to-b from-[#FFFFFF] to-[#E6E6E6]">
+            <div class="w-[312px] mx-auto md:w-[272px] md:mx-0 h-[100px] rounded-[8px] flex flex-col items-center justify-center bg-gradient-to-b from-[#E6E6E6] to-[#FFFFFF]">
                 <img src="{{ asset('images/icons/' . $card['icon'] . '.svg') }}" class="w-[28px] h-[28px] mb-1" alt="{{ $card['label'] }}">
                 <span class="font-bold text-[24px] text-[#5C2D62]" style="font-family: 'Poppins', sans-serif;">{{ $card['value'] }}</span>
                 <span class="text-[13px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">{{ $card['label'] }}</span>
@@ -36,10 +44,7 @@
         @endforeach
     </div>
 
-    <div class="mt-12">
-        <h2 class="text-2xl font-bold text-secondary mb-4">Statistiky</h2>
-        @livewire('profile-statistics')
-    </div>
+    <hr class="w-[312px] mx-auto mb-4 md:hidden">
 
     {{-- Email Not Verified Warning --}}
     @if (!auth()->user()->hasVerifiedEmail())
@@ -113,11 +118,22 @@
         </div>
     @endif
 
-    <div class="mb-4 md:mb-8">
-        <h1 class="text-2xl md:text-4xl font-semibold text-secondary py-3 md:py-6 text-center">
-            {{ __('front.account.dashboard.basic_info') }}
-        </h1>
-        <hr>
+    <div class="hidden md:block mb-8">
+        <div class="relative flex items-center justify-center py-6">
+            <h1 class="w-[400px] max-w-full text-4xl text-center" style="font-family:'Poppins',sans-serif; font-weight:700; color:#5C2D62;">
+                {{ __('front.account.dashboard.basic_info') }}
+            </h1>
+            <div class="flex flex-col items-end gap-0.5 absolute right-0 top-1/2 -translate-y-1/2">
+                <div class="flex items-center gap-1.5">
+                    <div class="w-[14px] h-[14px] rounded-full {{ auth()->user()->isOnline() ? 'bg-[#00B80F]' : 'bg-gray-300' }}"></div>
+                    <span class="text-[13px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">
+                        {{ auth()->user()->isOnline() ? __('front.account.dashboard.online') : __('front.account.dashboard.offline') }}
+                    </span>
+                </div>
+                <a href="{{ route('account.dashboard') }}" class="text-[13px] text-[#505050] underline" style="font-family: 'Poppins', sans-serif; color: #DD3888;">{{ __('front.account.dashboard.settings') }}</a>
+            </div>
+        </div>
+        <hr class="mb-[77px]">
     </div>
 
     @livewire('profile-form')

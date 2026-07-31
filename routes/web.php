@@ -153,3 +153,4 @@ Route::get('/{slug}', function ($slug) {
         ->firstOrFail();
     return view('pages.show', compact('page'));
 })->name('pages.show');
+

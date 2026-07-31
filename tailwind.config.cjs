@@ -18,7 +18,8 @@ module.exports = {
           800: '#831943',
           900: '#701A3C',
           950: '#450A21'
-        }
+        },
+        'button-hover': '#EDEDED'
       }
     }
   },

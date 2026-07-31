@@ -1,4 +1,4 @@
-<div>
+<div class="w-[310px] md:w-full mx-auto">
     @if (session()->has('message'))
     <div class="alert alert-success flex items-center justify-between mb-6">
         <div class="flex items-center font-semibold">
@@ -13,23 +13,22 @@
 
     <!-- Services Section -->
     <div class="py-6">
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">{{ __('front.account.services.title') }}</h2>
-        <p class="text-sm text-gray-600 mb-6">{{ __('front.account.services.description') }}</p>
+        <h2 class="mb-4 text-left" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">{{ __('front.account.services.title') }}</h2>
 
         @if($services && $services->count() > 0)
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1">
                 @foreach($services as $service)
-                <div class="flex items-start justify-between py-1">
-                        <div class="flex-shrink-0">
-                        <x-toggle-switch 
+                <div class="flex flex-col md:flex-row md:items-start md:justify-between py-1">
+                    <div class="flex-shrink-0">
+                        <x-toggle-switch
                             name="service_{{ $service->id }}"
                             id="service_{{ $service->id }}"
                             :checked="in_array($service->id, $selectedServices)"
                             wire:click="toggleService({{ $service->id }})"
                         />
                     </div>
-                    <div class="flex-1 ml-3">
-                        <h5 class="font-semibold text-gray-900">
+                    <div class="flex-1 md:ml-3">
+                        <h5 style="font-family:'Poppins',sans-serif; font-weight:400; font-size:14px; color:#505050;">
                             {{ $service->name }}
                         </h5>
                     </div>
@@ -50,26 +49,35 @@
                 </div>
             </div>
         @endif
+
+        <button type="button" class="mt-6 w-[312px] md:w-[240px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
+            <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px] group-hover:hidden" alt="Save">
+            <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px] hidden group-hover:block" alt="Save">
+            <span class="text-[#A4A4A4] group-hover:text-white" style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px;">{{ __('front.profiles.form.save_changes') }}</span>
+        </button>
     </div>
 
+    <hr class="w-[843px] max-w-full relative left-1/2 -translate-x-1/2 mt-[80px] mb-[50px]">
+
     <!-- Online Hours Section -->
-    <div class="py-6 mt-8">
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">{{ __('front.account.services.online_hours_title') }}</h2>
-        
+    <div class="py-6" x-data="{ stillOnline: false }">
+        <h2 class="mb-4 text-left" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">{{ __('front.account.services.online_hours_title') }}</h2>
+
         <!-- Always Online Toggle -->
         <div class="mb-6 flex items-center">
-            <x-toggle-switch 
+            <x-toggle-switch
                 name="always_online"
                 id="always_online"
                 :checked="false"
+                x-model="stillOnline"
             />
-            <label for="always_online" class="ml-3 text-sm font-medium text-gray-700">
+            <label for="always_online" class="ml-3" style="font-family:'Poppins',sans-serif; font-weight:400; font-size:14px; color:#505050;">
                 {{ __('front.account.services.always_online') }}
             </label>
         </div>
 
         <!-- Days of Week Schedule -->
-        <div class="space-y-4">
+        <div class="space-y-4" :class="stillOnline ? 'opacity-40 pointer-events-none' : ''">
             @php
                 $days = [
                     ['key' => 'monday', 'label' => __('front.account.weekdays.monday')],
@@ -82,47 +90,34 @@
                 ];
             @endphp
 
+            @php
+                $timeOptions = [];
+                for ($h = 0; $h < 24; $h++) {
+                    $timeOptions[] = sprintf('%02d:00', $h);
+                    $timeOptions[] = sprintf('%02d:30', $h);
+                }
+            @endphp
+
             @foreach($days as $day)
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex flex-wrap gap-4">
                 <!-- From Time -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         {{ $day['label'] }} {{ __('front.account.services.from') }}
                     </label>
                     <div class="relative">
-                        <select 
-                            name="{{ $day['key'] }}_from" 
+                        <select
+                            name="{{ $day['key'] }}_from"
                             id="{{ $day['key'] }}_from"
-                            class="block w-full px-4 py-3 text-base leading-5 rounded-lg bg-white border border-gray-200 outline-none transition-all duration-200 ease-in-out focus:border-primary-500 focus:ring-2 focus:ring-primary-500 appearance-none cursor-pointer pr-10">
+                            class="input-control !w-[144px] !h-[50px] md:!w-[240px] md:!h-[50px] rounded-[8px] appearance-none pr-[54px]" :disabled="stillOnline">
                             <option value="">-</option>
-                            <option value="00:00">00:00</option>
-                            <option value="01:00">01:00</option>
-                            <option value="02:00">02:00</option>
-                            <option value="03:00">03:00</option>
-                            <option value="04:00">04:00</option>
-                            <option value="05:00">05:00</option>
-                            <option value="06:00">06:00</option>
-                            <option value="07:00">07:00</option>
-                            <option value="08:00">08:00</option>
-                            <option value="09:00" selected>09:00</option>
-                            <option value="10:00">10:00</option>
-                            <option value="11:00">11:00</option>
-                            <option value="12:00">12:00</option>
-                            <option value="13:00">13:00</option>
-                            <option value="14:00">14:00</option>
-                            <option value="15:00">15:00</option>
-                            <option value="16:00">16:00</option>
-                            <option value="17:00">17:00</option>
-                            <option value="18:00">18:00</option>
-                            <option value="19:00">19:00</option>
-                            <option value="20:00">20:00</option>
-                            <option value="21:00">21:00</option>
-                            <option value="22:00">22:00</option>
-                            <option value="23:00">23:00</option>
+                            @foreach($timeOptions as $time)
+                                <option value="{{ $time }}" {{ $time === '09:00' ? 'selected' : '' }}>{{ $time }}</option>
+                            @endforeach
                         </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <svg class="w-5 h-5 text-white bg-primary rounded-md p-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        <div class="absolute right-1 top-1/2 -translate-y-1/2 w-[42px] h-[42px] rounded-[4px] bg-[#DD3888] flex items-center justify-center pointer-events-none">
+                            <svg class="w-[10px] h-[5px]" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1 1L5 4L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </div>
                     </div>
@@ -134,41 +129,18 @@
                         {{ $day['label'] }} {{ __('front.account.services.to') }}
                     </label>
                     <div class="relative">
-                        <select 
-                            name="{{ $day['key'] }}_to" 
+                        <select
+                            name="{{ $day['key'] }}_to"
                             id="{{ $day['key'] }}_to"
-                            class="block w-full px-4 py-3 text-base leading-5 rounded-lg bg-white border border-gray-200 outline-none transition-all duration-200 ease-in-out focus:border-primary-500 focus:ring-2 focus:ring-primary-500 appearance-none cursor-pointer pr-10">
+                            class="input-control !w-[144px] !h-[50px] md:!w-[240px] md:!h-[50px] rounded-[8px] appearance-none pr-[54px]" :disabled="stillOnline">
                             <option value="">-</option>
-                            <option value="00:00">00:00</option>
-                            <option value="01:00">01:00</option>
-                            <option value="02:00">02:00</option>
-                            <option value="03:00">03:00</option>
-                            <option value="04:00">04:00</option>
-                            <option value="05:00">05:00</option>
-                            <option value="06:00">06:00</option>
-                            <option value="07:00">07:00</option>
-                            <option value="08:00">08:00</option>
-                            <option value="09:00">09:00</option>
-                            <option value="10:00">10:00</option>
-                            <option value="11:00">11:00</option>
-                            <option value="12:00">12:00</option>
-                            <option value="13:00">13:00</option>
-                            <option value="14:00">14:00</option>
-                            <option value="15:00">15:00</option>
-                            <option value="16:00">16:00</option>
-                            <option value="16:30" selected>16:30</option>
-                            <option value="17:00">17:00</option>
-                            <option value="18:00">18:00</option>
-                            <option value="19:00">19:00</option>
-                            <option value="20:00">20:00</option>
-                            <option value="21:00">21:00</option>
-                            <option value="22:00">22:00</option>
-                            <option value="23:00">23:00</option>
-                            <option value="23:59">23:59</option>
+                            @foreach($timeOptions as $time)
+                                <option value="{{ $time }}" {{ $time === '16:30' ? 'selected' : '' }}>{{ $time }}</option>
+                            @endforeach
                         </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <svg class="w-5 h-5 text-white bg-primary rounded-md p-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        <div class="absolute right-1 top-1/2 -translate-y-1/2 w-[42px] h-[42px] rounded-[4px] bg-[#DD3888] flex items-center justify-center pointer-events-none">
+                            <svg class="w-[10px] h-[5px]" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1 1L5 4L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </div>
                     </div>
@@ -178,13 +150,10 @@
         </div>
 
         <!-- Save Button -->
-        <div class="mt-6 flex justify-end">
-            <button type="button" class="btn-primary">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                </svg>
-                {{ __('front.account.services.save_changes') }}
-            </button>
-        </div>
+        <button type="button" class="mt-6 w-[310px] md:w-[240px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
+            <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px] group-hover:hidden" alt="Save">
+            <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px] hidden group-hover:block" alt="Save">
+            <span class="text-[#A4A4A4] group-hover:text-white" style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px;">{{ __('front.profiles.form.save_changes') }}</span>
+        </button>
     </div>
 </div>

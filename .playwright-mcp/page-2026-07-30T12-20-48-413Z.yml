@@ -1,0 +1,77 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - navigation [ref=e3]:
+      - generic [ref=e6]:
+        - link "ESCORT-ONLINE.COM" [ref=e7] [cursor=pointer]:
+          - /url: http://localhost:8000
+        - generic [ref=e9]:
+          - link "FAQ" [ref=e10] [cursor=pointer]:
+            - /url: http://localhost:8000/faq
+          - link "VIP & Premium" [ref=e11] [cursor=pointer]:
+            - /url: http://localhost:8000/vip-premium
+          - link "Ethics" [ref=e12] [cursor=pointer]:
+            - /url: http://localhost:8000/ethics
+          - link "Contact" [ref=e13] [cursor=pointer]:
+            - /url: http://localhost:8000/contact
+        - generic [ref=e14]:
+          - generic [ref=e15]:
+            - button "Registration" [ref=e16] [cursor=pointer]
+            - button "Login" [ref=e17] [cursor=pointer]
+          - button [ref=e20] [cursor=pointer]:
+            - img "English" [ref=e21]
+    - main [ref=e22]:
+      - generic [ref=e24]:
+        - generic [ref=e25]:
+          - link "ESCORT-ONLINE.COM" [ref=e26] [cursor=pointer]:
+            - /url: http://localhost:8000
+          - heading "Sign in to your account" [level=2] [ref=e28]
+          - paragraph [ref=e29]: Welcome back! Please sign in to continue.
+        - generic [ref=e31]:
+          - generic [ref=e32]:
+            - generic [ref=e33]: Email address
+            - textbox "Email address" [ref=e34]:
+              - /placeholder: Enter your email
+          - generic [ref=e35]:
+            - generic [ref=e36]: Password
+            - textbox "Password" [ref=e37]:
+              - /placeholder: Enter your password
+          - generic [ref=e38]:
+            - generic [ref=e39]:
+              - checkbox "Remember me" [ref=e41] [cursor=pointer]
+              - generic [ref=e42]: Remember me
+            - button "Sign in" [ref=e43] [cursor=pointer]
+          - paragraph [ref=e45]:
+            - text: Don't have an account?
+            - link "Register here" [ref=e46] [cursor=pointer]:
+              - /url: http://localhost:8000/register
+    - contentinfo [ref=e47]:
+      - generic [ref=e48]:
+        - heading "ESCORT-ONLINE.COM" [level=2] [ref=e50]
+        - generic [ref=e51]:
+          - button "Registration" [ref=e53] [cursor=pointer]
+          - generic [ref=e54]:
+            - generic [ref=e55]:
+              - link "FAQ" [ref=e56] [cursor=pointer]:
+                - /url: "#"
+              - link "Contact" [ref=e57] [cursor=pointer]:
+                - /url: "#"
+            - generic [ref=e58]:
+              - link "Privacy Policy" [ref=e59] [cursor=pointer]:
+                - /url: "#"
+              - link "Ethics & Safety" [ref=e60] [cursor=pointer]:
+                - /url: "#"
+            - generic [ref=e61]:
+              - link "VIP account for girls" [ref=e62] [cursor=pointer]:
+                - /url: "#"
+              - link "Premium account for men" [ref=e63] [cursor=pointer]:
+                - /url: "#"
+          - note [ref=e65]:
+            - img "lock" [ref=e66]
+            - generic [ref=e67]: We are a 100% discreet platform with professional personal data protection
+        - generic [ref=e69]:
+          - generic [ref=e70]:
+            - generic [ref=e71]: Our project is eco-friendly
+            - generic [ref=e72]: Thanks to the girl verification system you won't travel anywhere unnecessarily
+          - separator [ref=e73]
+          - generic [ref=e74]: © 2025 ZasukejSi.cz
+  - generic [ref=e75]: "Livewire: loaded"

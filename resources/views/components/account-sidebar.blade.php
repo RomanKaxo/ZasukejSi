@@ -27,11 +27,11 @@
 
 {{-- Sidebar --}}
 <aside 
-    class="w-full h-full md:w-80 md:relative fixed top-0 left-0 z-40 bg-white transition-transform duration-300 md:translate-x-0 overflow-y-auto pt-28 md:pt-0 md:mt-10"
+    class="w-full h-full md:w-[211px] md:relative fixed top-0 left-0 z-40 bg-white transition-transform duration-300 md:translate-x-0 overflow-y-auto pt-28 md:pt-0 {{ in_array($activeItem, ['photos', 'services', 'statistics']) ? 'md:mt-[90px]' : 'md:mt-[258px]' }}"
     :class="$store.accountSidebar.isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
 >
     <!-- Navigation Menu -->
-    <nav class="p-6">
+    <nav>
         <ul class="space-y-3">
             <li>
                 <a href="{{ route('account.dashboard') }}" 
@@ -50,9 +50,7 @@
                 @else
                 <span class="nav-button !text-gray-400 !cursor-not-allowed" title="{{ __('front.account.profile_required_short') }}">
                 @endif
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
+                    <x-icons name="Images" class="w-5 h-5 mr-3" />
                     {{ __('front.account.sidebar.photos') }}
                     @if(!$hasProfile)
                         <svg class="w-4 h-4 ml-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,9 +71,7 @@
                 @else
                 <span class="nav-button !text-gray-400 !cursor-not-allowed" title="{{ __('front.account.profile_required_short') }}">
                 @endif
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
+                    <x-icons name="List" class="w-5 h-5 mr-3" />
                     {{ __('front.account.sidebar.services') }}
                     @if(!$hasProfile)
                         <svg class="w-4 h-4 ml-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,9 +92,7 @@
                 @else
                 <span class="nav-button !text-gray-400 !cursor-not-allowed" title="{{ __('front.account.profile_required_short') }}">
                 @endif
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
+                    <x-icons name="BarChart4" class="w-5 h-5 mr-3" />
                     {{ __('front.account.sidebar.statistics') }}
                     @if(!$hasProfile)
                         <svg class="w-4 h-4 ml-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

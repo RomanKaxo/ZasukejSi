@@ -7,6 +7,10 @@
         $mobileMaxValue = max($chartValues ?: [1]);
     @endphp
 
+    <h3 class="mb-4 text-left max-[426px]:hidden" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">
+        {{ $variant === 'detail' ? __('front.account.statistics.detail_views_title') : __('front.account.statistics.profile_views_title') }}
+    </h3>
+
     <div class="w-full h-[510px] rounded-[15px] relative mx-auto max-[426px]:hidden">
     <!-- Chart will draw its own grid; removed static HTML grid to avoid duplication -->
 
@@ -32,7 +36,7 @@
                     </svg>
                 </button>
 
-                <div class="text-[#5C2D62] font-bold text-[16px]" style="font-family:Poppins, sans-serif;">
+                <div class="text-[#5C2D62] font-bold text-[16px] whitespace-nowrap" style="font-family:Poppins, sans-serif;">
                     {{ isset($currentMonth) ? $currentMonth->locale('cs')->translatedFormat('F Y') : now()->locale('cs')->translatedFormat('F Y') }}
                 </div>
 
@@ -50,6 +54,10 @@
     </div>
 
     <div class="hidden max-[426px]:block">
+        <h3 class="mb-4 text-left" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">
+            {{ $variant === 'detail' ? __('front.account.statistics.detail_views_title') : __('front.account.statistics.profile_views_title') }}
+        </h3>
+
         <div class="space-y-[7px]">
             @foreach($chartLabels as $i => $label)
                 @php

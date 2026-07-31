@@ -18,6 +18,49 @@ select {
   background-size: 42px;
 }
 
+/* Account profile form: fields locked to 400x50 per design, centered column */
+.profile-form-narrow input:not([type="checkbox"]):not([type="radio"]),
+.profile-form-narrow select,
+.profile-form-narrow button.input-control {
+  height: 50px;
+}
+
+.profile-form-narrow label {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 34px;
+  color: #505050;
+  margin-bottom: 0;
+}
+
+.profile-form-narrow input,
+.profile-form-narrow select,
+.profile-form-narrow button.input-control,
+.profile-form-narrow textarea {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: #505050;
+}
+
+.profile-form-narrow input:not(.border-red-500):not(.border-\[\#D80027\]),
+.profile-form-narrow select:not(.border-red-500):not(.border-\[\#D80027\]),
+.profile-form-narrow button.input-control:not(.border-red-500):not(.border-\[\#D80027\]),
+.profile-form-narrow textarea:not(.border-red-500):not(.border-\[\#D80027\]) {
+  border: 2px solid #E6E6E6;
+}
+
+.profile-form-narrow input.border-\[\#D80027\],
+.profile-form-narrow select.border-\[\#D80027\],
+.profile-form-narrow textarea.border-\[\#D80027\] {
+  border: 2px solid #D80027 !important;
+}
+
+.profile-form-narrow .text-red-600 {
+  color: #D80027;
+}
+
 select::-ms-expand {
   display: none;
 }
@@ -63,7 +106,14 @@ label {
 
 
 .nav-button {
-  @apply cursor-pointer flex items-center p-4 py-3 border-2 border-gray-200 font-semibold rounded-xl text-gray-700  transition-all duration-200;
+  @apply cursor-pointer flex items-center p-4 py-3 border-2 border-gray-200 font-medium text-[14px] rounded-xl transition-all duration-200;
+  font-family: 'Poppins', sans-serif;
+  color: #505050;
+}
+
+.nav-button svg {
+  color: #DD3888;
+  transition: color 0.2s;
 }
 
 .nav-button.active, .nav-button:hover {
@@ -160,19 +210,19 @@ label {
 
 
 /* Custom Checkbox Styles */
-input[type="checkbox"] {
+input[type="checkbox"]:not(.sr-only) {
   @apply appearance-none w-5 h-5 p-2 rounded-md cursor-pointer transition-all duration-200 ease-in-out outline-none;
   border: 2px solid var(--color-gray-300);
   background-color: white;
   position: relative;
 }
 
-input[type="checkbox"]:hover {
+input[type="checkbox"]:not(.sr-only):hover {
   box-shadow: 0 0 0 2px rgba(221,56,136,0.12);
 }
 
 
-input[type="checkbox"]:checked::after {
+input[type="checkbox"]:not(.sr-only):checked::after {
   content: '';
   position: absolute;
   top: 2px;
@@ -184,13 +234,13 @@ input[type="checkbox"]:checked::after {
 }
 
 /* Firefox compatibility */
-input[type="checkbox"]::-moz-focus-inner {
+input[type="checkbox"]:not(.sr-only)::-moz-focus-inner {
   border: 0;
   padding: 0;
 }
 
 /* IE/Edge compatibility */
-input[type="checkbox"]::-ms-check {
+input[type="checkbox"]:not(.sr-only)::-ms-check {
   display: none;
 }
 

@@ -25,21 +25,21 @@
                 wire:model="{{ $wireModelAttr }}"
                 {{ $disabled ? 'disabled' : '' }}
                 class="sr-only peer">
-            <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600" onclick="document.getElementById('{{ $switchId }}').click()"></div>
+            <div class="relative w-[44px] h-[24px] bg-gray-200 outline-none peer rounded-full peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00B80F]" onclick="document.getElementById('{{ $switchId }}').click()"></div>
         </div>
     @else
         <!-- Regular Version -->
         <div class="relative inline-flex items-center cursor-pointer {{ $disabled ? 'opacity-50 cursor-not-allowed' : '' }}">
-            <input 
-                type="checkbox" 
+            <input
+                type="checkbox"
                 id="{{ $switchId }}"
                 name="{{ $name }}"
                 value="1"
                 {{ $isChecked ? 'checked' : '' }}
                 {{ $disabled ? 'disabled' : '' }}
-                {{ $attributes->whereStartsWith('wire:') }}
+                {{ $attributes->except(['class']) }}
                 class="sr-only peer">
-            <label for="{{ $switchId }}" class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600 cursor-pointer"></label>
+            <label for="{{ $switchId }}" class="relative w-[44px] h-[24px] bg-gray-200 outline-none peer rounded-full peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00B80F] cursor-pointer"></label>
         </div>
     @endif
 

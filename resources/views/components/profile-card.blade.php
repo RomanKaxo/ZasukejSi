@@ -125,7 +125,17 @@
             @endif
 
         </div>
-        
+
+        @if(!$simpleMode && !$shouldBlur)
+        <!-- Prev/Next Arrows (visible on hover) -->
+        <button type="button" @click.stop.prevent="currentIndex = (currentIndex - 1 + Math.min(5, imageUrls.length)) % Math.min(5, imageUrls.length)" x-show="showBtn" class="absolute top-1/2 -translate-y-1/2 left-2 z-30 flex items-center justify-center" style="width:32px;height:32px;border-radius:9999px;border:1px solid #E4E4E7;background:#FFFFFF;">
+            <img src="{{ asset('images/icons/ArrowLeft.svg') }}" alt="" style="width:16px;height:16px;transform:rotate(180deg);" />
+        </button>
+        <button type="button" @click.stop.prevent="currentIndex = (currentIndex + 1) % Math.min(5, imageUrls.length)" x-show="showBtn" class="absolute top-1/2 -translate-y-1/2 right-2 z-30 flex items-center justify-center" style="width:32px;height:32px;border-radius:9999px;border:1px solid #E4E4E7;background:#FFFFFF;">
+            <img src="{{ asset('images/icons/ArrowLeft.svg') }}" alt="" style="width:16px;height:16px;" />
+        </button>
+        @endif
+
         @php
             $visibleDots = min(5, count($imageUrls));
         @endphp

@@ -1,14 +1,14 @@
-<div>
+﻿<div>
 
 
     @if (session()->has('message'))
-    <div class="alert alert-success flex items-center justify-between my-3">
-        <div class="flex items-center font-semibold">
-            <x-icons name="bell" class="w-5 h-5 mr-2.5" />
-            <span>{{ session('message') }}</span>
-        </div>
-        <button type="button" class="flex items-center ml-2 text-gray-400 hover:text-gray-600" onclick="this.parentElement.remove()">
-            <x-icons name="cross" class="text-green-800 w-3 h-3" />
+    <div class="relative mx-auto w-[310px] h-[110px] px-4 py-3 md:w-full md:h-[50px] md:mx-0 md:px-4 md:py-0 bg-[#01B810] rounded-[8px] flex items-center justify-center mb-4">
+        <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px] mr-3" alt="Save">
+        <span class="font-medium text-[14px] text-white text-center" style="font-family: 'Poppins', sans-serif;">{{ session('message') }}</span>
+        <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 md:right-4" onclick="this.parentElement.remove()">
+            <svg class="w-[10px] h-[10px]" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 1L9 9M9 1L1 9" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
         </button>
     </div>
     @endif
@@ -16,971 +16,506 @@
 
 
     <form wire:submit="save" class="space-y-8">
+    <div class="profile-form-narrow w-[312px] md:w-[400px] max-w-full mx-auto space-y-8">
         <!-- Personal Information Section -->
         <div class="space-y-6">
+            <h3 style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62; margin-bottom:19px;">{{ __('front.profiles.form.my_data') }}</h3>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 gap-[10px] !mt-0">
                 <!-- Name -->
                 <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.name') }} *</label>
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.nickname') }}</label>
                     <input
                         type="text"
                         id="name"
                         wire:model="name"
-                        class="input-control mt-1 @error('name') border-red-500 @enderror"
-                        placeholder="{{ __('front.profiles.form.name') }}">
+                        class="input-control mt-1 @error('name') border-red-500 @enderror">
                     @error('name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
-                <!-- Email -->
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.email') }} *</label>
-                    <input
-                        type="email"
-                        id="email"
-                        value="{{ $email }}"
-                        disabled
-                        class="input-control mt-1 bg-gray-50 text-gray-500 cursor-not-allowed"
-                        placeholder="{{ __('front.profiles.form.email_placeholder') }}">
-                </div>
-
-                <!-- Phone -->
-                <div>
-                    <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.phone') }}</label>
-                    <input
-                        type="tel"
-                        id="phone"
-                        wire:model="phone"
-                        class="input-control mt-1 @error('phone') border-red-500 @enderror"
-                        placeholder="+420 123 456 789">
-                    @error('phone') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-            </div>
-
-            <!-- Save Basic Info Button -->
-            <div class="flex justify-end">
-                <button
-                    type="submit"
-                    wire:loading.attr="disabled"
-                    wire:loading.class="opacity-50 cursor-not-allowed"
-                    class="btn-primary btn-small justify-center">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span wire:loading.remove>{{ __('front.profiles.form.savechanges') }}</span>
-                    <span wire:loading>{{ __('front.profiles.form.saving') }}</span>
-                </button>
-            </div>
-
-            <!-- Email Change Section -->
-            <div x-data="{ expanded: false }" class="mt-6">
-                <button
-                    type="button"
-                    @click="expanded = !expanded"
-                    class="w-full flex items-center justify-between py-3 px-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
-                    <span class="flex items-center gap-2 text-sm font-medium text-gray-700">
-                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                        </svg>
-                        {{ __('front.profiles.form.change_email') }}
-                    </span>
-                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': expanded }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                </button>
-
+                @if($hasProfile)
+                {{--
+                    Country + city are resolved entirely in the browser: picking either one
+                    fires no Livewire request (values are sent with the form on save).
+                --}}
                 <div
-                    x-show="expanded"
-                    x-collapse
-                    x-cloak
-                    class="mt-4 space-y-4 px-1">
-                    <!-- New Email -->
+                    wire:ignore
+                    x-data="{
+                        citiesByCountry: {{ \Illuminate\Support\Js::from($citiesByCountry) }},
+                        country: @js($country_code),
+                        city: @js($city),
+                        get cities() {
+                            return this.citiesByCountry[this.country] ?? [];
+                        },
+                        selectCountry() {
+                            this.city = '';
+                            $wire.set('country_code', this.country, false);
+                            $wire.set('city', '', false);
+                        },
+                        selectCity() {
+                            $wire.set('city', this.city, false);
+                        }
+                    }"
+                    class="contents">
+                    <!-- Country -->
                     <div>
-                        <label for="new_email" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.new_email') }}</label>
-                        <input
-                            type="email"
-                            id="new_email"
-                            wire:model="new_email"
-                            class="input-control mt-1 @error('new_email') border-red-500 @enderror"
-                            placeholder="{{ __('front.profiles.form.email_placeholder') }}">
-                        @error('new_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
-
-                    <!-- Password Confirmation for Email Change -->
-                    <div>
-                        <label for="email_change_password" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.password_to_confirm') }}</label>
-                        <input
-                            type="password"
-                            id="email_change_password"
-                            wire:model="email_change_password"
-                            class="input-control mt-1 @error('email_change_password') border-red-500 @enderror"
-                            placeholder="••••••••">
-                        @error('email_change_password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                        <p class="mt-2 text-xs text-gray-500">{{ __('front.profiles.form.email_change_notice') }}</p>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <div class="flex justify-end pt-4">
-                        <button
-                            type="submit"
-                            wire:loading.attr="disabled"
-                            wire:loading.class="opacity-50 cursor-not-allowed"
-                            class="btn-primary btn-small justify-center">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span wire:loading.remove>{{ __('front.profiles.form.savechanges') }}</span>
-                            <span wire:loading>{{ __('front.profiles.form.saving') }}</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Password Reset Section -->
-            <div x-data="{ expanded: false }" class="mt-6">
-                <button
-                    type="button"
-                    @click="expanded = !expanded"
-                    class="w-full flex items-center justify-between py-3 px-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
-                    <span class="flex items-center gap-2 text-sm font-medium text-gray-700">
-                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
-                        </svg>
-                        {{ __('front.profiles.form.change_password') }}
-                    </span>
-                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': expanded }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                </button>
-
-                <div
-                    x-show="expanded"
-                    x-collapse
-                    x-cloak
-                    class="mt-4 space-y-4 px-1">
-                    <!-- Current Password -->
-                    <div>
-                        <label for="current_password" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.current_password') }}</label>
-                        <input
-                            type="password"
-                            id="current_password"
-                            wire:model="current_password"
-                            class="input-control mt-1 @error('current_password') border-red-500 @enderror"
-                            placeholder="••••••••">
-                        @error('current_password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- New Password -->
-                        <div>
-                            <label for="new_password" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.new_password') }}</label>
-                            <input
-                                type="password"
-                                id="new_password"
-                                wire:model="new_password"
-                                class="input-control mt-1 @error('new_password') border-red-500 @enderror"
-                                placeholder="••••••••">
-                            @error('new_password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        <label for="country_code" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.country') }}</label>
+                        <div class="relative group">
+                            <select
+                                id="country_code"
+                                x-model="country"
+                                @change="selectCountry()"
+                                class="input-control w-full appearance-none pr-[54px] @error('country_code') border-red-500 @enderror {{ $this->shouldShowPublishRequirement('country_code') ? 'border-red-500' : '' }}">
+                                <option value="">{{ __('front.profiles.form.selectcountry') }}</option>
+                                @foreach($countries as $country)
+                                    <option value="{{ $country['code'] }}">{{ $country['name'] }}</option>
+                                @endforeach
+                            </select>
+                            <div class="absolute right-1 top-1/2 -translate-y-1/2 w-[42px] h-[42px] rounded-[4px] bg-[#DD3888] group-hover:bg-[#CA2474] transition-colors duration-200 flex items-center justify-center pointer-events-none">
+                                <svg class="w-[10px] h-[5px] transition-transform duration-200 group-focus-within:-rotate-180" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M1 1L5 4L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
                         </div>
-
-                        <!-- Confirm Password -->
-                        <div>
-                            <label for="new_password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.confirm_password') }}</label>
-                            <input
-                                type="password"
-                                id="new_password_confirmation"
-                                wire:model="new_password_confirmation"
-                                class="input-control mt-1 @error('new_password_confirmation') border-red-500 @enderror"
-                                placeholder="••••••••">
-                            @error('new_password_confirmation') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                        </div>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <div class="flex justify-end pt-4">
-                        <button
-                            type="submit"
-                            wire:loading.attr="disabled"
-                            wire:loading.class="opacity-50 cursor-not-allowed"
-                            class="btn-primary btn-small justify-center">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span wire:loading.remove>{{ __('front.profiles.form.savechanges') }}</span>
-                            <span wire:loading>{{ __('front.profiles.form.saving') }}</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Profile Section -->
-        <div class="space-y-6 pt-10">
-            <h3 class="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-2">{{ __('front.profiles.form.profile') }}</h3>
-
-            @if($hasProfile)
-            <div class="space-y-6">
-                <!-- Display Name -->
-                <div>
-                    <label for="display_name" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.displayname') }} *</label>
-                    <input
-                        type="text"
-                        id="display_name"
-                        wire:model="display_name"
-                        class="input-control mt-1 @error('display_name') border-red-500 @enderror {{ $this->shouldShowPublishRequirement('display_name') ? 'border-red-500' : '' }}"
-                        placeholder="{{ __('front.profiles.form.displayname') }}">
-                    @error('display_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    @if($this->shouldShowPublishRequirement('display_name'))
-                        <p class="mt-1 text-sm text-red-600">{{ __('front.profiles.form.publish_required') }}</p>
-                    @endif
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Age -->
-                    <div>
-                        <label for="age" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.age') }} *</label>
-                        <input
-                            type="number"
-                            id="age"
-                            wire:model="age"
-                            min="18"
-                            max="120"
-                            class="input-control mt-1 @error('age') border-red-500 @enderror {{ $this->shouldShowPublishRequirement('age') ? 'border-red-500' : '' }}"
-                            placeholder="25">
-                        @error('age') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                        @if($this->shouldShowPublishRequirement('age'))
+                        @error('country_code') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        @if($this->shouldShowPublishRequirement('country_code'))
                             <p class="mt-1 text-sm text-red-600">{{ __('front.profiles.form.publish_required') }}</p>
                         @endif
                     </div>
 
-                    <!-- City -->
-                    <div x-data="{ open: @entangle('cityDropdownOpen') }" class="relative">
-                        <label for="city" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.city') }}</label>
-                        <div class="relative">
-                            <input
-                                type="text"
+                    <!-- City (options follow the selected country) -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label for="city" class="block text-sm font-medium text-gray-700">{{ __('front.profiles.form.city') }}</label>
+                            <span class="flex items-center gap-1" x-show="!city" x-cloak>
+                                <img src="{{ asset('images/icons/OctagonAlert.svg') }}" class="w-[14px] h-[14px]" alt="">
+                                <span style="font-family:'Poppins',sans-serif; font-weight:400; font-size:13px; color:#D80027;">{{ __('front.profiles.form.required_field') }}</span>
+                            </span>
+                        </div>
+                        <div class="relative group">
+                            <select
                                 id="city"
-                                wire:model.live.debounce.300ms="citySearchTerm"
-                                @focus="open = true"
-                                @click="open = true"
-                                :disabled="!$wire.country_code"
-                                class="input-control mt-1 @error('city') border-red-500 @enderror"
-                                :class="{ 'bg-gray-100 cursor-not-allowed': !$wire.country_code }"
-                                placeholder="{{ __('front.profiles.form.city') }}">
-                            @if(!$country_code)
-                                <p class="mt-1 text-xs text-gray-500">{{ __('front.profiles.form.select_country_first') }}</p>
-                            @endif
+                                x-model="city"
+                                x-init="$nextTick(() => { $el.value = city })"
+                                @change="selectCity()"
+                                :disabled="!country"
+                                :class="(!country ? 'bg-gray-100 cursor-not-allowed ' : '') + (!city ? 'border-2 border-[#D80027]' : '')"
+                                class="input-control w-full appearance-none pr-[54px] @error('city') border-red-500 @enderror">
+                                <option value="">{{ __('front.profiles.form.city') }}</option>
+                                <template x-for="cityName in cities" :key="cityName">
+                                    <option :value="cityName" x-text="cityName"></option>
+                                </template>
+                            </select>
+                            <div class="absolute right-1 top-1/2 -translate-y-1/2 w-[42px] h-[42px] rounded-[4px] bg-[#DD3888] group-hover:bg-[#CA2474] transition-colors duration-200 flex items-center justify-center pointer-events-none">
+                                <svg class="w-[10px] h-[5px] transition-transform duration-200 group-focus-within:-rotate-180" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M1 1L5 4L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
                         </div>
-                        
-                        <!-- City Suggestions Dropdown -->
-                        <div
-                            x-show="open && $wire.country_code"
-                            @click.away="open = false"
-                            x-transition:enter="transition ease-out duration-100"
-                            x-transition:enter-start="transform opacity-0 scale-95"
-                            x-transition:enter-end="transform opacity-100 scale-100"
-                            x-transition:leave="transition ease-in duration-75"
-                            x-transition:leave-start="transform opacity-100 scale-100"
-                            x-transition:leave-end="transform opacity-0 scale-95"
-                            class="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto"
-                            style="display: none;">
-                            @if(count($citySuggestions) > 0)
-                                @foreach($citySuggestions as $suggestion)
-                                    <button
-                                        type="button"
-                                        wire:click="selectCity('{{ addslashes($suggestion) }}')"
-                                        class="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
-                                        :class="{ 'bg-pink-50': '{{ addslashes($suggestion) }}' === '{{ addslashes($city) }}' }">
-                                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        </svg>
-                                        <span>{{ $suggestion }}</span>
-                                    </button>
-                                @endforeach
-                            @elseif(strlen($citySearchTerm) >= 2)
-                                <div class="px-4 py-3 text-sm text-gray-500 text-center">
-                                    <svg class="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                    </svg>
-                                    {{ __('front.profiles.form.city_no_results') }}
-                                </div>
-                            @endif
-                        </div>
+                        <p class="mt-1 text-xs text-gray-500" x-show="!country">{{ __('front.profiles.form.select_country_first') }}</p>
                         @error('city') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
+                @endif
 
-                <!-- Country -->
+                <!-- Phone -->
                 <div>
-                    <label for="country" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.country') }} *</label>
-                    <div x-data="{ open: @entangle('countryDropdownOpen'), searchTerm: @entangle('countrySearchTerm') }" class="relative">
-                        <button
-                            type="button"
-                            @click="open = !open"
-                            class="input-control w-full text-left flex items-center justify-between @error('country_code') border-red-500 @enderror {{ $this->shouldShowPublishRequirement('country_code') ? 'border-red-500' : '' }}">
-                            <span class="flex items-center gap-2 flex-nowrap"> 
-                                <span class="flex items-center gap-2"> 
-                                    <svg class="w-5 h-5 text-gray-400" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                    </svg>
-                                </span>
-                                <span class="flex items-center gap-2">
-                                    @if($country_code)
-                                        <img src="https://flagcdn.com/{{ strtolower($country_code) }}.svg" alt="{{ $country_code }}" class="w-5 h-4 object-cover">
-                                        <span>{{ collect($countries)->firstWhere('code', $country_code)['name'] ?? $country_code }}</span>
-                                    @else
-                                        <span class="text-gray-400">{{ __('front.profiles.form.selectcountry') }}</span>
-                                    @endif
-                                </span>
-                            </span>
-                        </button>
+                    <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.your_phone') }}</label>
+                    <input
+                        type="tel"
+                        id="phone"
+                        wire:model="phone"
+                        class="input-control mt-1 @error('phone') border-red-500 @enderror">
+                    @error('phone') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+            </div>
 
-                        <div
-                            x-show="open"
-                            @click.away="open = false"
-                            x-transition:enter="transition ease-out duration-100"
-                            x-transition:enter-start="transform opacity-0 scale-95"
-                            x-transition:enter-end="transform opacity-100 scale-100"
-                            x-transition:leave="transition ease-in duration-75"
-                            x-transition:leave-start="transform opacity-100 scale-100"
-                            x-transition:leave-end="transform opacity-0 scale-95"
-                            class="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto"
-                            style="display: none;">
-                            <!-- Search Input -->
-                            <div class="sticky top-0 bg-white p-2 border-b border-gray-200">
-                                <input
-                                    type="text"
-                                    wire:model.live="countrySearchTerm"
-                                    placeholder="{{ __('front.profiles.form.searchcountry') }}"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent">
-                            </div>
-                            <!-- Country List -->
-                            <div class="py-1">
-                                @forelse($this->filteredCountries as $country)
-                                    <button
-                                        type="button"
-                                        wire:click="selectCountry('{{ $country['code'] }}')"
-                                        class="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
-                                        :class="{ 'bg-pink-50': '{{ $country['code'] }}' === '{{ $country_code }}' }">
-                                        <img src="https://flagcdn.com/{{ strtolower($country['code']) }}.svg" alt="{{ $country['code'] }}" class="w-5 h-4 object-cover">
-                                        <span>{{ $country['name'] }}</span>
-                                    </button>
-                                @empty
-                                    <div class="px-4 py-2 text-gray-500 text-sm">{{ __('front.profiles.form.nocountries') }}</div>
-                                @endforelse
+            @if($hasProfile)
+            <div class="space-y-[13px]">
+                <div class="flex items-center gap-2">
+                    <x-toggle-switch
+                        name="has_whatsapp"
+                        id="has_whatsapp"
+                        wire-model="has_whatsapp"
+                        :checked="$has_whatsapp" />
+                    <label for="has_whatsapp" class="text-sm font-medium text-gray-700">{{ __('front.profiles.form.whatsapp_toggle') }}</label>
+                </div>
+                <div class="flex items-center gap-2">
+                    <x-toggle-switch
+                        name="has_telegram"
+                        id="has_telegram"
+                        wire-model="has_telegram"
+                        :checked="$has_telegram" />
+                    <label for="has_telegram" class="text-sm font-medium text-gray-700">{{ __('front.profiles.form.telegram_toggle') }}</label>
+                </div>
+            </div>
+            @endif
+
+            <button type="submit" class="w-[312px] md:w-[400px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
+                <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px] group-hover:hidden" alt="Save">
+                <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px] hidden group-hover:block" alt="Save">
+                <span class="text-[#A4A4A4] group-hover:text-white" style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px;">{{ __('front.profiles.form.save_changes') }}</span>
+            </button>
+
+            <hr class="w-[843px] max-w-none relative left-1/2 -translate-x-1/2 mt-[80px] mb-[50px]">
+
+            @if($hasProfile)
+            <div class="space-y-6">
+                <h3 style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62; margin-bottom:19px;">{{ __('front.profiles.form.body') }}</h3>
+
+                <div class="grid grid-cols-1 gap-[10px] !mt-0">
+                    <!-- Age -->
+                    <div>
+                        <label for="age" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.age') }}</label>
+                        <input
+                            type="number"
+                            id="age"
+                            wire:model="age"
+                            min="0"
+                            class="input-control mt-1 @error('age') border-red-500 @enderror">
+                        @error('age') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <!-- Weight -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label for="weight_kg" class="block text-sm font-medium text-gray-700">{{ __('front.profiles.form.weight_kg') }}</label>
+                            @if(empty($weight_kg))
+                                <span class="flex items-center gap-1">
+                                    <img src="{{ asset('images/icons/OctagonAlert.svg') }}" class="w-[14px] h-[14px]" alt="">
+                                    <span style="font-family:'Poppins',sans-serif; font-weight:400; font-size:13px; color:#D80027;">{{ __('front.profiles.form.required_field') }}</span>
+                                </span>
+                            @endif
+                        </div>
+                        <input
+                            type="number"
+                            id="weight_kg"
+                            wire:model="weight_kg"
+                            min="0"
+                            class="input-control mt-1 @error('weight_kg') border-red-500 @enderror {{ empty($weight_kg) ? 'border-2 border-[#D80027]' : '' }}">
+                        @error('weight_kg') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <!-- Height -->
+                    <div>
+                        <label for="height_cm" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.height_cm') }}</label>
+                        <input
+                            type="number"
+                            id="height_cm"
+                            wire:model="height_cm"
+                            min="0"
+                            class="input-control mt-1 @error('height_cm') border-red-500 @enderror">
+                        @error('height_cm') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <!-- Bust size -->
+                    <div class="relative">
+                        <label for="bust_size" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.bust') }}</label>
+                        <div class="relative group">
+                            <select
+                                id="bust_size"
+                                wire:model.live="bust_size"
+                                class="input-control w-full appearance-none pr-[54px] @error('bust_size') border-red-500 @enderror">
+                                <option value="">{{ __('front.profiles.form.selectbust') }}</option>
+                                @foreach($bustSizeOptions as $size)
+                                    <option value="{{ $size }}">{{ $size }}</option>
+                                @endforeach
+                            </select>
+                            <div class="absolute right-1 top-1/2 -translate-y-1/2 w-[42px] h-[42px] rounded-[4px] bg-[#DD3888] group-hover:bg-[#CA2474] transition-colors duration-200 flex items-center justify-center pointer-events-none">
+                                <svg class="w-[10px] h-[5px] transition-transform duration-200 group-focus-within:-rotate-180" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M1 1L5 4L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
                             </div>
                         </div>
+                        @error('bust_size') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
-                    @error('country_code') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    @if($this->shouldShowPublishRequirement('country_code'))
-                        <p class="mt-1 text-sm text-red-600">{{ __('front.profiles.form.publish_required') }}</p>
-                    @endif
                 </div>
 
-                <!-- Address -->
-                <div>
-                    <label for="address" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.address') }}</label>
-                    <input
-                        type="text"
-                        id="address"
-                        wire:model="address"
-                        class="input-control mt-1 @error('address') border-red-500 @enderror"
-                        placeholder="{{ __('front.profiles.form.street') }}">
-                    @error('address') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
+                <button type="submit" class="w-[312px] md:w-[400px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
+                    <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px]" alt="Save">
+                    <span style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px; color: #A4A4A4;">{{ __('front.profiles.form.save_changes') }}</span>
+                </button>
 
-                <!-- About -->
+                <hr class="w-[843px] max-w-none relative left-1/2 -translate-x-1/2 mt-[80px] mb-[50px]">
+            </div>
+            @endif
+
+            @if($hasProfile)
+            <div class="space-y-6">
+                <h3 style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62; margin-bottom:19px;">{{ __('front.profiles.form.aboutme') }}</h3>
+
                 <div>
-                    <label for="about" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.aboutme') }}</label>
+                    <label for="about" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.about_label') }}</label>
                     <textarea
                         id="about"
                         wire:model="about"
-                        rows="4"
-                        class="input-control mt-1 @error('about') border-red-500 @enderror"
-                        placeholder="{{ __('front.profiles.form.aboutmeplaceholder') }}"></textarea>
+                        maxlength="640"
+                        class="input-control w-[312px] md:w-[400px] h-[396px] rounded-[8px] resize-none @error('about') border-red-500 @enderror"></textarea>
                     @error('about') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
-                <!-- InCall & OutCall Toggles -->
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <label for="incall" class="text-sm font-medium text-gray-700">{{ __('front.profiles.form.incall') }}</label>
-                            <p class="text-xs text-gray-500">{{ __('front.profiles.form.incall_desc') }}</p>
-                        </div>
+                <button type="submit" class="w-[312px] md:w-[400px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
+                    <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px]" alt="Save">
+                    <span style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px; color: #A4A4A4;">{{ __('front.profiles.form.save_changes') }}</span>
+                </button>
+
+                <hr class="w-[843px] max-w-none relative left-1/2 -translate-x-1/2 mt-[80px] mb-[50px]">
+            </div>
+            @endif
+
+            @if($hasProfile)
+            <div class="space-y-6">
+                <h3 style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62; margin-bottom:19px;">{{ __('front.profiles.form.incall_outcall') }}</h3>
+
+                <div class="space-y-[13px]">
+                    <div class="flex items-center gap-2">
                         <x-toggle-switch
                             name="incall"
                             id="incall"
                             wire-model="incall"
                             :checked="$incall" />
+                        <label for="incall" class="text-sm font-medium text-gray-700">{{ __('front.profiles.form.incall') }}</label>
                     </div>
-
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <label for="outcall" class="text-sm font-medium text-gray-700">{{ __('front.profiles.form.outcall') }}</label>
-                            <p class="text-xs text-gray-500">{{ __('front.profiles.form.outcall_desc') }}</p>
-                        </div>
+                    <div class="flex items-center gap-2">
                         <x-toggle-switch
                             name="outcall"
                             id="outcall"
                             wire-model="outcall"
                             :checked="$outcall" />
-                    </div>
-
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <label for="is_porn_actress" class="text-sm font-medium text-gray-700">{{ __('front.profiles.form.porn_actress') }}</label>
-                            <p class="text-xs text-gray-500">{{ __('front.profiles.form.porn_actress_desc') }}</p>
-                        </div>
-                        <x-toggle-switch
-                            name="is_porn_actress"
-                            id="is_porn_actress"
-                            wire-model="is_porn_actress"
-                            :checked="$is_porn_actress" />
+                        <label for="outcall" class="text-sm font-medium text-gray-700">{{ __('front.profiles.form.outcall') }}</label>
                     </div>
                 </div>
 
-                <!-- Local Prices -->
-                <div class="space-y-4 border-t border-gray-200 pt-10 mt-20">
-                    <div class="flex items-center gap-3">
-                        <div class="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 bg-gray-200 flex items-center justify-center">
-                            <img src="https://flagcdn.com/cz.svg"
-                                alt="Czech Republic"
-                                class="w-full h-full object-cover">
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-900">{{ __('front.profiles.form.local_prices') }}</h3>
-                    </div>
+                <button type="submit" class="w-[312px] md:w-[400px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
+                    <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px]" alt="Save">
+                    <span style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px; color: #A4A4A4;">{{ __('front.profiles.form.save_changes') }}</span>
+                </button>
 
-                    <div class="space-y-3">
-                        @foreach($local_prices as $index => $price)
-                        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-                            <!-- Time Hours -->
-                            <div class="md:col-span-3">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.time_hours') }}</label>
-                                <input
-                                    type="text"
-                                    wire:model="local_prices.{{ $index }}.time_hours"
-                                    class="input-control @error('local_prices.' . $index . '.time_hours') border-red-500 @enderror"
-                                    placeholder="0.5">
-                                @error('local_prices.' . $index . '.time_hours')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Incall Price -->
-                            <div class="md:col-span-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.incall_price') }}</label>
-                                <input
-                                    type="number"
-                                    wire:model="local_prices.{{ $index }}.incall_price"
-                                    class="input-control @error('local_prices.' . $index . '.incall_price') border-red-500 @enderror"
-                                    placeholder="8000">
-                                @error('local_prices.' . $index . '.incall_price')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Outcall Price -->
-                            <div class="md:col-span-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.outcall_price') }}</label>
-                                <input
-                                    type="number"
-                                    wire:model="local_prices.{{ $index }}.outcall_price"
-                                    class="input-control @error('local_prices.' . $index . '.outcall_price') border-red-500 @enderror"
-                                    placeholder="10000">
-                                @error('local_prices.' . $index . '.outcall_price')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Remove Button -->
-                            <div class="md:col-span-1 flex justify-end pb-2">
-                                <button
-                                    type="button"
-                                    wire:click="removeLocalPrice({{ $index }})"
-                                    class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-pink-500 text-white hover:bg-pink-600 transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        @endforeach
-
-                        <!-- Add Button -->
-                        <button
-                            type="button"
-                            wire:click="addLocalPrice"
-                            class="w-full py-3 px-4 rounded-2xl bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors flex items-center justify-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                            </svg>
-                            <span class="font-medium">{{ __('front.profiles.form.add_price') }}</span>
-                        </button>
-                    </div>
-                </div>
-
-
-                <!-- Global Prices -->
-                <div class="space-y-4 border-t border-gray-200 pt-10 mt-20">
-                    <div class="flex items-center gap-3">
-                        <div class="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 bg-gray-200 flex items-center justify-center">
-                            <img src="https://flagcdn.com/w80/un.png"
-                                alt="Global"
-                                class="w-full h-full object-cover">
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-900">{{ __('front.profiles.form.global_prices') }}</h3>
-                    </div>
-
-                    <div class="space-y-3">
-                        @foreach($global_prices as $index => $price)
-                        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-                            <!-- Time Hours -->
-                            <div class="md:col-span-3">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.time_hours') }}</label>
-                                <input
-                                    type="text"
-                                    wire:model="global_prices.{{ $index }}.time_hours"
-                                    class="input-control @error('global_prices.' . $index . '.time_hours') border-red-500 @enderror"
-                                    placeholder="0.5">
-                                @error('global_prices.' . $index . '.time_hours')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Incall Price -->
-                            <div class="md:col-span-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.incall_price') }}</label>
-                                <input
-                                    type="number"
-                                    wire:model="global_prices.{{ $index }}.incall_price"
-                                    class="input-control @error('global_prices.' . $index . '.incall_price') border-red-500 @enderror"
-                                    placeholder="8000">
-                                @error('global_prices.' . $index . '.incall_price')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Outcall Price -->
-                            <div class="md:col-span-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.outcall_price') }}</label>
-                                <input
-                                    type="number"
-                                    wire:model="global_prices.{{ $index }}.outcall_price"
-                                    class="input-control @error('global_prices.' . $index . '.outcall_price') border-red-500 @enderror"
-                                    placeholder="10000">
-                                @error('global_prices.' . $index . '.outcall_price')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Remove Button -->
-                            <div class="md:col-span-1 flex justify-end pb-2">
-                                <button
-                                    type="button"
-                                    wire:click="removeGlobalPrice({{ $index }})"
-                                    class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-pink-500 text-white hover:bg-pink-600 transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        @endforeach
-
-                        <!-- Add Button -->
-                        <button
-                            type="button"
-                            wire:click="addGlobalPrice"
-                            class="w-full py-3 px-4 rounded-2xl bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors flex items-center justify-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                            </svg>
-                            <span class="font-medium">{{ __('front.profiles.form.add_price') }}</span>
-                        </button>
-                    </div>
-                </div>
-
-
-                <!-- Contacts -->
-                <div class="space-y-4 border-t border-gray-200 pt-10 mt-20">
-                    <div class="flex items-center gap-3">
-                        <div class="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 bg-primary-100 flex items-center justify-center">
-                            <x-icons name="message" class="w-4 h-4 text-primary" />
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-900">{{ __('front.profiles.form.contacts') }}</h3>
-                    </div>
-
-                    <div class="space-y-3">
-                        @foreach($contacts as $index => $contact)
-                        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-                            <!-- Contact Type -->
-                            <div class="md:col-span-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.contact_type') }}</label>
-                                <select
-                                    wire:model="contacts.{{ $index }}.type"
-                                    class="input-control @error('contacts.' . $index . '.type') border-red-500 @enderror">
-                                    <option value="phone">{{ __('front.profiles.form.contact_phone') }}</option>
-                                    <option value="whatsapp">WhatsApp</option>
-                                    <option value="telegram">Telegram</option>
-                                </select>
-                                @error('contacts.' . $index . '.type')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Contact Value -->
-                            <div class="md:col-span-7">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.contact_value') }}</label>
-                                <input
-                                    type="text"
-                                    wire:model="contacts.{{ $index }}.value"
-                                    class="input-control @error('contacts.' . $index . '.value') border-red-500 @enderror"
-                                    placeholder="{{ $contact['type'] === 'telegram' ? '@username' : '+420 123 456 789' }}">
-                                @error('contacts.' . $index . '.value')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Remove Button -->
-                            <div class="md:col-span-1 flex justify-end pb-2">
-                                <button
-                                    type="button"
-                                    wire:click="removeContact({{ $index }})"
-                                    class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-pink-500 text-white hover:bg-pink-600 transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        @endforeach
-
-                        <!-- Add Button -->
-                        <button
-                            type="button"
-                            wire:click="addContact"
-                            class="w-full py-3 px-4 rounded-2xl bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors flex items-center justify-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                            </svg>
-                            <span class="font-medium">{{ __('front.profiles.form.add_contact') }}</span>
-                        </button>
-                    </div>
-                </div>
-
-
-                <!-- Availability Hours -->
-                <div class="border-t border-gray-200 pt-10 mt-20">
-                    <label for="availability_hours" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.availability') }}</label>
-                    <input
-                        type="text"
-                        id="availability_hours"
-                        wire:model="availability_hours"
-                        class="input-control mt-1 @error('availability_hours') border-red-500 @enderror"
-                        placeholder="{{ __('front.profiles.form.availabilityplaceholder') }}">
-                    @error('availability_hours') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                <!-- Profile Status -->
-                @if($this->isAdmin())
-                <!-- Admin: Editable Select -->
-                <div>
-                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.status') }}</label>
-                    <select
-                        id="status"
-                        wire:model="status"
-                        class="input-control mt-1 @error('status') border-red-500 @enderror">
-                        <option value="">{{ __('front.profiles.form.selectstatus') }}</option>
-                        <option value="pending">{{ __('front.profiles.form.pending') }}</option>
-                        <option value="approved">{{ __('front.profiles.form.approved') }}</option>
-                        <option value="rejected">{{ __('front.profiles.form.rejected') }}</option>
-                    </select>
-                    @error('status') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-                @else
-                <!-- Non-Admin: Status Display -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.status') }}</label>
-                    <div class="mt-1 flex items-center">
-                        <span class="inline-flex items-center px-3 py-2 rounded-lg border text-sm font-medium {{ $this->getStatusColor() }}">
-                            @if($status === 'pending')
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            @elseif($status === 'approved')
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            @elseif($status === 'rejected')
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            @endif
-                            {{ $this->getStatusLabel() }}
-                        </span>
-                    </div>
-                    <p class="mt-2 text-xs text-gray-500">{{ __('front.profiles.form.statusdesc') }}</p>
-                </div>
-                @endif
-
-                <!-- Public Profile Toggle -->
-                <div class="flex items-center justify-between">
-                    <div>
-                        <label for="is_public" class="text-sm font-medium text-gray-700">{{ __('front.profiles.form.public') }}</label>
-                        <p class="text-xs text-gray-500">{{ __('front.profiles.form.publicdesc') }}</p>
-                    </div>
-                    <x-toggle-switch
-                        name="is_public"
-                        id="is_public"
-                        wire-model="is_public"
-                        :checked="$is_public"
-                        :disabled="!$this->canPublishProfile()" />
-                </div>
-
-                <!-- Save Profile Button -->
-                <div class="flex justify-end pt-6">
-                    <button
-                        type="submit"
-                        wire:loading.attr="disabled"
-                        wire:loading.class="opacity-50 cursor-not-allowed"
-                        class="btn-primary justify-center">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span wire:loading.remove>{{ __('front.profiles.form.savechanges') }}</span>
-                        <span wire:loading>{{ __('front.profiles.form.saving') }}</span>
-                    </button>
-                </div>
-            </div>
-            @else
-            <div x-data="{ expanded: false }">
-                <!-- No Profile CTA Banner -->
-                <div class="relative overflow-hidden rounded-xl border-2 border-primary bg-gradient-to-br from-primary-50 via-white to-secondary/5 shadow-md">
-                    <!-- Decorative accent -->
-                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-primary-400 to-secondary"></div>
-
-                    <div class="p-6 md:p-8">
-                        <h4 class="text-xl font-bold text-secondary">{{ __('front.profiles.form.noprofile') }}</h4>
-                        <p class="text-sm text-gray-600 mt-1">{{ __('front.profiles.form.createprofile') }}</p>
-
-                        <!-- Verification info -->
-                        <div class="mt-3 flex items-start gap-2 text-xs text-gray-500 bg-white/60 rounded-lg p-3 border border-gray-100">
-                            <svg class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                            </svg>
-                            <span>{{ __('front.profiles.form.verification_notice') }}</span>
-                        </div>
-
-                        <!-- Create profile button -->
-                        <button
-                            type="button"
-                            @click="expanded = !expanded"
-                            class="mt-5 btn-primary justify-center"
-                            x-text="expanded ? '{{ __('front.profiles.form.collapse_form') }}' : '{{ __('front.profiles.form.create_profile_btn') }}'">
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Collapsible Profile Creation Form -->
-                <div
-                    x-show="expanded"
-                    x-collapse
-                    x-cloak
-                    class="mt-6 space-y-6">
-
-                    <!-- Display Name -->
-                    <div>
-                        <label for="display_name" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.displayname') }} *</label>
-                        <input
-                            type="text"
-                            id="display_name"
-                            wire:model="display_name"
-                            class="input-control mt-1 @error('display_name') border-red-500 @enderror"
-                            placeholder="{{ __('front.profiles.form.displayname') }}"
-                            required>
-                        @error('display_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Age -->
-                        <div>
-                            <label for="age" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.age') }} *</label>
-                            <input
-                                type="number"
-                                id="age"
-                                wire:model="age"
-                                min="18"
-                                max="120"
-                                class="input-control mt-1 @error('age') border-red-500 @enderror"
-                                placeholder="25">
-                            @error('age') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                        </div>
-
-                        <!-- City -->
-                        <div x-data="{ open: @entangle('cityDropdownOpen') }" class="relative">
-                            <label for="city_new" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.city') }}</label>
-                            <div class="relative">
-                                <input
-                                    type="text"
-                                    id="city_new"
-                                    wire:model.live.debounce.300ms="citySearchTerm"
-                                    @focus="open = true"
-                                    @click="open = true"
-                                    :disabled="!$wire.country_code"
-                                    class="input-control mt-1 @error('city') border-red-500 @enderror"
-                                    :class="{ 'bg-gray-100 cursor-not-allowed': !$wire.country_code }"
-                                    placeholder="{{ __('front.profiles.form.city') }}">
-                                @if(!$country_code)
-                                    <p class="mt-1 text-xs text-gray-500">{{ __('front.profiles.form.select_country_first') }}</p>
-                                @endif
-                            </div>
-                            
-                            <!-- City Suggestions Dropdown -->
-                            <div
-                                x-show="open && $wire.citySuggestions.length > 0 || (open && $wire.citySearchTerm.length >= 2)"
-                                @click.away="open = false"
-                                x-transition:enter="transition ease-out duration-100"
-                                x-transition:enter-start="transform opacity-0 scale-95"
-                                x-transition:enter-end="transform opacity-100 scale-100"
-                                x-transition:leave="transition ease-in duration-75"
-                                x-transition:leave-start="transform opacity-100 scale-100"
-                                x-transition:leave-end="transform opacity-0 scale-95"
-                                class="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto"
-                                style="display: none;">
-                                @if(count($citySuggestions) > 0)
-                                    @foreach($citySuggestions as $suggestion)
-                                        <button
-                                            type="button"
-                                            wire:click="selectCity('{{ addslashes($suggestion) }}')"
-                                            class="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
-                                            :class="{ 'bg-pink-50': '{{ addslashes($suggestion) }}' === '{{ addslashes($city) }}' }">
-                                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            </svg>
-                                            <span>{{ $suggestion }}</span>
-                                        </button>
-                                    @endforeach
-                                @else
-                                    <div class="px-4 py-3 text-sm text-gray-500 text-center">
-                                        <svg class="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                        </svg>
-                                        {{ __('front.profiles.form.city_no_results') }}
-                                    </div>
-                                @endif
-                            </div>
-                            @error('city') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                        </div>
-                    </div>
-
-                    <!-- Country -->
-                    <div>
-                        <label for="country" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.country') }} *</label>
-                        <div x-data="{ open: @entangle('countryDropdownOpen'), searchTerm: @entangle('countrySearchTerm') }" class="relative">
-                            <button
-                                type="button"
-                                @click="open = !open"
-                                class="input-control w-full text-left flex items-center justify-between @error('country_code') border-red-500 @enderror">
-                                <span class="flex items-center flex-nowrap gap-2">
-                                    <svg class="w-5 h-5 text-gray-400" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                    </svg>
-                                    <span class="flex items-center flex-nowrap ">
-                                        @if($country_code)
-                                            <img src="https://flagcdn.com/{{ strtolower($country_code) }}.svg" alt="{{ $country_code }}" class="w-5 h-4 object-cover">
-                                            <span>{{ collect($countries)->firstWhere('code', $country_code)['name'] ?? $country_code }}</span>
-                                        @else
-                                            <span class="text-gray-400">{{ __('front.profiles.form.selectcountry') }}</span>
-                                        @endif
-                                    </span>
-                               </span>
-                            </button>
-
-                            <div
-                                x-show="open"
-                                @click.away="open = false"
-                                x-transition:enter="transition ease-out duration-100"
-                                x-transition:enter-start="transform opacity-0 scale-95"
-                                x-transition:enter-end="transform opacity-100 scale-100"
-                                x-transition:leave="transition ease-in duration-75"
-                                x-transition:leave-start="transform opacity-100 scale-100"
-                                x-transition:leave-end="transform opacity-0 scale-95"
-                                class="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto"
-                                style="display: none;">
-                                <!-- Search Input -->
-                                <div class="sticky top-0 bg-white p-2 border-b border-gray-200">
-                                    <input
-                                        type="text"
-                                        wire:model.live="countrySearchTerm"
-                                        placeholder="{{ __('front.profiles.form.searchcountry') }}"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent">
-                                </div>
-                                <!-- Country List -->
-                                <div class="py-1">
-                                    @forelse($this->filteredCountries as $country)
-                                        <button
-                                            type="button"
-                                            wire:click="selectCountry('{{ $country['code'] }}')"
-                                            class="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
-                                            :class="{ 'bg-pink-50': '{{ $country['code'] }}' === '{{ $country_code }}' }">
-                                            <img src="https://flagcdn.com/{{ strtolower($country['code']) }}.svg" alt="{{ $country['code'] }}" class="w-5 h-4 object-cover">
-                                            <span>{{ $country['name'] }}</span>
-                                        </button>
-                                    @empty
-                                        <div class="px-4 py-2 text-gray-500 text-sm">{{ __('front.profiles.form.nocountries') }}</div>
-                                    @endforelse
-                                </div>
-                            </div>
-                        </div>
-                        @error('country_code') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
-
-                    <!-- Address -->
-                    <div>
-                        <label for="address" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.address') }}</label>
-                        <input
-                            type="text"
-                            id="address"
-                            wire:model="address"
-                            class="input-control mt-1 @error('address') border-red-500 @enderror"
-                            placeholder="{{ __('front.profiles.form.street') }}">
-                        @error('address') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
-
-                    <!-- About -->
-                    <div>
-                        <label for="about" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.aboutme') }}</label>
-                        <textarea
-                            id="about"
-                            wire:model="about"
-                            rows="4"
-                            class="input-control mt-1 @error('about') border-red-500 @enderror"
-                            placeholder="{{ __('front.profiles.form.aboutmeplaceholder') }}"></textarea>
-                        @error('about') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
-
-                    <!-- Submit Button (inside collapsed section for clarity) -->
-                    <div class="flex justify-end">
-                        <button
-                            type="button"
-                            wire:click.prevent="createProfile"
-                            wire:loading.attr="disabled"
-                            wire:loading.class="opacity-50 cursor-not-allowed"
-                            class="btn-primary justify-center">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                            </svg>
-                            <span wire:loading.remove wire:target="createProfile">{{ __('front.profiles.form.create_profile_btn') }}</span>
-                            <span wire:loading wire:target="createProfile">{{ __('front.profiles.form.saving') }}</span>
-                        </button>
-                    </div>
-                </div>
+                <hr class="w-[843px] max-w-none relative left-1/2 -translate-x-1/2 mt-[80px] mb-[50px]">
             </div>
             @endif
+
+            @if($hasProfile)
+            <div class="w-full md:w-[843px] md:max-w-none relative md:left-1/2 md:-translate-x-1/2 space-y-6">
+                <div class="flex items-center gap-2" style="margin-bottom:19px;">
+                    <img src="https://flagcdn.com/cz.svg" alt="CZ" class="w-[30px] h-[30px] rounded-full object-cover">
+                    <h3 style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">{{ __('front.profiles.form.local_prices') }}</h3>
+                </div>
+
+                <!-- Currency -->
+                <div class="relative w-[312px] md:w-[240px]">
+                    <label for="local_currency" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.local_currency') }}</label>
+                    <div class="relative group">
+                        <select
+                            id="local_currency"
+                            wire:model.live="local_currency"
+                            class="input-control w-full h-[50px] rounded-[8px] appearance-none pr-[54px]">
+                            @foreach($currencyOptions as $currency)
+                                <option value="{{ $currency }}">{{ $currency }}</option>
+                            @endforeach
+                        </select>
+                        <div class="absolute right-1 top-1/2 -translate-y-1/2 w-[42px] h-[42px] rounded-[4px] bg-[#DD3888] group-hover:bg-[#CA2474] transition-colors duration-200 flex items-center justify-center pointer-events-none">
+                            <svg class="w-[10px] h-[5px] transition-transform duration-200 group-focus-within:-rotate-180" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1 1L5 4L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price rows -->
+                <div class="space-y-4">
+                    @foreach($local_prices as $index => $price)
+                        <div wire:key="local-price-{{ $index }}" class="flex flex-wrap items-end gap-4 md:flex-nowrap md:gap-[31px]">
+                            <div class="w-full md:w-[240px]">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ $loop->first ? __('front.profiles.form.time_hours_full') : __('front.profiles.form.time_hours') }}</label>
+                                <div class="relative">
+                                    <input
+                                        type="number"
+                                        inputmode="decimal"
+                                        min="0"
+                                        max="24"
+                                        step="0.5"
+                                        onkeydown="if(event.key === '-' || event.key === 'e' || event.key === '+') event.preventDefault()"
+                                        wire:model="local_prices.{{ $index }}.time_hours"
+                                        class="input-control w-full h-[50px] rounded-[8px] pr-[54px] md:pr-5 @error('local_prices.'.$index.'.time_hours') border-red-500 @enderror">
+                                    <button
+                                        type="button"
+                                        wire:click="removeLocalPrice({{ $index }})"
+                                        class="md:hidden absolute right-2 top-1/2 -translate-y-1/2 w-[35px] h-[35px] rounded-full bg-[#DD3888] hover:bg-[#CA2474] transition-colors duration-200 flex items-center justify-center">
+                                        <svg class="w-[10px] h-[10px]" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M1 1L9 9M9 1L1 9" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                @error('local_prices.'.$index.'.time_hours') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                            <div class="w-[143px] md:w-[240px]">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ $loop->first ? __('front.profiles.form.incall_price_full') : __('front.profiles.form.incall_price') }}</label>
+                                <input
+                                    type="number"
+                                    inputmode="numeric"
+                                    min="0"
+                                    step="1"
+                                    onkeydown="if(event.key === '-' || event.key === 'e' || event.key === '+') event.preventDefault()"
+                                    wire:model="local_prices.{{ $index }}.incall_price"
+                                    class="input-control w-full h-[50px] rounded-[8px] @error('local_prices.'.$index.'.incall_price') border-red-500 @enderror">
+                                @error('local_prices.'.$index.'.incall_price') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                            <div class="w-[143px] md:w-[240px]">
+                                <label class="block text-sm font-medium text-gray-400 mb-2">{{ __('front.profiles.form.outcall_price') }}</label>
+                                <input
+                                    type="number"
+                                    inputmode="numeric"
+                                    min="0"
+                                    step="1"
+                                    onkeydown="if(event.key === '-' || event.key === 'e' || event.key === '+') event.preventDefault()"
+                                    wire:model="local_prices.{{ $index }}.outcall_price"
+                                    class="input-control w-full h-[50px] rounded-[8px] @error('local_prices.'.$index.'.outcall_price') border-red-500 @enderror">
+                                @error('local_prices.'.$index.'.outcall_price') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                            <button
+                                type="button"
+                                wire:click="removeLocalPrice({{ $index }})"
+                                class="hidden md:flex w-[35px] h-[35px] rounded-full bg-[#DD3888] hover:bg-[#CA2474] transition-colors duration-200 items-center justify-center flex-shrink-0 mb-[7px]">
+                                <svg class="w-[10px] h-[10px]" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M1 1L9 9M9 1L1 9" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                                </svg>
+                            </button>
+                        </div>
+                    @endforeach
+                </div>
+
+                <button
+                    type="button"
+                    wire:click="addLocalPrice"
+                    class="w-full md:w-[782px] rounded-lg py-3 text-center font-semibold text-[#5C2D62] transition-colors duration-200"
+                    style="background-color: #F8F9F9;"
+                    onmouseover="this.style.backgroundColor='#EDEDED'"
+                    onmouseout="this.style.backgroundColor='#F8F9F9'">
+                    {{ __('front.profiles.form.add_local_price') }}
+                </button>
+
+                <button type="submit" class="w-[312px] md:w-[240px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
+                    <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px]" alt="Save">
+                    <span style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px; color: #A4A4A4;">{{ __('front.profiles.form.save_changes') }}</span>
+                </button>
+
+                <hr class="w-full mt-[80px] mb-[50px]">
+            </div>
+            @endif
+
+            @if($hasProfile)
+            <div class="w-full md:w-[843px] md:max-w-none relative md:left-1/2 md:-translate-x-1/2 space-y-6">
+                <div class="flex items-center gap-2" style="margin-bottom:19px;">
+                    <img src="https://flagcdn.com/eu.svg" alt="EU" class="w-[30px] h-[30px] rounded-full object-cover">
+                    <h3 style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">{{ __('front.profiles.form.global_prices') }}</h3>
+                </div>
+
+                <!-- Currency -->
+                <div class="relative w-[312px] md:w-[240px]">
+                    <label for="global_currency" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.global_currency') }}</label>
+                    <div class="relative group">
+                        <select
+                            id="global_currency"
+                            wire:model.live="global_currency"
+                            class="input-control w-full h-[50px] rounded-[8px] appearance-none pr-[54px]">
+                            @foreach($globalCurrencyOptions as $currency)
+                                <option value="{{ $currency }}">{{ $currency }}</option>
+                            @endforeach
+                        </select>
+                        <div class="absolute right-1 top-1/2 -translate-y-1/2 w-[42px] h-[42px] rounded-[4px] bg-[#DD3888] group-hover:bg-[#CA2474] transition-colors duration-200 flex items-center justify-center pointer-events-none">
+                            <svg class="w-[10px] h-[5px] transition-transform duration-200 group-focus-within:-rotate-180" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1 1L5 4L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price rows -->
+                <div class="space-y-4">
+                    @foreach($global_prices as $index => $price)
+                        <div wire:key="global-price-{{ $index }}" class="flex flex-wrap items-end gap-4 md:flex-nowrap md:gap-[31px]">
+                            <div class="w-full md:w-[240px]">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ $loop->first ? __('front.profiles.form.time_hours_full') : __('front.profiles.form.time_hours') }}</label>
+                                <div class="relative">
+                                    <input
+                                        type="number"
+                                        inputmode="decimal"
+                                        min="0"
+                                        max="24"
+                                        step="0.5"
+                                        onkeydown="if(event.key === '-' || event.key === 'e' || event.key === '+') event.preventDefault()"
+                                        wire:model="global_prices.{{ $index }}.time_hours"
+                                        class="input-control w-full h-[50px] rounded-[8px] pr-[54px] md:pr-5 @error('global_prices.'.$index.'.time_hours') border-red-500 @enderror">
+                                    <button
+                                        type="button"
+                                        wire:click="removeGlobalPrice({{ $index }})"
+                                        class="md:hidden absolute right-2 top-1/2 -translate-y-1/2 w-[35px] h-[35px] rounded-full bg-[#DD3888] hover:bg-[#CA2474] transition-colors duration-200 flex items-center justify-center">
+                                        <svg class="w-[10px] h-[10px]" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M1 1L9 9M9 1L1 9" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                @error('global_prices.'.$index.'.time_hours') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                            <div class="w-[143px] md:w-[240px]">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ $loop->first ? __('front.profiles.form.incall_price_full_intl') : __('front.profiles.form.incall_price') }}</label>
+                                <input
+                                    type="number"
+                                    inputmode="numeric"
+                                    min="0"
+                                    step="1"
+                                    onkeydown="if(event.key === '-' || event.key === 'e' || event.key === '+') event.preventDefault()"
+                                    wire:model="global_prices.{{ $index }}.incall_price"
+                                    class="input-control w-full h-[50px] rounded-[8px] @error('global_prices.'.$index.'.incall_price') border-red-500 @enderror">
+                                @error('global_prices.'.$index.'.incall_price') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                            <div class="w-[143px] md:w-[240px]">
+                                <label class="block text-sm font-medium text-gray-400 mb-2">{{ __('front.profiles.form.outcall_price_intl') }}</label>
+                                <input
+                                    type="number"
+                                    inputmode="numeric"
+                                    min="0"
+                                    step="1"
+                                    onkeydown="if(event.key === '-' || event.key === 'e' || event.key === '+') event.preventDefault()"
+                                    wire:model="global_prices.{{ $index }}.outcall_price"
+                                    class="input-control w-full h-[50px] rounded-[8px] @error('global_prices.'.$index.'.outcall_price') border-red-500 @enderror">
+                                @error('global_prices.'.$index.'.outcall_price') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                            <button
+                                type="button"
+                                wire:click="removeGlobalPrice({{ $index }})"
+                                class="hidden md:flex w-[35px] h-[35px] rounded-full bg-[#DD3888] hover:bg-[#CA2474] transition-colors duration-200 items-center justify-center flex-shrink-0 mb-[7px]">
+                                <svg class="w-[10px] h-[10px]" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M1 1L9 9M9 1L1 9" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                                </svg>
+                            </button>
+                        </div>
+                    @endforeach
+                </div>
+
+                <button
+                    type="button"
+                    wire:click="addGlobalPrice"
+                    class="w-full md:w-[782px] rounded-lg py-3 text-center font-semibold text-[#5C2D62] transition-colors duration-200"
+                    style="background-color: #F8F9F9;"
+                    onmouseover="this.style.backgroundColor='#EDEDED'"
+                    onmouseout="this.style.backgroundColor='#F8F9F9'">
+                    {{ __('front.profiles.form.add_local_price') }}
+                </button>
+
+                <button type="submit" class="w-[312px] md:w-[240px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
+                    <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px]" alt="Save">
+                    <span style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px; color: #A4A4A4;">{{ __('front.profiles.form.save_changes') }}</span>
+                </button>
+
+                <hr class="w-full mt-[80px] mb-[50px]">
+            </div>
+            @endif
+
         </div>
+
+    </div>
     </form>
 
 </div>

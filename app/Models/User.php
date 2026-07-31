@@ -45,6 +45,14 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
     }
 
     /**
+     * Check if the user was active in the last 5 minutes.
+     */
+    public function isOnline(): bool
+    {
+        return $this->last_activity && (time() - $this->last_activity) < 300;
+    }
+
+    /**
      * The attributes that should be hidden for serialization.
      *
      * @var list<string>

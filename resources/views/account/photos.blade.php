@@ -2,34 +2,48 @@
 
 @section('title', __('front.account.sidebar.photos'))
 
+@php
+    $activeItem = 'photos';
+@endphp
+
 @section('account-content')
-    <div class="flex flex-col max-[426px]:flex-col-reverse items-center max-[426px]:w-full">
-        <!-- Title & Basic Info -->
-        <div class="flex flex-col items-end w-[1134px] mx-auto max-[426px]:items-center max-[426px]:w-full max-[426px]:my-8">
-            <div class="w-[843px] max-[426px]:w-[310px] flex items-center justify-center relative">
-                <h2 class="font-bold text-[36px] text-[#5C2D62]" style="font-family: 'Poppins', sans-serif;">{{ __('front.account.sidebar.photos') }}</h2>
-
-                <div class="absolute right-0 flex flex-col items-end gap-0.5 max-[426px]:hidden">
-                    <div class="flex items-center gap-1.5">
-                        <div class="w-[14px] h-[14px] rounded-full bg-[#00B80F]"></div>
-                        <span class="text-[13px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">{{ __('front.account.photos.currently_online') }}</span>
-                    </div>
-                    <span class="text-[13px] text-[#505050] underline" style="font-family: 'Poppins', sans-serif; color: #DD3888;">{{ __('front.account.photos.settings_link') }}</span>
-                </div>
+    <!-- Mobile Header -->
+    <div class="mb-4 md:hidden">
+        <div class="relative flex items-center justify-center py-3">
+            <h1 class="w-[400px] max-w-full text-[38px] text-center" style="font-family:'Poppins',sans-serif; font-weight:700; color:#5C2D62;">
+                {{ __('front.account.sidebar.photos') }}
+            </h1>
+        </div>
+        <hr class="w-[312px] mx-auto mb-4">
+        <div class="flex items-center justify-between w-[312px] mx-auto">
+            <div class="flex items-center gap-1.5">
+                <div class="w-[14px] h-[14px] rounded-full bg-[#D80027]"></div>
+                <span class="text-[13px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">
+                    {{ __('front.account.dashboard.offline') }}
+                </span>
             </div>
-            <x-dashboard.section-divider />
+            <a href="{{ route('account.dashboard') }}" class="text-[13px] text-[#505050] underline" style="font-family: 'Poppins', sans-serif; color: #DD3888;">{{ __('front.account.dashboard.settings') }}</a>
         </div>
     </div>
 
-    <!-- Main Content Area -->
-    <div class="flex justify-end mb-8 gap-x-12 w-[1134px] mx-auto max-[426px]:!w-[310px] max-[426px]:mx-auto">
-        <div class="max-[426px]:hidden">
-            <x-dashboard.sidebar />
+    <!-- Desktop Header -->
+    <div class="hidden md:block mb-8">
+        <div class="relative flex items-center justify-center py-6">
+            <h1 class="w-[400px] max-w-full text-4xl text-center" style="font-family:'Poppins',sans-serif; font-weight:700; color:#5C2D62;">
+                {{ __('front.account.sidebar.photos') }}
+            </h1>
+            <div class="flex flex-col items-end gap-0.5 absolute right-0 top-1/2 -translate-y-1/2">
+                <div class="flex items-center gap-1.5">
+                    <div class="w-[14px] h-[14px] rounded-full bg-[#D80027]"></div>
+                    <span class="text-[13px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">
+                        {{ __('front.account.dashboard.offline') }}
+                    </span>
+                </div>
+                <a href="{{ route('account.dashboard') }}" class="text-[13px] text-[#505050] underline" style="font-family: 'Poppins', sans-serif; color: #DD3888;">{{ __('front.account.dashboard.settings') }}</a>
+            </div>
         </div>
-        
-        <div class="w-[843px] max-[426px]:w-[310px] max-[426px]:mx-auto flex flex-col items-center mt-12 max-[426px]:items-center">
-            <!-- Zde bude obsah pro Fotografie a video -->
-            <p class="text-gray-500">{{ __('front.account.photos.media_coming_soon') }}</p>
-        </div>
+        <hr class="mb-[77px]">
     </div>
+
+    @livewire('photos-manager')
 @endsection

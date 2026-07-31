@@ -43,7 +43,7 @@ class ProfileForm extends Component
     #[Rule('nullable|integer|min:18|max:120')]
     public $age = '';
 
-    #[Rule('nullable|string|max:255')]  
+    #[Rule('nullable|string|max:255')]
     public $city = '';
 
     #[Rule('nullable|string|max:2')]
@@ -52,8 +52,32 @@ class ProfileForm extends Component
     #[Rule('nullable|string|max:255')]
     public $address = '';
 
-    #[Rule('nullable|string|max:1200')]
+    #[Rule('nullable|string|max:640')]
     public $about = '';
+
+    #[Rule('nullable|numeric|min:30|max:300')]
+    public $weight_kg = '';
+
+    #[Rule('nullable|integer|min:100|max:250')]
+    public $height_cm = '';
+
+    #[Rule('nullable|string|max:2')]
+    public $nationality = '';
+
+    #[Rule('nullable|string|max:2')]
+    public $bust_size = '';
+
+    #[Rule('nullable|string|max:10')]
+    public $local_currency = 'Kč';
+
+    #[Rule('nullable|string|max:10')]
+    public $global_currency = 'EUR';
+
+    #[Rule('boolean')]
+    public $has_whatsapp = false;
+
+    #[Rule('boolean')]
+    public $has_telegram = false;
 
     #[Rule('boolean')]
     public $incall = false;
@@ -78,14 +102,9 @@ class ProfileForm extends Component
 
     public $is_public = false;
 
-    // Dropdown states
-    public $countryDropdownOpen = false;
-    public $countrySearchTerm = '';
-    
-    // City autocomplete states
-    public $cityDropdownOpen = false;
-    public $citySearchTerm = '';
-    public $citySuggestions = [];
+    public $bustSizeOptions = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    public $currencyOptions = ['Kč'];
+    public $globalCurrencyOptions = ['EUR'];
 
     // Options arrays
     public $countries = [];
@@ -112,10 +131,18 @@ class ProfileForm extends Component
             $this->display_name = $profile->display_name ?? '';
             $this->age = $profile->age ?? '';
             $this->city = $profile->city ?? '';
-            $this->citySearchTerm = $profile->city ?? ''; // Initialize city search with existing value
             $this->country_code = $profile->country_code ?? '';
             $this->address = $profile->address ?? '';
             $this->about = $profile->about ?? '';
+            $content = is_array($profile->content) ? $profile->content : [];
+            $this->weight_kg = $content['weight_kg'] ?? '';
+            $this->height_cm = $content['card_height_cm'] ?? '';
+            $this->nationality = $content['nationality'] ?? '';
+            $this->bust_size = $content['bust_size'] ?? '';
+            $this->local_currency = $content['local_currency'] ?? 'Kč';
+            $this->global_currency = $content['global_currency'] ?? 'EUR';
+            $this->has_whatsapp = $content['has_whatsapp'] ?? false;
+            $this->has_telegram = $content['has_telegram'] ?? false;
             $this->incall = $profile->incall ?? false;
             $this->outcall = $profile->outcall ?? false;
             $this->is_porn_actress = $profile->is_porn_actress ?? false;
@@ -239,89 +266,47 @@ class ProfileForm extends Component
 
     public function loadCountries()
     {
+        // Same countries as shown in the homepage "browse by country" sidebar
+        $allowedCodes = ['al', 'ad', 'am', 'be', 'by', 'ba', 'bg', 'me', 'cz'];
+
         $codes = include base_path('lang/en/codes.php');
-        $this->countries = collect($codes)->map(function ($name, $code) {
-            return [
-                'code' => strtolower($code),
-                'name' => $name,
-            ];
-        })->sortBy('name')->values()->toArray();
-    }
-
-    public function toggleCountryDropdown()
-    {
-        $this->countryDropdownOpen = !$this->countryDropdownOpen;
-        $this->countrySearchTerm = '';
-    }
-
-    public function selectCountry($countryCode)
-    {
-        $this->country_code = $countryCode;
-        $this->countryDropdownOpen = false;
-        $this->countrySearchTerm = '';
-        
-        // Clear city when country changes (city must match country)
-        $this->city = '';
-        $this->citySearchTerm = '';
-        $this->citySuggestions = [];
+        $this->countries = collect($codes)
+            ->filter(fn ($name, $code) => in_array(strtolower($code), $allowedCodes, true))
+            ->map(function ($name, $code) {
+                return [
+                    'code' => strtolower($code),
+                    'name' => $name,
+                ];
+            })->sortBy('name')->values()->toArray();
     }
 
     /**
-     * Search cities based on country and search term
+     * All cities for the selectable countries, grouped by country code.
+     *
+     * Sent to the browser once so the country -> city dependency is resolved
+     * entirely client-side; picking a country or city triggers no Livewire
+     * round-trip at all (values are submitted with the form).
      */
-    public function updatedCitySearchTerm($value)
+    protected function citiesByCountry(): array
     {
-        // Clear city when search term changes (user must select from suggestions)
-        if ($this->city !== $value) {
-            $this->city = '';
-        }
-        
-        if (empty($this->country_code) || strlen($value) < 2) {
-            $this->citySuggestions = [];
-            return;
-        }
-        
-        $this->citySuggestions = \App\Models\City::autocomplete(
-            $this->country_code,
-            $value,
-            10
-        )->toArray();
-        
-        // Open dropdown when there are suggestions
-        $this->cityDropdownOpen = !empty($this->citySuggestions) || strlen($value) >= 2;
-    }
+        $codes = collect($this->countries)->pluck('code')->all();
 
-    /**
-     * Select a city from suggestions
-     */
-    public function selectCity($cityName)
-    {
-        $this->city = $cityName;
-        $this->citySearchTerm = $cityName;
-        $this->citySuggestions = [];
-        $this->cityDropdownOpen = false;
-    }
-
-    /**
-     * Toggle city dropdown
-     */
-    public function toggleCityDropdown()
-    {
-        if (empty($this->country_code)) {
-            return; // Don't open if no country selected
-        }
-        $this->cityDropdownOpen = !$this->cityDropdownOpen;
-    }
-
-    public function getFilteredCountriesProperty()
-    {
-        if (empty($this->countrySearchTerm)) {
-            return $this->countries;
+        if (empty($codes)) {
+            return [];
         }
 
-        return array_filter($this->countries, function ($country) {
-            return stripos($country['name'], $this->countrySearchTerm) !== false;
-        });
+        return \Illuminate\Support\Facades\Cache::remember(
+            'profile-form-cities-' . md5(implode(',', $codes)),
+            now()->addDay(),
+            function () use ($codes) {
+                return \App\Models\City::whereIn('country_code', array_map('strtoupper', $codes))
+                    ->orderByDesc('population')
+                    ->get(['name', 'country_code'])
+                    ->groupBy(fn ($city) => strtolower($city->country_code))
+                    ->map(fn ($group) => $group->pluck('name')->unique()->values()->all())
+                    ->all();
+            }
+        );
     }
 
     public function addLocalPrice()
@@ -442,7 +427,7 @@ class ProfileForm extends Component
                 $this->validateCityRule(),
             ],
             'address' => 'nullable|string|max:255',
-            'about' => 'nullable|string|max:1200',
+            'about' => 'nullable|string|max:640',
         ]);
 
         $profile = new Profile([
@@ -510,14 +495,14 @@ class ProfileForm extends Component
                 $this->validateCityRule(),
             ];
             $validationRules['address'] = 'nullable|string|max:255';
-            $validationRules['about'] = 'nullable|string|max:1200';
+            $validationRules['about'] = 'nullable|string|max:640';
             $validationRules['availability_hours'] = 'nullable|string';
             $validationRules['local_prices'] = 'nullable|array';
-            $validationRules['local_prices.*.time_hours'] = 'required|string|max:100';
+            $validationRules['local_prices.*.time_hours'] = 'required|numeric|min:0|max:24';
             $validationRules['local_prices.*.incall_price'] = 'required|numeric|min:0';
             $validationRules['local_prices.*.outcall_price'] = 'nullable|numeric|min:0';
             $validationRules['global_prices'] = 'nullable|array';
-            $validationRules['global_prices.*.time_hours'] = 'required|string|max:100';
+            $validationRules['global_prices.*.time_hours'] = 'required|numeric|min:0|max:24';
             $validationRules['global_prices.*.incall_price'] = 'required|numeric|min:0';
             $validationRules['global_prices.*.outcall_price'] = 'nullable|numeric|min:0';
             $validationRules['contacts'] = 'nullable|array';
@@ -588,6 +573,16 @@ class ProfileForm extends Component
                 'country_code' => $this->country_code ? strtolower($this->country_code) : null,
                 'address' => $this->address ?: null,
                 'about' => $this->about ?: null,
+                'content' => array_merge(is_array($user->profile->content) ? $user->profile->content : [], [
+                    'weight_kg' => $this->weight_kg ?: null,
+                    'card_height_cm' => $this->height_cm ?: null,
+                    'nationality' => $this->nationality ? strtolower($this->nationality) : null,
+                    'bust_size' => $this->bust_size ?: null,
+                    'local_currency' => $this->local_currency ?: 'Kč',
+                    'global_currency' => $this->global_currency ?: 'EUR',
+                    'has_whatsapp' => (bool) $this->has_whatsapp,
+                    'has_telegram' => (bool) $this->has_telegram,
+                ]),
                 'incall' => $this->incall,
                 'outcall' => $this->outcall,
                 'is_porn_actress' => $this->is_porn_actress,
@@ -617,6 +612,8 @@ class ProfileForm extends Component
 
     public function render()
     {
-        return view('livewire.profile-form');
+        return view('livewire.profile-form', [
+            'citiesByCountry' => $this->citiesByCountry(),
+        ]);
     }
 }
