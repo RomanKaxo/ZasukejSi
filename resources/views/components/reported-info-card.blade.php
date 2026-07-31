@@ -17,7 +17,7 @@
     $imageUrl = $profile->getFirstImageThumbUrl() ?? asset('images/models/model6.png');
 @endphp
 
-<div style="width:285px;height:510px;background:#F2F2F2;border-radius:15px;box-shadow:0 15px 15px 0 rgba(92,45,98,0.1);box-sizing:border-box;" class="p-5 flex flex-col">
+<div x-data style="width:285px;height:510px;background:#F2F2F2;border-radius:15px;box-shadow:0 15px 15px 0 rgba(92,45,98,0.1);box-sizing:border-box;" class="p-5 flex flex-col">
     <x-icons name="TriangleAlert" style="width:32px;height:32px;color:#DD3888;" />
 
     <h4 class="mt-3" style="font-family:'Poppins',sans-serif;font-weight:700;font-size:18px;color:#505050;">
