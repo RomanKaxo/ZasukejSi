@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Profile;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Faker\Factory as FakerFactory;
 
@@ -71,6 +72,7 @@ class ProfileFactory extends Factory
         $content = $this->generateBlockContent($faker);
 
         return [
+            'user_id' => User::factory(),
             'display_name' => [
                 'en' => $firstName . ' ' . $lastName,
                 'cs' => $firstName . ' ' . $lastName,
