@@ -2,13 +2,13 @@
     <div x-show="$store.reportedCase.isOpen"
         x-transition.opacity
         @click="$store.reportedCase.close()"
-        class="fixed inset-0 z-50 backdrop-blur-lg"
+        class="fixed inset-0 z-[110] backdrop-blur-lg"
         style="background-color: rgba(92, 45, 98, 0.8);">
     </div>
 
     <div x-show="$store.reportedCase.isOpen"
         x-transition.opacity
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        class="fixed inset-0 z-[110] flex items-start justify-center p-4 pt-24 overflow-y-auto">
         <div @click.stop
             class="relative"
             style="width:600px;max-width:100%;min-height:1323px;background:#FFFFFF;border-radius:24px;box-sizing:border-box;padding:48px;">
