@@ -15,4 +15,5 @@
         </main>
     </div>
 </div>
+<x-reported-case-modal />
 @endsection
