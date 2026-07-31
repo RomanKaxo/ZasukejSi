@@ -125,6 +125,7 @@ class DatabaseSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
         $man->syncRoles(['user']);
+        $this->call(ReportSeeder::class);
 
         // Dedicated premium test accounts
         $premiumMale = User::updateOrCreate(
