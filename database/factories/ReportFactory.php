@@ -21,7 +21,7 @@ class ReportFactory extends Factory
         $allegations = collect($categories)->shuffle()->take($count)->values()->all();
 
         return [
-            'profile_id' => Profile::factory(),
+            'profile_id' => Profile::factory()->for(User::factory()),
             'reporter_id' => User::factory()->state(['gender' => 'male']),
             'reason' => fake()->paragraphs(fake()->numberBetween(1, 3), true),
             'allegations' => $allegations,
