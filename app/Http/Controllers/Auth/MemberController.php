@@ -9,6 +9,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use App\Models\Report;
 
 /**
  * Controller for male user (member) account features.
@@ -92,13 +93,17 @@ class MemberController extends Controller
 
     /**
      * Show the reported girls page.
-     * TODO: Implement reported girls functionality.
      */
     public function reported()
     {
         $user = Auth::user();
-        
-        return view('member.reported', compact('user'));
+        $reports = Report::with('profile.media', 'profile.activeSubscription')
+            ->whereHas('profile')
+            ->where('reporter_id', $user->id)
+            ->latest()
+            ->get();
+
+        return view('member.reported', compact('user', 'reports'));
     }
 
     /**

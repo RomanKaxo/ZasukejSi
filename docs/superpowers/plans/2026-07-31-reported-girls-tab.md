@@ -381,8 +381,11 @@ Open `database/seeders/DatabaseSeeder.php`, find the block that creates `$man` (
 
 - [ ] **Step 3: Run the seeder locally to verify it doesn't error**
 
-Run: `rtk php artisan migrate:fresh --seed`
-Expected: seeding completes with no errors; spot check with `rtk php artisan tinker --execute="echo App\Models\Report::count();"` prints `3` or more.
+**Safety note:** this project's `.env` points at a shared remote dev MySQL database. Never run `migrate:fresh` or any command that drops/truncates tables against it. Run only additive commands:
+
+Run: `rtk php artisan migrate` (applies the new `reports` migration only — does not touch existing tables/data)
+Then run: `rtk php artisan db:seed --class=ReportSeeder`
+Expected: both complete with no errors; spot check with `rtk php artisan tinker --execute="echo App\Models\Report::count();"` prints `3` or more.
 
 - [ ] **Step 4: Commit**
 
@@ -782,9 +785,12 @@ rtk git commit -m "Render real reported-profiles list on the member reported tab
 Run: `rtk npm run build`
 Expected: build succeeds (same as the earlier sidebar-spacing changes in this session — this repo serves prebuilt `public/build` assets).
 
-- [ ] **Step 2: Refresh the database with seeded reports**
+- [ ] **Step 2: Apply the migration and seed reports (non-destructively)**
 
-Run: `rtk php artisan migrate:fresh --seed`
+**Safety note:** `.env` points at a shared remote dev database — never run `migrate:fresh` against it. Use additive commands only:
+
+Run: `rtk php artisan migrate`
+Then run: `rtk php artisan db:seed --class=ReportSeeder`
 
 - [ ] **Step 3: Log in as the seeded male member and view the page**
 

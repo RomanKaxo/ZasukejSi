@@ -351,5 +351,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call(ShowcaseProfilesSeeder::class);
         $this->call(DevProfileSeeder::class);
+
+        $this->call(ReportSeeder::class);
     }
 }
