@@ -167,7 +167,7 @@
             @endif
         </div>
 
-        @if(!$simpleMode)
+        @if(!$simpleMode && !$isReported)
         <!-- Details Button -->
             <a href="{{ $profileUrl }}"
             class="flex items-center justify-between home-profile-card-cta"
@@ -196,7 +196,7 @@
                 @endif
             </div>
 
-            @if(!$simpleMode)
+            @if(!$simpleMode && !$isReported)
             <!-- Rating Badge -->
             @php
                 $rating = $isModel && $profile->getTotalRatings() > 0 
