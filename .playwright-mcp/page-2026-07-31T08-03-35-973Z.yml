@@ -1,0 +1,77 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - navigation [ref=e3]:
+      - generic [ref=e6]:
+        - link "ZAŠUKEJSI.CZ" [ref=e7] [cursor=pointer]:
+          - /url: http://localhost:8000
+        - generic [ref=e9]:
+          - link "FAQ" [ref=e10] [cursor=pointer]:
+            - /url: http://localhost:8000/faq
+          - link "VIP a Premium" [ref=e11] [cursor=pointer]:
+            - /url: http://localhost:8000/vip-premium
+          - link "Etika" [ref=e12] [cursor=pointer]:
+            - /url: http://localhost:8000/ethics
+          - link "Kontakt" [ref=e13] [cursor=pointer]:
+            - /url: http://localhost:8000/contact
+        - generic [ref=e14]:
+          - generic [ref=e15]:
+            - button "Registrace" [ref=e16] [cursor=pointer]
+            - button "Login" [ref=e17] [cursor=pointer]
+          - button [ref=e20] [cursor=pointer]:
+            - img "Czech" [ref=e21]
+    - main [ref=e22]:
+      - generic [ref=e24]:
+        - generic [ref=e25]:
+          - link "ZAŠUKEJSI.CZ" [ref=e26] [cursor=pointer]:
+            - /url: http://localhost:8000
+          - heading "Přihlášení do vašeho účtu" [level=2] [ref=e28]
+          - paragraph [ref=e29]: Vítejte zpět! Prosím přihlaste se pro pokračování.
+        - generic [ref=e31]:
+          - generic [ref=e32]:
+            - generic [ref=e33]: E-mailová adresa
+            - textbox "E-mailová adresa" [ref=e34]:
+              - /placeholder: Zadejte svůj e-mail
+          - generic [ref=e35]:
+            - generic [ref=e36]: Heslo
+            - textbox "Heslo" [ref=e37]:
+              - /placeholder: Zadejte své heslo
+          - generic [ref=e38]:
+            - generic [ref=e39]:
+              - checkbox "Zapamatovat si mě" [ref=e41] [cursor=pointer]
+              - generic [ref=e42]: Zapamatovat si mě
+            - button "Přihlásit se" [ref=e43] [cursor=pointer]
+          - paragraph [ref=e45]:
+            - text: Nemáte účet?
+            - link "Zaregistrujte se zde" [ref=e46] [cursor=pointer]:
+              - /url: http://localhost:8000/register
+    - contentinfo [ref=e47]:
+      - generic [ref=e48]:
+        - heading "ZAŠUKEJSI.CZ" [level=2] [ref=e50]
+        - generic [ref=e51]:
+          - button "Registrace" [ref=e53] [cursor=pointer]
+          - generic [ref=e54]:
+            - generic [ref=e55]:
+              - link "Časté dotazy" [ref=e56] [cursor=pointer]:
+                - /url: "#"
+              - link "Kontakt" [ref=e57] [cursor=pointer]:
+                - /url: "#"
+            - generic [ref=e58]:
+              - link "Ochrana osobních údajů" [ref=e59] [cursor=pointer]:
+                - /url: "#"
+              - link "Etika a bezpečnost" [ref=e60] [cursor=pointer]:
+                - /url: "#"
+            - generic [ref=e61]:
+              - link "VIP účet pro dívky" [ref=e62] [cursor=pointer]:
+                - /url: "#"
+              - link "Prémiový účet pro pány" [ref=e63] [cursor=pointer]:
+                - /url: "#"
+          - note [ref=e65]:
+            - img "lock" [ref=e66]
+            - generic [ref=e67]: Jsme 100% diskrétní platforma s profesionální ochranou osobních údajů
+        - generic [ref=e69]:
+          - generic [ref=e70]:
+            - generic [ref=e71]: Náš projekt je Ekologický
+            - generic [ref=e72]: Díky systému ověření dívek nepojedete nikam zbytečně
+          - separator [ref=e73]
+          - generic [ref=e74]: © 2025 ZasukejSi.cz
+  - generic [ref=e75]: "Livewire: loaded"
