@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Notification;
 use App\Models\Profile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
 class FavoriteButton extends Component
@@ -55,7 +56,13 @@ class FavoriteButton extends Component
             } else {
                 $this->message = __('front.favorites.removed');
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            Log::error('Failed to toggle favorite', [
+                'profile_id' => $this->profile->id ?? null,
+                'user_id' => Auth::id(),
+                'exception' => $e,
+            ]);
+
             $this->message = __('front.favorites.error');
         }
     }

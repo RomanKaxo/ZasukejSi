@@ -15,6 +15,14 @@ class MediaController extends Controller
             $conversion = '';
         }
 
+        // The filename segment is part of the canonical URL, so reject requests
+        // that do not match the stored media — previously any arbitrary name
+        // served the same file, giving every asset unlimited duplicate URLs.
+        // Spatie's URL generator always uses the original file name (even for
+        // conversions, which are selected via the ?conversion= query), so that
+        // is what we compare against.
+        abort_unless($filename === $media->file_name, 404);
+
         $path = $conversion !== '' ? $media->getPath($conversion) : $media->getPath();
 
         abort_unless(is_string($path) && is_file($path), 404);

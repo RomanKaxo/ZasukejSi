@@ -29,12 +29,15 @@ class CheckUserGender
 
         // Check if user has the required gender
         if ($user->gender !== $requiredGender) {
-            // Redirect to appropriate dashboard based on actual gender
+            // Only confirmed male users are sent to the member dashboard — that
+            // route is itself guarded by `gender:male`, so redirecting a female
+            // or gender-less account there would bounce forever. Everyone else
+            // goes to /account, which carries no gender guard of its own.
             if ($user->isMale()) {
                 return redirect()->route('account.member.dashboard');
-            } else {
-                return redirect()->route('account.dashboard');
             }
+
+            return redirect()->route('account.dashboard');
         }
 
         return $next($request);

@@ -1,3 +1,48 @@
+.vip-profile-meta-value {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* Dropdown option styling (limited by the browser, but covers what CSS allows) */
+.member-select {
+  color-scheme: light;
+}
+
+.member-select option {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: #505050;
+  background: #FFFFFF;
+  padding: 10px 16px;
+}
+
+.member-select option:checked,
+.member-select option:hover {
+  background: #F2F2F2;
+  color: #DD3888;
+}
+
+select.input-control {
+  color-scheme: light;
+}
+
+select.input-control option {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: #505050;
+  background: #FFFFFF;
+  padding: 10px 16px;
+}
+
+select.input-control option:checked,
+select.input-control option:hover {
+  background: #F9EAF1;
+  color: #DD3888;
+}
+
 /* Form Input Styles */
 .input-control,
 input,
@@ -880,6 +925,51 @@ hr {
     width: 18px !important;
     height: 18px !important;
   }
+
+  /* Reported tab — mobile layout */
+  .home-profile-card.reported-profile-card .home-profile-card-location {
+    display: flex !important;
+    background: #F2F2F2 !important;
+    border-radius: 8px !important;
+  }
+
+  .reported-info-card-badge {
+    background: #F2F2F2 !important;
+  }
+
+  .reported-pair {
+    gap: 12px !important;
+    align-items: flex-start !important;
+  }
+
+  .reported-info-card {
+    width: 165px !important;
+    height: auto !important;
+    min-height: 260px;
+    border-radius: 15px !important;
+    background: #FFFFFF !important;
+    box-shadow: none !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .reported-info-card-badge,
+  .reported-info-card-button {
+    width: 125px !important;
+  }
+
+  .reported-info-card-title {
+    font-size: 16px !important;
+    padding-bottom: 15px !important;
+  }
+
+  .reported-info-card-badges {
+    gap: 7px !important;
+  }
+}
+
+.reported-info-card-badges {
+  gap: 8px;
 }
 
 .blog-card {
@@ -1306,6 +1396,143 @@ hr {
     padding-top: 20px;
     font-size: 11px;
   }
+}
+
+.ratings-history-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #5C2D62 #E8E8E8;
+}
+
+.ratings-history-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.ratings-history-scroll::-webkit-scrollbar-track {
+  background: #E8E8E8;
+  border-radius: 99px;
+}
+
+.ratings-history-scroll::-webkit-scrollbar-thumb {
+  background: #5C2D62;
+  border-radius: 99px;
+}
+
+/* Ratings card (member-ratings.blade.php) - mobile sizing */
+.rating-photo-card,
+.rating-photo-slide {
+  height: 610px;
+}
+
+.rating-overlay-top {
+  padding-left: 51px;
+  padding-right: 51px;
+  padding-top: 50px;
+}
+
+.rating-services-slide {
+  padding-left: 51px;
+  padding-right: 51px;
+  padding-top: 145px;
+}
+
+.rating-close-btn {
+  width: 65px;
+}
+
+.rating-profile-name {
+  font-size: 24px;
+}
+
+.rating-region-select {
+  width: 510px;
+  max-width: 100%;
+}
+
+.rating-pagination-dot {
+  width: 10px;
+  height: 10px;
+}
+
+.rating-pagination-dot-inner {
+  width: 6px;
+  height: 6px;
+}
+
+.rating-history-panel {
+  height: 732px;
+}
+
+.rating-history-fade {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .rating-photo-card,
+  .rating-photo-slide {
+    height: 410px;
+  }
+
+  .rating-overlay-top {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 24px;
+  }
+
+  .rating-services-slide {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 40px;
+  }
+
+  .rating-nav-arrow {
+    display: flex;
+  }
+
+  .rating-close-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    align-self: flex-start;
+  }
+
+  .rating-profile-name {
+    font-size: 20px;
+  }
+
+  .rating-region-select {
+    width: 310px;
+  }
+
+  .rating-pagination-dot {
+    width: 15px;
+    height: 15px;
+  }
+
+  .rating-pagination-dot-inner {
+    width: 9px;
+    height: 9px;
+  }
+
+  .rating-pagination-dots {
+    gap: 44px;
+  }
+
+  .rating-history-panel {
+    height: 644px;
+  }
+
+  .rating-history-fade {
+    display: block;
+    height: 80px;
+    border-radius: 0 0 16px 16px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.85) 70%, rgba(255, 255, 255, 0.95) 100%);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+  }
+}
+
+.rating-nav-arrow {
+  display: none;
 }
 
 

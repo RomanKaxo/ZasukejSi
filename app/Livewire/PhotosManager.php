@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Http\UploadedFile;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class PhotosManager extends Component
 {
@@ -34,6 +33,9 @@ class PhotosManager extends Component
     public const STATUS_VERIFIED = 'verified';
     public const STATUS_REJECTED = 'rejected';
 
+    /** Maximum number of images a single profile may store. */
+    public const MAX_PHOTOS = 20;
+
     public function mount()
     {
         // Get user with profile relationship loaded
@@ -60,10 +62,24 @@ class PhotosManager extends Component
             return $media->getCustomProperty('is_main', false);
         }) ?? $allImages->first();
 
-        // Other photos are all except main
+        // Other photos are all except main (re-indexed so Blade loops behave)
         $this->otherPhotos = $allImages->filter(function ($media) {
             return $this->mainPhoto ? $media->id !== $this->mainPhoto->id : true;
-        });
+        })->values();
+    }
+
+    /**
+     * Number of images the profile can still upload.
+     */
+    public function remainingPhotoSlots(): int
+    {
+        $user = Auth::user();
+
+        if (! $user || ! $user->profile) {
+            return 0;
+        }
+
+        return max(0, self::MAX_PHOTOS - $user->profile->getMedia('profile-images')->count());
     }
 
     public function setAsMainPhoto($mediaId)
@@ -146,15 +162,37 @@ class PhotosManager extends Component
     public function removeExistingImage($mediaId)
     {
         $user = Auth::user();
-        if ($user->profile) {
-            $media = $user->profile->getMedia('profile-images')->where('id', $mediaId)->first();
-            if ($media) {
-                $media->delete();
-                // Refresh existing images
-                $this->loadImages($user->profile->fresh());
-                session()->flash('message', __('front.profiles.photos.deleted'));
+
+        if (! $user->profile) {
+            return;
+        }
+
+        // Scoping the lookup to the user's own collection also enforces ownership.
+        $media = $user->profile->getMedia('profile-images')->where('id', $mediaId)->first();
+
+        if (! $media) {
+            return;
+        }
+
+        $wasMain = (bool) $media->getCustomProperty('is_main', false);
+        $media->delete();
+
+        $profile = $user->profile->fresh();
+
+        // If the main photo was removed, promote the next available one so the
+        // profile never ends up without a designated main image.
+        if ($wasMain) {
+            $next = $profile->getMedia('profile-images')->first();
+
+            if ($next) {
+                $next->setCustomProperty('is_main', true);
+                $next->save();
+                $profile = $profile->fresh();
             }
         }
+
+        $this->loadImages($profile);
+        session()->flash('message', __('front.profiles.photos.deleted'));
     }
 
     public function removeUploadedImage($index)
@@ -168,11 +206,12 @@ class PhotosManager extends Component
     public function uploadImages()
     {
         $this->validate([
-            'images.*' => 'image|max:20480', // Max 20MB per image
+            'images' => 'array|max:' . self::MAX_PHOTOS,
+            'images.*' => 'image|mimes:jpg,jpeg,png,webp,gif|max:20480', // Max 20MB per image
         ]);
 
         $user = Auth::user();
-        
+
         // Profile must exist (enforced by middleware)
         if (!$user->profile) {
             return;
@@ -180,10 +219,16 @@ class PhotosManager extends Component
 
         $profile = $user->profile;
 
+        // Reject the batch if it would exceed the per-profile photo cap.
+        if (count($this->images) > $this->remainingPhotoSlots()) {
+            $this->addError('images', __('front.profiles.photos.limit_reached', ['max' => self::MAX_PHOTOS]));
+            return;
+        }
+
         // Handle image uploads
         if (!empty($this->images)) {
             $isFirst = $profile->getMedia('profile-images')->isEmpty();
-            
+
             foreach ($this->images as $index => $image) {
                 if ($image instanceof UploadedFile) {
                     // Add each file individually to the media collection

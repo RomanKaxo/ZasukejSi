@@ -31,14 +31,36 @@ class MemberController extends Controller
     }
 
     /**
+     * Czech regions (kraje) offered in the ratings page filter.
+     */
+    public const CZECH_REGIONS = [
+        'hlavni-mesto-praha' => 'Hlavní město Praha',
+        'stredocesky' => 'Středočeský kraj',
+        'jihocesky' => 'Jihočeský kraj',
+        'plzensky' => 'Plzeňský kraj',
+        'karlovarsky' => 'Karlovarský kraj',
+        'ustecky' => 'Ústecký kraj',
+        'liberecky' => 'Liberecký kraj',
+        'kralovehradecky' => 'Královéhradecký kraj',
+        'pardubicky' => 'Pardubický kraj',
+        'vysocina' => 'Kraj Vysočina',
+        'jihomoravsky' => 'Jihomoravský kraj',
+        'olomoucky' => 'Olomoucký kraj',
+        'zlinsky' => 'Zlínský kraj',
+        'moravskoslezsky' => 'Moravskoslezský kraj',
+    ];
+
+    /**
      * Show the ratings page.
-     * TODO: Implement ratings functionality for male users.
      */
     public function ratings()
     {
         $user = Auth::user();
-        
-        return view('member.ratings', compact('user'));
+
+        return view('member.ratings', [
+            'user' => $user,
+            'regions' => self::CZECH_REGIONS,
+        ])->with('wideContent', true);
     }
 
     /**
@@ -54,41 +76,101 @@ class MemberController extends Controller
             ->latest('profile_favorites.created_at')
             ->paginate(12);
         
-        return view('member.favorites', compact('user', 'favorites'));
+        return view('member.favorites', compact('user', 'favorites'))->with('wideContent', true);
     }
 
     /**
      * Remove a profile from favorites.
      */
-    public function removeFavorite(\App\Models\Profile $profile)
+    public function removeFavorite(Request $request, \App\Models\Profile $profile)
     {
         $user = Auth::user();
         $user->favoriteProfiles()->detach($profile->id);
-        
+
+        // The favorites grid removes cards via fetch(), so answer AJAX callers
+        // with JSON — returning a redirect made it impossible for the frontend
+        // to tell success from failure.
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => __('front.favorites.removed'),
+            ]);
+        }
+
         return redirect()->route('account.member.favorites')
             ->with('status', __('front.favorites.removed'));
     }
 
     /**
-     * Show the girls of the month page.
-     * TODO: Implement girls of the month functionality.
+     * Show the girls of the month page (TOP 50 all-time ranking).
      */
-    public function girlsOfMonth()
+    public function girlsOfMonth(Request $request)
     {
         $user = Auth::user();
-        
-        return view('member.girls-of-month', compact('user'));
+
+        $ageRange = $request->string('age_range')->toString();
+        $ageBounds = self::AGE_RANGES[$ageRange] ?? null;
+
+        $topIds = \App\Models\Profile::approved()
+            ->public()
+            ->withAvg('ratings', 'rating')
+            ->when($ageBounds, fn ($query) => $query->whereBetween('age', $ageBounds))
+            ->orderByDesc('ratings_avg_rating')
+            ->limit(50)
+            ->pluck('id');
+
+        $profiles = \App\Models\Profile::whereIn('id', $topIds)
+            ->with(['media'])
+            ->withAvg('ratings', 'rating')
+            ->orderByDesc('ratings_avg_rating')
+            ->paginate(16)
+            ->withQueryString();
+
+        return view('member.girls-of-month', [
+            'user' => $user,
+            'profiles' => $profiles,
+            'ageRanges' => self::AGE_RANGES,
+            'selectedAgeRange' => $ageRange,
+        ])->with('wideContent', true);
     }
 
     /**
-     * Show the girls archive page.
-     * TODO: Implement archive functionality.
+     * Age range filter options, shared by the girls archive and the
+     * girls-of-the-month ranking.
      */
-    public function archive()
+    public const AGE_RANGES = [
+        '18-20' => [18, 20],
+        '21-25' => [21, 25],
+        '26-30' => [26, 30],
+        '31-35' => [31, 35],
+        '36-40' => [36, 40],
+        '41-45' => [41, 45],
+        '46-50' => [46, 50],
+    ];
+
+    /**
+     * Show the girls archive page.
+     */
+    public function archive(Request $request)
     {
         $user = Auth::user();
-        
-        return view('member.archive', compact('user'));
+
+        $ageRange = $request->string('age_range')->toString();
+        $ageBounds = self::AGE_RANGES[$ageRange] ?? null;
+
+        $profiles = \App\Models\Profile::archived()
+            ->with(['media'])
+            ->when($ageBounds, fn ($query) => $query->whereBetween('age', $ageBounds))
+            ->latest()
+            ->paginate(16)
+            ->withQueryString();
+
+        return view('member.archive', [
+            'user' => $user,
+            'profiles' => $profiles,
+            'ageRanges' => self::AGE_RANGES,
+            'selectedAgeRange' => $ageRange,
+        ])->with('wideContent', true);
     }
 
     /**
@@ -103,7 +185,7 @@ class MemberController extends Controller
             ->latest()
             ->get();
 
-        return view('member.reported', compact('user', 'reports'));
+        return view('member.reported', compact('user', 'reports'))->with('wideContent', true);
     }
 
     /**

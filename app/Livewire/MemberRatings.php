@@ -4,9 +4,10 @@ namespace App\Livewire;
 
 use App\Models\Notification;
 use App\Models\Profile;
-use App\Models\Rating;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 /**
  * Livewire component for member ratings page.
@@ -14,9 +15,16 @@ use Livewire\Component;
  */
 class MemberRatings extends Component
 {
+    use WithPagination;
+
+    /** How many profiles the rating-history panel loads at a time. */
+    public const PROFILES_PER_PAGE = 15;
+
     public ?Profile $selectedProfile = null;
     public int $selectedProfileId = 0;
     public bool $isFavorited = false;
+    /** User-facing message shown when a rating attempt is refused. */
+    public string $ratingError = '';
 
     protected $listeners = ['profileSelected' => 'selectProfile'];
 
@@ -30,17 +38,34 @@ class MemberRatings extends Component
     }
 
     /**
-     * Get available profiles that can be rated.
-     * Must be approved, public, and belong to female users.
+     * Base query for profiles that can be rated: approved, public and owned by
+     * a female user.
+     *
+     * The rating aggregates are pulled in with the query (withCount/withAvg plus
+     * an eager-loaded rating row for the current user) so the history list can
+     * render without issuing three extra queries per profile — previously 20
+     * profiles cost 60 additional queries.
      */
-    public function getAvailableProfiles()
+    public function availableProfilesQuery()
     {
         return Profile::approved()
             ->public()
             ->whereHas('user', fn($q) => $q->where('gender', 'female'))
-            ->with(['media'])
-            ->orderBy('display_name')
-            ->get();
+            ->with([
+                'media',
+                'ratings' => fn ($q) => $q->where('user_id', Auth::id()),
+            ])
+            ->withCount('ratings')
+            ->withAvg('ratings', 'rating')
+            ->orderBy('display_name');
+    }
+
+    /**
+     * Paginated list of profiles shown in the rating-history panel.
+     */
+    public function getAvailableProfiles()
+    {
+        return $this->availableProfilesQuery()->paginate(self::PROFILES_PER_PAGE);
     }
 
     /**
@@ -109,14 +134,7 @@ class MemberRatings extends Component
      */
     public function rateProfile(int $percentage)
     {
-        if (!Auth::check() || !$this->selectedProfile) {
-            return;
-        }
-
-        $user = Auth::user();
-
-        // Only male users can rate profiles
-        if (!$user->isMale()) {
+        if (!$this->selectedProfile) {
             return;
         }
 
@@ -128,30 +146,33 @@ class MemberRatings extends Component
             default => 3,
         };
 
-        $existingRating = Rating::where('profile_id', $this->selectedProfile->id)
-            ->where('user_id', $user->id)
-            ->first();
+        try {
+            // Shared implementation on the model — identical authorization to
+            // the rating widget on the public profile detail page.
+            $result = $this->selectedProfile->rateBy(Auth::user(), $starRating);
 
-        $isNewRating = !$existingRating;
+            if ($result !== Profile::RATE_OK) {
+                $this->ratingError = match ($result) {
+                    Profile::RATE_NOT_LOGGED_IN => __('front.profiles.rating.login_required'),
+                    Profile::RATE_NOT_MEMBER => __('front.profiles.rating.members_only'),
+                    Profile::RATE_OWN_PROFILE => __('front.profiles.rating.own_profile'),
+                    default => __('front.profiles.rating.invalid_rating'),
+                };
 
-        Rating::updateOrCreate(
-            [
+                return;
+            }
+
+            $this->ratingError = '';
+        } catch (\Throwable $e) {
+            Log::error('Failed to rate profile from member ratings page', [
                 'profile_id' => $this->selectedProfile->id,
-                'user_id' => $user->id,
-            ],
-            [
-                'rating' => $starRating,
-            ]
-        );
+                'user_id' => Auth::id(),
+                'exception' => $e,
+            ]);
 
-        // Notify profile owner about new rating
-        if ($isNewRating && $this->selectedProfile->user_id !== $user->id) {
-            Notification::createForUser(
-                $this->selectedProfile->user_id,
-                __('notifications.rating.received_title'),
-                __('notifications.rating.received_message', ['stars' => $starRating]),
-                $starRating >= 4 ? 'success' : ($starRating >= 3 ? 'info' : 'warning')
-            );
+            $this->ratingError = __('front.profiles.rating.error');
+
+            return;
         }
 
         // Refresh the view to show the updated rating
@@ -222,6 +243,7 @@ class MemberRatings extends Component
         return view('livewire.member-ratings', [
             'profiles' => $this->getAvailableProfiles(),
             'userRating' => $this->getUserRatingForSelected(),
+            'regions' => \App\Http\Controllers\Auth\MemberController::CZECH_REGIONS,
         ]);
     }
 }

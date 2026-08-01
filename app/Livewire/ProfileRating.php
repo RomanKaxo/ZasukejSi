@@ -2,10 +2,9 @@
 
 namespace App\Livewire;
 
-use App\Models\Notification;
 use App\Models\Profile;
-use App\Models\Rating;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
 class ProfileRating extends Component
@@ -31,53 +30,44 @@ class ProfileRating extends Component
 
     public function rate($rating)
     {
-        if (!Auth::check()) {
-            $this->message = __('front.profiles.rating.login_required');
-            return;
-        }
-
-        if ($rating < 1 || $rating > 5) {
+        // Cast defensively: the value arrives from the browser and must be a
+        // real integer before it reaches the unsignedTinyInteger column.
+        if (!is_numeric($rating)) {
             $this->message = __('front.profiles.rating.invalid_rating');
             return;
         }
 
         try {
-            $existingRating = Rating::where('profile_id', $this->profile->id)
-                ->where('user_id', Auth::id())
-                ->first();
-            
-            $isNewRating = !$existingRating;
+            // Shared implementation on the model — same authorization rules as
+            // the member ratings page.
+            $result = $this->profile->rateBy(Auth::user(), (int) $rating);
 
-            Rating::updateOrCreate(
-                [
-                    'profile_id' => $this->profile->id,
-                    'user_id' => Auth::id(),
-                ],
-                [
-                    'rating' => $rating,
-                ]
-            );
+            $this->message = match ($result) {
+                Profile::RATE_OK => __('front.profiles.rating.success'),
+                Profile::RATE_NOT_LOGGED_IN => __('front.profiles.rating.login_required'),
+                Profile::RATE_NOT_MEMBER => __('front.profiles.rating.members_only'),
+                Profile::RATE_OWN_PROFILE => __('front.profiles.rating.own_profile'),
+                default => __('front.profiles.rating.invalid_rating'),
+            };
 
-            $this->userRating = $rating;
-            $this->currentRating = $rating;
-            
-            // Refresh the ratings
+            if ($result !== Profile::RATE_OK) {
+                return;
+            }
+
+            $this->userRating = (int) $rating;
+            $this->currentRating = (int) $rating;
+
+            // Refresh the aggregate figures
             $this->profile->refresh();
             $this->averageRating = $this->profile->getAverageRating();
             $this->totalRatings = $this->profile->getTotalRatings();
+        } catch (\Throwable $e) {
+            Log::error('Failed to rate profile', [
+                'profile_id' => $this->profile->id ?? null,
+                'user_id' => Auth::id(),
+                'exception' => $e,
+            ]);
 
-            // Notify profile owner about new rating (not updates)
-            if ($isNewRating && $this->profile->user_id !== Auth::id()) {
-                Notification::createForUser(
-                    $this->profile->user_id,
-                    __('notifications.rating.received_title'),
-                    __('notifications.rating.received_message', ['stars' => $rating]),
-                    $rating >= 4 ? 'success' : ($rating >= 3 ? 'info' : 'warning')
-                );
-            }
-            
-            $this->message = __('front.profiles.rating.success');
-        } catch (\Exception $e) {
             $this->message = __('front.profiles.rating.error');
         }
     }

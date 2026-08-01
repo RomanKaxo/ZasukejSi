@@ -35,7 +35,7 @@
             <div class="shrink-0">
                 @if ($mainPhoto)
                     <div class="relative w-[240px] h-[382px]">
-                        <img src="{{ asset('images/AccountPhotos/profilePicture.png') }}"
+                        <img src="{{ $mainPhoto->hasGeneratedConversion('medium') ? $mainPhoto->getUrl('medium') : $mainPhoto->getUrl() }}"
                             alt="{{ __('front.profiles.photos.main_photo') }}"
                             class="w-[240px] h-[382px] object-cover rounded-[15px]">
                         <button type="button" wire:click="removeExistingImage({{ $mainPhoto->id }})"
@@ -189,22 +189,37 @@
     <div class="mb-10">
         <h2 class="mb-6" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">{{ __('front.profiles.photos.other_photos') }}</h2>
 
-        <div class="flex flex-wrap gap-4" x-data="{ removed: [], modalOpen: false }">
-            @foreach ([1, 2, 3, 4, 5, 4, 7] as $picIndex)
-                <div class="relative w-[150px] h-[240px]" x-show="!removed.includes({{ $loop->index }})">
-                    <img src="{{ asset('images/AccountPhotos/pic' . $picIndex . '.png') }}"
-                        alt="Photo {{ $picIndex }}"
+        <div class="flex flex-wrap gap-4" x-data="{ modalOpen: false }">
+            @forelse ($otherPhotos as $photo)
+                <div class="relative w-[150px] h-[240px]" wire:key="other-photo-{{ $photo->id }}">
+                    <img src="{{ $photo->hasGeneratedConversion('thumb') ? $photo->getUrl('thumb') : $photo->getUrl() }}"
+                        alt="{{ $photo->name }}"
                         class="w-[150px] h-[240px] object-cover rounded-[15px]">
 
                     <!-- Delete Button -->
-                    <button type="button" @click="removed.push({{ $loop->index }})"
+                    <button type="button" wire:click="removeExistingImage({{ $photo->id }})"
+                        wire:confirm="{{ __('front.profiles.photos.delete_confirm') }}"
+                        wire:loading.attr="disabled"
                         class="absolute top-[10px] right-[10px] w-[35px] h-[35px] rounded-full bg-[#DD3888] hover:bg-[#CA2474] transition-colors duration-200 flex items-center justify-center">
                         <svg class="w-[10px] h-[10px]" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M1 1L9 9M9 1L1 9" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
                     </button>
+
+                    <!-- Promote to main photo -->
+                    <button type="button" wire:click="setAsMainPhoto({{ $photo->id }})"
+                        wire:loading.attr="disabled"
+                        title="{{ __('front.profiles.photos.set_as_main') }}"
+                        class="absolute bottom-[10px] left-1/2 -translate-x-1/2 h-[30px] px-3 rounded-full bg-white/90 hover:bg-white transition-colors duration-200 flex items-center justify-center"
+                        style="box-shadow: 0 2px 6px 0 #00000033;">
+                        <span style="font-family:'Poppins',sans-serif; font-weight:600; font-size:11px; color:#5C2D62;">{{ __('front.profiles.photos.set_as_main') }}</span>
+                    </button>
                 </div>
-            @endforeach
+            @empty
+                <p class="w-full text-sm text-gray-500 mb-2" style="font-family:'Poppins',sans-serif;">
+                    {{ __('front.profiles.photos.no_other_photos') }}
+                </p>
+            @endforelse
 
             <!-- Add Photo Button (opens upload modal) -->
             <button type="button" @click="modalOpen = true"

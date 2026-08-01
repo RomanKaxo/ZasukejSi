@@ -1,4 +1,4 @@
-@props(['profile', 'imageOverride' => null, 'imagesOverride' => null, 'variant' => null, 'showRemoveButton' => false, 'cardHeight' => '520px', 'imageHeight' => '265px', 'simpleMode' => false, 'isReported' => false])
+@props(['profile', 'imageOverride' => null, 'imagesOverride' => null, 'variant' => null, 'showRemoveButton' => false, 'removeUrl' => null, 'cardHeight' => '520px', 'imageHeight' => '265px', 'simpleMode' => false, 'isReported' => false])
 
 @php
     $shouldBlur = $variant === 'vip-detail';
@@ -57,25 +57,56 @@
     }
 @endphp
 
-<div class="{{ $isReported ? 'h-[510px]' : '' }} bg-white rounded-lg overflow-hidden transition-all duration-300 cursor-pointer group relative z-10 home-profile-card" 
-     style="width: 210px; {{ !$isReported ? 'height: ' . ($simpleMode ? '340px' : $cardHeight) . ';' : '' }} border-radius: 15px; box-shadow: 0 15px 15px 0 rgba(92, 45, 98, 0.1);" 
-     x-cloak x-data="{ removed: false, showBtn: false, currentIndex: 0, imageUrls: [] }" data-image-urls='@json($imageUrls)' x-init="imageUrls = JSON.parse($el.getAttribute('data-image-urls') || '[]')" x-show="!removed" @mouseenter="showBtn = true" @mouseleave="showBtn = false">
+<div class="{{ $isReported ? 'h-[510px] reported-profile-card' : '' }} {{ $showRemoveButton ? '' : 'overflow-hidden' }} bg-white rounded-lg transition-all duration-300 cursor-pointer group relative z-10 home-profile-card"
+     style="width: 210px; {{ !$isReported ? 'height: ' . ($simpleMode ? '340px' : $cardHeight) . ';' : '' }} {{ $isReported ? 'border-top-left-radius:15px;border-bottom-left-radius:15px;border-top-right-radius:0;border-bottom-right-radius:0;' : 'border-radius: 15px;' }} box-shadow: 0 15px 15px 0 rgba(92, 45, 98, 0.1);"
+     x-cloak x-data="{ removed: false, removeError: false, showBtn: false, currentIndex: 0, imageUrls: [] }" data-image-urls='@json($imageUrls)' x-init="imageUrls = JSON.parse($el.getAttribute('data-image-urls') || '[]')" x-show="!removed" @mouseenter="showBtn = true" @mouseleave="showBtn = false">
     @if($showRemoveButton)
     <!-- Remove Button - Hidden by default, shown on hover -->
-    <button @click.stop="removed = true" x-show="showBtn" class="absolute top-2 right-2 z-30 w-7 h-7 flex items-center justify-center rounded-full transition-opacity duration-200" style="background-color: #DD3888;">
+    <button
+        @click.stop.prevent="
+            @if($removeUrl)
+            removeError = false;
+            removed = true;
+            fetch(@js($removeUrl), {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content ?? '',
+                    'Accept': 'application/json',
+                },
+            })
+            .then(response => {
+                // Roll the card back into view if the server refused, otherwise
+                // the item silently reappears on the next page load.
+                if (!response.ok) { removed = false; removeError = true; }
+            })
+            .catch(() => { removed = false; removeError = true; });
+            @else
+            removed = true;
+            @endif
+        "
+        x-show="showBtn"
+        class="absolute -top-2 -right-2 z-50 w-7 h-7 flex items-center justify-center rounded-full transition-opacity duration-200"
+        style="background-color: #DD3888;">
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M1 1L9 9M9 1L1 9" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
     </button>
+
+    <!-- Shown when the remove request failed so the user is not left guessing -->
+    <div x-show="removeError" x-cloak
+         class="absolute top-0 left-0 right-0 z-40 text-center px-2 py-1"
+         style="background:#FFE0E5;border-radius:15px 15px 0 0;font-family:'Poppins',sans-serif;font-size:11px;color:#DD3888;">
+        {{ __('front.favorites.error') }}
+    </div>
     @endif
-    
+
     <!-- Profile Image -->
     <div class="relative overflow-hidden home-profile-card-media" style="width: 210px; height: {{ $imageHeight }}; border-radius: 15px;">
 
         @if((!$shouldBlur) && ($isVerified || $isVip) && !$simpleMode)
         <div class="absolute {{ $isReported ? 'top-1' : 'top-3' }} left-3 z-20 home-profile-card-badge-stack">
             <!-- Verified Badge -->
-            @if($isVerified)
+            @if($isVerified && !$isReported)
             <div class="home-profile-card-badge">
                 <div class="home-profile-card-verified-badge" style="width:62px;height:40px;border-radius:10px;background:#CDEFD0;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;">
                     <x-icons name="camera" class="home-profile-card-verified-camera" style="width:18px;height:18px;color:#00B80F;margin-top:4px;" />
@@ -153,7 +184,7 @@
     </div>
 
     <!-- Profile Info -->
-    <div class="p-4 space-y-3 home-profile-card-content {{ $isReported ? 'h-[245px] flex flex-col justify-between' : '' }}">
+    <div class="p-4 space-y-3 home-profile-card-content {{ $isReported ? 'h-[245px] flex flex-col' : '' }}">
         <!-- Name and VIP Badge -->
         <div class="flex items-center justify-between py-1 home-profile-card-header">
             <h4 class="text-gray-700 flex-grow-0 truncate max-w-[80%] home-profile-card-name {{ $shouldBlur ? 'blur-md' : '' }}" style="font-family: 'Poppins', sans-serif; font-weight:700; font-size:18px; color:#333;">
@@ -178,8 +209,18 @@
         @endif
 
             <!-- Age and Height Stats -->
-        <div class="home-profile-card-rating-wrap {{ $isReported ? 'mt-auto' : '' }}">
-            <div class="flex justify-between gap-x-3 home-profile-card-stats">
+        <div class="home-profile-card-rating-wrap">
+            @if($isReported)
+            <!-- Location -->
+            <div class="flex py-2 justify-center items-center gap-x-2 home-profile-card-location">
+                @if($cardLocation)
+                    <img src="{{ asset('images/icons/location.svg') }}" alt="" aria-hidden="true" class="inline-block" style="width:20px;height:20px;" />
+                    <h5 style="margin:0;font-family:'Plus Jakarta Sans', sans-serif;font-weight:600;font-size:11px;color:#505050;">{{ $cardLocation }}</h5>
+                @endif
+            </div>
+            @endif
+
+            <div class="flex {{ $isReported ? 'justify-center' : 'justify-between gap-x-3' }} home-profile-card-stats" style="{{ $isReported ? 'gap:6px;' : '' }}">
                 <div class="home-profile-card-stat" style="width:{{ $simpleMode ? '95px' : '82px' }};height:30px;border-radius:8px;background:#F2F2F2;display:flex;align-items:center;justify-content:center;">
                     <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:11px;color:#505050;">{{ $cardHeightCm }} cm</div>
                 </div>
@@ -188,13 +229,15 @@
                 </div>
             </div>
 
+            @if(!$isReported)
             <!-- Location -->
-            <div class="flex py-2 justify-center items-center gap-x-2 home-profile-card-location {{ $isReported ? '-mt-2' : '' }}">
+            <div class="flex py-2 justify-center items-center gap-x-2 home-profile-card-location">
                 @if($cardLocation)
                     <img src="{{ asset('images/icons/location.svg') }}" alt="" aria-hidden="true" class="inline-block" style="width:20px;height:20px;" />
                     <h5 style="margin:0;font-family:'Plus Jakarta Sans', sans-serif;font-weight:600;font-size:11px;color:#505050;">{{ $cardLocation }}</h5>
                 @endif
             </div>
+            @endif
 
             @if(!$simpleMode && !$isReported)
             <!-- Rating Badge -->

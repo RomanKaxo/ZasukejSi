@@ -39,6 +39,10 @@
             padding-right: 97px;
         }
 
+        #nav-logo.nav-logo-en {
+            padding-right: 8px;
+        }
+
         .brand-mark .brand-main { color: #5C2D62; }
         .brand-mark .brand-si { color: #DD3888; }
         .brand-mark .brand-cz { color: rgba(50, 50, 50, 0.78); }
@@ -95,6 +99,9 @@
                 height: 56px;
                 padding-left: 25px;
                 padding-right: 25px;
+                position: relative;
+                z-index: 1;
+                background: #FFFFFF;
             }
 
             #nav-logo {
@@ -120,12 +127,19 @@
             }
         }
     </style>
-    <div class="container mx-auto px-0 sm:px-4">
+    <div class="lg:hidden fixed inset-0"
+         x-show="mobileMenuOpen"
+         x-cloak
+         x-transition.opacity.duration.180ms
+         @click="mobileMenuOpen = false"
+         style="background:#5C2D62CC;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);z-index:0;"
+    ></div>
+    <div class="container mx-auto px-0 sm:px-4 relative" style="z-index:10;">
         <div class="navbar-shell">
             <!-- Left Side: Logo + Navigation Links -->
             <div class="navbar-desktop-grid hidden lg:grid">
                 <!-- Logo -->
-                <a href="{{ route('profiles.index') }}" class="text-xl font-bold text-text-default hover:text-primary-600 transition-colors justify-self-start" id="nav-logo">
+                <a href="{{ route('profiles.index') }}" class="text-xl font-bold text-text-default hover:text-primary-600 transition-colors justify-self-start{{ app()->getLocale() === 'en' ? ' nav-logo-en' : '' }}" id="nav-logo">
                     <span class="brand-mark">
                         @if(app()->getLocale() === 'en')
                             <span class="brand-main">ESCORT</span><span class="brand-si">-ONLINE</span><span class="brand-cz">.COM</span>
@@ -171,6 +185,14 @@
                                     'title' => $translationKey ? __($translationKey) : data_get($page, 'title'),
                                 ];
                             })->values();
+
+                            // "Úvod" (home) is a static link, not managed via the CMS pages table —
+                            // always show it first unless it somehow already made it into the list.
+                            if (! $resolvedNavPages->contains(fn ($page) => trim($page->slug, '/') === '')) {
+                                $resolvedNavPages = collect([
+                                    (object) ['id' => 'home', 'slug' => '', 'title' => __('front.nav.home')],
+                                ])->concat($resolvedNavPages);
+                            }
                         }
                     @endphp
                     @foreach($resolvedNavPages as $page)
@@ -211,10 +233,10 @@
                     @else
                     <!-- Auth Buttons - Guest Only -->
                     <div class="flex items-center space-x-3">
-                        <button @click="$dispatch('show-register-modal')" type="button" class="px-6 py-3 bg-[#DD3888] text-white rounded-lg font-semibold hover:opacity-90 transition">
+                        <button @click="$dispatch('show-register-modal')" type="button" class="px-6 py-3 bg-[#DD3888] text-white rounded-lg font-semibold hover:opacity-90 transition{{ app()->getLocale() === 'en' ? ' flex items-center justify-center' : '' }}" @if(app()->getLocale() === 'en') style="width:133px;height:60px;padding:0;" @endif>
                             {{ __('front.nav.register') }}
                         </button>
-                        <button @click="$dispatch('show-login-modal')" type="button" class="px-6 py-3 border-2 border-[#DD3888] bg-white text-[#DD3888] rounded-lg font-semibold hover:bg-[#DD3888] hover:text-white transition">
+                        <button @click="$dispatch('show-login-modal')" type="button" class="px-6 py-3 border-2 border-[#DD3888] bg-white text-[#DD3888] rounded-lg font-semibold hover:bg-[#DD3888] hover:text-white transition{{ app()->getLocale() === 'en' ? ' flex items-center justify-center' : '' }}" @if(app()->getLocale() === 'en') style="width:86px;height:60px;padding:0;" @endif>
                             {{ __('front.nav.login') }}
                         </button>
                     </div>
@@ -256,7 +278,7 @@
                 </div>
             </div>
 
-            <div class="flex w-full items-center justify-between lg:hidden">
+            <div class="flex w-full items-center justify-between lg:hidden bg-white" style="position:relative;z-index:1;">
                 <a href="{{ route('profiles.index') }}" class="text-xl font-bold text-text-default hover:text-primary-600 transition-colors" id="nav-logo-mobile">
                     <span class="brand-mark" style="font-size:20px;">
                         @if(app()->getLocale() === 'en')
@@ -269,8 +291,18 @@
                 <!-- Mobile menu button -->
                 <div class="lg:hidden">
                     <button @click="mobileMenuOpen = !mobileMenuOpen" type="button" class="flex items-center justify-center text-text-default hover:text-primary-600 focus:outline-none focus:text-primary-600" id="mobile-menu-button" :aria-expanded="mobileMenuOpen.toString()" aria-controls="mobile-menu">
-                        <x-icons name="burger" x-show="!mobileMenuOpen" strokeWidth="2" class="h-2 w-6" block="false"/>
-                        <x-icons name="close" x-show="mobileMenuOpen" strokeWidth="2" class="h-6 w-6" />
+                        <span x-show="!mobileMenuOpen" class="inline-flex flex-col justify-between" style="width:40px;height:17px;">
+                            <svg width="40" height="17" viewBox="0 0 40 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0.0678711 1.5H39.9997" stroke="#5C2D62" stroke-width="3" stroke-linecap="round"/>
+                                <path d="M0 15.5L40 15.5" stroke="#5C2D62" stroke-width="3" stroke-linecap="round"/>
+                            </svg>
+                        </span>
+                        <span x-show="mobileMenuOpen" style="display:none;width:28px;height:28px;">
+                            <svg width="28" height="28" viewBox="0 0 31 31" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1.06055 29.3449L29.3448 1.06066" stroke="#DD3888" stroke-width="3" stroke-linecap="round"/>
+                                <path d="M29.3821 29.3449L1.09781 1.06066" stroke="#DD3888" stroke-width="3" stroke-linecap="round"/>
+                            </svg>
+                        </span>
                     </button>
                 </div>
             </div>
@@ -278,66 +310,85 @@
 
         <!-- Mobile menu -->
         <div class="lg:hidden" id="mobile-menu" x-show="mobileMenuOpen" x-cloak x-transition.opacity.duration.180ms>
-            <div class="flex flex-wrap p-4 py-5 pt-6 space-y-2 bg-white rounded-2xl">
-                
-                @auth
-                    <!-- Icon Buttons - Mobile Only -->
-                    <div class="w-full flex items-center justify-center gap-3 pb-4 border-b border-gray-200 mb-2">
-                        <!-- Notifications Button -->
-                        @livewire('notifications-dropdown')
-                        
-                        <!-- Mail Button -->
-                        <a href="{{ route('messages.index') }}" class="btn nav-button bg-gray-50 !px-4 !py-4 !border-1 !text-primary !border-primary relative rounded-lg" title="{{ __('front.nav.mail') }}">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                            </svg>
-                        </a>
-                        
-                    </div>
-                @endauth
-                
+            <div class="flex flex-col items-center p-4 py-5 pt-6 bg-white" style="border-radius:0 0 24px 24px;">
+
+                @php
+                    $mobileMailCount = 654;
+                    $mobileMailBadge = $mobileMailCount > 99 ? '99+' : $mobileMailCount;
+                @endphp
+
                 @foreach($resolvedNavPages as $page)
-                    <a href="{{ url('/' . $page->slug) }}" class="nav-link-mobile group">
+                    @php
+                        $mobileNormalizedSlug = trim($page->slug, '/');
+                        $mobileIsHomeSlug = $mobileNormalizedSlug === '';
+                        $mobileIsActive = $mobileIsHomeSlug ? request()->path() === '/' : request()->is($mobileNormalizedSlug);
+                    @endphp
+                    <a href="{{ url('/' . $page->slug) }}"
+                       class="flex items-center w-full mb-2"
+                       style="width:304px;max-width:100%;height:60px;padding:0 16px;border-radius:8px;font-family:'Poppins',sans-serif;font-weight:500;font-size:18px;
+                           background:{{ $mobileIsActive ? '#F2F2F2' : 'transparent' }};
+                           color:{{ $mobileIsActive ? '#DD3888' : '#505050' }};">
                         {{ $page->title }}
-                        <span class="underline"></span>
                     </a>
                 @endforeach
+
+                <hr class="rounded-none" style="width:310px;max-width:100%;height:2px;border:none;background:#F2F2F2;border-radius:0;padding-top:27px;padding-bottom:17px;background-clip:content-box;">
+
                 @auth
-                    <a href="{{ route('account.dashboard') }}" class="nav-link-mobile group">
-                        {{ __('front.nav.accountdashboard') }}
-                        <span class="underline"></span>
-                    </a>
-                    <form method="POST" action="{{ route('logout') }}" class="w-full">
+                    @php
+                        $mobileTabs = [
+                            ['route' => 'account.dashboard', 'label' => __('front.account.member.profile'), 'icon' => 'User'],
+                            ['route' => 'messages.index', 'label' => __('front.account.member.messages'), 'icon' => 'mail', 'badge' => $mobileMailBadge],
+                            ['route' => 'account.member.favorites', 'label' => __('front.account.member.favorites'), 'icon' => 'heart'],
+                            ['route' => 'account.member.dashboard', 'label' => __('front.account.member.settings'), 'icon' => 'Settings'],
+                        ];
+                    @endphp
+                    @foreach($mobileTabs as $tab)
+                        @php $mobileTabActive = request()->routeIs($tab['route']); @endphp
+                        <a href="{{ route($tab['route']) }}"
+                           class="relative flex items-center w-full"
+                           style="width:304px;max-width:100%;height:60px;margin-bottom:10px;padding:0 16px;gap:12px;border-radius:8px;font-family:'Poppins',sans-serif;font-weight:500;font-size:18px;
+                               background:{{ $mobileTabActive ? '#DD3888' : 'transparent' }};
+                               border:1px solid {{ $mobileTabActive ? '#DD3888' : '#E6E6E6' }};
+                               color:{{ $mobileTabActive ? '#FFFFFF' : '#505050' }};">
+                            <x-icons :name="$tab['icon']" class="w-6 h-6" style="color:{{ $mobileTabActive ? '#FFFFFF' : '#DD3888' }};" />
+                            {{ $tab['label'] }}
+                            @isset($tab['badge'])
+                                <span class="absolute flex items-center justify-center" style="right:16px;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:999px;background:#00B80F;font-family:'Poppins',sans-serif;font-weight:700;font-size:11px;color:#FFFFFF;">
+                                    {{ $tab['badge'] }}
+                                </span>
+                            @endisset
+                        </a>
+                    @endforeach
+
+                    <form method="POST" action="{{ route('logout') }}" class="w-full flex justify-center">
                         @csrf
-                        <button type="submit" class="w-full flex items-center justify-center" style="height:60px;border-radius:8px;border:1px solid #DD3888;padding:24px 26px;gap:7px;background:transparent;">
+                        <button type="submit" class="flex items-center justify-center" style="width:311px;max-width:100%;height:60px;border-radius:8px;border:1px solid #DD3888;gap:7px;background:transparent;">
                             <x-icons name="User" style="width:24px;height:24px;color:#DD3888;" />
-                            <span style="font-family:'Poppins', sans-serif; font-weight:600; font-size:16px; line-height:1; color:#DD3888;">{{ __('front.nav.logout') }}</span>
+                            <span style="font-family:'Poppins', sans-serif; font-weight:600; font-size:18px; line-height:1; color:#DD3888;">{{ __('front.nav.logout_mobile') }}</span>
                         </button>
                     </form>
                 @else
                     <!-- Auth Buttons -->
-                    <div class="w-full space-y-3 pt-4">
-                        <button @click="$dispatch('show-register-modal')" class="w-full btn-primary py-3 text-center">
-                            {{ __('front.nav.register') }}
-                        </button>
-                        <button @click="$dispatch('show-login-modal')" class="w-full btn-light py-3 text-center">
-                            {{ __('front.nav.login') }}
-                        </button>
-                    </div>
+                    <button @click="$dispatch('show-register-modal')" type="button" class="flex items-center justify-center mb-3" style="width:311px;max-width:100%;height:60px;border-radius:8px;background:#DD3888;font-family:'Poppins',sans-serif;font-weight:600;font-size:18px;color:#FFFFFF;">
+                        {{ __('front.nav.register') }}
+                    </button>
+                    <button @click="$dispatch('show-login-modal')" type="button" class="flex items-center justify-center" style="width:311px;max-width:100%;height:60px;border-radius:8px;border:1px solid #DD3888;background:transparent;gap:7px;font-family:'Poppins',sans-serif;font-weight:600;font-size:18px;color:#DD3888;">
+                        <x-icons name="User" class="w-6 h-6" style="color:#DD3888;" />
+                        {{ __('front.nav.login_mobile') }}
+                    </button>
                 @endauth
-                
+
                 <!-- Language Switcher -->
-                <div class="w-full pt-4 border-t border-gray-300 mt-4">
-                    <div class="flex justify-center gap-4">
-                        <a href="{{ url()->current() }}?locale=cs" class="flex items-center gap-2 {{ app()->getLocale() === 'cs' ? 'opacity-100' : 'opacity-50' }}">
-                            <img src="{{ asset('flags/cs.png') }}" alt="Czech" class="w-8 h-8 rounded-full">
-                            <span class="text-sm">{{ __('front.nav.czech') }}</span>
-                        </a>
-                        <a href="{{ url()->current() }}?locale=en" class="flex items-center gap-2 {{ app()->getLocale() === 'en' ? 'opacity-100' : 'opacity-50' }}">
-                            <img src="{{ asset('flags/en.png') }}" alt="English" class="w-8 h-8 rounded-full">
-                            <span class="text-sm">{{ __('front.nav.english') }}</span>
-                        </a>
-                    </div>
+                <div class="w-full flex justify-center gap-3 mt-4">
+                    <a href="{{ url()->current() }}?locale=cs" class="flex flex-col items-center justify-center gap-1" style="width:96px;height:94px;border-radius:8px;background:{{ app()->getLocale() === 'cs' ? '#F2F2F2' : '#FFFFFF' }};">
+                        <img src="{{ asset('flags/cs.png') }}" alt="Czech" style="width:35px;height:35px;border-radius:999px;object-fit:cover;">
+                        <span style="font-family:'Poppins',sans-serif;font-weight:400;font-size:13px;color:#505050;">{{ __('front.nav.czech') }}</span>
+                    </a>
+                    <a href="{{ url()->current() }}?locale=en" class="flex flex-col items-center justify-center gap-1" style="width:96px;height:94px;border-radius:8px;background:{{ app()->getLocale() === 'en' ? '#F2F2F2' : '#FFFFFF' }};">
+                        <img src="{{ asset('flags/en.png') }}" alt="English" style="width:35px;height:35px;border-radius:999px;object-fit:cover;">
+                        <span style="font-family:'Poppins',sans-serif;font-weight:400;font-size:13px;color:#505050;">{{ __('front.nav.english') }}</span>
+                    </a>
                 </div>
             </div>
         </div>

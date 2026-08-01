@@ -1,136 +1,281 @@
 <div class="flex flex-col lg:flex-row gap-3 lg:gap-6">
-    {{-- Left Side - Selected Profile with Quick Actions --}}
-    <div class="w-full lg:flex-[2] lg:min-w-0 bg-white rounded-2xl overflow-hidden h-[55vh] md:h-[60vh] lg:h-[calc(100vh-200px)]">
+    {{-- Left Side - Region Filter + Selected Profile with Quick Actions --}}
+    <div class="w-full mx-auto lg:mx-0" style="max-width:510px;">
+        {{-- Region Filter --}}
+        <div class="flex justify-center" style="padding-bottom:32px;">
+            <div>
+                <label for="kraj" class="block mb-2" style="font-family:'Poppins',sans-serif;font-weight:400;font-size:14px;color:#505050;">
+                    {{ __('front.account.member.select_region') }}
+                </label>
+                <div class="relative rating-region-select">
+                    <select id="kraj" name="kraj" class="appearance-none member-select" style="width:100%;height:60px;border-radius:8px;border:1px solid #E6E6E6;padding:0 66px 0 16px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:14px;color:#505050;background:#FFFFFF;">
+                        <option value="">{{ __('front.account.member.select_region') }}</option>
+                        @foreach($regions as $key => $label)
+                            <option value="{{ $key }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <span class="absolute pointer-events-none flex items-center justify-center" style="top:50%;right:5px;transform:translateY(-50%);width:50px;height:50px;background:#F2F2F2;border-radius:6px;">
+                        <svg width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 1L5 4L9 1" stroke="#DD3888" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+    <div class="w-full bg-white rounded-2xl overflow-hidden mx-auto lg:mx-0 rating-photo-card" style="max-width:510px;">
         @if($selectedProfile)
+            @php
+                $ratingImageUrls = $selectedProfile->getAllImages()->map(fn($i) => $i->getUrl())->values()->all();
+                if (empty($ratingImageUrls)) {
+                    $ratingImageUrls = [$selectedProfile->getFirstImageUrl() ?? asset('images/models/model6.png')];
+                }
+                $ratingServices = ($selectedProfile->services && $selectedProfile->services->count() > 0)
+                    ? $selectedProfile->services->pluck('name')
+                    : collect(__('front.profiles.detail_page.services_default'));
+                $ratingVisibleServices = $ratingServices->take(10);
+                $ratingMoreServicesCount = $ratingServices->count() - $ratingVisibleServices->count();
+                $ratingSlideCount = count($ratingImageUrls) + 1;
+            @endphp
             {{-- Profile Image Container with Overlays --}}
-            <div class="relative h-full">
-                {{-- Profile Photo --}}
-                <div class="absolute inset-0">
-                    @if($selectedProfile->getAllImages()->count() > 0)
-                        <img 
-                            src="{{ $selectedProfile->getFirstImageUrl() }}" 
-                            alt="{{ $selectedProfile->display_name }}"
-                            class="w-full h-full object-cover"
-                        >
-                    @else
-                        <div class="w-full h-full bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center">
-                            <svg class="w-20 h-20 md:w-32 md:h-32 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
+            <div class="relative h-full" wire:key="rating-card-{{ $selectedProfile->id }}" x-data="{ currentIndex: 0, images: @js($ratingImageUrls), slideCount: {{ $ratingSlideCount }}, slideHeight: 610, updateSlideHeight() { const slide = this.$refs.track ? this.$refs.track.querySelector('.rating-photo-slide') : null; if (slide) { this.slideHeight = slide.offsetHeight; } } }" x-init="updateSlideHeight(); window.addEventListener('resize', () => updateSlideHeight())">
+                {{-- Profile Photo (vertical slide filmstrip) --}}
+                <div class="absolute inset-0" style="overflow:hidden;">
+                    <div class="transition-transform duration-300 ease-in-out" x-ref="track" :style="`transform:translateY(-${currentIndex * slideHeight}px);`">
+                        <template x-for="(url, index) in images" :key="index">
+                            <img
+                                :src="url"
+                                alt="{{ $selectedProfile->display_name }}"
+                                class="w-full object-cover rating-photo-slide"
+                            >
+                        </template>
+
+                        {{-- Final slide: Services --}}
+                        <div class="w-full rating-photo-slide rating-services-slide" style="background:linear-gradient(180deg, #A4A4A4 0%, #E8E8E8 100%);box-sizing:border-box;">
+                            <h3 style="font-family:'Poppins',sans-serif;font-weight:700;font-size:18px;color:#505050;margin-bottom:16px;padding-top:23px;">
+                                {{ __('front.profiles.detail_page.services') }}
+                            </h3>
+                            <div class="flex flex-wrap" style="gap:10px;">
+                                @foreach($ratingVisibleServices as $serviceName)
+                                    <span class="inline-flex items-center justify-center" style="height:35px;padding:0 16px;border:2px solid #F2F2F2;border-radius:999px;background:#FFFFFF;font-family:'Poppins',sans-serif;font-weight:500;font-size:11px;color:#505050;">
+                                        {{ $serviceName }}
+                                    </span>
+                                @endforeach
+                                @if($ratingMoreServicesCount > 0)
+                                    <span class="inline-flex items-center justify-center" style="width:138px;height:35px;border:2px solid #F2F2F2;border-radius:999px;background:transparent;font-family:'Poppins',sans-serif;font-weight:500;font-size:11px;color:#505050;">
+                                        + {{ __('front.profiles.detail_page.more_services', ['count' => $ratingMoreServicesCount]) }}
+                                    </span>
+                                @endif
+                            </div>
                         </div>
-                    @endif
+                    </div>
                 </div>
 
                 {{-- Gradient Overlay --}}
-                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" x-show="currentIndex < images.length"></div>
 
-                {{-- Top Action Badges --}}
-                <div class="absolute top-3 left-3 md:top-4 md:left-4 flex gap-1.5 md:gap-2 z-10">
-                    <a href="{{ route('profiles.show', $selectedProfile) }}" 
-                       class="text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full transition-colors duration-200 text-xs md:text-sm font-semibold"
-                       style="background:#5C2D62;">
-                        {{ __('front.profiles.list.detail') }}
-                    </a>
-                    
-                    @if($selectedProfile->isVerified())
-                        <div class="bg-green-100/90 backdrop-blur text-green-600 px-2 py-1.5 md:px-3 md:py-2 rounded-full flex items-center gap-1 md:gap-2">
-                            <x-icons name="camera" class="w-3.5 h-3.5 md:w-4 md:h-4" />
-                            <span class="text-[10px] md:text-xs font-bold hidden sm:inline">{{ __('front.profiles.list.verified') }}</span>
-                        </div>
-                    @endif
-                    
-                    @if($selectedProfile->isVip())
-                        <div class="bg-gold-500/90 backdrop-blur text-white px-2 py-1.5 md:px-3 md:py-2 rounded-full flex items-center gap-1 md:gap-2">
-                            <x-icons name="star" class="w-3.5 h-3.5 md:w-4 md:h-4" />
-                            <span class="text-[10px] md:text-xs font-bold hidden sm:inline">VIP</span>
-                        </div>
-                    @endif
+                {{-- Vertical photo pagination dots (side) --}}
+                <div class="absolute top-1/2 -translate-y-1/2 flex flex-col z-10 rating-pagination-dots" style="right:16px;gap:6px;" x-show="slideCount > 1">
+                    <template x-for="index in slideCount" :key="index">
+                        <button
+                            type="button"
+                            @click="currentIndex = index - 1"
+                            class="rounded-full flex items-center justify-center transition-all duration-200 rating-pagination-dot"
+                            style="width:10px;height:10px;box-shadow:0 0 0 1px rgba(0,0,0,0.04);"
+                            x-bind:class="{ 'bg-white': true }"
+                        >
+                            <span class="rounded-full rating-pagination-dot-inner" style="width:6px;height:6px;" x-bind:class="currentIndex === (index - 1) ? 'bg-[#DD3888]' : 'bg-transparent'"></span>
+                        </button>
+                    </template>
                 </div>
 
-                {{-- Close/Skip Button (Top Right) --}}
-                <button 
-                    wire:click="skipProfile"
-                    wire:loading.attr="disabled"
-                    class="absolute top-3 right-3 md:top-4 md:right-4 z-10 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-gray-900/50 backdrop-blur hover:bg-gray-900/70 text-white transition-all duration-200"
-                    title="{{ __('front.member.ratings.skip') }}"
+                {{-- Mobile carousel nav arrows --}}
+                <button
+                    type="button"
+                    @click="currentIndex = currentIndex > 0 ? currentIndex - 1 : slideCount - 1"
+                    x-show="slideCount > 1"
+                    class="rating-nav-arrow absolute top-1/2 -translate-y-1/2 items-center justify-center z-10"
+                    style="left:12px;width:36px;height:36px;border-radius:8px;background:#DD3888;"
+                    aria-label="Previous"
                 >
-                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M7 1L1 7L7 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <button
+                    type="button"
+                    @click="currentIndex = currentIndex < slideCount - 1 ? currentIndex + 1 : 0"
+                    x-show="slideCount > 1"
+                    class="rating-nav-arrow absolute top-1/2 -translate-y-1/2 items-center justify-center z-10"
+                    style="right:12px;width:36px;height:36px;border-radius:8px;background:#DD3888;"
+                    aria-label="Next"
+                >
+                    <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 1L7 7L1 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </button>
 
-                {{-- Profile Info & Actions Overlay (Bottom) --}}
-                <div class="absolute bottom-0 left-0 right-0 p-3 md:p-5 lg:p-6 z-10">
-                    {{-- Profile Name --}}
-                    <div class="mb-3 md:mb-4">
-                        <h2 class="text-xl md:text-2xl lg:text-3xl font-bold text-white">
-                            {{ $selectedProfile->display_name }}
-                            @if($selectedProfile->age)
-                                <span class="text-white/80 font-normal text-lg md:text-xl lg:text-2xl">({{ $selectedProfile->age }})</span>
-                            @endif
-                        </h2>
+                {{-- Profile Info & Actions Overlay (Top) --}}
+                <div class="absolute top-3 md:top-4 left-0 right-0 py-3 md:py-5 lg:py-6 z-10 rating-overlay-top">
+                    {{-- Profile Name + Action Badges (name+badges left column, close button stretched right column) --}}
+                    <div class="flex items-stretch gap-2">
+                        <div class="flex flex-col justify-between gap-2 min-w-0">
+                            <h2 class="truncate rating-profile-name" style="font-family:'Poppins',sans-serif;font-weight:700;color:#FFFFFF;filter:drop-shadow(0 0 8px rgba(0,0,0,0.4));">
+                                {{ $selectedProfile->display_name }}
+                                @if($selectedProfile->age)
+                                    <span style="font-weight:700;color:#FFFFFF;">({{ $selectedProfile->age }})</span>
+                                @endif
+                            </h2>
+
+                            <div class="hidden md:flex items-center gap-2">
+                                <a href="{{ route('profiles.show', $selectedProfile) }}"
+                                   class="flex items-center justify-center"
+                                   style="width:120px;height:30px;border-radius:8px;background:#DD3888;font-family:'Poppins',sans-serif;font-weight:600;font-size:13px;color:#FFFFFF;">
+                                    {{ __('front.profiles.list.detail_visit') }}
+                                </a>
+                                @if($messageRouteAvailable ?? \Illuminate\Support\Facades\Route::has('messages.show'))
+                                    <a href="{{ route('messages.show', $selectedProfile->user) }}"
+                                       class="flex items-center justify-center"
+                                       style="width:76px;height:30px;border-radius:8px;background:#DD3888;font-family:'Poppins',sans-serif;font-weight:600;font-size:13px;color:#FFFFFF;">
+                                        {{ __('front.member.ratings.message_short') }}
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+
+                        <button
+                            wire:click="skipProfile"
+                            wire:loading.attr="disabled"
+                            class="flex items-center justify-center ml-auto flex-shrink-0 rating-close-btn"
+                            style="border-radius:8px;background:#5C2D62;"
+                            title="{{ __('front.member.ratings.skip') }}"
+                        >
+                            <svg width="24" height="24" fill="none" stroke="#FFFFFF" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
                     </div>
 
-                    {{-- "Your Rating" Label --}}
-                    @if(!$userRating)
-                        <p class="text-white/70 text-xs md:text-sm mb-2 md:mb-3 text-center">{{ __('front.member.ratings.your_rating') }}</p>
+                </div>
+
+                {{-- Mobile-only Quick Actions overlay (Uložit / Profil / Zpráva) --}}
+                <div class="absolute left-0 right-0 flex md:hidden items-center justify-start z-10" style="bottom:16px;padding-left:20px;">
+                    <button
+                        wire:click="toggleFavorite"
+                        wire:loading.attr="disabled"
+                        class="flex items-center justify-center flex-shrink-0
+                            {{ $isFavorited ? 'ring-2 ring-white' : '' }}"
+                        style="height:40px;padding:0 18px;border-radius:8px;background:#DD3888;margin-right:44px;"
+                        title="{{ $isFavorited ? __('front.favorites.remove') : __('front.favorites.add') }}"
+                    >
+                        <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:#FFFFFF;">{{ __('front.member.ratings.save') }}</span>
+                    </button>
+
+                    <a href="{{ route('profiles.show', $selectedProfile) }}"
+                       class="flex items-center justify-center gap-1.5 flex-shrink-0"
+                       style="height:40px;padding:0 18px;border-radius:8px;background:#FFFFFF;box-shadow:4px 4px 4px #00000040;margin-right:8px;">
+                        <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:#DD3888;">{{ __('front.member.ratings.profile_link') }}</span>
+                        <x-icons name="User" class="w-6 h-6 text-[#DD3888]" :strokeWidth="3" />
+                    </a>
+
+                    @if($messageRouteAvailable ?? \Illuminate\Support\Facades\Route::has('messages.show'))
+                        <a href="{{ route('messages.show', $selectedProfile->user) }}"
+                           class="flex items-center justify-center flex-shrink-0"
+                           style="width:40px;height:40px;border-radius:8px;background:#FFFFFF;box-shadow:4px 4px 4px #00000040;">
+                            <x-icons name="MessageCircleMore" class="w-6 h-6 text-[#DD3888]" :strokeWidth="2" />
+                        </a>
                     @endif
+                </div>
 
-                    {{-- Action Buttons - Tinder-style circular buttons --}}
-                    <div class="flex items-center justify-center gap-3 md:gap-4">
-                        {{-- 30% Rating (Red - Thumbs down) --}}
-                        <button 
-                            wire:click="rateProfile(30)"
-                            wire:loading.attr="disabled"
-                            class="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full transition-all duration-200 transform hover:scale-110 active:scale-95 shrink-0
-                                {{ $userRating == 2 
-                                    ? 'bg-red-500 text-white ring-4 ring-red-400/50 shadow-lg shadow-red-500/30' 
-                                    : 'bg-white/15 backdrop-blur-sm text-white border border-white/30 hover:bg-red-500 hover:border-red-500' }}"
-                            title="{{ __('front.member.ratings.rate_30') }}"
-                        >
-                            <x-icons name="meh" class="w-5 h-5 md:w-6 md:h-6" />
-                        </button>
+                {{-- Rating refusal message (e.g. own profile / members only) --}}
+                @if($ratingError)
+                    <div class="absolute left-0 right-0 z-20 flex justify-center" style="bottom:110px;">
+                        <p class="text-center px-4 py-2 rounded-lg" style="max-width:90%;background:#FFFFFFEE;font-family:'Poppins',sans-serif;font-weight:500;font-size:13px;color:#DD3888;">
+                            {{ $ratingError }}
+                        </p>
+                    </div>
+                @endif
 
-
-                        {{-- 70% Rating (Yellow - OK) --}}
-                        <button 
-                            wire:click="rateProfile(70)"
-                            wire:loading.attr="disabled"
-                            class="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full transition-all duration-200 transform hover:scale-110 active:scale-95 shrink-0
-                                {{ $userRating == 4 
-                                    ? 'bg-yellow-500 text-white ring-4 ring-yellow-400/50 shadow-lg shadow-yellow-500/30' 
-                                    : 'bg-white/15 backdrop-blur-sm text-white border border-white/30 hover:bg-yellow-500 hover:border-yellow-500' }}"
-                            title="{{ __('front.member.ratings.rate_70') }}"
-                        >
-                            <x-icons name="smile" class="w-5 h-5 md:w-6 md:h-6" />
-                        </button>
-
-                        {{-- 100% Rating (Green - Super like) --}}
-                        <button 
-                            wire:click="rateProfile(100)"
-                            wire:loading.attr="disabled"
-                            class="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center rounded-full transition-all duration-200 transform hover:scale-110 active:scale-95 shrink-0
-                                {{ $userRating == 5 
-                                    ? 'bg-green-500 text-white ring-4 ring-green-400/50 shadow-lg shadow-green-500/30' 
-                                    : 'bg-white/15 backdrop-blur-sm text-white border-2 border-white/40 hover:bg-green-500 hover:border-green-500' }}"
-                            title="{{ __('front.member.ratings.rate_100') }}"
-                        >
-                            <x-icons name="happy-smile" class="w-6 h-6 md:w-7 md:h-7" />
-                        </button>
-
-                        {{-- Favorite Button (Heart) --}}
-                        <button 
+                {{-- Rating & Favorite Buttons (Bottom, desktop only) --}}
+                <div class="absolute left-0 right-0 hidden md:flex items-center justify-center gap-2 z-10" style="bottom:47px;">
+                    {{-- Favorite Button (Heart) --}}
+                    <div class="relative" wire:key="rating-action-heart">
+                        @if($isFavorited)
+                            <p class="absolute left-0 right-0 text-center whitespace-nowrap" style="bottom:100%;margin-bottom:8px;font-family:'Poppins',sans-serif;font-weight:500;font-size:13px;color:#FFFFFF;text-shadow:4px 4px 4px #00000066;">
+                                {{ __('front.member.ratings.your_rating') }}
+                            </p>
+                        @endif
+                        <button
                             wire:click="toggleFavorite"
                             wire:loading.attr="disabled"
-                            class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full transition-all duration-200 transform hover:scale-110 active:scale-95 shrink-0
-                                {{ $isFavorited 
-                                    ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/40' 
-                                    : 'bg-white/15 backdrop-blur-sm text-white border border-white/30 hover:bg-pink-500 hover:border-pink-500' }}"
+                            class="flex items-center justify-center gap-1.5 shrink-0 text-white
+                                {{ $isFavorited ? 'ring-2 ring-white' : '' }}"
+                            style="width:100px;height:45px;border-radius:8px;background:#DD3888;box-shadow:4px 4px 4px #00000040;"
                             title="{{ $isFavorited ? __('front.favorites.remove') : __('front.favorites.add') }}"
                         >
-                            <span wire:loading wire:target="toggleFavorite" class="text-xs">...</span>
-                            <x-icons wire:loading.remove wire:target="toggleFavorite" name="heart" class="w-4 h-4 md:w-5 md:h-5" :strokeWidth="2" :fill="$isFavorited" />
+                            <span wire:loading wire:target="toggleFavorite" class="text-xs text-white">...</span>
+                            <span wire:loading.remove wire:target="toggleFavorite" style="font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:#FFFFFF;">{{ __('front.member.ratings.save') }}</span>
+                            <x-icons wire:loading.remove wire:target="toggleFavorite" name="heart" class="w-5 h-5 text-white" :strokeWidth="2" :fill="$isFavorited" />
+                        </button>
+                    </div>
+
+                    {{-- 100% Rating --}}
+                    <div class="relative" wire:key="rating-action-100">
+                        @if($userRating == 5)
+                            <p class="absolute left-0 right-0 text-center whitespace-nowrap" style="bottom:100%;margin-bottom:8px;font-family:'Poppins',sans-serif;font-weight:500;font-size:13px;color:#FFFFFF;text-shadow:4px 4px 4px #00000066;">
+                                {{ __('front.member.ratings.your_rating') }}
+                            </p>
+                        @endif
+                        <button
+                            wire:click="rateProfile(100)"
+                            wire:loading.attr="disabled"
+                            class="flex items-center justify-center gap-1.5 shrink-0 text-white
+                                {{ $userRating == 5 ? 'ring-2 ring-white' : '' }}"
+                            style="width:100px;height:45px;border-radius:8px;background:#00B80F;box-shadow:4px 4px 4px #00000040;"
+                            title="{{ __('front.member.ratings.rate_100') }}"
+                        >
+                            <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:#FFFFFF;">100 %</span>
+                            <x-icons name="happy-smile" class="w-6 h-6 text-white" />
+                        </button>
+                    </div>
+
+                    {{-- 70% Rating --}}
+                    <div class="relative" wire:key="rating-action-70">
+                        @if($userRating == 4)
+                            <p class="absolute left-0 right-0 text-center whitespace-nowrap" style="bottom:100%;margin-bottom:8px;font-family:'Poppins',sans-serif;font-weight:500;font-size:13px;color:#FFFFFF;text-shadow:4px 4px 4px #00000066;">
+                                {{ __('front.member.ratings.your_rating') }}
+                            </p>
+                        @endif
+                        <button
+                            wire:click="rateProfile(70)"
+                            wire:loading.attr="disabled"
+                            class="flex items-center justify-center gap-1.5 shrink-0 text-white
+                                {{ $userRating == 4 ? 'ring-2 ring-white' : '' }}"
+                            style="width:100px;height:45px;border-radius:8px;background:#FFB700;box-shadow:4px 4px 4px #00000040;"
+                            title="{{ __('front.member.ratings.rate_70') }}"
+                        >
+                            <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:#FFFFFF;">70 %</span>
+                            <x-icons name="smile" class="w-5 h-5 text-white" />
+                        </button>
+                    </div>
+
+                    {{-- 30% Rating --}}
+                    <div class="relative" wire:key="rating-action-30">
+                        @if($userRating == 2)
+                            <p class="absolute left-0 right-0 text-center whitespace-nowrap" style="bottom:100%;margin-bottom:8px;font-family:'Poppins',sans-serif;font-weight:500;font-size:13px;color:#FFFFFF;text-shadow:4px 4px 4px #00000066;">
+                                {{ __('front.member.ratings.your_rating') }}
+                            </p>
+                        @endif
+                        <button
+                            wire:click="rateProfile(30)"
+                            wire:loading.attr="disabled"
+                            class="flex items-center justify-center gap-1.5 shrink-0 text-white
+                                {{ $userRating == 2 ? 'ring-2 ring-white' : '' }}"
+                            style="width:100px;height:45px;border-radius:8px;background:#F47216;box-shadow:4px 4px 4px #00000040;"
+                            title="{{ __('front.member.ratings.rate_30') }}"
+                        >
+                            <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:#FFFFFF;">30 %</span>
+                            <x-icons name="meh" class="w-5 h-5 text-white" />
                         </button>
                     </div>
                 </div>
@@ -150,80 +295,130 @@
         @endif
     </div>
 
+    @if($selectedProfile)
+        {{-- Mobile-only Rating Buttons (100% / 70% / 30%) --}}
+        <div class="flex md:hidden flex-col items-center" style="margin-top:14px;" wire:key="rating-mobile-rate-{{ $selectedProfile->id }}">
+            <p style="font-family:'Poppins',sans-serif;font-weight:500;font-size:13px;color:#505050;min-height:16px;">
+                @if(in_array($userRating, [5, 4, 2]))
+                    {{ __('front.member.ratings.your_rating') }}
+                @endif
+            </p>
+            <div class="flex items-center justify-center gap-[6px]" style="margin-top:4px;">
+                <button
+                    wire:click="rateProfile(100)"
+                    wire:loading.attr="disabled"
+                    class="flex items-center justify-center gap-1 text-white flex-shrink-0
+                        {{ $userRating == 5 ? 'ring-2 ring-[#00B80F]' : '' }}"
+                    style="width:96px;height:45px;border-radius:8px;background:#00B80F;"
+                    title="{{ __('front.member.ratings.rate_100') }}"
+                >
+                    <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:14px;color:#FFFFFF;">100 %</span>
+                    <x-icons name="happy-smile" class="w-5 h-5 text-white" />
+                </button>
+                <button
+                    wire:click="rateProfile(70)"
+                    wire:loading.attr="disabled"
+                    class="flex items-center justify-center gap-1 text-white flex-shrink-0
+                        {{ $userRating == 4 ? 'ring-2 ring-[#FFB700]' : '' }}"
+                    style="width:96px;height:45px;border-radius:8px;background:#FFB700;"
+                    title="{{ __('front.member.ratings.rate_70') }}"
+                >
+                    <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:14px;color:#FFFFFF;">70 %</span>
+                    <x-icons name="smile" class="w-5 h-5 text-white" />
+                </button>
+                <button
+                    wire:click="rateProfile(30)"
+                    wire:loading.attr="disabled"
+                    class="flex items-center justify-center gap-1 text-white flex-shrink-0
+                        {{ $userRating == 2 ? 'ring-2 ring-[#F47216]' : '' }}"
+                    style="width:96px;height:45px;border-radius:8px;background:#F47216;"
+                    title="{{ __('front.member.ratings.rate_30') }}"
+                >
+                    <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:14px;color:#FFFFFF;">30 %</span>
+                    <x-icons name="meh" class="w-5 h-5 text-white" />
+                </button>
+            </div>
+        </div>
+    @endif
+    </div>
+
     {{-- Right Side - Profile List --}}
-    <div class="w-full lg:flex-1 lg:min-w-0 bg-white rounded-2xl p-3 md:p-4 flex flex-col max-h-[35vh] md:max-h-[40vh] lg:max-h-[calc(100vh-200px)]">
+    <div class="w-full lg:flex-1 lg:min-w-0 flex flex-col">
+    <div class="w-full bg-white rounded-2xl p-3 md:p-4 flex flex-col relative rating-history-panel">
         {{-- Header --}}
         <div class="mb-2 md:mb-3 flex-shrink-0">
             <p class="text-xs md:text-sm text-gray-500">{{ __('front.member.ratings.your_history') }}</p>
         </div>
 
         {{-- Scrollable Profile List --}}
-        <div class="flex-1 overflow-y-auto min-h-0 -mx-3 px-3 md:-mx-4 md:px-4">
+        <div class="flex-1 overflow-y-auto min-h-0 -ml-3 pl-3 -mr-3 pr-0 md:-ml-4 md:pl-4 md:-mr-4 md:pr-1 ratings-history-scroll">
             @forelse($profiles as $profile)
                 @php
-                    $userRatingForProfile = auth()->user() ? $profile->getUserRating(auth()->id()) : null;
+                    // All three figures come from the eager-loaded query in
+                    // MemberRatings::availableProfilesQuery(), so this loop
+                    // issues no additional database queries.
+                    $userRatingForProfile = $profile->ratings->first()?->rating;
                     $userRatingPercent = $userRatingForProfile ? ($userRatingForProfile / 5) * 100 : 0;
-                    $avgRatingPercent = $profile->getTotalRatings() > 0 ? ($profile->getAverageRating() / 5) * 100 : 0;
+                    $avgRatingPercent = $profile->ratings_count > 0 ? (($profile->ratings_avg_rating ?? 0) / 5) * 100 : 0;
+                    $ratingBarColor = fn ($percent) => $percent >= 80 ? '#00B80F' : ($percent >= 40 ? '#FFB700' : '#F47216');
                 @endphp
-                <button 
+                <button
                     wire:click="selectProfile({{ $profile->id }})"
                     wire:key="profile-{{ $profile->id }}"
-                    class="w-full p-2 md:p-3 hover:bg-gray-50 active:bg-gray-100 transition-colors duration-150 shadow-sm hover:shadow rounded-xl md:rounded-2xl mb-1.5 md:mb-2
-                        {{ $selectedProfileId === $profile->id ? 'bg-primary-50 border border-primary-200 shadow-md' : 'border border-transparent' }}"
+                    class="flex items-center gap-3 mx-auto hover:shadow transition-shadow duration-150 shadow-sm mb-2
+                        {{ $selectedProfileId === $profile->id ? 'ring-2 ring-primary-300' : '' }}"
+                    style="width:280px;height:100px;background:#FFFFFF;border-radius:16px;padding:0 12px;"
                 >
-                    <div class="flex items-center gap-2.5 md:gap-3">
-                        {{-- Thumbnail --}}
-                        <div class="w-10 h-12 md:w-14 md:h-16 rounded-lg md:rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-primary-100 to-secondary-100">
-                            @if($profile->getAllImages()->count() > 0)
-                                <img 
-                                    src="{{ $profile->getAllImages()->first()->getUrl() }}" 
-                                    alt="{{ $profile->display_name }}"
-                                    class="w-full h-full object-cover"
-                                >
-                            @else
-                                <div class="w-full h-full flex items-center justify-center">
-                                    <svg class="w-5 h-5 md:w-6 md:h-6 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                </div>
-                            @endif
+                    {{-- Thumbnail --}}
+                    <div class="overflow-hidden flex-shrink-0 bg-gradient-to-br from-primary-100 to-secondary-100" style="width:64px;height:80px;border-radius:8px;">
+                        @if($profile->getAllImages()->count() > 0)
+                            <img
+                                src="{{ $profile->getAllImages()->first()->getUrl() }}"
+                                alt="{{ $profile->display_name }}"
+                                class="w-full h-full object-cover"
+                            >
+                        @else
+                            <div class="w-full h-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- Profile Info and Rating Bars --}}
+                    <div class="flex-1 min-w-0 text-left">
+                        {{-- Name and Profile Link --}}
+                        <div class="flex items-center gap-2 mb-2">
+                            <h4 class="truncate" style="font-family:'Poppins',sans-serif;font-weight:700;font-size:18px;color:#505050;">{{ $profile->display_name }}</h4>
+                            <a href="{{ route('profiles.show', $profile) }}"
+                               onclick="event.stopPropagation()"
+                               class="whitespace-nowrap"
+                               style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:11px;color:#DD3888;text-decoration:underline;">
+                                {{ __('front.member.ratings.profile_link') }}
+                            </a>
                         </div>
 
-                        {{-- Profile Info and Rating Bars --}}
-                        <div class="flex-1 min-w-0">
-                            {{-- Name and Profile Link --}}
-                            <div class="flex items-center justify-between mb-1 md:mb-1.5">
-                                <h4 class="font-semibold text-gray-900 truncate text-sm md:text-base">{{ $profile->display_name }}</h4>
-                                <a href="{{ route('profiles.show', $profile) }}" 
-                                   onclick="event.stopPropagation()"
-                                   class="text-[10px] md:text-xs text-pink-500 hover:text-pink-600 font-medium whitespace-nowrap ml-2">
-                                    {{ __('front.profiles.list.detail') }}
-                                </a>
+                        {{-- Rating Bars --}}
+                        <div class="space-y-1.5">
+                            {{-- Your Rating --}}
+                            <div class="flex items-center gap-2">
+                                <div class="rounded-full overflow-hidden bg-gray-200 flex-shrink-0" style="width:70px;height:10px;">
+                                    <div class="h-full rounded-full" style="width: {{ $userRatingPercent }}%;background:{{ $ratingBarColor($userRatingPercent) }};"></div>
+                                </div>
+                                <span style="font-family:'Poppins',sans-serif;font-weight:400;font-size:14px;color:#505050;">
+                                    {{ __('front.member.ratings.your_rating_label') }}: <span style="font-weight:700;">{{ $userRatingPercent > 0 ? number_format($userRatingPercent, 0) : '0' }} %</span>
+                                </span>
                             </div>
-
-                            {{-- Rating Bars --}}
-                            <div class="space-y-0.5 md:space-y-1">
-                                {{-- Your Rating --}}
-                                <div class="flex items-center gap-1.5 md:gap-2">
-                                    <div class="flex-1 min-w-0">
-                                        <div class="h-1.5 md:h-2 bg-gray-200 rounded-full overflow-hidden">
-                                            <div class="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-full transition-all duration-300" 
-                                                 style="width: {{ $userRatingPercent }}%"></div>
-                                        </div>
-                                    </div>
-                                    <span class="text-[10px] md:text-xs font-bold text-gray-900 whitespace-nowrap w-8 text-right">{{ $userRatingPercent > 0 ? number_format($userRatingPercent, 0) : '0' }}%</span>
+                            {{-- Others Rating --}}
+                            <div class="flex items-center gap-2">
+                                <div class="rounded-full overflow-hidden bg-gray-200 flex-shrink-0" style="width:70px;height:10px;">
+                                    <div class="h-full rounded-full" style="width: {{ $avgRatingPercent }}%;background:{{ $ratingBarColor($avgRatingPercent) }};"></div>
                                 </div>
-                                {{-- Others Rating --}}
-                                <div class="flex items-center gap-1.5 md:gap-2">
-                                    <div class="flex-1 min-w-0">
-                                        <div class="h-1.5 md:h-2 bg-gray-200 rounded-full overflow-hidden">
-                                            <div class="h-full bg-gradient-to-r from-gray-400 to-gray-500 rounded-full transition-all duration-300" 
-                                                 style="width: {{ $avgRatingPercent }}%"></div>
-                                        </div>
-                                    </div>
-                                    <span class="text-[10px] md:text-xs font-bold text-gray-500 whitespace-nowrap w-8 text-right">{{ number_format($avgRatingPercent, 0) }}%</span>
-                                </div>
+                                <span style="font-family:'Poppins',sans-serif;font-weight:400;font-size:14px;color:#505050;">
+                                    {{ __('front.member.ratings.others_rating_label') }}: <span style="font-weight:700;">{{ number_format($avgRatingPercent, 0) }} %</span>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -236,6 +431,50 @@
                     <p class="text-sm text-gray-500">{{ __('front.member.ratings.no_profiles') }}</p>
                 </div>
             @endforelse
+
+            @if($profiles->hasPages())
+                <div class="flex items-center justify-center gap-2" style="padding:12px 0 24px;">
+                    <button
+                        type="button"
+                        wire:click="previousPage"
+                        wire:loading.attr="disabled"
+                        @disabled($profiles->onFirstPage())
+                        class="flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                        style="width:36px;height:36px;border-radius:8px;background:#F2F2F2;">
+                        <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M7 1L1 7L7 13" stroke="#5C2D62" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+
+                    <span style="font-family:'Poppins',sans-serif;font-weight:500;font-size:13px;color:#505050;">
+                        {{ $profiles->currentPage() }} / {{ $profiles->lastPage() }}
+                    </span>
+
+                    <button
+                        type="button"
+                        wire:click="nextPage"
+                        wire:loading.attr="disabled"
+                        @disabled(! $profiles->hasMorePages())
+                        class="flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                        style="width:36px;height:36px;border-radius:8px;background:#F2F2F2;">
+                        <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 1L7 7L1 13" stroke="#5C2D62" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+            @endif
         </div>
+
+        {{-- Bottom fade/blur mask hinting more content below (mobile only) --}}
+        <div class="rating-history-fade absolute left-0 right-0 bottom-0 pointer-events-none"></div>
+    </div>
+
+    <div class="flex justify-center" style="margin-top:16px;">
+        <a href="{{ route('account.member.favorites') }}"
+           class="flex items-center justify-center w-[309px] md:w-[311px]"
+           style="height:60px;border-radius:8px;background:#5C2D62;font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:#FFFFFF;">
+            {{ __('front.member.ratings.open_favorites', ['count' => auth()->user()->favoriteProfiles()->count()]) }}
+        </a>
+    </div>
     </div>
 </div>

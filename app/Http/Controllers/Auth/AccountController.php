@@ -86,22 +86,6 @@ class AccountController extends Controller
     }
 
     /**
-     * Show user permissions and roles.
-     */
-    public function showPermissions()
-    {
-        $user = Auth::user();
-        $user->load(['roles.permissions', 'permissions']);
-
-        // Get all permissions - both direct and through roles
-        $allPermissions = $user->getAllPermissions();
-        $directPermissions = $user->permissions;
-        $rolePermissions = $user->getPermissionsViaRoles();
-
-        return view('account.permissions', compact('user', 'allPermissions', 'directPermissions', 'rolePermissions'));
-    }
-
-    /**
      * Show photos management page.
      */
     public function showPhotos()

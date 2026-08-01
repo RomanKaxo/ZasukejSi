@@ -32,8 +32,12 @@
         : collect(__('front.profiles.detail_page.services_default'));
     $languages = $profile->languages ?? __('front.profiles.detail_page.languages_default');
     $aboutText = trim((string) ($profile->about ?? '')) !== '' ? $profile->about : __('front.profiles.detail_page.about_default');
-    $weightLbs = $profile->weight_lbs ?? ($profile->weight ? (string) round($profile->weight * 2.20462) : null);
-    $heightFeet = $profile->height_feet ?? null;
+    // Weight/height live in the `content` JSON column and are exposed via
+    // accessors on the Profile model, which also derive the imperial values.
+    $weightKg = $profile->weight;
+    $heightCm = $profile->height;
+    $weightLbs = $profile->weight_lbs;
+    $heightFeet = $profile->height_feet;
     $videoPoster = $images->first()?->getUrl() ?: asset('images/models/model16.png');
     $messageRouteAvailable = \Illuminate\Support\Facades\Route::has('messages.show');
     $registerRouteAvailable = \Illuminate\Support\Facades\Route::has('register');
@@ -212,6 +216,41 @@
         text-underline-offset: 2px;
     }
 
+    .vip-profile-desktop-actions {
+        grid-template-columns: minmax(180px, 0.88fr) minmax(280px, 1.18fr) minmax(150px, 0.78fr);
+        gap: 14px;
+        margin-bottom: 16px;
+    }
+
+    .vip-profile-desktop-actions-inner {
+        grid-column: 2;
+        display: flex;
+        justify-content: center;
+        gap: 0;
+    }
+
+    .vip-profile-desktop-action {
+        width: 120px;
+        height: 60px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        color: #71717A;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.2;
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 2px;
+    }
+
+    .vip-profile-desktop-action img {
+        width: 16px;
+        height: 16px;
+    }
+
     .vip-profile-rating-summary {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -298,7 +337,7 @@
         left: 0;
         width: 231px;
         height: 1px;
-        background-color: #f3edf5;
+        background-color: #E6E6E6;
     }
 
     .vip-profile-meta-row:last-child {
@@ -322,7 +361,7 @@
         color: #505050;
         font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 13px;
-        font-weight: 400;
+        font-weight: 600;
         line-height: 1.2;
     }
 
@@ -483,6 +522,16 @@
         transition: transform 220ms ease, opacity 220ms ease;
     }
 
+    .vip-gallery-next-hint {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 353px;
+        pointer-events: none;
+        background: linear-gradient(to right, #FFFFFF00 0%, #FFFFFF 100%);
+    }
+
     .vip-profile-gallery-swiper .swiper-slide {
         opacity: 0.7;
         transform: scale(0.94);
@@ -582,7 +631,7 @@
     }
 
     .vip-gallery-desktop-nav.vip-gallery-desktop-next {
-        right: 50px !important;
+        right: -20px !important;
     }
 
     .vip-profile-favorite {
@@ -897,6 +946,7 @@
         justify-content: space-between;
         gap: 24px;
         margin-bottom: 22px;
+        width: 100%;
     }
 
     .vip-slider-kicker {
@@ -1457,6 +1507,10 @@
     }
 
     @media (max-width: 767px) {
+        .vip-gallery-next-hint {
+            display: none !important;
+        }
+
         .vip-profile-page {
             padding: 18px 14px 64px;
         }
@@ -1486,6 +1540,7 @@
 
         .vip-profile-rating-summary {
             margin-bottom: 12px;
+            height: 40px;
         }
 
         .vip-profile-meta-location {
@@ -1573,6 +1628,10 @@
             display: contents !important;
         }
 
+        .vip-profile-gallery-mobile {
+            position: relative !important;
+        }
+
         .vip-profile-availability-card,
         .vip-gallery-desktop {
             display: none !important;
@@ -1648,11 +1707,11 @@
             width: 38px !important;
             min-width: 38px !important;
             height: 38px !important;
-            border-radius: 8px !important;
-            box-shadow: 0 10px 20px rgba(221, 56, 136, 0.14);
+            border-radius: 0 !important;
+            box-shadow: none !important;
             gap: 0 !important;
             padding: 0 !important;
-            background: #FFFFFF;
+            background: transparent !important;
             border: none;
             display: flex;
             align-items: center;
@@ -1668,8 +1727,8 @@
 
         .vip-profile-static-favorite img,
         .vip-profile-favorite button img {
-            width: 20px !important;
-            height: 20px !important;
+            width: 38px !important;
+            height: 38px !important;
         }
 
         .vip-profile-name {
@@ -1732,9 +1791,9 @@
         }
 
         .vip-gallery-nav {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
             top: 50%;
             transform: translateY(-50%);
             background: #DD3888;
@@ -1748,11 +1807,11 @@
         }
 
         .vip-gallery-nav--prev {
-            left: -50px;
+            left: -12px;
         }
 
         .vip-gallery-nav--next {
-            right: -50px;
+            right: -12px;
         }
 
         .vip-profile-rating-summary,
@@ -1775,6 +1834,7 @@
             grid-row: 5;
             margin-top: 12px;
             margin-bottom: 0;
+            height: 40px;
             font-size: 12px;
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -1805,6 +1865,7 @@
             margin-bottom: 0;
             padding: 0 12px;
             background: white;
+            border-top: 1px solid #E6E6E6;
         }
 
         .vip-profile-meta-row {
@@ -1816,7 +1877,7 @@
         .vip-profile-meta-row::after {
             width: 100%;
             height: 1px;
-            background: #F0F0F0;
+            background: #E6E6E6;
         }
 
         .vip-profile-meta-label {
@@ -1879,11 +1940,11 @@
 
         .vip-profile-message {
             grid-row: 9;
-            width: 100%;
-            max-width: 425px;
+            width: 310px;
+            max-width: 100%;
             margin-top: 12px;
-            height: 40px;
-            font-size: 13px;
+            height: 60px;
+            font-size: 16px;
             border-radius: 8px;
             display: flex;
             align-items: center;
@@ -1897,11 +1958,21 @@
         .vip-profile-contacts {
             grid-row: 10;
             margin-top: 12px;
-            gap: 12px;
+            gap: 5px;
             justify-content: center;
             display: flex;
             align-items: center;
             flex-wrap: wrap;
+        }
+
+        .vip-video-play__inner {
+            width: 60px !important;
+            height: 60px !important;
+        }
+
+        #vip-profile-video-play-icon {
+            width: 22px !important;
+            height: 22px !important;
         }
 
         .vip-profile-contact-circle {
@@ -2010,7 +2081,7 @@
 
         .vip-pricing-card h3 {
             margin: 0 0 12px;
-            font-size: 18px;
+            font-size: 24px;
             font-weight: 700;
             color: #5C2D62;
         }
@@ -2047,11 +2118,15 @@
         }
 
         .vip-service-pill {
-            padding: 8px 14px;
-            font-size: 11px;
-            font-weight: 600;
+            padding: 0 14px;
+            height: 35px;
+            display: inline-flex;
+            align-items: center;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            font-size: 14px;
             background: white;
-            border: 1.5px solid #E0E0E0;
+            border: 2px solid #F2F2F2;
             border-radius: 20px;
             color: #505050;
             white-space: nowrap;
@@ -2396,18 +2471,26 @@
                 <div class="vip-profile-meta-row">
                     <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.weight') }}</span>
                     <span class="vip-profile-meta-value">
-                        {{ ($profile->weight ?? '57') . ' ' . __('front.profiles.detail_page.kg') . ($weightLbs ? ' / ' . $weightLbs . ' ' . __('front.profiles.detail_page.lbs') : '') }}
+                        @if($weightKg)
+                            {{ $weightKg . ' ' . __('front.profiles.detail_page.kg') . ($weightLbs ? ' / ' . $weightLbs . ' ' . __('front.profiles.detail_page.lbs') : '') }}
+                        @else
+                            &mdash;
+                        @endif
                     </span>
                 </div>
                 <div class="vip-profile-meta-row">
                     <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.height') }}</span>
                     <span class="vip-profile-meta-value">
-                        {{ ($profile->height ?? '168') . ' ' . __('front.profiles.detail_page.cm') . ($heightFeet ? ' / ' . $heightFeet : '') }}
+                        @if($heightCm)
+                            {{ $heightCm . ' ' . __('front.profiles.detail_page.cm') . ($heightFeet ? ' / ' . $heightFeet : '') }}
+                        @else
+                            &mdash;
+                        @endif
                     </span>
                 </div>
                 <div class="vip-profile-meta-row">
                     <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.bust') }}</span>
-                    <span class="vip-profile-meta-value">{{ $profile->bust_size ?? 'C' }}</span>
+                    <span class="vip-profile-meta-value">{{ $profile->bust_size ?: '—' }}</span>
                 </div>
                 <div class="vip-profile-meta-row">
                     <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.languages') }}</span>
@@ -2460,6 +2543,23 @@
         </aside>
 
         <div class="vip-profile-main">
+            <div class="vip-profile-desktop-actions hidden lg:grid" aria-label="Profile actions">
+                <div class="vip-profile-desktop-actions-inner">
+                    <a href="#" class="vip-profile-desktop-action">
+                        <img src="{{ asset('images/icons/pinkStar.svg') }}" alt="" aria-hidden="true">
+                        <span>{{ __('front.profiles.detail_page.give_rating') }}</span>
+                    </a>
+                    <a href="#" class="vip-profile-desktop-action">
+                        <img src="{{ asset('images/icons/KeySquare.svg') }}" alt="" aria-hidden="true">
+                        <span>{{ __('front.profiles.detail_page.refresh_access') }}</span>
+                    </a>
+                    <a href="#" class="vip-profile-desktop-action">
+                        <img src="{{ asset('images/icons/TriangleAlert.svg') }}" alt="" aria-hidden="true">
+                        <span>{{ __('front.profiles.detail_page.report_profile') }}</span>
+                    </a>
+                </div>
+            </div>
+
             <div class="vip-profile-gallery-card">
                 <div class="vip-profile-favorite">
                     @auth
@@ -2486,6 +2586,9 @@
                     </button>
                     <button type="button" class="vip-gallery-desktop-card vip-gallery-desktop-right lightbox-trigger" data-index="2">
                         <img src="{{ asset('images/models/vip3.png') }}" alt="{{ $profile->display_name }}">
+                        @if($gallerySlides->count() > 1)
+                            <span class="vip-gallery-next-hint" aria-hidden="true"></span>
+                        @endif
                     </button>
                     @if($gallerySlides->count() > 1)
                         <button type="button" class="vip-gallery-desktop-nav vip-gallery-desktop-prev" id="vip-gallery-desktop-prev" aria-label="Previous slide">&#10094;</button>
@@ -2504,6 +2607,9 @@
                                     <div class="swiper-slide">
                                         <button type="button" class="vip-gallery-slide lightbox-trigger" data-index="{{ $index }}">
                                             <img src="{{ $imageUrl }}" alt="{{ $profile->display_name }}">
+                                            @unless($loop->last)
+                                                <span class="vip-gallery-next-hint" aria-hidden="true"></span>
+                                            @endunless
                                         </button>
                                     </div>
                                 @endforeach
@@ -2568,11 +2674,7 @@
                                             </th>
                                             <th>
                                                 <span class="vip-price-pill">
-                                                    @if($profile->outcall)
-                                                        <img src="{{ asset('images/icons/CircleCheck.svg') }}" alt="" aria-hidden="true" class="w-5 h-5">
-                                                    @else
-                                                        <img src="{{ asset('images/icons/CircleX.svg') }}" alt="" aria-hidden="true" class="w-5 h-5">
-                                                    @endif
+                                                    <img src="{{ asset('images/icons/CircleX.svg') }}" alt="" aria-hidden="true" class="w-5 h-5">
                                                     OutCall
                                                 </span>
                                             </th>
@@ -2627,7 +2729,7 @@
             </div>
             <div class="vip-slider-note">
                 <img src="{{ asset('images/icons/diamond.svg') }}" alt="" aria-hidden="true" class="h-4 w-4">
-                <span>{{ __('front.profiles.detail_page.premium_unlocks_rating') }}</span>
+                <span style="text-decoration: underline; color: #DD3888;">{{ __('front.profiles.detail_page.premium_unlocks_rating') }}</span>
             </div>
         </div>
         <div class="vip-rec-slider">
@@ -2643,7 +2745,7 @@
             </div>
             <div class="vip-slider-note">
                 <img src="{{ asset('images/icons/diamond.svg') }}" alt="" aria-hidden="true" class="h-4 w-4">
-                <span>{{ __('front.profiles.detail_page.premium_unlocks_rating') }}</span>
+                <span style="text-decoration: underline; color: #DD3888;">{{ __('front.profiles.detail_page.premium_unlocks_rating') }}</span>
             </div>
         </div>
         <div class="vip-rec-slider">

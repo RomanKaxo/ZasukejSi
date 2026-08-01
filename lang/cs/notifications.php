@@ -22,6 +22,12 @@ return [
         'received_message' => 'Někdo ohodnotil váš profil :stars hvězdičkami.',
     ],
 
+    // Message notifications (for users)
+    'message' => [
+        'received_title' => 'Nová zpráva',
+        'received_message' => ':name vám poslal(a) novou zprávu.',
+    ],
+
     // Subscription notifications (for users)
     'subscription' => [
         'created_title' => 'Předplatné aktivováno',

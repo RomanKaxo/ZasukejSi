@@ -49,21 +49,34 @@ class ProfileFactory extends Factory
             }
         }
         
-        // Generate price arrays
+        // Generate price arrays.
+        //
+        // These must be a LIST of {time_hours, incall_price, outcall_price} rows:
+        // that is the shape App\Livewire\ProfileForm edits and validates, and the
+        // one components/profile-detail.blade.php renders. The factory previously
+        // produced a slot => price map ('30min' => 2500), which the detail page
+        // filtered out entirely and which made the settings form unsaveable.
+        $durations = [0.5, 1, 2, 12];
+
         $localPrices = [];
-        $priceOptions = ['30min', '1hour', '2hours', 'overnight'];
-        foreach ($priceOptions as $option) {
+        foreach ($durations as $hours) {
             if ($faker->boolean(80)) {
-                $basePrice = $faker->numberBetween(1000, 5000);
-                $localPrices[$option] = $basePrice;
+                $localPrices[] = [
+                    'time_hours' => $hours,
+                    'incall_price' => $faker->numberBetween(1000, 5000),
+                    'outcall_price' => $faker->boolean(50) ? $faker->numberBetween(1500, 6000) : null,
+                ];
             }
         }
-        
+
         $globalPrices = [];
-        foreach ($priceOptions as $option) {
+        foreach ($durations as $hours) {
             if ($faker->boolean(70)) {
-                $basePrice = $faker->numberBetween(50, 500);
-                $globalPrices[$option] = $basePrice;
+                $globalPrices[] = [
+                    'time_hours' => $hours,
+                    'incall_price' => $faker->numberBetween(50, 500),
+                    'outcall_price' => $faker->boolean(50) ? $faker->numberBetween(80, 600) : null,
+                ];
             }
         }
         

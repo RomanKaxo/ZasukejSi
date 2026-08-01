@@ -4,15 +4,16 @@
     class="relative"
 >
     <!-- User Button -->
-    <button @click="open = !open" class="w-[60px] h-[60px] bg-[#DD3888] rounded-[8px] flex items-center justify-center">
+    <button @click="open = !open" class="w-[60px] h-[60px] bg-[#DD3888] flex items-center justify-center"
+        :class="open ? 'rounded-t-[8px] rounded-b-none' : 'rounded-[8px]'">
         <img src="{{ asset('images/icons/User.svg') }}" class="w-[26px] h-[26px]" alt="User">
     </button>
 
     <!-- Dropdown Menu -->
-    <div 
-        x-show="open" 
+    <div
+        x-show="open"
         x-cloak
-        class="absolute right-0 mt-2 shadow-lg z-50 flex flex-col items-center pt-6"
+        class="absolute left-1/2 -translate-x-1/2 mt-0 shadow-lg z-50 flex flex-col items-center pt-6"
         style="width: 270px; height: 372px; border-radius: 8px; background-color: #DD3888;"
     >
         <nav class="w-full px-5">
@@ -38,6 +39,9 @@
                         </a>
                     </li>
                 @endforeach
+                <li>
+                    <hr class="rounded-none" style="width:230px;border-color:#E6E6E6;border-radius:0;padding-top:30px;padding-bottom:6px;">
+                </li>
                 <li>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf

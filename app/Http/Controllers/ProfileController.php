@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Page;
 use App\Models\Profile;
 use App\Models\ProfileView;
 use App\Models\User;
@@ -63,8 +62,8 @@ class ProfileController extends Controller
     {
         $profile = Profile::public()
             ->approved()
-            ->with(['user:id,name', 'services'])
-            ->select($this->getPublicProfileColumns())
+            ->with(['user:id,name', 'services', 'media'])
+            ->select($this->getProfileDetailColumns())
             ->findOrFail($id);
         
         // Record profile click view (don't track own profile views)
@@ -88,7 +87,10 @@ class ProfileController extends Controller
 
         // Apply filters
         if ($request->filled('city')) {
-            $query->where('city', 'like', '%' . $request->city . '%');
+            // Escape LIKE wildcards so a user searching for "%" does not match
+            // every city in the database.
+            $city = addcslashes((string) $request->city, '%_\\');
+            $query->where('city', 'like', '%' . $city . '%');
         }
 
         if ($request->filled('age_min')) {
@@ -132,7 +134,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Get only necessary columns for public profile view
+     * Columns needed to render a profile card in a listing.
      */
     private function getPublicProfileColumns(): array
     {
@@ -140,8 +142,9 @@ class ProfileController extends Controller
             'id',
             'user_id',
             'display_name',
-            'age', 
+            'age',
             'city',
+            'country_code',
             'about',
             'incall',
             'outcall',
@@ -151,6 +154,28 @@ class ProfileController extends Controller
             'created_at',
             'updated_at'
         ];
+    }
+
+    /**
+     * Columns needed to render the full profile detail page.
+     *
+     * The detail view (components/profile-detail.blade.php) additionally reads
+     * availability hours, contacts, global prices and the `content` JSON blob
+     * (which backs weight/height/bust/languages), so those must be selected —
+     * otherwise Eloquent silently resolves them to null and the page renders
+     * empty sections for profiles that do have the data.
+     */
+    private function getProfileDetailColumns(): array
+    {
+        return array_merge($this->getPublicProfileColumns(), [
+            'address',
+            'availability_hours',
+            'global_prices',
+            'contacts',
+            'content',
+            'is_porn_actress',
+            'is_public',
+        ]);
     }
 
     /**

@@ -67,6 +67,9 @@ class ProfileForm extends Component
     #[Rule('nullable|string|max:2')]
     public $bust_size = '';
 
+    #[Rule('nullable|string|max:255')]
+    public $languages = '';
+
     #[Rule('nullable|string|max:10')]
     public $local_currency = 'Kč';
 
@@ -139,6 +142,7 @@ class ProfileForm extends Component
             $this->height_cm = $content['card_height_cm'] ?? '';
             $this->nationality = $content['nationality'] ?? '';
             $this->bust_size = $content['bust_size'] ?? '';
+            $this->languages = $content['languages'] ?? '';
             $this->local_currency = $content['local_currency'] ?? 'Kč';
             $this->global_currency = $content['global_currency'] ?? 'EUR';
             $this->has_whatsapp = $content['has_whatsapp'] ?? false;
@@ -149,12 +153,8 @@ class ProfileForm extends Component
             $this->availability_hours = is_array($profile->availability_hours) 
                 ? implode(', ', $profile->availability_hours) 
                 : ($profile->availability_hours ?? '');
-            $this->local_prices = is_array($profile->local_prices) 
-                ? $profile->local_prices 
-                : [];
-            $this->global_prices = is_array($profile->global_prices) 
-                ? $profile->global_prices 
-                : [];
+            $this->local_prices = $this->normalizePriceRows($profile->local_prices);
+            $this->global_prices = $this->normalizePriceRows($profile->global_prices);
             $this->contacts = is_array($profile->contacts) 
                 ? $profile->contacts 
                 : [];
@@ -307,6 +307,57 @@ class ProfileForm extends Component
                     ->all();
             }
         );
+    }
+
+    /**
+     * Coerce stored price data into the list-of-rows shape the form edits.
+     *
+     * Legacy profiles stored a slot => price map ('30min' => 2500) instead of
+     * rows. Loading that straight into the form produced validation errors on
+     * `local_prices.*.time_hours` for fields the user could not see or correct,
+     * making the whole profile impossible to save. A data migration converts the
+     * existing rows; this guard stops any stragglers from locking the form again.
+     */
+    protected function normalizePriceRows($value): array
+    {
+        if (! is_array($value) || $value === []) {
+            return [];
+        }
+
+        if (array_is_list($value)) {
+            return $value;
+        }
+
+        $slotHours = [
+            '30min' => 0.5,
+            '1hour' => 1,
+            '2hours' => 2,
+            '3hours' => 3,
+            'overnight' => 12,
+        ];
+
+        $rows = [];
+
+        foreach ($value as $slot => $price) {
+            if (is_array($price)) {
+                $rows[] = $price;
+                continue;
+            }
+
+            if (! is_numeric($price) || ! isset($slotHours[$slot])) {
+                continue;
+            }
+
+            $rows[] = [
+                'time_hours' => $slotHours[$slot],
+                'incall_price' => (int) $price,
+                'outcall_price' => null,
+            ];
+        }
+
+        usort($rows, fn ($a, $b) => ($a['time_hours'] ?? 0) <=> ($b['time_hours'] ?? 0));
+
+        return array_values($rows);
     }
 
     public function addLocalPrice()
@@ -496,6 +547,10 @@ class ProfileForm extends Component
             ];
             $validationRules['address'] = 'nullable|string|max:255';
             $validationRules['about'] = 'nullable|string|max:640';
+            $validationRules['weight_kg'] = 'nullable|numeric|min:30|max:300';
+            $validationRules['height_cm'] = 'nullable|integer|min:100|max:250';
+            $validationRules['bust_size'] = 'nullable|string|in:' . implode(',', $this->bustSizeOptions);
+            $validationRules['languages'] = 'nullable|string|max:255';
             $validationRules['availability_hours'] = 'nullable|string';
             $validationRules['local_prices'] = 'nullable|array';
             $validationRules['local_prices.*.time_hours'] = 'required|numeric|min:0|max:24';
@@ -578,6 +633,7 @@ class ProfileForm extends Component
                     'card_height_cm' => $this->height_cm ?: null,
                     'nationality' => $this->nationality ? strtolower($this->nationality) : null,
                     'bust_size' => $this->bust_size ?: null,
+                    'languages' => $this->languages ?: null,
                     'local_currency' => $this->local_currency ?: 'Kč',
                     'global_currency' => $this->global_currency ?: 'EUR',
                     'has_whatsapp' => (bool) $this->has_whatsapp,

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Log;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -68,6 +69,106 @@ class Profile extends Model implements HasMedia
             'incall' => 'boolean',
             'outcall' => 'boolean',
         ];
+    }
+
+    /**
+     * Physical/descriptive attributes are stored inside the `content` JSON
+     * column (written by App\Livewire\ProfileForm). These accessors expose them
+     * as first-class attributes so views can use `$profile->weight` instead of
+     * digging into the raw array — and so a missing value fails visibly rather
+     * than silently resolving to null.
+     */
+    protected function contentValue(string $key): mixed
+    {
+        $content = $this->content;
+
+        if (! is_array($content)) {
+            return null;
+        }
+
+        $value = $content[$key] ?? null;
+
+        // ProfileForm stores empty inputs as '' or null; normalise both to null
+        // so `?? $fallback` behaves as expected in the views.
+        return ($value === '' || $value === null) ? null : $value;
+    }
+
+    /**
+     * Body weight in kilograms.
+     */
+    public function getWeightAttribute(): ?int
+    {
+        $value = $this->contentValue('weight_kg');
+
+        return $value === null ? null : (int) $value;
+    }
+
+    /**
+     * Body height in centimetres.
+     */
+    public function getHeightAttribute(): ?int
+    {
+        $value = $this->contentValue('card_height_cm');
+
+        return $value === null ? null : (int) $value;
+    }
+
+    /**
+     * Bust size (A–H).
+     */
+    public function getBustSizeAttribute(): ?string
+    {
+        $value = $this->contentValue('bust_size');
+
+        return $value === null ? null : (string) $value;
+    }
+
+    /**
+     * ISO country code of the profile's nationality.
+     */
+    public function getNationalityAttribute(): ?string
+    {
+        $value = $this->contentValue('nationality');
+
+        return $value === null ? null : strtolower((string) $value);
+    }
+
+    /**
+     * Comma separated list of spoken languages.
+     */
+    public function getLanguagesAttribute(): ?string
+    {
+        $value = $this->contentValue('languages');
+
+        return $value === null ? null : (string) $value;
+    }
+
+    /**
+     * Weight converted to pounds, derived from `weight`.
+     */
+    public function getWeightLbsAttribute(): ?int
+    {
+        $weight = $this->weight;
+
+        return $weight === null ? null : (int) round($weight * 2.20462);
+    }
+
+    /**
+     * Height rendered as feet + inches (e.g. 5'6"), derived from `height`.
+     */
+    public function getHeightFeetAttribute(): ?string
+    {
+        $height = $this->height;
+
+        if ($height === null) {
+            return null;
+        }
+
+        $totalInches = (int) round($height / 2.54);
+        $feet = intdiv($totalInches, 12);
+        $inches = $totalInches % 12;
+
+        return $feet . "'" . $inches . '"';
     }
 
     /**
@@ -221,6 +322,14 @@ class Profile extends Model implements HasMedia
     public function scopeVerified($query)
     {
         return $query->whereNotNull('verified_at');
+    }
+
+    /**
+     * Scope a query to only include archived profiles.
+     */
+    public function scopeArchived($query)
+    {
+        return $query->where('status', 'archived');
     }
 
     /**
@@ -473,7 +582,65 @@ class Profile extends Model implements HasMedia
         if (!$userId) {
             return false;
         }
-        
+
         return $this->ratings()->where('user_id', $userId)->exists();
+    }
+
+    /**
+     * Reasons a rating attempt can be refused. Returned by rateBy() so callers
+     * can map them onto their own translated messages.
+     */
+    public const RATE_OK = 'ok';
+    public const RATE_NOT_LOGGED_IN = 'not_logged_in';
+    public const RATE_NOT_MEMBER = 'not_member';
+    public const RATE_OWN_PROFILE = 'own_profile';
+    public const RATE_INVALID = 'invalid';
+
+    /**
+     * Record a star rating (1–5) from a user.
+     *
+     * This is the single authoritative implementation shared by the
+     * ProfileRating and MemberRatings Livewire components — previously each had
+     * its own copy with different authorization rules (only one checked that the
+     * rater was a member, and neither prevented rating your own profile).
+     *
+     * @return string One of the self::RATE_* constants.
+     */
+    public function rateBy(?User $user, int $stars): string
+    {
+        if (! $user) {
+            return self::RATE_NOT_LOGGED_IN;
+        }
+
+        if ($stars < 1 || $stars > 5) {
+            return self::RATE_INVALID;
+        }
+
+        // Only male members rate profiles; providers cannot rate.
+        if (! $user->isMale()) {
+            return self::RATE_NOT_MEMBER;
+        }
+
+        if ($this->user_id === $user->id) {
+            return self::RATE_OWN_PROFILE;
+        }
+
+        $isNewRating = ! $this->ratings()->where('user_id', $user->id)->exists();
+
+        Rating::updateOrCreate(
+            ['profile_id' => $this->id, 'user_id' => $user->id],
+            ['rating' => $stars]
+        );
+
+        if ($isNewRating && $this->user_id) {
+            Notification::createForUser(
+                $this->user_id,
+                __('notifications.rating.received_title'),
+                __('notifications.rating.received_message', ['stars' => $stars]),
+                $stars >= 4 ? 'success' : ($stars >= 3 ? 'info' : 'warning')
+            );
+        }
+
+        return self::RATE_OK;
     }
 }

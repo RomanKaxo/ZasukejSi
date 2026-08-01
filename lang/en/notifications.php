@@ -22,6 +22,12 @@ return [
         'received_message' => 'Someone rated your profile with :stars stars.',
     ],
 
+    // Message notifications (for users)
+    'message' => [
+        'received_title' => 'New Message',
+        'received_message' => ':name sent you a new message.',
+    ],
+
     // Subscription notifications (for users)
     'subscription' => [
         'created_title' => 'Subscription Activated',

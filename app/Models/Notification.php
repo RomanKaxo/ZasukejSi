@@ -27,6 +27,14 @@ class Notification extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Per-user read/archived state, used only for global notifications.
+     */
+    public function userStates()
+    {
+        return $this->hasMany(NotificationUserState::class);
+    }
+
     public function markAsRead()
     {
         $this->update(['read_at' => now()]);
@@ -35,6 +43,29 @@ class Notification extends Model
     public function archive()
     {
         $this->update(['archived_at' => now()]);
+    }
+
+    /**
+     * Mark a GLOBAL notification as read for one user only.
+     */
+    public function markAsReadForUser($userId): void
+    {
+        NotificationUserState::updateOrCreate(
+            ['notification_id' => $this->id, 'user_id' => $userId],
+            ['read_at' => now()]
+        );
+    }
+
+    /**
+     * Archive a GLOBAL notification for one user only, leaving the shared row
+     * (and therefore every other user's copy) untouched.
+     */
+    public function archiveForUser($userId): void
+    {
+        NotificationUserState::updateOrCreate(
+            ['notification_id' => $this->id, 'user_id' => $userId],
+            ['archived_at' => now(), 'read_at' => now()]
+        );
     }
 
     public function scopeUnread($query)
@@ -58,6 +89,49 @@ class Notification extends Model
             $q->where('user_id', $userId)
               ->orWhere('is_global', true);
         });
+    }
+
+    /**
+     * Notifications currently visible in a user's feed: their own un-archived
+     * ones plus global ones they have not archived for themselves.
+     */
+    public function scopeActiveForUser($query, $userId)
+    {
+        return $query->forUser($userId)
+            ->whereNull('archived_at')
+            ->whereDoesntHave('userStates', function ($q) use ($userId) {
+                $q->where('user_id', $userId)->whereNotNull('archived_at');
+            });
+    }
+
+    /**
+     * Notifications a user has archived: their own archived ones plus global
+     * ones they archived for themselves.
+     */
+    public function scopeArchivedForUser($query, $userId)
+    {
+        return $query->forUser($userId)
+            ->where(function ($q) use ($userId) {
+                $q->whereNotNull('archived_at')
+                  ->orWhereHas('userStates', function ($inner) use ($userId) {
+                      $inner->where('user_id', $userId)->whereNotNull('archived_at');
+                  });
+            });
+    }
+
+    /**
+     * Whether this notification counts as read for the given user.
+     */
+    public function isReadBy($userId): bool
+    {
+        if (! $this->is_global) {
+            return $this->read_at !== null;
+        }
+
+        return $this->userStates
+            ->where('user_id', $userId)
+            ->whereNotNull('read_at')
+            ->isNotEmpty();
     }
 
     public static function createGlobal($title, $message, $type = 'info')

@@ -21,7 +21,8 @@
     }
 
     .hero-bg .hero-inner {
-        height: 100%;
+        width: min(1331px, 100%);
+        height: 477px;
         position: relative;
         z-index: 31;
     }

@@ -336,9 +336,9 @@
                                         <x-icons name="location" class="w-4 h-4 -translate-y-0.5" />
                                         <h5 class="py-1 text-center">{{ $profile->city }}</h5>
                                         @endif
-                                        @if($profile->country)
+                                        @if($profile->country_code)
                                         <span class="text-gray-400">•</span>
-                                        <span class="text-xs">{{ __('codes.' . strtolower($profile->country->country_code)) }}</span>
+                                        <span class="text-xs">{{ __('codes.' . strtolower($profile->country_code)) }}</span>
                                         @endif
                                     </div>
 

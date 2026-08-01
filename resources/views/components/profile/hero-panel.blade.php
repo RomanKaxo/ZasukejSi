@@ -59,22 +59,22 @@
         <div class="vip-profile-meta-row">
             <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.weight') }}</span>
             <span class="vip-profile-meta-value">
-                {{ ($profile->weight ?? '57') . ' ' . __('front.profiles.detail_page.kg') }}
+                {{ $profile->weight ? $profile->weight . ' ' . __('front.profiles.detail_page.kg') : '—' }}
             </span>
         </div>
         <div class="vip-profile-meta-row">
             <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.height') }}</span>
             <span class="vip-profile-meta-value">
-                {{ ($profile->height ?? '168') . ' ' . __('front.profiles.detail_page.cm') }}
+                {{ $profile->height ? $profile->height . ' ' . __('front.profiles.detail_page.cm') : '—' }}
             </span>
         </div>
         <div class="vip-profile-meta-row">
             <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.bust') }}</span>
-            <span class="vip-profile-meta-value">{{ $profile->bust_size ?? 'C' }}</span>
+            <span class="vip-profile-meta-value">{{ $profile->bust_size ?: '—' }}</span>
         </div>
         <div class="vip-profile-meta-row">
             <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.languages') }}</span>
-            <span class="vip-profile-meta-value">{{ $profile->languages ?? 'Česky, Rusky, Anglicky' }}</span>
+            <span class="vip-profile-meta-value">{{ $profile->languages ?: __('front.profiles.detail_page.languages_default') }}</span>
         </div>
     </div>
 

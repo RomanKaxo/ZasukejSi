@@ -107,7 +107,10 @@ Route::middleware(['auth', 'verified'])->prefix('notifications')->name('notifica
 Route::middleware(['auth', 'verified'])->prefix('messages')->name('messages.')->group(function () {
     Route::get('/', [App\Http\Controllers\MessageController::class, 'inbox'])->name('index');
     Route::get('/{user}', [App\Http\Controllers\MessageController::class, 'show'])->name('show');
-    Route::post('/{user}', [App\Http\Controllers\MessageController::class, 'store'])->name('store');
+    // Throttled so a single account cannot be used to blast messages.
+    Route::post('/{user}', [App\Http\Controllers\MessageController::class, 'store'])
+        ->middleware('throttle:20,1')
+        ->name('store');
 });
 
 // Account
@@ -123,7 +126,9 @@ Route::middleware(['auth', 'verified'])->prefix('account')->name('account.')->gr
     Route::patch('/profile', [AccountController::class, 'update'])->name('update');
     Route::get('/password', [AccountController::class, 'showPasswordForm'])->name('password.edit');
     Route::patch('/password', [AccountController::class, 'updatePassword'])->name('password.update');
-    Route::middleware(['profile.exists'])->group(function () {
+    // Profile management belongs to female users (and admins); male members are
+    // redirected to their own dashboard by the gender middleware.
+    Route::middleware(['gender:female', 'profile.exists'])->group(function () {
         Route::get('/photos', [AccountController::class, 'showPhotos'])->name('photos');
         Route::get('/services', [AccountController::class, 'showServices'])->name('services');
         Route::get('/statistics', [AccountController::class, 'showStatistics'])->name('statistics');
@@ -132,8 +137,8 @@ Route::middleware(['auth', 'verified'])->prefix('account')->name('account.')->gr
     Route::delete('/profile', [AccountController::class, 'destroy'])->name('destroy');
 });
 
-// Member Routes
-Route::middleware(['auth', 'verified'])->prefix('account/member')->name('account.member.')->group(function () {
+// Member Routes — male members only (admins bypass the check)
+Route::middleware(['auth', 'verified', 'gender:male'])->prefix('account/member')->name('account.member.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Auth\MemberController::class, 'dashboard'])->name('dashboard');
     Route::patch('/settings', [\App\Http\Controllers\Auth\MemberController::class, 'updateSettings'])->name('settings.update');
     Route::get('/password', [\App\Http\Controllers\Auth\MemberController::class, 'showPasswordForm'])->name('password.edit');

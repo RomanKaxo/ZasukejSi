@@ -5,7 +5,6 @@ namespace App\Livewire;
 use App\Models\Profile;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
-use Illuminate\Support\Facades\Log;
 
 class ProfileSlider extends Component
 {
