@@ -57,7 +57,7 @@ select {
 
 select {
   @apply appearance-none cursor-pointer pr-10;
-  background-image: url("../images/arrow.png");
+  background-image: url("../images/icons/ArrowUp.svg");
   background-position: right 3px center;
   background-repeat: no-repeat;
   background-size: 42px;

@@ -30,8 +30,8 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-[70px]">
         @php
             $cards = [
-                ['icon' => 'eye', 'value' => '10 458', 'label' => __('front.account.statistics.total_profile_views')],
-                ['icon' => 'thumbsup', 'value' => '4.78/5', 'label' => __('front.account.statistics.my_rating')],
+                ['icon' => 'Eye', 'value' => '10 458', 'label' => __('front.account.statistics.total_profile_views')],
+                ['icon' => 'ThumbsUp', 'value' => '4.78/5', 'label' => __('front.account.statistics.my_rating')],
                 ['icon' => 'MessageCircleMore', 'value' => '12', 'label' => __('front.account.statistics.my_reviews')],
             ];
         @endphp
