@@ -7,27 +7,29 @@
     <div x-show="show"
         x-transition.opacity.duration.300ms
         x-cloak
-        class="fixed inset-0 z-50 flex items-center justify-center p-1 sm:p-2 md:p-4">
+        class="fixed inset-0 z-50 flex items-center justify-center p-1 sm:p-2 md:p-4 reset-modal-wrap">
 
         <!-- Modal Backdrop -->
         <div class="modal-backdrop"
             @click="closing = true; show = false; $wire.hide()"></div>
 
         <style>
-            .form-container { width:100%; max-width:520px; height:353px; }
-            .form-field { width:100%; max-width:460px; height:50px; }
-            .modal-btn-primary, .modal-btn-secondary { width:100%; max-width:460px; }
-            .modal-btn-primary { height:60px; }
-            .modal-container { width:600px !important; max-width:600px !important; height:810px !important; border-radius:24px; overflow:hidden; background:white; box-sizing:border-box; }
+            .reset-modal-wrap .form-container { width:100%; max-width:520px; height:233px; margin-bottom:0; padding-bottom:0; position:absolute; left:50%; bottom:80px; transform:translateX(-50%); }
+            .reset-modal-wrap .form-field { width:100%; max-width:460px; height:50px; }
+            .reset-modal-wrap .modal-btn-primary, .reset-modal-wrap .modal-btn-secondary { width:100%; max-width:460px; }
+            .reset-modal-wrap .modal-btn-primary { height:60px; margin:0 !important; padding:0 !important; }
+            .reset-modal-wrap .modal-title { width:247px; height:80px; font-size:36px; margin:0 auto; margin-top:40px; text-align:center; }
+            .reset-modal-wrap .form-container { padding-top:30px !important; }
+            .reset-modal-wrap .modal-container { width:600px !important; max-width:600px !important; height:530px !important; border-radius:24px; overflow:hidden; background:white; box-sizing:border-box; padding-bottom:0 !important; margin-bottom:0 !important; }
             @media (max-width:480px) {
-                .modal-container { width:320px !important; max-width:320px !important; height:711px !important; }
-                .form-container { width:280px !important; max-width:280px !important; height:337px !important; }
-                .form-field { max-width:240px !important; }
-                .modal-btn-primary, .modal-btn-secondary { max-width:240px !important; height:50px !important; }
-                .modal-title, .modal-subtitle { font-size:28px !important; line-height:1.05 !important; }
-                .modal-close-btn { top:20px !important; right:20px !important; }
-                .modal-btn-primary { margin-top:18px !important; }
-                .modal-subtitle { margin-bottom:32px !important; }
+                .reset-modal-wrap .modal-container { width:320px !important; max-width:320px !important; height:711px !important; }
+                .reset-modal-wrap .form-container { width:280px !important; max-width:280px !important; height:337px !important; }
+                .reset-modal-wrap .form-field { max-width:240px !important; }
+                .reset-modal-wrap .modal-btn-primary, .reset-modal-wrap .modal-btn-secondary { max-width:240px !important; height:50px !important; }
+                .reset-modal-wrap .modal-title, .reset-modal-wrap .modal-subtitle { font-size:28px !important; line-height:1.05 !important; }
+                .reset-modal-wrap .modal-close-btn { top:20px !important; right:20px !important; }
+                .reset-modal-wrap .modal-btn-primary { margin-top:18px !important; }
+                .reset-modal-wrap .modal-subtitle { margin-bottom:32px !important; }
             }
         </style>
 
@@ -45,7 +47,6 @@
             <!-- Header -->
             <div class="modal-header">
                 <h1 class="modal-title">{{ __('auth.reset.subtitle') }}</h1>
-                <p class="modal-description">{{ __('auth.reset.description') }}</p>
             </div>
 
             <!-- Form -->

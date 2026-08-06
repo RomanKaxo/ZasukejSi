@@ -21,7 +21,7 @@
 
 {{-- Sidebar --}}
 <aside
-    class="w-full h-full md:w-[210px] md:relative fixed top-0 left-0 z-40 bg-white transition-transform duration-300 md:translate-x-0 overflow-y-auto pt-28 md:pt-0 md:mt-[75px]"
+    class="w-full h-full md:w-[220px] md:relative fixed top-0 left-0 z-40 bg-white transition-transform duration-300 md:translate-x-0 overflow-y-auto pt-28 md:pt-0 md:mt-[75px]"
     :class="$store.memberSidebar.isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
 >
     <!-- Navigation Menu -->
@@ -95,22 +95,22 @@
             </li>
         </ul>
 
-        <!-- Advert for VIP (hidden on mobile) -->
+        <!-- Advert for Premium (hidden on mobile) -->
         @unless(request()->routeIs('preview.*'))
-        <div class="mt-6 relative hidden md:block">
-            <!-- VIP Image -->
-            <img src="{{ asset('images/vip-advert.png') }}" alt="VIP" class="w-full rounded-t-xl">
-            
-            <!-- Golden Background Section -->
-            <div class="relative p-5 rounded-b-xl border-b-3 border-gold-light" style="background: linear-gradient(180deg, #F5E4B8 0%, #FFFFFF 100%);">
-            <!-- Gold Star - Absolutely Positioned -->
-            <img src="{{ asset('images/gold-star.png') }}" alt="Gold Star" class="absolute -top-10 left-1/2 -translate-x-1/2 w-16 h-16">
-            
-            <h3 class="text-3xl py-3font-bold text-gold mb-2 text-center">{{ __('front.account.sidebar.vip_title') }}</h3>
-            <a href="#" class="btn-gold w-full text-center">
-                {{ __('front.account.sidebar.vip_button') }}
+        <div class="relative hidden md:flex flex-col items-center" style="width:210px;height:224px;margin-top:80px;border-radius:15px;background:linear-gradient(180deg, #E6FEE6 0%, #FFFFFF 100%);box-shadow:0 4px 0 0 #DFF1E1;padding-top:20px;box-sizing:border-box;">
+            <img src="{{ asset('images/wallet-front-premium 1.png') }}" alt="" width="78" height="78" class="absolute left-1/2 -translate-x-1/2" style="top:-40px;">
+
+            <h3 style="width:150px;font-family:'Poppins',sans-serif;font-weight:700;font-size:24px;color:#A07613;text-align:center;line-height:1.1;margin-top:30px;">
+                {{ __('front.account.sidebar.premium_title') }}
+            </h3>
+
+            <p style="width:175px;height:54px;font-family:'Poppins',sans-serif;font-weight:400;font-size:12px;color:#5C5C5C;text-align:center;margin-top:6px;">
+                {{ __('front.account.sidebar.premium_description') }}
+            </p>
+
+            <a href="#" style="width:159px;height:45px;border-radius:8px;background:#00B80F;display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:#FFFFFF;text-decoration:none;margin-top:10px;">
+                {{ __('front.account.sidebar.premium_button') }}
             </a>
-            </div>
         </div>
         @endunless
     </nav>

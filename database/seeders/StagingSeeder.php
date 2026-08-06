@@ -8,6 +8,7 @@ use App\Models\Service;
 use App\Models\Rating;
 use Database\Seeders\ShowcaseProfilesSeeder;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\File;
 
 class StagingSeeder extends Seeder
 {
@@ -125,74 +126,33 @@ class StagingSeeder extends Seeder
     }
     
     /**
-     * Add profile images from placeholder services
+     * Add profile images from the local model image pool.
+     * Uses local files (no network dependency) so every profile reliably gets photos.
      */
     private function addProfileImages(Profile $profile, int $count): void
     {
-        $successCount = 0;
-        $maxAttempts = $count * 2; // Allow retries
-        $attempt = 0;
-        
-        while ($successCount < $count && $attempt < $maxAttempts) {
+        $imageFiles = collect(File::files(public_path('images/models')))
+            ->filter(fn ($f) => str_starts_with($f->getFilename(), 'model'))
+            ->values();
+
+        if ($imageFiles->isEmpty()) {
+            $this->command->warn("  ⚠️  No local model images found for profile {$profile->id}");
+            return;
+        }
+
+        $picks = $imageFiles->shuffle()->take($count);
+
+        foreach ($picks as $imageFile) {
             try {
-                $imageUrl = $this->getRandomPlaceholderImage($attempt);
-                
-                // Add timeout and user agent to avoid 403 errors
-                $profile->addMediaFromUrl($imageUrl)
-                    ->withResponsiveImages()
+                $profile->addMedia($imageFile->getPathname())
+                    ->preservingOriginal()
                     ->toMediaCollection('profile-images');
-                    
-                $successCount++;
-                    
             } catch (\Exception $e) {
-                // Log the error but continue
-                $this->command->warn("  ⚠️  Failed to download image (attempt {$attempt}): {$e->getMessage()}");
-                
-                // If we've tried enough times, stop trying for this profile
-                if ($attempt >= $maxAttempts - 1) {
-                    $this->command->warn("  ⚠️  Skipping remaining images for profile {$profile->id}");
-                    break;
-                }
-            }
-            
-            $attempt++;
-            
-            // Small delay to avoid rate limiting
-            if ($attempt % 3 === 0) {
-                usleep(500000); // 0.5 second delay every 3 attempts
+                $this->command->warn("  ⚠️  Failed to attach image to profile {$profile->id}: {$e->getMessage()}");
             }
         }
-        
-        if ($successCount === 0) {
-            $this->command->warn("  ⚠️  Could not add any images to profile {$profile->id}");
-        }
     }
-    
-    /**
-     * Get random placeholder image URL
-     */
-    private function getRandomPlaceholderImage(int $seed): string
-    {
-        // Use Lorem Picsum for reliable placeholder images
-        // Adding random seed ensures different images each time
-        $randomSeed = $seed . '-' . uniqid();
-        
-        return "https://picsum.photos/seed/{$randomSeed}/800/600";
-    }
-    
-    /**
-     * Add fallback image using local generation
-     */
-    private function addFallbackImage(Profile $profile, int $index): void
-    {
-        // Use picsum with different dimensions as fallback
-        $randomSeed = 'fallback-' . $index . '-' . uniqid();
-        $url = "https://picsum.photos/seed/{$randomSeed}/800/600";
-        
-        $profile->addMediaFromUrl($url)
-            ->toMediaCollection('profile-images');
-    }
-    
+
     /**
      * Add ratings to profile
      */

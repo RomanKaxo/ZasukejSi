@@ -383,6 +383,13 @@ hr {
 
 
 /* Modal Component Styles */
+html:has(body.modal-open),
+body.modal-open {
+  overflow: hidden !important;
+  height: 100%;
+  overscroll-behavior: none;
+}
+
 .modal-backdrop {
   @apply fixed inset-0 backdrop-blur-lg;
   background-color: rgba(92, 45, 98, 0.8);

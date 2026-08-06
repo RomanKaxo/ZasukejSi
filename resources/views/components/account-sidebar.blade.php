@@ -1,9 +1,5 @@
 @props(['activeItem' => ''])
 
-@php
-    $hasProfile = auth()->user()->profile !== null;
-@endphp
-
 <div x-data>
 {{-- Mobile Menu Button --}}
 <button 
@@ -44,66 +40,27 @@
             </li>
             
             <li>
-                @if($hasProfile)
-                <a href="{{ route('account.photos') }}" 
-                   class="nav-button  {{ $activeItem === 'photos' ? 'active' : '' }}">
-                @else
-                <span class="nav-button !text-gray-400 !cursor-not-allowed" title="{{ __('front.account.profile_required_short') }}">
-                @endif
+                <a href="{{ route('account.photos') }}"
+                   class="nav-button {{ $activeItem === 'photos' ? 'active' : '' }}">
                     <x-icons name="Images" class="w-5 h-5 mr-3" />
                     {{ __('front.account.sidebar.photos') }}
-                    @if(!$hasProfile)
-                        <svg class="w-4 h-4 ml-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                    @endif
-                @if($hasProfile)
                 </a>
-                @else
-                </span>
-                @endif
             </li>
-            
+
             <li>
-                @if($hasProfile)
-                <a href="{{ route('account.services') }}" 
-                   class="nav-button  {{ $activeItem === 'services' ? 'active' : '' }}">
-                @else
-                <span class="nav-button !text-gray-400 !cursor-not-allowed" title="{{ __('front.account.profile_required_short') }}">
-                @endif
+                <a href="{{ route('account.services') }}"
+                   class="nav-button {{ $activeItem === 'services' ? 'active' : '' }}">
                     <x-icons name="List" class="w-5 h-5 mr-3" />
                     {{ __('front.account.sidebar.services') }}
-                    @if(!$hasProfile)
-                        <svg class="w-4 h-4 ml-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                    @endif
-                @if($hasProfile)
                 </a>
-                @else
-                </span>
-                @endif
             </li>
-            
+
             <li>
-                @if($hasProfile)
-                <a href="{{ route('account.statistics') }}" 
-                   class="nav-button  {{ $activeItem === 'statistics' ? 'active' : '' }}">
-                @else
-                <span class="nav-button !text-gray-400 !cursor-not-allowed" title="{{ __('front.account.profile_required_short') }}">
-                @endif
+                <a href="{{ route('account.statistics') }}"
+                   class="nav-button {{ $activeItem === 'statistics' ? 'active' : '' }}">
                     <x-icons name="BarChart4" class="w-5 h-5 mr-3" />
                     {{ __('front.account.sidebar.statistics') }}
-                    @if(!$hasProfile)
-                        <svg class="w-4 h-4 ml-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                    @endif
-                @if($hasProfile)
                 </a>
-                @else
-                </span>
-                @endif
             </li>
             
             <li>

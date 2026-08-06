@@ -79,6 +79,9 @@ return [
             'vip_title' => 'Vydělávej víc',
             'vip_description' => 'Upgraduj na VIP a získej větší viditelnost a více funkcí.',
             'vip_button' => 'Aktivovat VIP',
+            'premium_title' => 'Zkuste Prémium',
+            'premium_description' => 'před platbě státu zvláštních Dohodnou zvláštní',
+            'premium_button' => 'Začít PRÉMIUM',
         ],
         'member' => [
             'profile' => 'Můj profil',

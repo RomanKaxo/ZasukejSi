@@ -12,11 +12,6 @@ class ResetModal extends Component
     #[Validate('required|email')]
     public string $email = '';
 
-    /**
-     * Whether to show success message
-     */
-    public bool $showSuccessMessage = false;
-
     public bool $showModal = false;
     public bool $emailSent = false;
 
@@ -62,8 +57,8 @@ class ResetModal extends Component
             );
 
             if ($status === Password::RESET_LINK_SENT) {
-                $this->resetForm();
-                $this->showSuccessMessage = true;
+                $this->reset('email');
+                $this->emailSent = true;
 
                 // Log successful password reset request
                 Log::info('Password reset link sent successfully', [

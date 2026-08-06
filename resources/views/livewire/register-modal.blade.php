@@ -25,6 +25,8 @@
             .modal-btn-primary, .modal-btn-outline { width:100%; max-width:460px; }
             .modal-btn-primary { height:60px; }
             .modal-container { width:600px !important; max-width:600px !important; height:810px !important; border-radius:24px; overflow:hidden; background:white; box-sizing:border-box; transition: width 200ms ease, height 200ms ease; }
+            .modal-container { max-height: min(800px, 92vh) !important; overflow-y: auto !important; overflow-x: hidden !important; scrollbar-width: none; -ms-overflow-style: none; }
+            .modal-container::-webkit-scrollbar { display: none; }
 
             /* Register step 1: smaller modal */
             .modal-container.register-step1 { height:427px !important; }

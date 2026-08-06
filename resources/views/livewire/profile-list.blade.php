@@ -688,30 +688,10 @@
                     @endif
 
                     @php
-                        $imageOverride = null;
-                        $idx = $loop->iteration;
-                        // 6-10 => model6..10
-                        if ($idx >= 6 && $idx <= 10) {
-                            $imageOverride = asset('images/models/model' . $idx . '.png');
-                        }
-                        // 11-15 => model11..15
-                        elseif ($idx >= 11 && $idx <= 15) {
-                            $imageOverride = asset('images/models/model' . $idx . '.png');
-                        }
-                        // 16-20 => model16..20
-                        elseif ($idx >= 16 && $idx <= 20) {
-                            $imageOverride = asset('images/models/model' . $idx . '.png');
-                        }
-                        // 21-25 => map back to model11..15
-                        elseif ($idx >= 21 && $idx <= 25) {
-                            $mapped = 11 + ($idx - 21); // 21->11, 25->15
-                            $imageOverride = asset('images/models/model' . $mapped . '.png');
-                        }
-                        
                         $isOpenProfile = crc32((string) ($profile->id ?? $loop->index)) % 2 === 0;
                         $cardVariant = (auth()->check() || $isOpenProfile) ? null : 'vip-detail';
                     @endphp
-                    <x-profile-card :profile="$profile" :image-override="$imageOverride" :variant="$cardVariant" />
+                    <x-profile-card :profile="$profile" :variant="$cardVariant" />
                 @endforeach
             </div>
 

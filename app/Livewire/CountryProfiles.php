@@ -293,7 +293,7 @@ class CountryProfiles extends Component
 
     private function usesEnglishHomepageMockCountries(): bool
     {
-        return app()->getLocale() === 'en' && request()->routeIs('profiles.index');
+        return request()->routeIs('profiles.index') || request()->routeIs('countries.index');
     }
 
     private function getEnglishHomepageCountries()

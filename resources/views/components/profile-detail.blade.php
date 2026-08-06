@@ -527,9 +527,9 @@
         top: 0;
         right: 0;
         bottom: 0;
-        width: 353px;
+        width: 100%;
         pointer-events: none;
-        background: linear-gradient(to right, #FFFFFF00 0%, #FFFFFF 100%);
+        background: linear-gradient(to right, #FFFFFF00 0%, #FFFFFF 65%);
     }
 
     .vip-profile-gallery-swiper .swiper-slide {
@@ -631,7 +631,7 @@
     }
 
     .vip-gallery-desktop-nav.vip-gallery-desktop-next {
-        right: -20px !important;
+        right: 60px !important;
     }
 
     .vip-profile-favorite {
@@ -2460,7 +2460,7 @@
 
             <div class="vip-profile-meta-location">
                 <img src="{{ asset('images/icons/location.svg') }}" alt="" aria-hidden="true">
-                <span>{{ $profile->city ?? 'Jihomoravský kraj' }}</span>
+                <span>{{ implode(' / ', array_filter([$profile->city, $profile->address])) ?: 'Jihomoravský kraj' }}</span>
             </div>
 
             <div class="vip-profile-meta-table">

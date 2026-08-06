@@ -142,21 +142,24 @@ class ShowcaseProfilesSeeder extends Seeder
                 );
             }
 
-            // Attach model image
-            $modelImageNumber = $index + 1;
-            $modelImagePath = public_path("images/models/model{$modelImageNumber}.png");
-            
-            if (file_exists($modelImagePath)) {
-                try {
-                    // Clear existing media first
-                    $profile->clearMediaCollection('profile-images');
-                    
-                    // Add model image
-                    $profile->addMedia($modelImagePath)
-                        ->preservingOriginal()
-                        ->toMediaCollection('profile-images');
-                } catch (\Exception $e) {
-                    // Silently continue if image attachment fails
+            // Attach multiple model images so the card slideshow has photos to cycle through
+            $profile->clearMediaCollection('profile-images');
+
+            $photosPerProfile = 5;
+            $totalModels = 20;
+
+            for ($p = 0; $p < $photosPerProfile; $p++) {
+                $modelImageNumber = (($index * $photosPerProfile) + $p) % $totalModels + 1;
+                $modelImagePath = public_path("images/models/model{$modelImageNumber}.png");
+
+                if (file_exists($modelImagePath)) {
+                    try {
+                        $profile->addMedia($modelImagePath)
+                            ->preservingOriginal()
+                            ->toMediaCollection('profile-images');
+                    } catch (\Exception $e) {
+                        // Silently continue if image attachment fails
+                    }
                 }
             }
         }

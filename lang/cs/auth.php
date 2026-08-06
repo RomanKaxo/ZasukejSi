@@ -49,10 +49,10 @@ return [
       
     'reset' => [
         'title' => 'Obnovení hesla',
-        'subtitle' => 'Zapomněli jste heslo?',
+        'subtitle' => 'Zapomenuté heslo',
         'description' => 'Zadejte svou e-mailovou adresu a pošleme vám odkaz pro obnovení hesla.',
-        'email_label' => 'E-mailová adresa',
-        'send_button' => 'Obnovit heslo',
+        'email_label' => 'Vaše uživatelské jméno nebo váš e-mail',
+        'send_button' => 'Resetovat heslo',
         'sending' => 'Odesílání...',
         'back_to_login' => 'Zpět k přihlášení',
         'success_title' => 'E-mail odeslán!',

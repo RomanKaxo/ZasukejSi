@@ -13,18 +13,27 @@
     <div
         x-show="open"
         x-cloak
-        class="absolute left-1/2 -translate-x-1/2 mt-0 shadow-lg z-50 flex flex-col items-center pt-6"
-        style="width: 270px; height: 372px; border-radius: 8px; background-color: #DD3888;"
+        class="absolute left-1/2 -translate-x-1/2 mt-0 shadow-lg z-50 flex flex-col items-center pt-6 pb-3"
+        style="width: 270px; border-radius: 8px; background-color: #DD3888;"
     >
         <nav class="w-full px-5">
             <ul class="space-y-2">
                 @php
-                    $links = [
-                        ['url' => route('account.dashboard'), 'label' => 'Basic Information', 'icon' => 'User.svg'],
-                        ['url' => route('account.photos'), 'label' => 'Photos & Videos', 'icon' => 'Images.svg'],
-                        ['url' => route('account.services'), 'label' => 'My Services & Prices', 'icon' => 'List.svg'],
-                        ['url' => route('account.statistics'), 'label' => 'Statistics', 'icon' => 'BarChart4.svg'],
-                    ];
+                    $links = auth()->user()->gender === 'male'
+                        ? [
+                            ['url' => route('account.member.ratings'), 'label' => __('front.account.member.ratings'), 'icon' => 'BarChart4.svg'],
+                            ['url' => route('account.member.favorites'), 'label' => __('front.account.member.favorites'), 'icon' => 'heart.svg'],
+                            ['url' => route('account.member.girls-of-month'), 'label' => __('front.account.member.girls_of_month'), 'icon' => 'calendar.svg'],
+                            ['url' => route('account.member.archive'), 'label' => __('front.account.member.archive'), 'icon' => 'History.svg'],
+                            ['url' => route('account.member.reported'), 'label' => __('front.account.member.reported'), 'icon' => 'TriangleAlert.svg'],
+                            ['url' => route('account.member.dashboard'), 'label' => __('front.account.member.settings'), 'icon' => 'Settings.svg'],
+                        ]
+                        : [
+                            ['url' => route('account.dashboard'), 'label' => __('front.account.sidebar.basic'), 'icon' => 'User.svg'],
+                            ['url' => route('account.photos'), 'label' => __('front.account.sidebar.photos'), 'icon' => 'Images.svg'],
+                            ['url' => route('account.services'), 'label' => __('front.account.sidebar.services'), 'icon' => 'List.svg'],
+                            ['url' => route('account.statistics'), 'label' => __('front.account.sidebar.statistics'), 'icon' => 'BarChart4.svg'],
+                        ];
                 @endphp
 
                 @foreach($links as $link)

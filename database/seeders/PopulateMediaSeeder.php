@@ -12,16 +12,25 @@ class PopulateMediaSeeder extends Seeder
     {
         $profiles = Profile::all();
         $imageFiles = File::files(public_path('images/models'));
-        
-        foreach ($profiles as $index => $profile) {
-            // Pick a random image
-            $imageFile = $imageFiles[array_rand($imageFiles)];
-            
-            // Add media if not already exists
-            if ($profile->getMedia('profile-images')->isEmpty()) {
-                $profile->addMedia($imageFile->getPathname())
-                    ->preservingOriginal()
-                    ->toMediaCollection('profile-images');
+        $imageFiles = array_values(array_filter($imageFiles, fn ($f) => str_starts_with($f->getFilename(), 'model')));
+
+        foreach ($profiles as $profile) {
+            if ($profile->getMedia('profile-images')->count() >= 2) {
+                continue;
+            }
+
+            $profile->clearMediaCollection('profile-images');
+
+            $picks = collect($imageFiles)->shuffle()->take(random_int(3, 5));
+
+            foreach ($picks as $imageFile) {
+                try {
+                    $profile->addMedia($imageFile->getPathname())
+                        ->preservingOriginal()
+                        ->toMediaCollection('profile-images');
+                } catch (\Exception $e) {
+                    // Skip on failure, continue with remaining images
+                }
             }
         }
     }

@@ -1,0 +1,348 @@
+﻿    <link rel="stylesheet" href="{{ asset('css/vip-profile.css') }}">
+@endpush
+
+<div class="vip-profile-page">
+    <section class="vip-profile-hero">
+        <aside class="vip-profile-panel">
+            <div class="vip-profile-status-bar" style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <span class="vip-profile-status-pill vip-profile-status-pill--primary">
+                        <img src="{{ asset('images/icons/star.svg') }}" alt="star" style="width: 18px; height: 18px; margin-right: 6px;">
+                        VIP PROFIL
+                    </span>
+                    <span class="vip-profile-status-pill vip-profile-status-pill--verification">
+                        <img src="{{ asset('images/icons/CameraOff.svg') }}" alt="camera-off" style="width: 18px; height: 18px; margin-right: 4px;">
+                        {{ $photoStatusLabel }}
+                    </span>
+                </div>
+                
+                <div class="vip-profile-favorite-mobile" style="display:none;">
+                    @auth
+                        @if(auth()->user()->isMale())
+                            @livewire('favorite-button', ['profile' => $profile], key('favorite-'.$profile->id))
+                        @else
+                            <button type="button" class="vip-profile-static-favorite">
+                                <img src="{{ asset('images/icons/heart.svg') }}" alt="" aria-hidden="true">
+                            </button>
+                        @endif
+                    @else
+                        <button type="button" class="vip-profile-static-favorite">
+                            <img src="{{ asset('images/icons/heart.svg') }}" alt="" aria-hidden="true">
+                        </button>
+                    @endauth
+                </div>
+            </div>
+
+            <h1 class="vip-profile-name">{{ $profile->display_name ?? 'Alexandrina' }}</h1>
+
+            <div class="vip-profile-rating-summary">
+                <strong>{{ __('front.profiles.list.rating') }}</strong>
+                <span class="vip-profile-rating-icons">
+                    @if($totalRatings > 0)
+                        <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" style="color:#FFC107;">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        <span>{{ number_format($averageRating, 1) }}</span>
+                    @else
+                        <x-icons name="lock" class="inline-block" style="width:18px;height:18px;color:#FF4DA6;" />
+                    @endif
+                </span>
+            </div>
+
+            <div class="vip-profile-meta-location">
+                <img src="{{ asset('images/icons/location.svg') }}" alt="" aria-hidden="true">
+                <span>{{ $profile->city ?? 'JihomoravskĂ˝ kraj' }}</span>
+            </div>
+
+            <div class="vip-profile-meta-table">
+                <div class="vip-profile-meta-row">
+                    <span class="vip-profile-meta-label">VÄ›k</span>
+                    <span class="vip-profile-meta-value">{{ $profile->age ?? '19' }} let</span>
+                </div>
+                <div class="vip-profile-meta-row">
+                    <span class="vip-profile-meta-label">VĂˇha</span>
+                    <span class="vip-profile-meta-value">
+                        {{ ($profile->weight ?? '57') . ' kg' . ($weightLbs ? ' / ' . $weightLbs . ' lbs' : '') }}
+                    </span>
+                </div>
+                <div class="vip-profile-meta-row">
+                    <span class="vip-profile-meta-label">VĂ˝Ĺˇka</span>
+                    <span class="vip-profile-meta-value">
+                        {{ ($profile->height ?? '168') . ' cm' . ($heightFeet ? ' / ' . $heightFeet : '') }}
+                    </span>
+                </div>
+                <div class="vip-profile-meta-row">
+                    <span class="vip-profile-meta-label">Prsa</span>
+                    <span class="vip-profile-meta-value">{{ $profile->bust_size ?? 'C' }}</span>
+                </div>
+                <div class="vip-profile-meta-row">
+                    <span class="vip-profile-meta-label">Jazyky</span>
+                    <span class="vip-profile-meta-value">{{ $languages }}</span>
+                </div>
+            </div>
+
+            <div class="vip-profile-flags">
+                <div class="vip-profile-flag vip-profile-flag--incall">
+                    <span class="vip-profile-flag-status">
+                        <img src="{{ asset('images/icons/CircleCheck.svg') }}" alt="" aria-hidden="true">
+                    </span>
+                    <span>InCall</span>
+                </div>
+                <div class="vip-profile-flag vip-profile-flag--outcall">
+                    <span class="vip-profile-flag-status">
+                        <img src="{{ asset('images/icons/CircleX.svg') }}" alt="" aria-hidden="true">
+                    </span>
+                    <span>OutCall</span>
+                </div>
+            </div>
+
+            @auth
+                @if($profile->user_id && $profile->user_id !== auth()->id() && $messageRouteAvailable)
+                    <a href="{{ route('messages.show', $profile->user) }}" class="vip-profile-message">
+                        Poslat zprĂˇvu
+                        <img src="{{ asset('images/icons/message.svg') }}" alt="" aria-hidden="true" class="h-4 w-4 brightness-0 invert">
+                    </a>
+                @else
+                    <span class="vip-profile-message" style="opacity:.6;pointer-events:none;">Poslat zprĂˇvu</span>
+                @endif
+            @else
+                <a href="{{ $registerRouteAvailable ? route('register') : route('profiles.index') }}" class="vip-profile-message">
+                    Poslat zprĂˇvu
+                    <img src="{{ asset('images/icons/message.svg') }}" alt="" aria-hidden="true" class="h-4 w-4 brightness-0 invert">
+                </a>
+            @endauth
+
+            <div class="vip-profile-contacts">
+                <a class="vip-profile-contact-circle vip-profile-contact-circle--whatsapp" href="https://wa.me/420737155457" target="_blank" rel="noreferrer" title="WhatsApp">
+                    <img src="{{ asset('images/icons/whatsapp.svg') }}" alt="whatsapp" style="width: 20px; height: 20px;">
+                </a>
+                <a class="vip-profile-contact-circle vip-profile-contact-circle--telegram" href="https://t.me/alexandraprofil" target="_blank" rel="noreferrer" title="Telegram">
+                    <img src="{{ asset('images/icons/telegram.svg') }}" alt="telegram" style="width: 20px; height: 20px;">
+                </a>
+                <a href="tel:+420737155457" class="vip-profile-phone">
+                    <span>+420 737 155 457</span>
+                </a>
+            </div>
+        </aside>
+
+        <div class="vip-profile-main">
+            <div class="vip-profile-gallery-card vip-profile-gallery-swiper swiper">
+
+                <div class="swiper-wrapper">
+                    @forelse($gallerySlides as $index => $imageUrl)
+                        <div class="swiper-slide">
+                            <div class="vip-gallery-slide lightbox-trigger" data-index="{{ $index }}" role="button" tabindex="0">
+                                <img src="{{ $imageUrl }}" alt="{{ $profile->display_name }}">
+                            </div>
+                        </div>
+                    @empty
+                        <div class="swiper-slide">
+                            <div class="vip-gallery-slide" style="display:flex;align-items:center;justify-content:center;">
+                                <svg class="h-20 w-20 text-[#d6c7dc]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                        </div>
+                    @endforelse
+                </div>
+                @if($gallerySlides->count() > 1)
+                    <button type="button" class="vip-gallery-nav vip-gallery-nav--prev" aria-label="Previous image">&#10094;</button>
+                    <button type="button" class="vip-gallery-nav vip-gallery-nav--next" aria-label="Next image">&#10095;</button>
+                @endif
+            </div>
+
+            <section class="vip-about-card">
+                <h2 class="vip-section-title">VĂ­ce o mnÄ›</h2>
+                <div class="vip-about-copy">FOTO je original â€“ koukni na mĹŻj web đź™‚  MUJ INSTAGRAM    @arianka.a_     KDE NAJDEĹ  MUJ ONLYFANS? NA INSTAGRAMU đź”Ą  VĂ­tej mĹŻj drahĂ˝  âşď¸Ź  JĂˇ jsem SĂˇra PochĂˇzĂ­m z ÄŚeskĂ© republiky, đź™‚ Jsem jedineÄŤnĂˇ zkuĹˇenost, pokud hledĂˇĹˇ jedineÄŤnĂ© vzruĹˇujĂ­cĂ­ potÄ›ĹˇenĂ­, dobrodruĹľstvĂ­, jsem tu pro tvoje potĹ™eby. Jako dĹŻvÄ›rnĂˇ, diskrĂ©tnĂ­, elegantnĂ­ dĂˇma, kterĂˇ rĂˇda sdĂ­lĂ­ potÄ›ĹˇenĂ­, ĹˇtÄ›stĂ­, jsem pĹ™ipravenĂˇ spoleÄŤnÄ› vytvorit nezapomenutelnĂ© okamĹľiky. Jsem skuteÄŤnĂ˝ mladĂ˝ poklad. Moje teplo, elegance a vĂˇĹˇeĹ uÄŤinĂ­  nĂˇĹˇ spoleÄŤnĂ˝ ÄŤas zvlĂˇstnĂ­m. Miluji setkĂˇnĂ­ s novĂ˝mi lidmi a uĹľĂ­vĂˇm si kazdou chvĂ­li naplno. NapiĹˇ mi na WhatsApp, mĹŻj  drahĂ˝ ! Rychle reaguji a muzeme snadno UspoĹ™Ăˇdat SchĹŻzku, abychom spoleÄŤnÄ› zaĹľily nÄ›co opravdu ĂşĹľasnĂ©ho.  đź™‚</div>
+            </section>
+
+            @if($profile->hasVideo() || $displayPrices->isNotEmpty() || $displayServices->isNotEmpty())
+                <section class="vip-media-grid">
+                    <div class="vip-video-card-wrap">
+                        <h3 class="vip-video-card-title">Video</h3>
+                        <div class="vip-video-card">
+                            <div class="vip-video-surface">
+                                @if($profile->hasVideo())
+                                    <video id="vip-profile-video" src="{{ $profile->getVideoUrl() }}" preload="metadata" playsinline poster="{{ asset('images/models/vipVideo.png') }}"></video>
+                                @else
+                                    <img src="{{ asset('images/models/vipVideo.png') }}" alt="{{ $profile->display_name }}">
+                                @endif
+                                <button type="button" class="vip-video-play" id="vip-profile-video-toggle" aria-label="Play video">
+                                    <span class="vip-video-play__inner">
+                                        <img id="vip-profile-video-play-icon" src="{{ asset('images/icons/arrowFilled.svg') }}" alt="" class="w-7 h-7" style="filter: brightness(0) invert(1); transform: rotate(180deg);">
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="vip-pricing-card">
+                        @if($displayPrices->isNotEmpty())
+                            <div class="vip-prices-block">
+                                <h3>Moje ceny</h3>
+                                <table class="vip-pricing-table">
+                                    <thead>
+                                        <tr>
+                                            <th><span class="vip-price-pill">ÄŚas</span></th>
+                                            <th>
+                                                <span class="vip-price-pill">
+                                                    @if($profile->incall || $prices->isEmpty())
+                                                        <img src="{{ asset('images/icons/CircleCheck.svg') }}" alt="" aria-hidden="true" class="w-5 h-5">
+                                                    @else
+                                                        <img src="{{ asset('images/icons/CircleX.svg') }}" alt="" aria-hidden="true" class="w-5 h-5">
+                                                    @endif
+                                                    InCall
+                                                </span>
+                                            </th>
+                                            <th>
+                                                <span class="vip-price-pill">
+                                                    @if($profile->outcall)
+                                                        <img src="{{ asset('images/icons/CircleCheck.svg') }}" alt="" aria-hidden="true" class="w-5 h-5">
+                                                    @else
+                                                        <img src="{{ asset('images/icons/CircleX.svg') }}" alt="" aria-hidden="true" class="w-5 h-5">
+                                                    @endif
+                                                    OutCall
+                                                </span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($displayPrices as $price)
+                                            <tr>
+                                                <td>{{ rtrim(rtrim((string) ($price['time_hours'] ?? ''), '0'), '.') }}h</td>
+                                                <td>
+                                                    @if(!empty($price['incall_price']) && ($profile->incall || $prices->isEmpty()))
+                                                        {{ number_format($price['incall_price'], 0, ',', ' ') }} KÄŤ
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if(!empty($price['outcall_price']) && $profile->outcall)
+                                                        {{ number_format($price['outcall_price'], 0, ',', ' ') }} KÄŤ
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
+
+                        @if($displayServices->isNotEmpty())
+                            <div class="vip-services-block" style="margin-top:24px;">
+                                <h3 style="margin-bottom:14px;">SluĹľby</h3>
+                                <div class="vip-services-grid">
+                                    @foreach($displayServices as $serviceName)
+                                        <span class="vip-service-pill">{{ $serviceName }}</span>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </section>
+            @endif
+        </div>
+    </section>
+
+    <section class="vip-slider-section">
+        <div class="vip-slider-head">
+            <div>
+                <h2 class="vip-section-title" style="margin-bottom:4px;">NejlĂ©pe hodnocenĂ© dĂ­vky</h2>
+                <div class="vip-slider-kicker">tento mÄ›sĂ­c</div>
+            </div>
+            <div class="vip-slider-note">
+                <img src="{{ asset('images/icons/diamond.svg') }}" alt="" aria-hidden="true" class="h-4 w-4">
+                <span>Premium ĂşÄŤet vĂˇm odemkne hodnocenĂ­</span>
+            </div>
+        </div>
+        <div class="vip-rec-slider">
+            <livewire:profile-slider sort-by="rating_this_month" sort-direction="desc" :limit="30" card-variant="vip-detail" :key="'vip-month-'.$profile->id" />
+        </div>
+    </section>
+
+    <section class="vip-slider-section">
+        <div class="vip-slider-head">
+            <div>
+                <h2 class="vip-section-title" style="margin-bottom:4px;">NejlĂ©pe hodnocenĂ© dĂ­vky</h2>
+                <div class="vip-slider-kicker">za celou dobu</div>
+            </div>
+            <div class="vip-slider-note">
+                <img src="{{ asset('images/icons/diamond.svg') }}" alt="" aria-hidden="true" class="h-4 w-4">
+                <span>Premium ĂşÄŤet vĂˇm odemkne hodnocenĂ­</span>
+            </div>
+        </div>
+        <div class="vip-rec-slider">
+            <livewire:profile-slider sort-by="rating_this_month" sort-direction="desc" :limit="30" card-variant="vip-detail" :key="'vip-all-'.$profile->id" />
+        </div>
+    </section>
+
+    <section class="vip-video-section">
+        <div class="vip-video-heading">
+            <div class="vip-video-heading-line1">NovĂ˝ svÄ›t na dosah...</div>
+            <div class="vip-video-heading-line2">StaĹ se ÄŤlenem ZaĹˇukejSi.cz</div>
+        </div>
+        <div class="vip-video-container">
+            <div class="vip-video-play-btn">
+                <img src="{{ asset('images/icons/arrowFilled.svg') }}" alt="" aria-hidden="true" style="width:50px;height:50px;transform:rotate(180deg);filter:brightness(0) invert(1);">
+            </div>
+        </div>
+        <div class="vip-video-badges">
+            <div class="vip-video-badge">
+                <img src="{{ asset('images/icons/Banana.svg') }}" alt="" aria-hidden="true" style="width:40px;height:40px;">
+                <span style="font-family:'Poppins', sans-serif;font-weight:400;font-size:13px;color:#505050;text-align:left;line-height:1.3;">Swingers akce pro ÄŤleny</span>
+            </div>
+            <div class="vip-video-badge">
+                <img src="{{ asset('images/icons/ThumbsUp.svg') }}" alt="" aria-hidden="true" style="width:40px;height:40px;">
+                <span style="font-family:'Poppins', sans-serif;font-weight:400;font-size:13px;color:#505050;text-align:left;line-height:1.3;">HodnocenĂ­ dĂ­vek od komunity</span>
+            </div>
+            <div class="vip-video-badge">
+                <img src="{{ asset('images/icons/icecreamPink.svg') }}" alt="" aria-hidden="true" style="width:40px;height:40px;">
+                <span style="font-family:'Poppins', sans-serif;font-weight:400;font-size:13px;color:#505050;text-align:left;line-height:1.3;">DatabĂˇze dĂ­vek na jednom mĂ­stÄ›</span>
+            </div>
+        </div>
+        <button class="vip-video-register-btn">Registrovat se ZDARMA</button>
+    </section>
+</div>
+
+@if(true)
+    <div class="vip-lightbox" id="vip-lightbox">
+        <div class="vip-lightbox-stage">
+            <div class="vip-lightbox-main">
+                <button type="button" class="vip-lightbox-close" id="vip-lightbox-close" aria-label="Close">&times;</button>
+                <button type="button" class="vip-lightbox-prev" id="vip-lightbox-prev" aria-label="Previous">&#10094;</button>
+                <button type="button" class="vip-lightbox-next" id="vip-lightbox-next" aria-label="Next">&#10095;</button>
+
+                <div class="swiper vip-lightbox-swiper">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <img src="{{ asset('images/models/vip1.png') }}" alt="{{ $profile->display_name }}">
+                        </div>
+                        <div class="swiper-slide">
+                            <img src="{{ asset('images/models/vip2.png') }}" alt="{{ $profile->display_name }}">
+                        </div>
+                        <div class="swiper-slide">
+                            <img src="{{ asset('images/models/vip3.png') }}" alt="{{ $profile->display_name }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vip-lightbox-thumbnails">
+                <button type="button" class="vip-lightbox-thumbnail active" data-slide="0" aria-label="Slide 1">
+                    <img src="{{ asset('images/models/vip1.png') }}" alt="{{ $profile->display_name }}">
+                </button>
+                <button type="button" class="vip-lightbox-thumbnail" data-slide="1" aria-label="Slide 2">
+                    <img src="{{ asset('images/models/vip2.png') }}" alt="{{ $profile->display_name }}">
+                </button>
+                <button type="button" class="vip-lightbox-thumbnail" data-slide="2" aria-label="Slide 3">
+                    <img src="{{ asset('images/models/vip3.png') }}" alt="{{ $profile->display_name }}">
+                </button>
+            </div>
+        </div>
+    </div>
+@endif
+
+@push('scripts')<script src='{{ asset('js/vip-profile.js') }}'></script>@endpush

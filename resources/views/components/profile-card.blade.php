@@ -48,13 +48,8 @@
         ];
     }
 
-    // If there's only one real photo, repeat it so the dots are still clickable.
-    // Profiles with multiple real photos keep their actual count (no fake padding).
-    if (count($imageUrls) === 1) {
-        while (count($imageUrls) < 5) {
-            $imageUrls[] = end($imageUrls);
-        }
-    }
+    $imageUrls = array_slice($imageUrls, 0, 5);
+    $hasMultiplePhotos = count($imageUrls) > 1;
 @endphp
 
 <div class="{{ $isReported ? 'h-[510px] reported-profile-card' : '' }} {{ $showRemoveButton ? '' : 'overflow-hidden' }} bg-white rounded-lg transition-all duration-300 cursor-pointer group relative z-10 home-profile-card"
@@ -141,7 +136,7 @@
         <div class="w-full h-full bg-gradient-to-br from-primary-100 to-secondary-100 relative overflow-hidden {{ $shouldBlur ? 'blur-md' : '' }}">
             @php $firstImageUrl = $imageUrls[0] ?? null; @endphp
             @if($firstImageUrl)
-                @foreach(array_slice($imageUrls, 0, 5) as $i => $url)
+                @foreach($imageUrls as $i => $url)
                     <img src="{{ $url }}" alt="{{ $profileName }}"
                         class="w-[210px] h-[265px] object-cover home-profile-card-image absolute inset-0 transition-all duration-500 ease-in-out {{ $i === 0 ? 'opacity-100 scale-100' : 'opacity-0 scale-105' }}"
                         x-bind:class="{ 'opacity-100 scale-100': currentIndex === {{ $i }}, 'opacity-0 scale-105': currentIndex !== {{ $i }} }" />
@@ -157,28 +152,22 @@
 
         </div>
 
-        @if(!$simpleMode && !$shouldBlur)
+        @if(!$simpleMode && !$shouldBlur && $hasMultiplePhotos)
         <!-- Prev/Next Arrows (visible on hover) -->
-        <button type="button" @click.stop.prevent="currentIndex = (currentIndex - 1 + Math.min(5, imageUrls.length)) % Math.min(5, imageUrls.length)" x-show="showBtn" class="absolute top-1/2 -translate-y-1/2 left-2 z-30 flex items-center justify-center" style="width:32px;height:32px;border-radius:9999px;border:1px solid #E4E4E7;background:#FFFFFF;">
+        <button type="button" @click.stop.prevent="currentIndex = (currentIndex - 1 + imageUrls.length) % imageUrls.length" x-show="showBtn" class="absolute top-1/2 -translate-y-1/2 left-2 z-30 flex items-center justify-center" style="width:32px;height:32px;border-radius:9999px;border:1px solid #E4E4E7;background:#FFFFFF;">
             <img src="{{ asset('images/icons/ArrowLeft.svg') }}" alt="" style="width:16px;height:16px;transform:rotate(180deg);" />
         </button>
-        <button type="button" @click.stop.prevent="currentIndex = (currentIndex + 1) % Math.min(5, imageUrls.length)" x-show="showBtn" class="absolute top-1/2 -translate-y-1/2 right-2 z-30 flex items-center justify-center" style="width:32px;height:32px;border-radius:9999px;border:1px solid #E4E4E7;background:#FFFFFF;">
+        <button type="button" @click.stop.prevent="currentIndex = (currentIndex + 1) % imageUrls.length" x-show="showBtn" class="absolute top-1/2 -translate-y-1/2 right-2 z-30 flex items-center justify-center" style="width:32px;height:32px;border-radius:9999px;border:1px solid #E4E4E7;background:#FFFFFF;">
             <img src="{{ asset('images/icons/ArrowLeft.svg') }}" alt="" style="width:16px;height:16px;" />
         </button>
-        @endif
 
-        @php
-            $visibleDots = min(5, count($imageUrls));
-        @endphp
-
-        <!-- Photo count dots (5 total) -->
-        @if(!$simpleMode && !$shouldBlur)
+        <!-- Photo count dots -->
         <div class="absolute left-0 right-0 bottom-3 flex justify-center z-30" style="gap:3px;">
-            @for($i = 0; $i < 5; $i++)
-                <button type="button" @click.prevent="currentIndex = {{ min($i, $visibleDots - 1) }}" class="w-2.5 h-2.5 rounded-full bg-white flex items-center justify-center transition-transform duration-300 ease-in-out" :class="{ 'scale-110': currentIndex === {{ $i }} }" style="box-shadow: 0 0 0 1px rgba(0,0,0,0.04);">
+            @foreach($imageUrls as $i => $url)
+                <button type="button" @click.prevent="currentIndex = {{ $i }}" class="w-2.5 h-2.5 rounded-full bg-white flex items-center justify-center transition-transform duration-300 ease-in-out" :class="{ 'scale-110': currentIndex === {{ $i }} }" style="box-shadow: 0 0 0 1px rgba(0,0,0,0.04);">
                     <span class="w-1.5 h-1.5 rounded-full transition-colors duration-300 ease-in-out" :class="{ 'bg-transparent': currentIndex !== {{ $i }}, 'bg-[#DD3888]': currentIndex === {{ $i }} }" style="display:block;"></span>
                 </button>
-            @endfor
+            @endforeach
         </div>
         @endif
     </div>

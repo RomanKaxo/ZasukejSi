@@ -78,6 +78,9 @@ return [
             'vip_title' => 'Earn More',
             'vip_description' => 'Upgrade to VIP and get more visibility and features.',
             'vip_button' => 'Activate VIP',
+            'premium_title' => 'Try Premium',
+            'premium_description' => 'Special terms arranged before state payment',
+            'premium_button' => 'Start PREMIUM',
         ],
         'member' => [
             'profile' => 'My Profile',
