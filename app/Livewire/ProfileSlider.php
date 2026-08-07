@@ -65,7 +65,7 @@ class ProfileSlider extends Component
     #[Computed]
     public function profiles()
     {
-        $query = Profile::with(['user:id,name', 'media'])
+        $query = Profile::with(['user:id,name,last_activity', 'media'])
             ->approved()
             ->public()
             ->select($this->getPublicProfileColumns());

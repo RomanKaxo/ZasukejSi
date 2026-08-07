@@ -182,7 +182,7 @@ class ProfileList extends Component
     {
         if ($this->usesShowcaseProfiles()) {
             // Get showcase profiles (identified by content->is_showcase = true or by emails)
-            $showcaseQuery = Profile::with(['user:id,name', 'media'])
+            $showcaseQuery = Profile::with(['user:id,name,last_activity', 'media'])
                 ->approved()
                 ->public()
                 ->select($this->getPublicProfileColumns())
@@ -225,7 +225,7 @@ class ProfileList extends Component
         }
 
         // Fallback to normal query if no showcase profiles exist
-        $query = Profile::with(['user:id,name', 'media'])
+        $query = Profile::with(['user:id,name,last_activity', 'media'])
             ->approved()
             ->public()
             ->select($this->getPublicProfileColumns())

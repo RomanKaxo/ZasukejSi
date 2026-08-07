@@ -50,7 +50,7 @@ abstract class Controller
     private function getPublicProfiles(Request $request, bool $forApi = false): LengthAwarePaginator
     {
         $query = Profile::query()
-            ->with(['user:id,name']) // Only load necessary user data
+            ->with(['user:id,name,last_activity']) // Only load necessary user data
             ->public() // Only public profiles
             ->approved() // Only approved profiles
             ->select($this->getPublicProfileColumns()) // Limited columns for public view

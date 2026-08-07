@@ -205,15 +205,6 @@
                             <path d="M1 1L9 9M9 1L1 9" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
                     </button>
-
-                    <!-- Promote to main photo -->
-                    <button type="button" wire:click="setAsMainPhoto({{ $photo->id }})"
-                        wire:loading.attr="disabled"
-                        title="{{ __('front.profiles.photos.set_as_main') }}"
-                        class="absolute bottom-[10px] left-1/2 -translate-x-1/2 h-[30px] px-3 rounded-full bg-white/90 hover:bg-white transition-colors duration-200 flex items-center justify-center"
-                        style="box-shadow: 0 2px 6px 0 #00000033;">
-                        <span style="font-family:'Poppins',sans-serif; font-weight:600; font-size:11px; color:#5C2D62;">{{ __('front.profiles.photos.set_as_main') }}</span>
-                    </button>
                 </div>
             @empty
                 <p class="w-full text-sm text-gray-500 mb-2" style="font-family:'Poppins',sans-serif;">

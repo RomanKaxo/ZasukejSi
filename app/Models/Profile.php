@@ -144,6 +144,26 @@ class Profile extends Model implements HasMedia
     }
 
     /**
+     * The region/kraj the profile's city belongs to, looked up from the
+     * `cities` table (its `admin_name` column, backfilled from
+     * worldcities.csv). Not stored on the profile itself since `city` is a
+     * free-text value chosen via autocomplete against that same table.
+     */
+    public function getRegionAttribute(): ?string
+    {
+        if (! $this->city) {
+            return null;
+        }
+
+        return City::query()
+            ->when($this->country_code, fn ($q) => $q->where('country_code', strtoupper($this->country_code)))
+            ->where(function ($q) {
+                $q->where('name', $this->city)->orWhere('name_ascii', $this->city);
+            })
+            ->value('admin_name');
+    }
+
+    /**
      * Weight converted to pounds, derived from `weight`.
      */
     public function getWeightLbsAttribute(): ?int
@@ -262,6 +282,14 @@ class Profile extends Model implements HasMedia
     public function isVip(): bool
     {
         return $this->hasActiveSubscription();
+    }
+
+    /**
+     * Check if the profile's owner is currently online.
+     */
+    public function isOnline(): bool
+    {
+        return $this->user?->isOnline() ?? false;
     }
 
     /**

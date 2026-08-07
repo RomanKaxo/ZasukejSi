@@ -62,7 +62,7 @@ class ProfileController extends Controller
     {
         $profile = Profile::public()
             ->approved()
-            ->with(['user:id,name', 'services', 'media'])
+            ->with(['user:id,name,last_activity', 'services', 'media'])
             ->select($this->getProfileDetailColumns())
             ->findOrFail($id);
         
@@ -79,7 +79,7 @@ class ProfileController extends Controller
      */
     private function getPublicProfiles(Request $request, bool $forApi = false)
     {
-        $query = Profile::with('user:id,name')
+        $query = Profile::with('user:id,name,last_activity')
             ->approved()
             ->public()
             ->select($this->getPublicProfileColumns())

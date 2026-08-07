@@ -755,7 +755,8 @@ body.modal-open {
 }
 
 .home-profile-card-vip-mobile,
-.home-profile-card-verified-check {
+.home-profile-card-verified-check,
+.home-profile-card-online-dot {
   display: none;
 }
 
@@ -868,8 +869,18 @@ body.modal-open {
 
   .home-profile-card-vip-desktop,
   .home-profile-card-cta,
-  .home-profile-card-location {
+  .home-profile-card-location,
+  .home-profile-card-online-badge {
     display: none !important;
+  }
+
+  .home-profile-card-online-dot {
+    display: inline-block !important;
+    width: 14px !important;
+    height: 14px !important;
+    flex: 0 0 14px;
+    border-radius: 50% !important;
+    background: #00B80F !important;
   }
 
   .home-profile-card-stats {

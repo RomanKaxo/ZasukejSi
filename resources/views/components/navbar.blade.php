@@ -336,11 +336,27 @@
 
                 @auth
                     @php
-                        $mobileTabs = [
-                            ['route' => 'account.dashboard', 'label' => __('front.account.member.profile'), 'icon' => 'User'],
+                        // Male members get the "account.member.*" routes (ratings, favorites,
+                        // girls of month, archive, reported, settings); female profile owners
+                        // get the "account.*" routes (dashboard, photos, services, statistics).
+                        // Admins fall through to the female/profile set, mirroring the redirect
+                        // logic in routes/web.php.
+                        $isMobileMemberAccount = auth()->user()->isMale() && !auth()->user()->hasRole('admin');
+
+                        $mobileTabs = $isMobileMemberAccount ? [
+                            ['route' => 'account.member.dashboard', 'label' => __('front.account.member.settings'), 'icon' => 'Settings'],
                             ['route' => 'messages.index', 'label' => __('front.account.member.messages'), 'icon' => 'mail', 'badge' => $mobileMailBadge],
                             ['route' => 'account.member.favorites', 'label' => __('front.account.member.favorites'), 'icon' => 'heart'],
-                            ['route' => 'account.member.dashboard', 'label' => __('front.account.member.settings'), 'icon' => 'Settings'],
+                            ['route' => 'account.member.ratings', 'label' => __('front.account.member.ratings'), 'icon' => 'star'],
+                            ['route' => 'account.member.girls-of-month', 'label' => __('front.account.member.girls_of_month'), 'icon' => 'CalendarDays'],
+                            ['route' => 'account.member.archive', 'label' => __('front.account.member.archive'), 'icon' => 'History'],
+                            ['route' => 'account.member.reported', 'label' => __('front.account.member.reported'), 'icon' => 'OctagonAlert'],
+                        ] : [
+                            ['route' => 'account.dashboard', 'label' => __('front.account.sidebar.basic'), 'icon' => 'User'],
+                            ['route' => 'account.photos', 'label' => __('front.account.sidebar.photos'), 'icon' => 'Images'],
+                            ['route' => 'account.services', 'label' => __('front.account.sidebar.services'), 'icon' => 'List'],
+                            ['route' => 'account.statistics', 'label' => __('front.account.sidebar.statistics'), 'icon' => 'BarChart4'],
+                            ['route' => 'messages.index', 'label' => __('front.account.member.messages'), 'icon' => 'mail', 'badge' => $mobileMailBadge],
                         ];
                     @endphp
                     @foreach($mobileTabs as $tab)

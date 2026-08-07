@@ -16,6 +16,15 @@ class ServicesManager extends Component
     public $services = [];
     public $selectedServices = [];
 
+    // Languages state — the 20 most widely spoken languages in Europe.
+    public $languages = [
+        'Angličtina', 'Němčina', 'Francouzština', 'Italština', 'Španělština',
+        'Polština', 'Rumunština', 'Nizozemština', 'Řečtina', 'Portugalština',
+        'Švédština', 'Maďarština', 'Čeština', 'Bulharština', 'Srbština',
+        'Slovenština', 'Dánština', 'Finština', 'Norština', 'Ukrajinština',
+    ];
+    public $selectedLanguages = [];
+
     public function mount()
     {
         // Get user with profile relationship loaded
@@ -31,6 +40,12 @@ class ServicesManager extends Component
         // Load selected services for this profile
         if ($this->hasProfile) {
             $this->selectedServices = $this->profile->services->pluck('id')->toArray();
+
+            // Languages are stored as a comma separated string inside the
+            // profile's `content` JSON blob (see Profile::getLanguagesAttribute).
+            $this->selectedLanguages = $this->profile->languages
+                ? array_filter(array_map('trim', explode(',', $this->profile->languages)))
+                : [];
         }
     }
 
@@ -63,6 +78,40 @@ class ServicesManager extends Component
         $this->selectedServices = $this->profile->fresh()->services->pluck('id')->toArray();
 
         session()->flash('message', __('front.account.services.success'));
+    }
+
+    public function toggleLanguage($language)
+    {
+        $user = Auth::user();
+
+        // Profile must exist (enforced by middleware)
+        if (!$user->profile) {
+            return;
+        }
+
+        // Only allow languages from the known list — anything else is rejected
+        // so the stored value never drifts from what the UI can display.
+        if (!in_array($language, $this->languages, true)) {
+            session()->flash('error', __('front.account.services.invalid_language'));
+            return;
+        }
+
+        $this->profile = $user->profile;
+
+        if (($key = array_search($language, $this->selectedLanguages, true)) !== false) {
+            unset($this->selectedLanguages[$key]);
+        } else {
+            $this->selectedLanguages[] = $language;
+        }
+        $this->selectedLanguages = array_values($this->selectedLanguages);
+
+        $this->profile->content = array_merge(
+            is_array($this->profile->content) ? $this->profile->content : [],
+            ['languages' => implode(', ', $this->selectedLanguages) ?: null]
+        );
+        $this->profile->save();
+
+        session()->flash('message', __('front.account.services.languages_success'));
     }
 
     public function render()

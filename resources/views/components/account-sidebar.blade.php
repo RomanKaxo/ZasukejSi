@@ -76,10 +76,34 @@
 
         <!-- Advert for VIP (hidden on mobile) -->
         @unless(request()->routeIs('preview.*'))
+        @php
+            $vipAdvertImages = [
+                'images/vip-advert.png',
+                'images/vip-advert2.png',
+                'images/vip-advert3.png',
+                'images/vip-advert4.png',
+                'images/vip-advert5.png',
+                'images/vip-advert6.png',
+                'images/vip-advert7.png',
+            ];
+        @endphp
         <div class="mt-6 relative hidden md:block">
-            <!-- VIP Image -->
-            <img src="{{ asset('images/vip-advert.png') }}" alt="VIP" class="w-full rounded-t-xl">
-            
+            <!-- VIP Image (auto-rotating) -->
+            <div
+                class="relative w-full aspect-[210/334] overflow-hidden rounded-t-xl"
+                x-data="{ current: 0, images: @js($vipAdvertImages) }"
+                x-init="current = Math.floor(Math.random() * images.length); setInterval(() => { current = (current + 1) % images.length }, 10000)"
+            >
+                @foreach ($vipAdvertImages as $i => $vipImage)
+                    <img
+                        src="{{ asset($vipImage) }}"
+                        alt="VIP"
+                        class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out"
+                        x-bind:class="current === {{ $i }} ? 'opacity-100' : 'opacity-0'"
+                    >
+                @endforeach
+            </div>
+
             <!-- Golden Background Section -->
             <div class="relative p-5 rounded-b-xl border-b-3 border-gold-light" style="background: linear-gradient(180deg, #F5E4B8 0%, #FFFFFF 100%);">
             <!-- Gold Star - Absolutely Positioned -->

@@ -13,6 +13,7 @@
     }
     $averageRating = $profile->getAverageRating();
     $totalRatings = $profile->getTotalRatings();
+    $isOnline = $profile->isOnline();
     $isNewProfile = $totalRatings === 0 || optional($profile->created_at)->gt(now()->subDays(30));
     $contacts = collect($profile->contacts ?? []);
     $phoneContact = $contacts->firstWhere('type', 'phone');
@@ -186,6 +187,13 @@
         color: #8c8795;
     }
 
+    .vip-profile-name-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
     .vip-profile-name {
         margin: 0 0 10px;
         font-family: 'Poppins', sans-serif;
@@ -195,6 +203,29 @@
         letter-spacing: -0.03em;
         color: #5c2d62;
         text-align: center;
+    }
+
+    .vip-profile-online-badge {
+        width: 80px;
+        height: 22px;
+        margin: 0 auto 10px;
+        border-radius: 10px;
+        background: #00B80F;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .vip-profile-online-badge span {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 900;
+        font-size: 10px;
+        color: #FFFFFF;
+        line-height: 1;
+    }
+
+    .vip-profile-online-dot {
+        display: none;
     }
 
     .vip-profile-links {
@@ -1536,6 +1567,24 @@
         .vip-profile-name {
             margin-bottom: 14px;
             font-size: 36px;
+            text-align: left;
+        }
+
+        .vip-profile-name-row {
+            justify-content: flex-start;
+        }
+
+        .vip-profile-online-badge {
+            display: none;
+        }
+
+        .vip-profile-online-dot {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            flex: 0 0 20px;
+            border-radius: 50%;
+            background: #00B80F;
         }
 
         .vip-profile-rating-summary {
@@ -2436,7 +2485,18 @@
             </div>
 
 
-            <h1 class="vip-profile-name">{{ $profile->display_name ?? 'Alexandrina' }}</h1>
+            <div class="vip-profile-name-row">
+                @if($isOnline)
+                    <span class="vip-profile-online-dot" aria-hidden="true"></span>
+                @endif
+                <h1 class="vip-profile-name">{{ $profile->display_name ?? 'Alexandrina' }}</h1>
+            </div>
+
+            @if($isOnline)
+            <div class="vip-profile-online-badge">
+                <span>{{ __('front.profiles.list.online') }}</span>
+            </div>
+            @endif
 
             <div class="vip-profile-links lg:hidden" aria-label="Profile actions">
                 <a href="#" class="vip-profile-link">{{ __('front.profiles.detail_page.refresh_access') }}</a>
@@ -2460,7 +2520,7 @@
 
             <div class="vip-profile-meta-location">
                 <img src="{{ asset('images/icons/location.svg') }}" alt="" aria-hidden="true">
-                <span>{{ implode(' / ', array_filter([$profile->city, $profile->address])) ?: 'Jihomoravský kraj' }}</span>
+                <span>{{ implode(' / ', array_filter([$profile->city, $profile->region])) ?: 'Jihomoravský kraj' }}</span>
             </div>
 
             <div class="vip-profile-meta-table">

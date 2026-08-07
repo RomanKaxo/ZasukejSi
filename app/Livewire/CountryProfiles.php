@@ -352,7 +352,7 @@ class CountryProfiles extends Component
 
     public function getProfilesProperty()
     {
-        $query = Profile::with(['user:id,name', 'media'])
+        $query = Profile::with(['user:id,name,last_activity', 'media'])
             ->where('status', 'approved')
             ->where('is_public', true)
             ->whereNotNull('verified_at')

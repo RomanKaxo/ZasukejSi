@@ -22,6 +22,7 @@
     // Check if profile is verified or VIP (works for both models and plain objects)
     $isVerified = $isModel ? $profile->isVerified() : ($profile->is_verified ?? false);
     $isVip = $isModel ? $profile->isVip() : ($profile->is_vip ?? false);
+    $isOnline = $isModel ? $profile->isOnline() : ($profile->is_online ?? false);
 @endphp
 
 @php
@@ -115,6 +116,13 @@
             </div>
             @endif
 
+            <!-- Online Badge -->
+            @if($isOnline && !$isReported)
+            <div class="home-profile-card-online-badge" style="width:62px;height:19px;margin-top:5px;border-radius:10px;background:#00B80F;box-sizing:border-box;display:flex;align-items:center;justify-content:center;">
+                <span style="font-family:'Poppins',sans-serif;font-weight:900;font-size:9px;color:#FFFFFF;line-height:1;">{{ __('front.profiles.list.online') }}</span>
+            </div>
+            @endif
+
             @if($isVip)
             <div class="home-profile-card-vip home-profile-card-vip-mobile" style="width:50px;height:26px;border-radius:999px;background:#FFB700;">
                 <x-icons name="star" class="inline-block" :preserveColors="true" style="width:14px;height:14px;color:#FFFFFF;" />
@@ -176,9 +184,14 @@
     <div class="p-4 space-y-3 home-profile-card-content {{ $isReported ? 'h-[245px] flex flex-col' : '' }}">
         <!-- Name and VIP Badge -->
         <div class="flex items-center justify-between py-1 home-profile-card-header">
-            <h4 class="text-gray-700 flex-grow-0 truncate max-w-[80%] home-profile-card-name {{ $shouldBlur ? 'blur-md' : '' }}" style="font-family: 'Poppins', sans-serif; font-weight:700; font-size:18px; color:#333;">
-                {{ $profileName }}
-            </h4>
+            <div class="flex items-center gap-2 min-w-0 flex-1">
+                @if($isOnline && !$isReported)
+                    <span class="home-profile-card-online-dot" aria-hidden="true"></span>
+                @endif
+                <h4 class="text-gray-700 truncate min-w-0 home-profile-card-name {{ $shouldBlur ? 'blur-md' : '' }}" style="font-family: 'Poppins', sans-serif; font-weight:700; font-size:18px; color:#333;">
+                    {{ $profileName }}
+                </h4>
+            </div>
             @if($isVip && !$simpleMode)
             <div class="home-profile-card-vip home-profile-card-vip-desktop" style="width:50px;height:26px;border-radius:999px;background:#FFB700;display:flex;align-items:center;justify-content:center;gap:6px;">
                 <x-icons name="star" class="inline-block" :preserveColors="true" style="width:14px;height:14px;color:#FFFFFF;" />

@@ -30,7 +30,7 @@
             <div class="w-[255px] h-px bg-[#E6E6E6]"></div>
 
             <div class="flex items-center gap-4">
-                <button id="stats-prev" type="button" aria-label="Previous month" class="w-[45px] h-[45px] rounded-[8px] bg-[#DD3888] flex items-center justify-center text-white hover:bg-[#FFF4F9] hover:text-[#DD3888] transition">
+                <button id="stats-prev" type="button" aria-label="Previous month" class="w-[45px] h-[45px] rounded-[8px] bg-[#DD3888] flex items-center justify-center text-white transition">
                     <svg width="7" height="9" viewBox="0 0 7 9" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M6 0L0 4.5L6 9V0Z" fill="currentColor"/>
                     </svg>
@@ -40,7 +40,7 @@
                     {{ isset($currentMonth) ? $currentMonth->locale('cs')->translatedFormat('F Y') : now()->locale('cs')->translatedFormat('F Y') }}
                 </div>
 
-                <button id="stats-next" type="button" aria-label="Next month" class="w-[45px] h-[45px] rounded-[8px] bg-[#DD3888] flex items-center justify-center text-white hover:bg-[#FFF4F9] hover:text-[#DD3888] transition">
+                <button id="stats-next" type="button" aria-label="Next month" class="w-[45px] h-[45px] rounded-[8px] bg-[#FFF4F9] flex items-center justify-center text-[#DD3888] transition">
                     <svg width="7" height="9" viewBox="0 0 7 9" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M1 0L7 4.5L1 9V0Z" fill="currentColor"/>
                     </svg>
@@ -97,7 +97,7 @@
         </div>
 
         <div class="mt-6 flex h-[85px] items-center justify-between rounded-[15px] bg-[#FFF8FB] px-[16px]">
-            <button type="button" aria-label="Previous month" class="h-[45px] w-[45px] rounded-[8px] bg-[#DD3888] flex items-center justify-center text-white hover:bg-[#FFF4F9] hover:text-[#DD3888] transition">
+            <button type="button" aria-label="Previous month" class="h-[45px] w-[45px] rounded-[8px] bg-[#DD3888] flex items-center justify-center text-white transition">
                 <svg width="7" height="9" viewBox="0 0 7 9" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <path d="M6 0L0 4.5L6 9V0Z" fill="currentColor"/>
                 </svg>

@@ -229,18 +229,6 @@
                         </div>
                         @error('bust_size') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
-
-                    <!-- Spoken languages -->
-                    <div>
-                        <label for="languages" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.languages') }}</label>
-                        <input
-                            type="text"
-                            id="languages"
-                            wire:model="languages"
-                            placeholder="{{ __('front.profiles.form.languages_placeholder') }}"
-                            class="input-control mt-1 @error('languages') border-red-500 @enderror">
-                        @error('languages') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
                 </div>
 
                 <button type="submit" class="w-[312px] md:w-[400px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">

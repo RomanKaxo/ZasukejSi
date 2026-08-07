@@ -59,6 +59,39 @@
 
     <hr class="w-[843px] max-w-full relative left-1/2 -translate-x-1/2 mt-[80px] mb-[50px]">
 
+    <!-- Languages Section -->
+    <div class="py-6">
+        <h2 class="mb-4 text-left" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">{{ __('front.account.services.languages_title') }}</h2>
+
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1">
+            @foreach($languages as $language)
+            <div class="flex flex-col md:flex-row md:items-start md:justify-between py-1">
+                <div class="flex-shrink-0">
+                    <x-toggle-switch
+                        name="language_{{ Str::slug($language) }}"
+                        id="language_{{ Str::slug($language) }}"
+                        :checked="in_array($language, $selectedLanguages)"
+                        wire:click="toggleLanguage('{{ $language }}')"
+                    />
+                </div>
+                <div class="flex-1 md:ml-3">
+                    <h5 style="font-family:'Poppins',sans-serif; font-weight:400; font-size:14px; color:#505050;">
+                        {{ $language }}
+                    </h5>
+                </div>
+            </div>
+            @endforeach
+        </div>
+
+        <button type="button" class="mt-6 w-[312px] md:w-[240px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
+            <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px] group-hover:hidden" alt="Save">
+            <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px] hidden group-hover:block" alt="Save">
+            <span class="text-[#A4A4A4] group-hover:text-white" style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px;">{{ __('front.profiles.form.save_changes') }}</span>
+        </button>
+    </div>
+
+    <hr class="w-[843px] max-w-full relative left-1/2 -translate-x-1/2 mt-[80px] mb-[50px]">
+
     <!-- Online Hours Section -->
     <div class="py-6" x-data="{ stillOnline: false }">
         <h2 class="mb-4 text-left" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">{{ __('front.account.services.online_hours_title') }}</h2>
