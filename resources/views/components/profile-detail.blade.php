@@ -2501,7 +2501,7 @@
             <div class="vip-profile-links lg:hidden" aria-label="Profile actions">
                 <a href="#" class="vip-profile-link">{{ __('front.profiles.detail_page.refresh_access') }}</a>
                 <a href="#" class="vip-profile-link">{{ __('front.profiles.detail_page.give_rating') }}</a>
-                <a href="#" class="vip-profile-link">{{ __('front.profiles.detail_page.report_profile') }}</a>
+                <a href="#" class="vip-profile-link" x-data @click.prevent="$dispatch('show-report-modal', { profileId: {{ $profile->id }} })">{{ __('front.profiles.detail_page.report_profile') }}</a>
             </div>
 
             <div class="vip-profile-rating-summary">
@@ -2613,7 +2613,7 @@
                         <img src="{{ asset('images/icons/KeySquare.svg') }}" alt="" aria-hidden="true">
                         <span>{{ __('front.profiles.detail_page.refresh_access') }}</span>
                     </a>
-                    <a href="#" class="vip-profile-desktop-action">
+                    <a href="#" class="vip-profile-desktop-action" x-data @click.prevent="$dispatch('show-report-modal', { profileId: {{ $profile->id }} })">
                         <img src="{{ asset('images/icons/TriangleAlert.svg') }}" alt="" aria-hidden="true">
                         <span>{{ __('front.profiles.detail_page.report_profile') }}</span>
                     </a>

@@ -286,10 +286,21 @@ class Profile extends Model implements HasMedia
 
     /**
      * Check if the profile's owner is currently online.
+     *
+     * Real activity always wins. Otherwise, fall back to a simulated status
+     * so the site doesn't look empty: ~30% of profiles appear online at a
+     * time, deterministically per profile within a rotating 20-minute
+     * window so the badge doesn't flicker on every page load.
      */
     public function isOnline(): bool
     {
-        return $this->user?->isOnline() ?? false;
+        if ($this->user?->isOnline()) {
+            return true;
+        }
+
+        $window = intdiv(time(), 1200);
+
+        return (crc32($this->id . ':' . $window) % 100) < 30;
     }
 
     /**

@@ -99,7 +99,7 @@
     <!-- Profile Image -->
     <div class="relative overflow-hidden home-profile-card-media" style="width: 210px; height: {{ $imageHeight }}; border-radius: 15px;">
 
-        @if((!$shouldBlur) && ($isVerified || $isVip) && !$simpleMode)
+        @if((!$shouldBlur) && ($isVerified || $isVip || $isOnline) && !$simpleMode)
         <div class="absolute {{ $isReported ? 'top-1' : 'top-3' }} left-3 z-20 home-profile-card-badge-stack">
             <!-- Verified Badge -->
             @if($isVerified && !$isReported)

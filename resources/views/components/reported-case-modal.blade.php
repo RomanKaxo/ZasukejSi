@@ -81,9 +81,13 @@
             open(payload) {
                 this.data = payload;
                 this.isOpen = true;
+                document.body.style.overflow = 'hidden';
+                document.body.classList.add('modal-open');
             },
             close() {
                 this.isOpen = false;
+                document.body.style.overflow = '';
+                document.body.classList.remove('modal-open');
             }
         });
     });

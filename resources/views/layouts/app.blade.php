@@ -41,6 +41,8 @@
             <livewire:register-modal />
             <livewire:reset-modal />
         @endguest
+
+        <livewire:report-profile-modal />
     </div>
 
     <!-- Additional Scripts -->
