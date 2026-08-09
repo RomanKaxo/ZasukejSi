@@ -159,7 +159,7 @@
                                 <label class="report-modal-input report-modal-file">
                                     <span class="report-modal-file-btn">{{ __('front.profiles.detail_page.report_modal.choose_file') }}</span>
                                     <span class="report-modal-file-name" x-text="fileName || '{{ __('front.profiles.detail_page.report_modal.no_file') }}'"></span>
-                                    <input type="file" wire:model="screenshot" accept="image/*" class="hidden"
+                                    <input type="file" wire:model="screenshot" accept="image/*" style="display:none;"
                                         @change="fileName = $event.target.files[0]?.name || ''">
                                 </label>
                                 <div wire:loading wire:target="screenshot" style="font-size:11px;color:#5C5C5C;margin-top:4px;">{{ __('front.profiles.detail_page.report_modal.uploading') }}</div>
