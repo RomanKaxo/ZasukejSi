@@ -60,4 +60,30 @@ class ProfileListSegmentFilterTest extends TestCase
         // proving the eager load actually ran - and not 3 - proving no N+1).
         $this->assertSame(1, $segmentQueries->count());
     }
+
+    public function test_reset_filters_clears_segment_id_and_active_filters_count(): void
+    {
+        $segment = Segment::factory()->create();
+
+        $component = Livewire::test(\App\Livewire\ProfileList::class)
+            ->set('segmentId', $segment->id);
+
+        $this->assertSame(1, $component->instance()->activeFiltersCount());
+
+        $component->call('resetFilters')
+            ->assertSet('segmentId', '');
+
+        $this->assertSame(0, $component->instance()->activeFiltersCount());
+    }
+
+    public function test_selecting_a_segment_resets_pagination_to_first_page(): void
+    {
+        $segment = Segment::factory()->create();
+
+        Livewire::test(\App\Livewire\ProfileList::class)
+            ->call('gotoPage', 2)
+            ->assertSet('paginators.page', 2)
+            ->set('segmentId', $segment->id)
+            ->assertSet('paginators.page', 1);
+    }
 }

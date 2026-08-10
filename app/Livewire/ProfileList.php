@@ -94,7 +94,7 @@ class ProfileList extends Component
 
     public function resetFilters()
     {
-        $this->reset(['region', 'ageMin', 'ageMax', 'verified', 'ageGroup', 'sortRecommendation', 'hasVerifiedPhoto', 'hasVideo', 'isPornActress', 'sortNew', 'hasRating']);
+        $this->reset(['region', 'ageMin', 'ageMax', 'verified', 'ageGroup', 'sortRecommendation', 'hasVerifiedPhoto', 'hasVideo', 'isPornActress', 'sortNew', 'hasRating', 'segmentId']);
         $this->resetPage();
     }
 
@@ -166,6 +166,11 @@ class ProfileList extends Component
     public function toggleSegment($segmentId)
     {
         $this->segmentId = $this->segmentId == $segmentId ? '' : $segmentId;
+        $this->resetPage();
+    }
+
+    public function updatedSegmentId(): void
+    {
         $this->resetPage();
     }
 
