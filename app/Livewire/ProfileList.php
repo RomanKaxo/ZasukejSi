@@ -188,6 +188,12 @@ class ProfileList extends Component
     }
 
     #[Computed]
+    public function availableSegments()
+    {
+        return \App\Models\Segment::active()->ordered()->get();
+    }
+
+    #[Computed]
     public function profiles()
     {
         if ($this->usesShowcaseProfiles()) {

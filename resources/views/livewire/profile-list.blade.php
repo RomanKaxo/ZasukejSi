@@ -523,6 +523,13 @@
                     {{ __('front.profiles.list.rating') }}
                 </button>
 
+                <select wire:model.live="segmentId" class="mobile-filter-pill" style="appearance:auto;">
+                    <option value="">{{ __('profiles.filters.segment') }}</option>
+                    @foreach($this->availableSegments as $segment)
+                        <option value="{{ $segment->id }}">{{ $segment->getTranslation('name', app()->getLocale()) }}</option>
+                    @endforeach
+                </select>
+
                 @if ($this->activeFiltersCount() > 0)
                     <button wire:click.debounce.300ms="resetFilters" wire:loading.attr="disabled" wire:target="resetFilters"
                         class="mobile-filter-pill mobile-filter-clear" title="{{ __('front.profiles.list.clear_all_filters') }}">
@@ -630,6 +637,14 @@
                 <img src="{{ asset('images/icons/lock.svg') }}" alt="Lock Icon" class="icon">
                 {{ __('front.profiles.list.rating') }}
             </button>
+
+            <!-- Segment Filter -->
+            <select wire:model.live="segmentId" class="filter-pill" style="appearance:auto;">
+                <option value="">{{ __('profiles.filters.segment') }}</option>
+                @foreach($this->availableSegments as $segment)
+                    <option value="{{ $segment->id }}">{{ $segment->getTranslation('name', app()->getLocale()) }}</option>
+                @endforeach
+            </select>
 
             <!-- Clear All Filters Button -->
             @if ($this->activeFiltersCount() > 0)
