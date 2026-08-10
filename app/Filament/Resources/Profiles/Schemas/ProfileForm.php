@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Profiles\Schemas;
 
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\MarkdownEditor;
@@ -227,6 +228,14 @@ class ProfileForm
                 Toggle::make('is_public')
                     ->label(__('profiles.form.is_public'))
                     ->default(true),
+
+                CheckboxList::make('segments')
+                    ->label(__('common.Segments'))
+                    ->relationship('segments', 'name')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->getTranslation('name', app()->getLocale()))
+                    ->columns(2)
+                    ->columnSpanFull()
+                    ->visible($isAdmin),
             ]);
     }
 }

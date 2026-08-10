@@ -68,6 +68,11 @@ class ProfilesTable
                     ->label(__('profiles.table.public'))
                     ->boolean(),
 
+                TextColumn::make('segments.name')
+                    ->label(__('common.Segments'))
+                    ->badge()
+                    ->getStateUsing(fn ($record) => $record->allSegments()->pluck('name')),
+
                 TextColumn::make('created_at')
                     ->label(__('profiles.table.created_at'))
                     ->dateTime()
@@ -99,6 +104,11 @@ class ProfilesTable
                             ->unique()
                             ->sort();
                     }),
+
+                SelectFilter::make('segments')
+                    ->label(__('profiles.filters.segment'))
+                    ->relationship('segments', 'name')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->getTranslation('name', app()->getLocale())),
 
                 SelectFilter::make('country_code')
                     ->label(__('profiles.filters.country'))
