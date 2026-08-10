@@ -23,6 +23,7 @@
     $isVerified = $isModel ? $profile->isVerified() : ($profile->is_verified ?? false);
     $isVip = $isModel ? $profile->isVip() : ($profile->is_vip ?? false);
     $isOnline = $isModel ? $profile->isOnline() : ($profile->is_online ?? false);
+    $extraSegments = $isModel ? $profile->allSegments()->reject(fn ($segment) => $segment['is_vip']) : collect();
 @endphp
 
 @php
@@ -99,7 +100,7 @@
     <!-- Profile Image -->
     <div class="relative overflow-hidden home-profile-card-media" style="width: 210px; height: {{ $imageHeight }}; border-radius: 15px;">
 
-        @if((!$shouldBlur) && ($isVerified || $isVip || $isOnline) && !$simpleMode)
+        @if((!$shouldBlur) && ($isVerified || $isVip || $isOnline || $extraSegments->isNotEmpty()) && !$simpleMode)
         <div class="absolute {{ $isReported ? 'top-1' : 'top-3' }} left-3 z-20 home-profile-card-badge-stack">
             <!-- Verified Badge -->
             @if($isVerified && !$isReported)
@@ -129,6 +130,12 @@
                 <span style="font-family:'Poppins', sans-serif; font-weight:900; font-size:10px; color:#FFFFFF; line-height:1;">VIP</span>
             </div>
             @endif
+
+            @foreach($extraSegments as $segment)
+            <div class="home-profile-card-badge home-profile-card-segment-badge" style="width:auto;min-width:50px;height:26px;margin-top:5px;border-radius:999px;background:{{ $segment['color'] }};display:flex;align-items:center;justify-content:center;padding:0 8px;">
+                <span style="font-family:'Poppins', sans-serif; font-weight:900; font-size:9px; color:#FFFFFF; line-height:1; white-space:nowrap;">{{ $segment['name'] }}</span>
+            </div>
+            @endforeach
         </div>
         @endif
 
