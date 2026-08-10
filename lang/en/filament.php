@@ -42,6 +42,7 @@ return [
         'users' => 'Users',
         'profiles' => 'Profiles',
         'services' => 'Services',
+        'segments' => 'Segments',
         'pages' => 'Pages',
         'blog_posts' => 'Blog Posts',
         'roles' => 'Roles',

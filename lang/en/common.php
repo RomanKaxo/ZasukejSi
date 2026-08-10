@@ -7,6 +7,8 @@ return [
     'Profiles' => 'Profiles',
     'Service' => 'Service',
     'Services' => 'Services',
+    'Segment' => 'Segment',
+    'Segments' => 'Segments',
     'Page' => 'Page',
     'Pages' => 'Pages',
     'BlogPost' => 'Blog Post',

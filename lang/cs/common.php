@@ -7,6 +7,8 @@ return [
     'Profiles' => 'Profily',
     'Service' => 'Služba',
     'Services' => 'Služby',
+    'Segment' => 'Segment',
+    'Segments' => 'Segmenty',
     'Page' => 'Stránka',
     'Pages' => 'Stránky',
     'BlogPost' => 'Blog příspěvek',

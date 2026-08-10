@@ -42,6 +42,7 @@ return [
         'users' => 'Uživatelé',
         'profiles' => 'Profily',
         'services' => 'Služby',
+        'segments' => 'Segmenty',
         'pages' => 'Stránky',
         'blog_posts' => 'Blog příspěvky',
         'roles' => 'Role',

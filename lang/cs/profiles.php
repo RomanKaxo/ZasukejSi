@@ -20,6 +20,7 @@ return [
         'status' => 'Status',
         'city' => 'Město',
         'gender' => 'Pohlaví',
+        'segment' => 'Segment',
     ],
     'actions' => [
         'verify' => 'Ověřit',

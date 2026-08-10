@@ -21,6 +21,7 @@ return [
         'city' => 'City',
         'country' => 'Country',
         'gender' => 'Gender',
+        'segment' => 'Segment',
     ],
     'actions' => [
         'verify' => 'Verify',
