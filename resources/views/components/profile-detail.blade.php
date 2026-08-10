@@ -2482,6 +2482,11 @@
                     <img src="{{ asset('images/icons/CameraOff.svg') }}" alt="camera-off" style="width: 18px; height: 18px; margin-right: 4px;">
                     {{ $photoStatusLabel }}
                 </span>
+                @foreach($profile->allSegments()->reject(fn ($segment) => $segment['is_vip']) as $segment)
+                <span class="vip-profile-status-pill" style="background: {{ $segment['color'] }}1A; color: {{ $segment['color'] }};">
+                    {{ $segment['name'] }}
+                </span>
+                @endforeach
             </div>
 
 
