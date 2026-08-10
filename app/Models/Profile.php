@@ -227,6 +227,43 @@ class Profile extends Model implements HasMedia
     }
 
     /**
+     * All segments this profile should display: manually assigned active
+     * segments plus a synthetic "VIP" entry derived from the active
+     * subscription. VIP is never stored in `profile_segment` — it mirrors
+     * the existing isVip()/scopeVip() pattern that replaced the old
+     * `is_vip` column.
+     *
+     * @return \Illuminate\Support\Collection<int, array{id: ?int, slug: string, name: string, color: string, icon: ?string, is_vip: bool}>
+     */
+    public function allSegments(): \Illuminate\Support\Collection
+    {
+        $manual = $this->segments
+            ->where('is_active', true)
+            ->map(fn (Segment $segment) => [
+                'id' => $segment->id,
+                'slug' => $segment->slug,
+                'name' => $segment->name,
+                'color' => $segment->color,
+                'icon' => $segment->icon,
+                'is_vip' => false,
+            ])
+            ->values();
+
+        if ($this->isVip()) {
+            $manual->push([
+                'id' => null,
+                'slug' => 'vip',
+                'name' => 'VIP',
+                'color' => '#FFB700',
+                'icon' => 'star',
+                'is_vip' => true,
+            ]);
+        }
+
+        return $manual;
+    }
+
+    /**
      * Get the ratings for this profile.
      */
     public function ratings()
