@@ -316,9 +316,20 @@ class Profile extends Model implements HasMedia
 
     /**
      * Check if the profile has an active subscription.
+     *
+     * Callers listing many profiles (e.g. `ProfileList`, `CountryProfiles`,
+     * `ProfileSlider`) already avoid an exists() query per row by adding
+     * `->withExists('activeSubscription as is_vip')` to their query. When
+     * that raw attribute is present we reuse it instead of issuing a fresh
+     * query, so `isVip()`/`allSegments()` stay N+1-safe for any caller that
+     * follows that existing convention.
      */
     public function hasActiveSubscription(): bool
     {
+        if (array_key_exists('is_vip', $this->attributes)) {
+            return (bool) $this->attributes['is_vip'];
+        }
+
         return $this->activeSubscription()->exists();
     }
 
