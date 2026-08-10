@@ -218,6 +218,15 @@ class Profile extends Model implements HasMedia
     }
 
     /**
+     * Get the segments associated with this profile.
+     */
+    public function segments()
+    {
+        return $this->belongsToMany(Segment::class, 'profile_segment')
+            ->withTimestamps();
+    }
+
+    /**
      * Get the ratings for this profile.
      */
     public function ratings()
