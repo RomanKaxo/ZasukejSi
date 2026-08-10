@@ -32,7 +32,8 @@ class ProfileList extends Component
     public $isPornActress = false;
     public $sortNew = ''; // '', 'desc' (newest first), 'asc' (oldest first)
     public $hasRating = false; // profiles with rating/reviews
-    
+    public $segmentId = '';
+
     protected $queryString = [
         'region' => ['except' => ''],
         'country' => ['except' => ''],
@@ -47,6 +48,7 @@ class ProfileList extends Component
         'isPornActress' => ['except' => false, 'as' => 'actress'],
         'sortNew' => ['except' => '', 'as' => 'new'],
         'hasRating' => ['except' => false, 'as' => 'rated'],
+        'segmentId' => ['except' => '', 'as' => 'segment'],
     ];
 
     public function mount()
@@ -67,6 +69,7 @@ class ProfileList extends Component
         $this->isPornActress = request()->boolean('actress');
         $this->sortNew = request('new', '');
         $this->hasRating = request()->boolean('rated');
+        $this->segmentId = request('segment', '');
     }
 
     /**
@@ -160,6 +163,12 @@ class ProfileList extends Component
         $this->resetPage();
     }
 
+    public function toggleSegment($segmentId)
+    {
+        $this->segmentId = $this->segmentId == $segmentId ? '' : $segmentId;
+        $this->resetPage();
+    }
+
     /**
      * Get active filters count for UI
      */
@@ -174,6 +183,7 @@ class ProfileList extends Component
         if ($this->isPornActress) $count++;
         if ($this->sortNew) $count++;
         if ($this->hasRating) $count++;
+        if ($this->segmentId) $count++;
         return $count;
     }
 
@@ -182,7 +192,7 @@ class ProfileList extends Component
     {
         if ($this->usesShowcaseProfiles()) {
             // Get showcase profiles (identified by content->is_showcase = true or by emails)
-            $showcaseQuery = Profile::with(['user:id,name,last_activity', 'media'])
+            $showcaseQuery = Profile::with(['user:id,name,last_activity', 'media', 'segments'])
                 ->approved()
                 ->public()
                 ->select($this->getPublicProfileColumns())
@@ -225,7 +235,7 @@ class ProfileList extends Component
         }
 
         // Fallback to normal query if no showcase profiles exist
-        $query = Profile::with(['user:id,name,last_activity', 'media'])
+        $query = Profile::with(['user:id,name,last_activity', 'media', 'segments'])
             ->approved()
             ->public()
             ->select($this->getPublicProfileColumns())
@@ -297,6 +307,12 @@ class ProfileList extends Component
                   ->orderBy('ratings_count', 'desc');
         }
 
+        if ($this->segmentId) {
+            $query->whereHas('segments', function ($q) {
+                $q->where('segments.id', $this->segmentId);
+            });
+        }
+
         $profiles = $query->paginate($this->perPage);
         if (app()->environment('local') || request()->query('debug_profiles')) {
             logger()->debug('ProfileList profiles count: '.$profiles->count().' total: '.$profiles->total().' page: '.$profiles->currentPage());
@@ -361,7 +377,8 @@ class ProfileList extends Component
             && $this->hasVideo === false
             && $this->isPornActress === false
             && $this->sortNew === ''
-            && $this->hasRating === false;
+            && $this->hasRating === false
+            && $this->segmentId === '';
     }
 
     /**

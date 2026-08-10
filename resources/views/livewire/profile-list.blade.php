@@ -696,7 +696,7 @@
             </div>
 
             <!-- Pagination -->
-            {{ $this->profiles()->links('livewire.pagination-links') }}
+            {{ $this->profiles->links('livewire.pagination-links') }}
         </div>
     @else
         <!-- Empty State -->
