@@ -33,7 +33,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
-    Route::post('/register', [RegisterController::class, 'register']);
+    Route::post('/register', [RegisterController::class, 'register'])->middleware('throttle:6,1');
     Route::get('/forgot-password', function () {
         return view('auth.forgot-password');
     })->name('password.request');
@@ -43,7 +43,7 @@ Route::middleware('guest')->group(function () {
         return $status === \Illuminate\Support\Facades\Password::RESET_LINK_SENT
                     ? back()->with(['status' => __($status)])
                     : back()->withErrors(['email' => __($status)]);
-    })->name('password.email');
+    })->middleware('throttle:6,1')->name('password.email');
     Route::get('/reset-password/{token}', function (string $token) {
         return view('auth.reset-password', ['token' => $token]);
     })->name('password.reset');
@@ -66,7 +66,7 @@ Route::middleware('guest')->group(function () {
         return $status === \Illuminate\Support\Facades\Password::PASSWORD_RESET
                     ? redirect()->route('login')->with('status', __($status))
                     : back()->withErrors(['email' => [__($status)]]);
-    })->name('password.update');
+    })->middleware('throttle:6,1')->name('password.update');
 });
 
 // Email Verification

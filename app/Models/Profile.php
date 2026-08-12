@@ -144,6 +144,22 @@ class Profile extends Model implements HasMedia
     }
 
     /**
+     * Whether the profile's single phone number also accepts WhatsApp.
+     */
+    public function getHasWhatsappAttribute(): bool
+    {
+        return (bool) $this->contentValue('has_whatsapp');
+    }
+
+    /**
+     * Whether the profile's single phone number also accepts Telegram.
+     */
+    public function getHasTelegramAttribute(): bool
+    {
+        return (bool) $this->contentValue('has_telegram');
+    }
+
+    /**
      * The region/kraj the profile's city belongs to, looked up from the
      * `cities` table (its `admin_name` column, backfilled from
      * worldcities.csv). Not stored on the profile itself since `city` is a

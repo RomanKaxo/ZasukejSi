@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Actions\Auth\RegisterUser;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rules;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -110,6 +111,20 @@ class RegisterModal extends Component
      */
     public function register()
     {
+        $throttleKey = 'register|' . request()->ip();
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            $this->addError('registration', __('auth.throttle', [
+                'seconds' => $seconds,
+                'minutes' => ceil($seconds / 60),
+            ]));
+
+            return;
+        }
+
+        RateLimiter::hit($throttleKey, 60);
+
         // Validate all fields at once for better performance
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],

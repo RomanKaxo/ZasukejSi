@@ -25,6 +25,11 @@ class ServicesManager extends Component
     ];
     public $selectedLanguages = [];
 
+    // Availability state
+    public $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    public $alwaysOnline = false;
+    public $schedule = [];
+
     public function mount()
     {
         // Get user with profile relationship loaded
@@ -37,6 +42,8 @@ class ServicesManager extends Component
         // Load all active services
         $this->services = Service::active()->ordered()->get();
 
+        $storedSchedule = [];
+
         // Load selected services for this profile
         if ($this->hasProfile) {
             $this->selectedServices = $this->profile->services->pluck('id')->toArray();
@@ -46,6 +53,17 @@ class ServicesManager extends Component
             $this->selectedLanguages = $this->profile->languages
                 ? array_filter(array_map('trim', explode(',', $this->profile->languages)))
                 : [];
+
+            $availability = is_array($this->profile->availability_hours) ? $this->profile->availability_hours : [];
+            $this->alwaysOnline = (bool) ($availability['always_online'] ?? false);
+            $storedSchedule = $availability['schedule'] ?? [];
+        }
+
+        foreach ($this->days as $day) {
+            $this->schedule[$day] = [
+                'from' => $storedSchedule[$day]['from'] ?? '09:00',
+                'to' => $storedSchedule[$day]['to'] ?? '16:30',
+            ];
         }
     }
 
@@ -112,6 +130,35 @@ class ServicesManager extends Component
         $this->profile->save();
 
         session()->flash('message', __('front.account.services.languages_success'));
+    }
+
+    public function saveAvailability()
+    {
+        $user = Auth::user();
+
+        if (!$user->profile) {
+            return;
+        }
+
+        $this->profile = $user->profile;
+
+        $schedule = [];
+        foreach ($this->days as $day) {
+            $from = $this->schedule[$day]['from'] ?? '';
+            $to = $this->schedule[$day]['to'] ?? '';
+
+            if (filled($from) && filled($to)) {
+                $schedule[$day] = ['from' => $from, 'to' => $to];
+            }
+        }
+
+        $this->profile->availability_hours = [
+            'always_online' => (bool) $this->alwaysOnline,
+            'schedule' => $schedule,
+        ];
+        $this->profile->save();
+
+        session()->flash('message', __('front.account.services.availability_success'));
     }
 
     public function render()

@@ -209,7 +209,10 @@ class MemberController extends Controller
         $request->validate($rules);
 
         $user->name = $request->name;
-        $user->phone = $request->phone;
+        // The `phone` column has a unique index; an empty string (unlike
+        // NULL) counts as a real value there, so a second user with no
+        // phone number would collide and the save would fail silently.
+        $user->phone = $request->phone !== '' ? $request->phone : null;
 
         // Handle email change
         $emailChanged = false;

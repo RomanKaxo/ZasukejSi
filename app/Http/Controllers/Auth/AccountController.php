@@ -130,6 +130,16 @@ class AccountController extends Controller
 
         Auth::logout();
 
+        // The `profiles` row cascades on delete at the DB level, but that
+        // bypasses Eloquent model events entirely — Spatie MediaLibrary only
+        // cleans up its files/DB rows via the model's `deleted` event (and
+        // only on a *force* delete, since Profile uses SoftDeletes), so we
+        // must force-delete the profile explicitly or uploaded photos/videos
+        // are left orphaned on disk.
+        if ($user->profile) {
+            $user->profile->forceDelete();
+        }
+
         $user->delete();
 
         $request->session()->invalidate();

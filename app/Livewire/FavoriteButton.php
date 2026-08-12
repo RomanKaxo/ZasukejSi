@@ -6,6 +6,7 @@ use App\Models\Notification;
 use App\Models\Profile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Component;
 
 class FavoriteButton extends Component
@@ -37,6 +38,15 @@ class FavoriteButton extends Component
             $this->message = __('front.favorites.members_only');
             return;
         }
+
+        // Toggling fires a notification to the profile owner on every "add" —
+        // throttle to stop rapid add/remove loops from spamming them.
+        $throttleKey = 'toggle-favorite|' . $user->id;
+        if (RateLimiter::tooManyAttempts($throttleKey, 20)) {
+            $this->message = __('front.favorites.error');
+            return;
+        }
+        RateLimiter::hit($throttleKey, 60);
 
         try {
             $this->isFavorited = $user->toggleFavorite($this->profile);

@@ -49,7 +49,7 @@
                     </li>
                 @endforeach
                 <li>
-                    <hr class="rounded-none" style="width:230px;border-color:#E6E6E6;border-radius:0;padding-top:30px;padding-bottom:6px;">
+                    <hr class="rounded-none" style="width:230px;border-color:#E6E6E6;border-radius:0;padding-top:2px;padding-bottom:0px;margin-bottom:4px;">
                 </li>
                 <li>
                     <form method="POST" action="{{ route('logout') }}">

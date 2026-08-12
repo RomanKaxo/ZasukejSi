@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Profile;
 use App\Models\ProfileReport;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -45,6 +46,20 @@ class ReportProfileModal extends Component
 
     public function submit(): void
     {
+        $throttleKey = 'report-profile|' . request()->ip();
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            $this->addError('email', __('auth.throttle', [
+                'seconds' => $seconds,
+                'minutes' => ceil($seconds / 60),
+            ]));
+
+            return;
+        }
+
+        RateLimiter::hit($throttleKey, 300);
+
         $this->validate();
 
         if (! $this->profileId || ! Profile::whereKey($this->profileId)->exists()) {

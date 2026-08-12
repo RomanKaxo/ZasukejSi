@@ -76,7 +76,7 @@
                 </div>
                 <div class="flex-1 md:ml-3">
                     <h5 style="font-family:'Poppins',sans-serif; font-weight:400; font-size:14px; color:#505050;">
-                        {{ $language }}
+                        {{ __('front.account.services.language_names.' . $language) }}
                     </h5>
                 </div>
             </div>
@@ -93,7 +93,7 @@
     <hr class="w-[843px] max-w-full relative left-1/2 -translate-x-1/2 mt-[80px] mb-[50px]">
 
     <!-- Online Hours Section -->
-    <div class="py-6" x-data="{ stillOnline: false }">
+    <div class="py-6" x-data="{ stillOnline: @entangle('alwaysOnline') }">
         <h2 class="mb-4 text-left" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">{{ __('front.account.services.online_hours_title') }}</h2>
 
         <!-- Always Online Toggle -->
@@ -101,7 +101,7 @@
             <x-toggle-switch
                 name="always_online"
                 id="always_online"
-                :checked="false"
+                :checked="$alwaysOnline"
                 x-model="stillOnline"
             />
             <label for="always_online" class="ml-3" style="font-family:'Poppins',sans-serif; font-weight:400; font-size:14px; color:#505050;">
@@ -140,12 +140,13 @@
                     </label>
                     <div class="relative">
                         <select
+                            wire:model="schedule.{{ $day['key'] }}.from"
                             name="{{ $day['key'] }}_from"
                             id="{{ $day['key'] }}_from"
                             class="input-control !w-[144px] !h-[50px] md:!w-[240px] md:!h-[50px] rounded-[8px] appearance-none pr-[54px]" :disabled="stillOnline">
                             <option value="">-</option>
                             @foreach($timeOptions as $time)
-                                <option value="{{ $time }}" {{ $time === '09:00' ? 'selected' : '' }}>{{ $time }}</option>
+                                <option value="{{ $time }}">{{ $time }}</option>
                             @endforeach
                         </select>
                         <div class="absolute right-1 top-1/2 -translate-y-1/2 w-[42px] h-[42px] rounded-[4px] bg-[#DD3888] flex items-center justify-center pointer-events-none">
@@ -163,12 +164,13 @@
                     </label>
                     <div class="relative">
                         <select
+                            wire:model="schedule.{{ $day['key'] }}.to"
                             name="{{ $day['key'] }}_to"
                             id="{{ $day['key'] }}_to"
                             class="input-control !w-[144px] !h-[50px] md:!w-[240px] md:!h-[50px] rounded-[8px] appearance-none pr-[54px]" :disabled="stillOnline">
                             <option value="">-</option>
                             @foreach($timeOptions as $time)
-                                <option value="{{ $time }}" {{ $time === '16:30' ? 'selected' : '' }}>{{ $time }}</option>
+                                <option value="{{ $time }}">{{ $time }}</option>
                             @endforeach
                         </select>
                         <div class="absolute right-1 top-1/2 -translate-y-1/2 w-[42px] h-[42px] rounded-[4px] bg-[#DD3888] flex items-center justify-center pointer-events-none">
@@ -183,7 +185,7 @@
         </div>
 
         <!-- Save Button -->
-        <button type="button" class="mt-6 w-[310px] md:w-[240px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
+        <button type="button" wire:click="saveAvailability" class="mt-6 w-[310px] md:w-[240px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
             <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px] group-hover:hidden" alt="Save">
             <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px] hidden group-hover:block" alt="Save">
             <span class="text-[#A4A4A4] group-hover:text-white" style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px;">{{ __('front.profiles.form.save_changes') }}</span>

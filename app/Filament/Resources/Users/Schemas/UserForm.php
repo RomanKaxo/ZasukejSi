@@ -28,7 +28,12 @@ class UserForm
                     ->label(__('filament.attributes.phone'))
                     ->tel()
                     ->maxLength(255)
-                    ->unique(ignoreRecord: true),
+                    ->unique(ignoreRecord: true)
+                    // `phone` is nullable+unique in the DB; MySQL treats
+                    // repeated empty strings as duplicates (unlike NULL), so
+                    // clearing this field for a second user would otherwise
+                    // collide and fail to save.
+                    ->dehydrateStateUsing(fn (?string $state) => filled($state) ? $state : null),
 
                 Select::make('gender')
                     ->label(__('filament.attributes.gender'))

@@ -7,46 +7,47 @@
     <div x-show="show"
         x-transition.opacity.duration.300ms
         x-cloak
-        class="fixed inset-0 z-50 flex items-center justify-center p-1 sm:p-2 md:p-4">
+        class="login-modal-scope fixed inset-0 z-50 flex items-center justify-center p-1 sm:p-2 md:p-4">
 
+        {{-- Scoped to .login-modal-scope so these rules don't leak into register/reset modals, which reuse the same class names (.form-field, .modal-container, .modal-btn-primary, ...) --}}
         <style>
             /* Use max-width approach: form fills available width but is capped */
-            .form-container {
+            .login-modal-scope .form-container {
                 width: 100%;
                 max-width: 520px;
                 height: 353px;
             }
             /* default modal size set in CSS so media queries can reliably override */
-            .modal-container { width:600px !important; max-width:600px !important; height:810px !important; border-radius:24px; overflow:hidden; background:white; box-sizing:border-box; box-shadow:0 8px 30px rgba(0,0,0,0.12); transform:translateY(30px); }
+            .login-modal-scope .modal-container { width:600px !important; max-width:600px !important; height:810px !important; border-radius:24px; overflow:hidden; background:white; box-sizing:border-box; box-shadow:0 8px 30px rgba(0,0,0,0.12); transform:translateY(30px); }
             @media (max-width: 480px) {
-                .form-container { max-width: 280px; height: 337px; }
-                .modal-container { width: auto !important; max-width:95% !important; }
+                .login-modal-scope .form-container { max-width: 280px; height: 337px; }
+                .login-modal-scope .modal-container { width: auto !important; max-width:95% !important; }
             }
             @media (max-width: 480px) {
-                .modal-container { width: auto !important; max-width:95% !important; }
+                .login-modal-scope .modal-container { width: auto !important; max-width:95% !important; }
             }
             /* form fields and primary/outline buttons fill available width but are capped */
-            .form-field { width: 100%; max-width: 460px; height:50px; }
-            .modal-btn-primary, .modal-btn-outline { width: 100%; max-width: 460px; }
-            .modal-btn-primary { height:60px; }
+            .login-modal-scope .form-field { width: 100%; max-width: 460px; height:50px; }
+            .login-modal-scope .modal-btn-primary, .login-modal-scope .modal-btn-outline { width: 100%; max-width: 460px; }
+            .login-modal-scope .modal-btn-primary { height:60px; }
 
             @media (max-width: 480px) {
-                .form-container { width:280px !important; max-width:280px !important; height:337px !important; }
-                .form-field { max-width: 240px !important; }
-                .modal-btn-primary, .modal-btn-outline { max-width: 240px !important; height:50px !important; }
+                .login-modal-scope .form-container { width:280px !important; max-width:280px !important; height:337px !important; }
+                .login-modal-scope .form-field { max-width: 240px !important; }
+                .login-modal-scope .modal-btn-primary, .login-modal-scope .modal-btn-outline { max-width: 240px !important; height:50px !important; }
                 /* register button slightly wider */
-                .modal-btn-outline.register-btn { max-width:245px !important; }
-                .modal-container { width: auto !important; max-width:95% !important; }
-                .modal-title, .modal-subtitle { font-size:28px !important; line-height:1.05 !important; }
-                .modal-close-btn { top:20px !important; right:20px !important; }
-                .register-cta { margin-top:55px !important; }
-                .modal-btn-primary { margin-top:18px !important; }
-                .modal-subtitle { margin-bottom:32px !important; }
+                .login-modal-scope .modal-btn-outline.register-btn { max-width:245px !important; }
+                .login-modal-scope .modal-container { width: auto !important; max-width:95% !important; }
+                .login-modal-scope .modal-title, .login-modal-scope .modal-subtitle { font-size:28px !important; line-height:1.05 !important; }
+                .login-modal-scope .modal-close-btn { top:20px !important; right:20px !important; }
+                .login-modal-scope .register-cta { margin-top:55px !important; }
+                .login-modal-scope .modal-btn-primary { margin-top:18px !important; }
+                .login-modal-scope .modal-subtitle { margin-bottom:32px !important; }
             }
             /* Exact mobile modal size (320x711) when screen is small */
             /* Force exact mobile modal size for typical mobile widths */
             @media (max-width: 480px) {
-                .modal-container { width:320px !important; max-width:320px !important; height:711px !important; }
+                .login-modal-scope .modal-container { width:320px !important; max-width:320px !important; height:711px !important; }
             }
         </style>
 

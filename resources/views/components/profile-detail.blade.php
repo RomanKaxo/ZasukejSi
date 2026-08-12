@@ -15,10 +15,10 @@
     $totalRatings = $profile->getTotalRatings();
     $isOnline = $profile->isOnline();
     $isNewProfile = $totalRatings === 0 || optional($profile->created_at)->gt(now()->subDays(30));
-    $contacts = collect($profile->contacts ?? []);
-    $phoneContact = $contacts->firstWhere('type', 'phone');
-    $whatsAppContact = $contacts->firstWhere('type', 'whatsapp');
-    $telegramContact = $contacts->firstWhere('type', 'telegram');
+    // Contacts are a single phone number (from the account) plus toggles
+    // saying whether that same number also accepts WhatsApp/Telegram.
+    $contactPhone = $profile->user->phone ?? null;
+    $contactDigits = $contactPhone ? preg_replace('/\D+/', '', $contactPhone) : null;
     $prices = collect($profile->local_prices ?? [])->filter(fn ($price) => filled($price['time_hours'] ?? null))->values();
     $displayPrices = $prices->isNotEmpty()
         ? $prices
@@ -28,10 +28,21 @@
             ['time_hours' => 2, 'incall_price' => 14000, 'outcall_price' => null],
             ['time_hours' => 3, 'incall_price' => 18000, 'outcall_price' => null],
         ]);
+    // International (EUR) prices are only shown on the English version of the
+    // page — Czech visitors see local_prices (Kč) only.
+    $globalPrices = collect($profile->global_prices ?? [])->filter(fn ($price) => filled($price['time_hours'] ?? null))->values();
+    $globalCurrency = (is_array($profile->content) ? ($profile->content['global_currency'] ?? null) : null) ?: 'EUR';
     $displayServices = ($profile->services && $profile->services->count() > 0)
         ? $profile->services->pluck('name')
         : collect(__('front.profiles.detail_page.services_default'));
-    $languages = $profile->languages ?? __('front.profiles.detail_page.languages_default');
+    $languagesList = collect(explode(',', $profile->languages ?? __('front.profiles.detail_page.languages_default')))
+        ->map(fn ($lang) => trim($lang))
+        ->filter()
+        ->map(fn ($lang) => \Illuminate\Support\Facades\Lang::has('front.account.services.language_names.' . $lang) ? __('front.account.services.language_names.' . $lang) : $lang)
+        ->values();
+    $languagesExtraCount = max(0, $languagesList->count() - 2);
+    $languages = $languagesList->take(2)->implode(', ')
+        . ($languagesExtraCount > 0 ? ' ' . __('front.profiles.detail_page.languages_more', ['count' => $languagesExtraCount]) : '');
     $aboutText = trim((string) ($profile->about ?? '')) !== '' ? $profile->about : __('front.profiles.detail_page.about_default');
     // Weight/height live in the `content` JSON column and are exposed via
     // accessors on the Profile model, which also derive the imperial values.
@@ -42,30 +53,24 @@
     $videoPoster = $images->first()?->getUrl() ?: asset('images/models/model16.png');
     $messageRouteAvailable = \Illuminate\Support\Facades\Route::has('messages.show');
     $registerRouteAvailable = \Illuminate\Support\Facades\Route::has('register');
-    $availabilityEntries = collect($profile->availability_hours ?? [])->filter(function ($value) {
-        return filled($value);
-    })->values();
+    // availability_hours shape: {'always_online': bool, 'schedule': {day => {from, to}}}
+    // (see ServicesManager::saveAvailability()).
+    $availability = is_array($profile->availability_hours) ? $profile->availability_hours : [];
     $availabilityStart = '18';
     $availabilityEnd = '18';
     $availabilityCaption = __('front.profiles.detail_page.availability_every_day');
     $isVerifiedProfile = $profile->isVerified();
     $photoStatusLabel = $isVerifiedProfile ? __('front.profiles.photos.verified_badge') : __('front.profiles.detail_page.photos_unverified');
 
-    if ($availabilityEntries->isNotEmpty()) {
-        $rawAvailability = $availabilityEntries->first();
+    if (!empty($availability['always_online'])) {
+        $availabilityCaption = __('front.profiles.detail_page.availability_always_online');
+    } elseif (!empty($availability['schedule']) && is_array($availability['schedule'])) {
+        $todayKey = strtolower(now()->format('l'));
+        $todaySchedule = $availability['schedule'][$todayKey] ?? collect($availability['schedule'])->first();
 
-        if (is_array($rawAvailability)) {
-            $rawAvailability = implode(' - ', array_values($rawAvailability));
-        }
-
-        if (preg_match('/(\d{1,2})(?::\d{2})?\D+(\d{1,2})(?::\d{2})?/', (string) $rawAvailability, $matches)) {
-            $availabilityStart = $matches[1];
-            $availabilityEnd = $matches[2];
-        } elseif ($availabilityEntries->count() >= 2) {
-            $availabilityStart = (string) $availabilityEntries->get(0);
-            $availabilityEnd = (string) $availabilityEntries->get(1);
-        } elseif (filled($rawAvailability)) {
-            $availabilityCaption = (string) $rawAvailability;
+        if (is_array($todaySchedule) && filled($todaySchedule['from'] ?? null) && filled($todaySchedule['to'] ?? null)) {
+            $availabilityStart = (string) explode(':', $todaySchedule['from'])[0];
+            $availabilityEnd = (string) explode(':', $todaySchedule['to'])[0];
         }
     }
 
@@ -477,6 +482,7 @@
     .vip-profile-contacts {
         display: flex;
         align-items: center;
+        justify-content: center;
         flex-wrap: wrap;
         gap: 10px;
         margin-top: 14px;
@@ -1429,7 +1435,7 @@
         .vip-profile-panel {
             width: 261px;
             min-width: 261px;
-            height: 575px;
+            min-height: 575px;
             padding: 12px;
         }
 
@@ -2564,15 +2570,15 @@
             </div>
 
             <div class="vip-profile-flags">
-                <div class="vip-profile-flag vip-profile-flag--incall">
+                <div class="vip-profile-flag {{ $profile->incall ? 'vip-profile-flag--incall' : 'vip-profile-flag--outcall' }}">
                     <span class="vip-profile-flag-status">
-                        <img src="{{ asset('images/icons/CircleCheck.svg') }}" alt="" aria-hidden="true">
+                        <img src="{{ asset('images/icons/' . ($profile->incall ? 'CircleCheck.svg' : 'CircleX.svg')) }}" alt="" aria-hidden="true">
                     </span>
                     <span>InCall</span>
                 </div>
-                <div class="vip-profile-flag vip-profile-flag--outcall">
+                <div class="vip-profile-flag {{ $profile->outcall ? 'vip-profile-flag--incall' : 'vip-profile-flag--outcall' }}">
                     <span class="vip-profile-flag-status">
-                        <img src="{{ asset('images/icons/CircleX.svg') }}" alt="" aria-hidden="true">
+                        <img src="{{ asset('images/icons/' . ($profile->outcall ? 'CircleCheck.svg' : 'CircleX.svg')) }}" alt="" aria-hidden="true">
                     </span>
                     <span>OutCall</span>
                 </div>
@@ -2595,15 +2601,21 @@
             @endauth
 
             <div class="vip-profile-contacts">
-                <a class="vip-profile-contact-circle vip-profile-contact-circle--whatsapp" href="https://wa.me/420737155457" target="_blank" rel="noreferrer" title="WhatsApp">
-                    <img src="{{ asset('images/icons/whatsapp.svg') }}" alt="whatsapp" style="width: 20px; height: 20px;">
-                </a>
-                <a class="vip-profile-contact-circle vip-profile-contact-circle--telegram" href="https://t.me/alexandraprofil" target="_blank" rel="noreferrer" title="Telegram">
-                    <img src="{{ asset('images/icons/telegram.svg') }}" alt="telegram" style="width: 20px; height: 20px;">
-                </a>
-                <a href="tel:+420737155457" class="vip-profile-phone">
-                    <span>+420 737 155 457</span>
-                </a>
+                @if($contactDigits && $profile->has_whatsapp)
+                    <a class="vip-profile-contact-circle vip-profile-contact-circle--whatsapp" href="https://wa.me/{{ $contactDigits }}" target="_blank" rel="noreferrer" title="WhatsApp">
+                        <img src="{{ asset('images/icons/whatsapp.svg') }}" alt="whatsapp" style="width: 20px; height: 20px;">
+                    </a>
+                @endif
+                @if($contactDigits && $profile->has_telegram)
+                    <a class="vip-profile-contact-circle vip-profile-contact-circle--telegram" href="https://t.me/+{{ $contactDigits }}" target="_blank" rel="noreferrer" title="Telegram">
+                        <img src="{{ asset('images/icons/telegram.svg') }}" alt="telegram" style="width: 20px; height: 20px;">
+                    </a>
+                @endif
+                @if($contactPhone)
+                    <a href="tel:{{ preg_replace('/\s+/', '', $contactPhone) }}" class="vip-profile-phone">
+                        <span>{{ $contactPhone }}</span>
+                    </a>
+                @endif
             </div>
         </aside>
 
@@ -2644,13 +2656,13 @@
 
                 <div class="vip-gallery-desktop">
                     <button type="button" class="vip-gallery-desktop-card vip-gallery-desktop-left lightbox-trigger" data-index="0">
-                        <img src="{{ asset('images/models/vip1.png') }}" alt="{{ $profile->display_name }}">
+                        <img src="{{ $heroSlides->get(0, $heroSlides->first()) }}" alt="{{ $profile->display_name }}">
                     </button>
-                    <button type="button" class="vip-gallery-desktop-card vip-gallery-desktop-main lightbox-trigger" data-index="1">
-                        <img src="{{ asset('images/models/vip2.png') }}" alt="{{ $profile->display_name }}">
+                    <button type="button" class="vip-gallery-desktop-card vip-gallery-desktop-main lightbox-trigger" data-index="{{ $heroSlides->count() > 1 ? 1 : 0 }}">
+                        <img src="{{ $heroSlides->get(1, $heroSlides->first()) }}" alt="{{ $profile->display_name }}">
                     </button>
-                    <button type="button" class="vip-gallery-desktop-card vip-gallery-desktop-right lightbox-trigger" data-index="2">
-                        <img src="{{ asset('images/models/vip3.png') }}" alt="{{ $profile->display_name }}">
+                    <button type="button" class="vip-gallery-desktop-card vip-gallery-desktop-right lightbox-trigger" data-index="{{ $heroSlides->count() > 2 ? 2 : 0 }}">
+                        <img src="{{ $heroSlides->get(2, $heroSlides->first()) }}" alt="{{ $profile->display_name }}">
                         @if($gallerySlides->count() > 1)
                             <span class="vip-gallery-next-hint" aria-hidden="true"></span>
                         @endif
@@ -2706,9 +2718,9 @@
                         <div class="vip-video-card">
                             <div class="vip-video-surface">
                                 @if($profile->hasVideo())
-                                    <video id="vip-profile-video" src="{{ $profile->getVideoUrl() }}" preload="metadata" playsinline poster="{{ asset('images/models/vipVideo.png') }}"></video>
+                                    <video id="vip-profile-video" src="{{ $profile->getVideoUrl() }}" preload="metadata" playsinline poster="{{ $videoPoster }}"></video>
                                 @else
-                                    <img src="{{ asset('images/models/vipVideo.png') }}" alt="{{ $profile->display_name }}">
+                                    <img src="{{ $videoPoster }}" alt="{{ $profile->display_name }}">
                                 @endif
                                 <button type="button" class="vip-video-play" id="vip-profile-video-toggle" aria-label="Play video">
                                     <span class="vip-video-play__inner">
@@ -2720,7 +2732,7 @@
                     </div>
 
                     <div class="vip-pricing-card">
-                        @if($displayPrices->isNotEmpty())
+                        @if(app()->getLocale() === 'en' && $globalPrices->isNotEmpty())
                             <div class="vip-prices-block">
                                 <h3>{{ __('front.profiles.detail_page.my_prices') }}</h3>
                                 <table class="vip-pricing-table">
@@ -2729,7 +2741,7 @@
                                             <th><span class="vip-price-pill">{{ __('front.profiles.detail_page.time') }}</span></th>
                                             <th>
                                                 <span class="vip-price-pill">
-                                                    @if($profile->incall || $prices->isEmpty())
+                                                    @if($profile->incall)
                                                         <img src="{{ asset('images/icons/CircleCheck.svg') }}" alt="" aria-hidden="true" class="w-5 h-5">
                                                     @else
                                                         <img src="{{ asset('images/icons/CircleX.svg') }}" alt="" aria-hidden="true" class="w-5 h-5">
@@ -2739,7 +2751,63 @@
                                             </th>
                                             <th>
                                                 <span class="vip-price-pill">
-                                                    <img src="{{ asset('images/icons/CircleX.svg') }}" alt="" aria-hidden="true" class="w-5 h-5">
+                                                    @if($profile->outcall)
+                                                        <img src="{{ asset('images/icons/CircleCheck.svg') }}" alt="" aria-hidden="true" class="w-5 h-5">
+                                                    @else
+                                                        <img src="{{ asset('images/icons/CircleX.svg') }}" alt="" aria-hidden="true" class="w-5 h-5">
+                                                    @endif
+                                                    OutCall
+                                                </span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($globalPrices as $price)
+                                            <tr>
+                                                <td>{{ rtrim(rtrim((string) ($price['time_hours'] ?? ''), '0'), '.') }}h</td>
+                                                <td>
+                                                    @if(!empty($price['incall_price']) && $profile->incall)
+                                                        {{ number_format($price['incall_price'], 0, ',', ' ') }} {{ $globalCurrency }}
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if(!empty($price['outcall_price']) && $profile->outcall)
+                                                        {{ number_format($price['outcall_price'], 0, ',', ' ') }} {{ $globalCurrency }}
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @elseif($displayPrices->isNotEmpty())
+                            <div class="vip-prices-block">
+                                <h3>{{ __('front.profiles.detail_page.my_prices') }}</h3>
+                                <table class="vip-pricing-table">
+                                    <thead>
+                                        <tr>
+                                            <th><span class="vip-price-pill">{{ __('front.profiles.detail_page.time') }}</span></th>
+                                            <th>
+                                                <span class="vip-price-pill">
+                                                    @if($profile->incall)
+                                                        <img src="{{ asset('images/icons/CircleCheck.svg') }}" alt="" aria-hidden="true" class="w-5 h-5">
+                                                    @else
+                                                        <img src="{{ asset('images/icons/CircleX.svg') }}" alt="" aria-hidden="true" class="w-5 h-5">
+                                                    @endif
+                                                    InCall
+                                                </span>
+                                            </th>
+                                            <th>
+                                                <span class="vip-price-pill">
+                                                    @if($profile->outcall)
+                                                        <img src="{{ asset('images/icons/CircleCheck.svg') }}" alt="" aria-hidden="true" class="w-5 h-5">
+                                                    @else
+                                                        <img src="{{ asset('images/icons/CircleX.svg') }}" alt="" aria-hidden="true" class="w-5 h-5">
+                                                    @endif
                                                     OutCall
                                                 </span>
                                             </th>
@@ -2750,7 +2818,7 @@
                                             <tr>
                                                 <td>{{ rtrim(rtrim((string) ($price['time_hours'] ?? ''), '0'), '.') }}h</td>
                                                 <td>
-                                                    @if(!empty($price['incall_price']) && ($profile->incall || $prices->isEmpty()))
+                                                    @if(!empty($price['incall_price']) && $profile->incall)
                                                         {{ number_format($price['incall_price'], 0, ',', ' ') }} Kč
                                                     @else
                                                         -
@@ -2856,29 +2924,21 @@
 
                 <div class="swiper vip-lightbox-swiper">
                     <div class="swiper-wrapper">
-                        <div class="swiper-slide">
-                            <img src="{{ asset('images/models/vip1.png') }}" alt="{{ $profile->display_name }}">
-                        </div>
-                        <div class="swiper-slide">
-                            <img src="{{ asset('images/models/vip2.png') }}" alt="{{ $profile->display_name }}">
-                        </div>
-                        <div class="swiper-slide">
-                            <img src="{{ asset('images/models/vip3.png') }}" alt="{{ $profile->display_name }}">
-                        </div>
+                        @foreach($gallerySlides as $imageUrl)
+                            <div class="swiper-slide">
+                                <img src="{{ $imageUrl }}" alt="{{ $profile->display_name }}">
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
 
             <div class="vip-lightbox-thumbnails">
-                <button type="button" class="vip-lightbox-thumbnail active" data-slide="0" aria-label="Slide 1">
-                    <img src="{{ asset('images/models/vip1.png') }}" alt="{{ $profile->display_name }}">
-                </button>
-                <button type="button" class="vip-lightbox-thumbnail" data-slide="1" aria-label="Slide 2">
-                    <img src="{{ asset('images/models/vip2.png') }}" alt="{{ $profile->display_name }}">
-                </button>
-                <button type="button" class="vip-lightbox-thumbnail" data-slide="2" aria-label="Slide 3">
-                    <img src="{{ asset('images/models/vip3.png') }}" alt="{{ $profile->display_name }}">
-                </button>
+                @foreach($gallerySlides as $index => $imageUrl)
+                    <button type="button" class="vip-lightbox-thumbnail {{ $index === 0 ? 'active' : '' }}" data-slide="{{ $index }}" aria-label="Slide {{ $index + 1 }}">
+                        <img src="{{ $imageUrl }}" alt="{{ $profile->display_name }}">
+                    </button>
+                @endforeach
             </div>
         </div>
     </div>

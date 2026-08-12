@@ -587,7 +587,10 @@ class ProfileForm extends Component
         if ($emailChanged) {
             $user->email = $this->new_email;
         }
-        $user->phone = $this->phone;
+        // The `phone` column has a unique index; an empty string (unlike
+        // NULL) counts as a real value there, so a second user with no
+        // phone number would collide and the save would fail silently.
+        $user->phone = $this->phone !== '' ? $this->phone : null;
 
         // Mark email as unverified if changed and send verification notification
         if ($emailChanged) {
