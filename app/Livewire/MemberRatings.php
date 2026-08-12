@@ -30,8 +30,22 @@ class MemberRatings extends Component
 
     public function mount()
     {
-        // Load the first available profile by default
-        $firstProfile = $this->getAvailableProfiles()->first();
+        // Land on a random profile rather than always the same
+        // alphabetically-first one.
+        $userId = Auth::id();
+
+        $firstProfile = Profile::approved()
+            ->public()
+            ->whereHas('user', fn($q) => $q->where('gender', 'female'))
+            ->whereDoesntHave('ratings', fn($q) => $q->where('user_id', $userId))
+            ->inRandomOrder()
+            ->first()
+            ?? Profile::approved()
+                ->public()
+                ->whereHas('user', fn($q) => $q->where('gender', 'female'))
+                ->inRandomOrder()
+                ->first();
+
         if ($firstProfile) {
             $this->selectProfile($firstProfile->id);
         }
@@ -199,27 +213,16 @@ class MemberRatings extends Component
         $userId = Auth::id();
         $currentId = $this->selectedProfileId;
 
-        // Get profiles the user hasn't rated yet, preferring ones after current
+        // Pick a random profile the user hasn't rated yet, excluding the one
+        // currently shown.
         $nextProfile = Profile::approved()
             ->public()
             ->whereHas('user', fn($q) => $q->where('gender', 'female'))
             ->whereDoesntHave('ratings', fn($q) => $q->where('user_id', $userId))
-            ->where('id', '>', $currentId)
+            ->where('id', '!=', $currentId)
             ->with(['media'])
-            ->orderBy('id')
+            ->inRandomOrder()
             ->first();
-
-        // If no profile after current, try from the beginning
-        if (!$nextProfile) {
-            $nextProfile = Profile::approved()
-                ->public()
-                ->whereHas('user', fn($q) => $q->where('gender', 'female'))
-                ->whereDoesntHave('ratings', fn($q) => $q->where('user_id', $userId))
-                ->where('id', '!=', $currentId)
-                ->with(['media'])
-                ->orderBy('id')
-                ->first();
-        }
 
         if ($nextProfile) {
             $this->selectProfile($nextProfile->id);
