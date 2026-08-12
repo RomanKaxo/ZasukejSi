@@ -76,8 +76,13 @@
             <form wire:submit="authenticate" class="form-container" style="width:520px;height:353px;background:#F2F2F2;border-radius:15px;padding:24px;box-sizing:border-box;margin:0 auto;">
                 <!-- Login Error -->
                 @error('login')
-                <div class="form-alert">
-                    {{ $message }}
+                <div class="form-alert" style="display:flex;align-items:flex-start;gap:8px;background:#FDEDF3;border:1px solid #F3B8D2;color:#B2265A;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-family:'Poppins',sans-serif;font-weight:500;font-size:13px;line-height:1.4;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:2px;">
+                        <circle cx="12" cy="12" r="10" fill="#DD3888"/>
+                        <path d="M12 7v6" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="12" cy="16.2" r="1.1" fill="#FFFFFF"/>
+                    </svg>
+                    <span>{{ $message }}</span>
                 </div>
                 @enderror
                 <!-- Username Field -->
@@ -86,7 +91,7 @@
                     <input wire:model="email"
                         type="email"
                         required
-                        class="form-field {{ $errors->has('email') ? 'form-field-error' : '' }}"
+                        class="form-field {{ $errors->has('email') || $errors->has('login') ? 'form-field-error' : '' }}"
                         style="background:#FFFFFF;border-radius:8px;border:2px solid #E6E6E6;padding:12px 14px;box-sizing:border-box;">
                     @error('email')
                     <p class="form-error">{{ $message }}</p>
@@ -99,7 +104,7 @@
                     <input wire:model="password"
                         type="password"
                         required
-                        class="form-field {{ $errors->has('password') ? 'form-field-error' : '' }}"
+                        class="form-field {{ $errors->has('password') || $errors->has('login') ? 'form-field-error' : '' }}"
                         style="background:#FFFFFF;border-radius:8px;border:2px solid #E6E6E6;padding:12px 14px;box-sizing:border-box;">
                     @error('password')
                     <p class="form-error">{{ $message }}</p>

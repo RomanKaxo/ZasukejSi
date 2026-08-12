@@ -7,45 +7,46 @@
     <div x-show="show"
         x-transition.opacity.duration.300ms
         x-cloak
-        class="fixed inset-0 z-50 flex items-center justify-center p-1 sm:p-2 md:p-4">
+        class="register-modal-scope fixed inset-0 z-50 flex items-center justify-center p-1 sm:p-2 md:p-4">
 
         <!-- Modal Backdrop -->
         <div class="modal-backdrop"
             @click="closing = true; show = false; $wire.hide()"></div>
 
+        {{-- Scoped to .register-modal-scope so these rules don't leak into login/reset modals, which reuse the same class names (.form-error, .form-container, .modal-container, ...) --}}
         <style>
-            .form-container { width:100%; max-width:520px; height:353px; }
-            .form-container form { display:flex; flex-direction:column; gap:10px; align-items:flex-start; }
-            .form-container form > div { width:460px !important; max-width:460px !important; height:84px !important; display:flex; flex-direction:column; justify-content:center; gap:6px; box-sizing:border-box; position:relative; }
-            .form-label { font-family: 'Poppins', sans-serif; font-weight:400; font-size:13px; color:#505050; text-align:left; margin-left:8px; margin-bottom:0px; }
-            .form-field { width:460px !important; max-width:460px !important; height:50px !important; background:#FFFFFF !important; border:2px solid #E6E6E6 !important; border-radius:8px !important; padding:10px 12px !important; box-sizing:border-box; transition: border-color 120ms ease, box-shadow 120ms ease; }
-            .form-field:focus, .form-field:focus-visible { border-color:#DD3888 !important; box-shadow:none !important; outline:none !important; }
-            .form-field-error { border-color: #D80027 !important; }
-            .form-error { font-family:'Poppins',sans-serif; font-weight:400; font-size:13px; color:#D80027; position:absolute; right:8px; top:8px; margin:0; }
-            .modal-btn-primary, .modal-btn-outline { width:100%; max-width:460px; }
-            .modal-btn-primary { height:60px; }
-            .modal-container { width:600px !important; max-width:600px !important; height:810px !important; border-radius:24px; overflow:hidden; background:white; box-sizing:border-box; transition: width 200ms ease, height 200ms ease; }
-            .modal-container { max-height: min(800px, 92vh) !important; overflow-y: auto !important; overflow-x: hidden !important; scrollbar-width: none; -ms-overflow-style: none; }
-            .modal-container::-webkit-scrollbar { display: none; }
+            .register-modal-scope .form-container { width:100%; max-width:520px; height:353px; }
+            .register-modal-scope .form-container form { display:flex; flex-direction:column; gap:10px; align-items:flex-start; }
+            .register-modal-scope .form-container form > div { width:460px !important; max-width:460px !important; height:84px !important; display:flex; flex-direction:column; justify-content:center; gap:6px; box-sizing:border-box; position:relative; }
+            .register-modal-scope .form-label { font-family: 'Poppins', sans-serif; font-weight:400; font-size:13px; color:#505050; text-align:left; margin-left:8px; margin-bottom:0px; }
+            .register-modal-scope .form-field { width:460px !important; max-width:460px !important; height:50px !important; background:#FFFFFF !important; border:2px solid #E6E6E6 !important; border-radius:8px !important; padding:10px 12px !important; box-sizing:border-box; transition: border-color 120ms ease, box-shadow 120ms ease; }
+            .register-modal-scope .form-field:focus, .register-modal-scope .form-field:focus-visible { border-color:#DD3888 !important; box-shadow:none !important; outline:none !important; }
+            .register-modal-scope .form-field-error { border-color: #D80027 !important; }
+            .register-modal-scope .form-error { font-family:'Poppins',sans-serif; font-weight:400; font-size:13px; color:#D80027; position:absolute; right:8px; top:8px; margin:0; }
+            .register-modal-scope .modal-btn-primary, .register-modal-scope .modal-btn-outline { width:100%; max-width:460px; }
+            .register-modal-scope .modal-btn-primary { height:60px; }
+            .register-modal-scope .modal-container { width:600px !important; max-width:600px !important; height:810px !important; border-radius:24px; overflow:hidden; background:white; box-sizing:border-box; transition: width 200ms ease, height 200ms ease; }
+            .register-modal-scope .modal-container { max-height: min(800px, 92vh) !important; overflow-y: auto !important; overflow-x: hidden !important; scrollbar-width: none; -ms-overflow-style: none; }
+            .register-modal-scope .modal-container::-webkit-scrollbar { display: none; }
 
             /* Register step 1: smaller modal */
-            .modal-container.register-step1 { height:427px !important; }
+            .register-modal-scope .modal-container.register-step1 { height:427px !important; }
             /* Expanded desktop register modal */
-            .modal-container.register-step1.expanded { width:600px !important; max-width:600px !important; height:947px !important; }
-            .modal-container.register-step1 .modal-header { margin-top:44px !important; }
+            .register-modal-scope .modal-container.register-step1.expanded { width:600px !important; max-width:600px !important; height:947px !important; }
+            .register-modal-scope .modal-container.register-step1 .modal-header { margin-top:44px !important; }
 
             /* Register success step */
-            .modal-container.register-success {
+            .register-modal-scope .modal-container.register-success {
                 width:600px !important;
                 max-width:600px !important;
                 height:480px !important;
                 border-radius:24px !important;
             }
-            .modal-container.register-success .modal-header {
+            .register-modal-scope .modal-container.register-success .modal-header {
                 margin-top:44px !important;
                 margin-bottom:24px !important;
             }
-            .register-success-card {
+            .register-modal-scope .register-success-card {
                 width:520px;
                 height:227px;
                 border-radius:15px;
@@ -58,13 +59,13 @@
                 box-sizing:border-box;
                 padding-top:38px;
             }
-            .register-success-icon {
+            .register-modal-scope .register-success-icon {
                 width:36px;
                 height:36px;
                 display:block;
                 margin-bottom:18px;
             }
-            .register-success-title {
+            .register-modal-scope .register-success-title {
                 margin:0;
                 width:255px;
                 max-width:255px;
@@ -76,7 +77,7 @@
                 line-height:1.22;
                 color:#5C5C5C;
             }
-            .register-success-message {
+            .register-modal-scope .register-success-message {
                 margin:16px 0 0 0;
                 width:326px;
                 max-width:326px;
@@ -90,32 +91,32 @@
             }
 
             /* Gender option styles */
-            .gender-option { width:520px; height:100px; border-radius:15px; background:#FFFFFF; box-shadow:0 5px 15px rgba(92,45,98,0.20); display:flex; align-items:center; justify-content:space-between; padding:18px 20px; box-sizing:border-box; margin:0 auto; border:1px solid rgba(0,0,0,0.02); transition: transform 160ms ease, opacity 160ms ease; position:relative; z-index:50; }
-            .gender-icon { background:#F2F2F2 !important; transition: background-color 220ms cubic-bezier(.2,.9,.3,1); }
-            .gender-icon.active { background:#DD3888 !important; color:#FEFEFE !important; }
-            .gender-icon svg { stroke:#DD3888; transform:rotate(0deg); transform-origin:center; transition: transform 220ms cubic-bezier(.2,.9,.3,1), stroke 220ms cubic-bezier(.2,.9,.3,1); }
-            .modal-container.register-step1.expanded .gender-icon.active svg { stroke:#FEFEFE !important; transform:rotate(180deg); }
-            .gender-option > .flex { width:100%; }
-            .gender-options { display:flex; flex-direction:column; align-items:center; gap:10px; }
-            .gender-title { font-family:'Poppins',sans-serif; font-size:20px; color:#5C2D62; margin:0; font-weight:700; }
-            .gender-subtitle { font-family:'Poppins',sans-serif; font-size:13px; color:#A6A6A6; margin:0; font-weight:400; }
-            .gender-icon { width:40px !important; height:40px !important; border-radius:50% !important; display:flex; align-items:center; justify-content:center; }
+            .register-modal-scope .gender-option { width:520px; height:100px; border-radius:15px; background:#FFFFFF; box-shadow:0 5px 15px rgba(92,45,98,0.20); display:flex; align-items:center; justify-content:space-between; padding:18px 20px; box-sizing:border-box; margin:0 auto; border:1px solid rgba(0,0,0,0.02); transition: transform 160ms ease, opacity 160ms ease; position:relative; z-index:50; }
+            .register-modal-scope .gender-icon { background:#F2F2F2 !important; transition: background-color 220ms cubic-bezier(.2,.9,.3,1); }
+            .register-modal-scope .gender-icon.active { background:#DD3888 !important; color:#FEFEFE !important; }
+            .register-modal-scope .gender-icon svg { stroke:#DD3888; transform:rotate(0deg); transform-origin:center; transition: transform 220ms cubic-bezier(.2,.9,.3,1), stroke 220ms cubic-bezier(.2,.9,.3,1); }
+            .register-modal-scope .modal-container.register-step1.expanded .gender-icon.active svg { stroke:#FEFEFE !important; transform:rotate(180deg); }
+            .register-modal-scope .gender-option > .flex { width:100%; }
+            .register-modal-scope .gender-options { display:flex; flex-direction:column; align-items:center; gap:10px; }
+            .register-modal-scope .gender-title { font-family:'Poppins',sans-serif; font-size:20px; color:#5C2D62; margin:0; font-weight:700; }
+            .register-modal-scope .gender-subtitle { font-family:'Poppins',sans-serif; font-size:13px; color:#A6A6A6; margin:0; font-weight:400; }
+            .register-modal-scope .gender-icon { width:40px !important; height:40px !important; border-radius:50% !important; display:flex; align-items:center; justify-content:center; }
 
             @media (max-width:480px) {
-                .modal-container { width:320px !important; max-width:320px !important; height:711px !important; }
-                form[wire\:submit] { margin-top:12px !important; }
-                .consent-text { font-size:9px !important; }
+                .register-modal-scope .modal-container { width:320px !important; max-width:320px !important; height:711px !important; }
+                .register-modal-scope form[wire\:submit] { margin-top:12px !important; }
+                .register-modal-scope .consent-text { font-size:9px !important; }
                 /* Register step 1 specific mobile sizing */
-                .modal-container.register-step1 { width:320px !important; max-width:320px !important; height:342px !important; }
+                .register-modal-scope .modal-container.register-step1 { width:320px !important; max-width:320px !important; height:342px !important; }
                 /* When a gender option is expanded (clicked) enlarge modal to show more content */
-                .modal-container.register-step1.expanded { width:320px !important; max-width:320px !important; height:895px !important; }
-                .modal-container.register-success {
+                .register-modal-scope .modal-container.register-step1.expanded { width:320px !important; max-width:320px !important; height:895px !important; }
+                .register-modal-scope .modal-container.register-success {
                     width:320px !important;
                     max-width:320px !important;
                     height:468px !important;
                     border-radius:24px !important;
                 }
-                .register-success-card {
+                .register-modal-scope .register-success-card {
                     width:280px !important;
                     max-width:280px !important;
                     height:263px !important;
@@ -123,7 +124,7 @@
                     background:#EBF8EC !important;
                     padding-top:28px !important;
                 }
-                .register-success-title {
+                .register-modal-scope .register-success-title {
                     width:255px !important;
                     max-width:255px !important;
                     height:60px !important;
@@ -132,7 +133,7 @@
                     font-size:18px !important;
                     color:#5C5C5C !important;
                 }
-                .register-success-message {
+                .register-modal-scope .register-success-message {
                     width:195px !important;
                     max-width:195px !important;
                     height:54px !important;
@@ -141,33 +142,33 @@
                     font-size:11px !important;
                     color:#5C5C5C !important;
                 }
-                .form-container { width:280px !important; max-width:280px !important; height:337px !important; }
-                .form-container form > div { width:240px !important; max-width:240px !important; height:74px !important; }
-                .form-field { max-width:240px !important; height:50px !important; width:240px !important; }
-                .modal-btn-primary, .modal-btn-outline { max-width:240px !important; height:50px !important; }
+                .register-modal-scope .form-container { width:280px !important; max-width:280px !important; height:337px !important; }
+                .register-modal-scope .form-container form > div { width:240px !important; max-width:240px !important; height:74px !important; }
+                .register-modal-scope .form-field { max-width:240px !important; height:50px !important; width:240px !important; }
+                .register-modal-scope .modal-btn-primary, .register-modal-scope .modal-btn-outline { max-width:240px !important; height:50px !important; }
                 /* Gender option mobile size inside register step 1 */
-                .modal-container.register-step1 .gender-option { width:280px !important; max-width:280px !important; height:80px !important; border-radius:15px !important; }
-                .modal-title, .modal-subtitle { font-size:28px !important; line-height:1.05 !important; }
-                .modal-close-btn { top:20px !important; right:20px !important; }
-                .modal-btn-primary { margin-top:18px !important; }
-                .modal-subtitle { margin-bottom:32px !important; }
-                .register-cta { margin-top:55px !important; }
+                .register-modal-scope .modal-container.register-step1 .gender-option { width:280px !important; max-width:280px !important; height:80px !important; border-radius:15px !important; }
+                .register-modal-scope .modal-title, .register-modal-scope .modal-subtitle { font-size:28px !important; line-height:1.05 !important; }
+                .register-modal-scope .modal-close-btn { top:20px !important; right:20px !important; }
+                .register-modal-scope .modal-btn-primary { margin-top:18px !important; }
+                .register-modal-scope .modal-subtitle { margin-bottom:32px !important; }
+                .register-modal-scope .register-cta { margin-top:55px !important; }
                 /* On mobile, for registration step, add bottom spacing under header */
-                .modal-container.register-step1 .modal-header { margin-bottom:40px !important; }
+                .register-modal-scope .modal-container.register-step1 .modal-header { margin-bottom:40px !important; }
             }
             /* Inline register form shown under a selected gender on desktop */
-            .form-container.inline-register { width:520px !important; max-width:520px !important; height:645px !important; background:#F2F2F2; border-radius:15px; padding:24px; box-sizing:border-box; margin:12px auto; transition: opacity 160ms ease, transform 160ms ease; transform: translateY(-50px); position:relative; z-index:10; }
-            .form-container.inline-register > form { margin-top:75px !important; }
-            .consent-text { font-family:'Poppins',sans-serif; font-weight:400; font-size:11px; color:#5C5C5C; margin-top:0px; text-align:left; margin-left:8px; width:440px !important; height:54px !important; box-sizing:border-box; }
+            .register-modal-scope .form-container.inline-register { width:520px !important; max-width:520px !important; height:645px !important; background:#F2F2F2; border-radius:15px; padding:24px; box-sizing:border-box; margin:12px auto; transition: opacity 160ms ease, transform 160ms ease; transform: translateY(-50px); position:relative; z-index:10; }
+            .register-modal-scope .form-container.inline-register > form { margin-top:75px !important; }
+            .register-modal-scope .consent-text { font-family:'Poppins',sans-serif; font-weight:400; font-size:11px; color:#5C5C5C; margin-top:0px; text-align:left; margin-left:8px; width:440px !important; height:54px !important; box-sizing:border-box; }
             /* Lift primary register button slightly in register modal only */
-            .modal-container.register-step1 .modal-btn-primary,
-            .modal-container.register-step1 .form-container.inline-register .modal-btn-primary {
+            .register-modal-scope .modal-container.register-step1 .modal-btn-primary,
+            .register-modal-scope .modal-container.register-step1 .form-container.inline-register .modal-btn-primary {
                 margin-top: -18px !important;
                 margin-bottom: 12px !important;
             }
             @media (max-width:480px) {
-                .form-container.inline-register { width:280px !important; max-width:280px !important; height:520px !important; }
-                .form-container.inline-register > form { margin-top:12px !important; }
+                .register-modal-scope .form-container.inline-register { width:280px !important; max-width:280px !important; height:520px !important; }
+                .register-modal-scope .form-container.inline-register > form { margin-top:12px !important; }
             }
         </style>
 

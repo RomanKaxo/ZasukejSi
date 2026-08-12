@@ -63,7 +63,7 @@ class LoginModal extends Component
                 RateLimiter::hit($this->throttleKey());
 
                 throw ValidationException::withMessages([
-                    'email' => trans('auth.failed'),
+                    'login' => trans('auth.failed'),
                 ]);
             }
 
@@ -98,7 +98,7 @@ class LoginModal extends Component
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
+            'login' => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),
