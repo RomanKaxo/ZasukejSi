@@ -73,6 +73,7 @@ return [
             'basic' => 'Basic Information',
             'photos' => 'Photos & Videos',
             'services' => 'My Services & Prices',
+            'subscription' => 'Subscription',
             'statistics' => 'Statistics',
             'reviews' => 'Reviews - coming soon',
             'vip_title' => 'Earn More',
@@ -251,6 +252,19 @@ return [
                 'share' => 'Never share your password with anyone'
             ]
         ]
+    ],
+    'subscription' => [
+        'page_title' => 'Subscription',
+        'no_profile' => 'You need to create your profile first.',
+        'checkout_cancelled' => 'Payment was cancelled. You can try again anytime.',
+        'current_plan' => 'Current subscription',
+        'active_until' => 'Active until :date',
+        'no_active_plan' => 'You currently have no active subscription.',
+        'buy_button' => 'Buy',
+        'days' => ':count days',
+        'success_title' => 'Payment successful',
+        'success_description' => 'Thank you, your subscription is now active.',
+        'back_to_subscription' => 'Back to subscription',
     ],
     'auth' => [
         'email_verified_success' => 'Your email has been successfully verified! You can now log in to your account.',

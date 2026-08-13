@@ -133,9 +133,19 @@ Route::middleware(['auth', 'verified'])->prefix('account')->name('account.')->gr
         Route::get('/services', [AccountController::class, 'showServices'])->name('services');
         Route::get('/statistics', [AccountController::class, 'showStatistics'])->name('statistics');
         Route::get('/reviews', [AccountController::class, 'showReviews'])->name('reviews');
+
+        Route::prefix('subscription')->name('subscription.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\SubscriptionCheckoutController::class, 'index'])->name('index');
+            Route::post('/{subscriptionType}/checkout', [\App\Http\Controllers\SubscriptionCheckoutController::class, 'checkout'])->name('checkout');
+            Route::get('/success', [\App\Http\Controllers\SubscriptionCheckoutController::class, 'success'])->name('success');
+            Route::get('/cancel', [\App\Http\Controllers\SubscriptionCheckoutController::class, 'cancel'])->name('cancel');
+        });
     });
     Route::delete('/profile', [AccountController::class, 'destroy'])->name('destroy');
 });
+
+// Stripe webhook (excluded from CSRF verification in bootstrap/app.php)
+Route::post('/stripe/webhook', [\App\Http\Controllers\SubscriptionCheckoutController::class, 'webhook'])->name('stripe.webhook');
 
 // Member Routes — male members only (admins bypass the check)
 Route::middleware(['auth', 'verified', 'gender:male'])->prefix('account/member')->name('account.member.')->group(function () {

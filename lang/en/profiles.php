@@ -52,6 +52,7 @@ return [
         'profile_video_helper' => 'Upload a short intro video (max 150MB). Supported formats: MP4, WebM, MOV.',
         'incall' => 'InCall',
         'outcall' => 'OutCall',
+        'is_porn_actress' => 'Porn actress',
         'profile_content_builder' => 'Profile Content Builder',
         'profile_content_helper' => 'Build rich content for your profile using blocks',
         'availability_hours' => 'Availability Hours',

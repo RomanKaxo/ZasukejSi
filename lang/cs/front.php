@@ -73,6 +73,7 @@ return [
             'basic' => 'Základní údaje',
             'photos' => 'Fotografie a video',
             'services' => 'Moje služby a ceny',
+            'subscription' => 'Předplatné',
             'statistics' => 'Statistiky',
             'reviews' => 'Recenze - již brzy',
             'password' => 'Změna hesla',
@@ -254,6 +255,19 @@ return [
                 'share' => 'Nikdy nesdílejte své heslo s nikým'
             ]
         ]
+    ],
+    'subscription' => [
+        'page_title' => 'Předplatné',
+        'no_profile' => 'Nejprve musíte vytvořit svůj profil.',
+        'checkout_cancelled' => 'Platba byla zrušena. Můžete to zkusit znovu kdykoliv.',
+        'current_plan' => 'Aktuální předplatné',
+        'active_until' => 'Aktivní do :date',
+        'no_active_plan' => 'Momentálně nemáte žádné aktivní předplatné.',
+        'buy_button' => 'Koupit',
+        'days' => ':count dní',
+        'success_title' => 'Platba proběhla úspěšně',
+        'success_description' => 'Děkujeme, vaše předplatné je nyní aktivní.',
+        'back_to_subscription' => 'Zpět na předplatné',
     ],
     'auth' => [
         'email_verified_success' => 'Váš e-mail byl úspěšně ověřen! Nyní se můžete přihlásit ke svému účtu.',

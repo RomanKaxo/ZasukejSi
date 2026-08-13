@@ -23,7 +23,7 @@
 
 {{-- Sidebar --}}
 <aside 
-    class="w-full h-full md:w-[211px] md:relative fixed top-0 left-0 z-40 bg-white transition-transform duration-300 md:translate-x-0 overflow-y-auto pt-28 md:pt-0 {{ in_array($activeItem, ['photos', 'services', 'statistics']) ? 'md:mt-[90px]' : 'md:mt-[258px]' }}"
+    class="w-full h-full md:w-[211px] md:relative fixed top-0 left-0 z-40 bg-white transition-transform duration-300 md:translate-x-0 overflow-y-auto pt-28 md:pt-0 {{ in_array($activeItem, ['photos', 'services', 'statistics', 'subscription']) ? 'md:mt-[90px]' : 'md:mt-[258px]' }}"
     :class="$store.accountSidebar.isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
 >
     <!-- Navigation Menu -->
@@ -64,7 +64,15 @@
             </li>
             
             <li>
-                <a href="#" 
+                <a href="{{ route('account.subscription.index') }}"
+                   class="nav-button {{ $activeItem === 'subscription' ? 'active' : '' }}">
+                    <x-icons name="star" class="w-5 h-5 mr-3" />
+                    {{ __('front.account.sidebar.subscription') }}
+                </a>
+            </li>
+
+            <li>
+                <a href="#"
                    class="nav-button  {{ $activeItem === 'reviews' ? 'active' : '' }} !text-gray-400">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
@@ -110,7 +118,7 @@
             <img src="{{ asset('images/gold-star.png') }}" alt="Gold Star" class="absolute -top-10 left-1/2 -translate-x-1/2 w-16 h-16">
             
             <h3 class="text-3xl py-3font-bold text-gold mb-2 text-center">{{ __('front.account.sidebar.vip_title') }}</h3>
-            <a href="#" class="btn-gold w-full text-center">
+            <a href="{{ route('account.subscription.index') }}" class="btn-gold w-full text-center">
                 {{ __('front.account.sidebar.vip_button') }}
             </a>
             </div>

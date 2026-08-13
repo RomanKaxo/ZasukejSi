@@ -99,6 +99,11 @@ class ProfileForm
                     ->default(false)
                     ->inline(false),
 
+                Toggle::make('is_porn_actress')
+                    ->label(__('profiles.form.is_porn_actress'))
+                    ->default(false)
+                    ->inline(false),
+
                 BlocksInput::make('content')
                     ->label(__('profiles.form.profile_content_builder'))
                     ->blocks(fn() => [

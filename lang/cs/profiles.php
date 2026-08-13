@@ -51,6 +51,7 @@ return [
         'profile_video_helper' => 'Nahrajte krátké úvodní video (max 150MB). Podporované formáty: MP4, WebM, MOV.',
         'incall' => 'InCall',
         'outcall' => 'OutCall',
+        'is_porn_actress' => 'Porno herečka',
         'profile_content_builder' => 'Tvůrce obsahu profilu',
         'profile_content_helper' => 'Vytvořte bohatý obsah svého profilu pomocí bloků',
         'availability_hours' => 'Dostupné hodiny',
