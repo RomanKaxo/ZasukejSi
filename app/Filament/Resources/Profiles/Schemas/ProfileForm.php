@@ -22,7 +22,7 @@ class ProfileForm
     public static function configure(Schema $schema): Schema
     {
         $user = Auth::user();
-        $isAdmin = $user && ($user->email === 'test@example.com'); // Temporary admin check
+        $isAdmin = $user?->hasRole('admin') ?? false;
         $record = $schema->getRecord();
         $profileUrl = ($record && $record->exists && $record->id) 
                     ? route('profiles.show', ['id' => $record->id]) 
