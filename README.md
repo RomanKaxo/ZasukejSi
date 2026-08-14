@@ -56,6 +56,60 @@ In order to ensure that the Laravel community is welcoming to all, please review
 
 If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
+## Local Development
+
+### Requirements
+
+- PHP 8.2+ with **`ext-gd` enabled** — without it every image upload and every
+  media conversion (`thumb`, `medium`) fails, and `db:seed` aborts with
+  `Spatie\Image\Exceptions\CouldNotLoadImage`.
+- Node 22.x, npm 10+
+- MySQL/MariaDB for production. SQLite works for local development: the only
+  MySQL-only migration (`2026_07_31_171816_add_archived_status_to_profiles_table`)
+  guards itself via `supportsEnumModification()` and is skipped.
+
+### Setup
+
+```bash
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+php artisan db:seed
+npm run build
+php artisan serve
+```
+
+For SQLite, set `DB_CONNECTION=sqlite` in `.env`, comment out the other `DB_*`
+lines and create the file:
+
+```bash
+touch database/database.sqlite
+```
+
+### Queue worker
+
+Notifications, media conversions and (later) the scraper run through the queue.
+`QUEUE_CONNECTION=database` needs a worker — nothing is processed without one:
+
+```bash
+php artisan queue:work --tries=1
+```
+
+In production run this under a process supervisor (systemd or Supervisor), not
+in a terminal.
+
+### Seeded accounts
+
+| E-mail | Heslo | Role |
+| --- | --- | --- |
+| `test@example.com` | `admin123` | super_admin, admin |
+| `woman@example.com` | `password` | provider (female, has profile) |
+| `user@example.com` | `password` | member (male) |
+
+Admin panel: `/admin`.
+
 ## Translation Sync
 
 This project keeps Czech source translations in `lang/cs` and can generate or refresh English files in `lang/en`.

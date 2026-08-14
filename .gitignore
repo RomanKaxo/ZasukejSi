@@ -32,3 +32,6 @@ yarn-error.log
 /.vscode
 /.zed
 .aider*
+/.claude
+# Runtime scratch space for spatie/laravel-medialibrary uploads.
+/storage/media-library/temp

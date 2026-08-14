@@ -956,12 +956,12 @@
         <div class="search-hero-badges" aria-hidden="true">
             <div class="search-badge">
                 <span class="search-badge-dot"></span>
-                <span class="search-badge-strong">1 420 {{ __('front.profiles.search.girls') }}</span>
+                <span class="search-badge-strong">{{ number_format($this->girlsCount, 0, ',', ' ') }} {{ __('front.profiles.search.girls') }}</span>
                 <span class="search-badge-soft">{{ __('front.profiles.search.registered') }}</span>
             </div>
             <div class="search-badge">
                 <span class="search-badge-dot"></span>
-                <span class="search-badge-strong">382 {{ __('front.profiles.search.men') }}</span>
+                <span class="search-badge-strong">{{ number_format($this->gentsCount, 0, ',', ' ') }} {{ __('front.profiles.search.men') }}</span>
                 <span class="search-badge-soft">{{ __('front.profiles.search.registered') }}</span>
             </div>
         </div>

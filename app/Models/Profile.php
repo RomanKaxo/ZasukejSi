@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\RatingScale;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -39,7 +40,13 @@ class Profile extends Model implements HasMedia
         'about',
         'incall',
         'outcall',
+        // `content` is the attribute map (height, weight, languages, …) written
+        // by ProfileForm; `content_blocks` is the admin's rich-content builder.
+        // They live in separate columns because a single shared one made every
+        // profile with attributes uneditable in Filament — see migration
+        // 2026_08_14_000003_split_profile_content_blocks.
         'content',
+        'content_blocks',
         'availability_hours',
         'local_prices',
         'global_prices',
@@ -59,6 +66,7 @@ class Profile extends Model implements HasMedia
     {
         return [
             'content' => 'array',
+            'content_blocks' => 'array',
             'availability_hours' => 'array',
             'local_prices' => 'array',
             'global_prices' => 'array',
@@ -69,6 +77,20 @@ class Profile extends Model implements HasMedia
             'incall' => 'boolean',
             'outcall' => 'boolean',
         ];
+    }
+
+    /**
+     * ISO-3166-1 alpha-2 codes are stored uppercase, matching `cities.country_code`.
+     *
+     * Every country/region feature joins these two columns, so the casing has to
+     * be an invariant rather than something a case-insensitive MySQL collation
+     * happens to hide. See migration 2026_08_14_000001_normalize_country_codes.
+     */
+    public function setCountryCodeAttribute($value): void
+    {
+        $this->attributes['country_code'] = $value === null || $value === ''
+            ? null
+            : strtoupper((string) $value);
     }
 
     /**
@@ -361,9 +383,12 @@ class Profile extends Model implements HasMedia
      * Check if the profile's owner is currently online.
      *
      * Real activity always wins. Otherwise, fall back to a simulated status
-     * so the site doesn't look empty: ~30% of profiles appear online at a
-     * time, deterministically per profile within a rotating 20-minute
-     * window so the badge doesn't flicker on every page load.
+     * so the site doesn't look empty: a configured share of profiles appears
+     * online at a time, deterministically per profile within a rotating
+     * 20-minute window so the badge doesn't flicker on every page load.
+     *
+     * Setting the share to 0 in the admin turns the fallback off, leaving the
+     * badge to reflect genuine activity only.
      */
     public function isOnline(): bool
     {
@@ -371,9 +396,20 @@ class Profile extends Model implements HasMedia
             return true;
         }
 
+        // Admin setting wins; config/site.php is the fallback before the
+        // setting has ever been saved.
+        $share = Setting::getInt(
+            'site.online_simulation_percent',
+            (int) config('site.online_simulation_percent', 0)
+        );
+
+        if ($share <= 0) {
+            return false;
+        }
+
         $window = intdiv(time(), 1200);
 
-        return (crc32($this->id . ':' . $window) % 100) < 30;
+        return (crc32($this->id . ':' . $window) % 100) < $share;
     }
 
     /**
@@ -543,6 +579,16 @@ class Profile extends Model implements HasMedia
                 }
             }
         });
+
+        // The public country/region lists carry live profile counts, which are
+        // memoised because they render on every page. Any write that could move
+        // a count (status, visibility, verification, city, country, deletion)
+        // drops the memoised lists so the numbers never go stale.
+        $forgetCountryStats = static fn () => \App\Services\CountryStatsService::flush();
+
+        static::saved($forgetCountryStats);
+        static::deleted($forgetCountryStats);
+        static::restored($forgetCountryStats);
     }
 
     /**
@@ -658,11 +704,32 @@ class Profile extends Model implements HasMedia
     }
 
     /**
-     * Get the average rating for this profile.
+     * Get the average rating for this profile, on the 1-5 star scale.
+     *
+     * Derived from the stored percentages rather than the whole-star mirror,
+     * so a profile rated 70% averages 3.5 and not the 4 that made 70% look
+     * like 80% everywhere it was displayed.
      */
     public function getAverageRating(): float
     {
-        return round($this->ratings()->avg('rating') ?? 0, 1);
+        return RatingScale::toStars($this->getAveragePercentage());
+    }
+
+    /**
+     * Get the average rating as the percentage it was actually given as.
+     */
+    public function getAveragePercentage(): float
+    {
+        // Prefer the eager-loaded aggregate when the query supplied one, so
+        // listing pages do not issue a query per card. Tested with
+        // array_key_exists rather than ??, because a profile with no ratings
+        // has the key present and null — which would otherwise fall through
+        // to a query for every card on the page.
+        $average = array_key_exists('ratings_avg_percentage', $this->attributes)
+            ? $this->attributes['ratings_avg_percentage']
+            : $this->ratings()->avg('percentage');
+
+        return round((float) ($average ?? 0), 1);
     }
 
     /**
@@ -674,16 +741,28 @@ class Profile extends Model implements HasMedia
     }
 
     /**
-     * Get the rating from a specific user.
+     * Get the star rating a specific user gave this profile.
      */
     public function getUserRating($userId): ?int
     {
         if (!$userId) {
             return null;
         }
-        
+
         $rating = $this->ratings()->where('user_id', $userId)->first();
         return $rating ? $rating->rating : null;
+    }
+
+    /**
+     * Get the percentage a specific user gave this profile.
+     */
+    public function getUserPercentage($userId): ?int
+    {
+        if (! $userId) {
+            return null;
+        }
+
+        return $this->ratings()->where('user_id', $userId)->value('percentage');
     }
 
     /**
@@ -720,11 +799,29 @@ class Profile extends Model implements HasMedia
      */
     public function rateBy(?User $user, int $stars): string
     {
+        if ($stars < 1 || $stars > 5) {
+            return self::RATE_INVALID;
+        }
+
+        return $this->rateByPercentage($user, $stars * 20);
+    }
+
+    /**
+     * Record a rating given as a percentage (1-100).
+     *
+     * The percentage is what the member actually chose, so it is what gets
+     * stored. `rating` is written alongside it as the whole-star mirror that
+     * ordering queries and the admin table read.
+     *
+     * @return string One of the self::RATE_* constants.
+     */
+    public function rateByPercentage(?User $user, int $percentage): string
+    {
         if (! $user) {
             return self::RATE_NOT_LOGGED_IN;
         }
 
-        if ($stars < 1 || $stars > 5) {
+        if ($percentage < 1 || $percentage > 100) {
             return self::RATE_INVALID;
         }
 
@@ -737,11 +834,12 @@ class Profile extends Model implements HasMedia
             return self::RATE_OWN_PROFILE;
         }
 
+        $stars = RatingScale::toWholeStars($percentage);
         $isNewRating = ! $this->ratings()->where('user_id', $user->id)->exists();
 
         Rating::updateOrCreate(
             ['profile_id' => $this->id, 'user_id' => $user->id],
-            ['rating' => $stars]
+            ['rating' => $stars, 'percentage' => $percentage]
         );
 
         if ($isNewRating && $this->user_id) {
@@ -749,7 +847,9 @@ class Profile extends Model implements HasMedia
                 $this->user_id,
                 __('notifications.rating.received_title'),
                 __('notifications.rating.received_message', ['stars' => $stars]),
-                $stars >= 4 ? 'success' : ($stars >= 3 ? 'info' : 'warning')
+                $percentage >= RatingScale::THRESHOLD_GOOD
+                    ? 'success'
+                    : ($percentage >= RatingScale::THRESHOLD_FAIR ? 'info' : 'warning')
             );
         }
 

@@ -29,10 +29,39 @@ class PageSeeder extends Seeder
         
         // Create standard pages
         $this->createStandardPages();
-        
+
+        // Menu order per the design: Úvod · VIP a Premium · FAQ · Etika · Kontakt.
+        // ("Úvod" is a static link, not a CMS page, so it is not listed here.)
+        $this->applyDesignOrder();
+
         $this->command->info('✅ Pages seeded successfully!');
     }
     
+    /**
+     * Put the CMS pages in the order the design shows.
+     *
+     * Ordering used to come from `created_at`, which put FAQ ahead of
+     * VIP & Premium. Anything not listed keeps a high number so it sorts after
+     * the menu pages, and an admin can override any of it.
+     */
+    private function applyDesignOrder(): void
+    {
+        $order = [
+            'vip-premium' => 10,
+            'faq' => 20,
+            'ethics' => 30,
+            'contact' => 40,
+            'privacy-policy' => 50,
+            'terms-of-service' => 60,
+        ];
+
+        foreach ($order as $slug => $position) {
+            Page::where('slug', $slug)->update(['sort_order' => $position]);
+        }
+
+        Page::whereNotIn('slug', array_keys($order))->update(['sort_order' => 100]);
+    }
+
     /**
      * Create sample blog posts
      */

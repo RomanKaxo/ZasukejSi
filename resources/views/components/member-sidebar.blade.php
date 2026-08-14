@@ -108,7 +108,9 @@
                 {{ __('front.account.sidebar.premium_description') }}
             </p>
 
-            <a href="#" style="width:159px;height:45px;border-radius:8px;background:#00B80F;display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:#FFFFFF;text-decoration:none;margin-top:10px;">
+            {{-- Was href="#". Goes to the membership plans, where the member can
+                 actually buy Premium. --}}
+            <a href="{{ route('account.member.membership.index') }}" style="width:159px;height:45px;border-radius:8px;background:#00B80F;display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:#FFFFFF;text-decoration:none;margin-top:10px;">
                 {{ __('front.account.sidebar.premium_button') }}
             </a>
         </div>

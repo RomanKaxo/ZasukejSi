@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Ratings\Tables;
 
+use App\Support\RatingScale;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -28,10 +29,23 @@ class RatingsTable
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('rating')
+                // The percentage is what the member chose and what averages
+                // are computed from; the stars below are its projection.
+                TextColumn::make('percentage')
                     ->label('Hodnocení')
                     ->badge()
-                    ->formatStateUsing(fn ($state) => str_repeat('★', (int) $state))
+                    ->formatStateUsing(fn ($state) => $state . ' %')
+                    ->color(fn ($state) => match (true) {
+                        $state >= RatingScale::THRESHOLD_GOOD => 'success',
+                        $state >= RatingScale::THRESHOLD_FAIR => 'warning',
+                        default => 'danger',
+                    })
+                    ->sortable(),
+
+                TextColumn::make('rating')
+                    ->label('Hvězdy')
+                    ->formatStateUsing(fn ($state, $record) => str_repeat('★', (int) $state)
+                        . '  (' . number_format(RatingScale::toStars((float) $record->percentage), 1) . '/5)')
                     ->sortable(),
 
                 TextColumn::make('created_at')
@@ -41,15 +55,11 @@ class RatingsTable
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
-                SelectFilter::make('rating')
-                    ->label('Počet hvězd')
-                    ->options([
-                        1 => '1',
-                        2 => '2',
-                        3 => '3',
-                        4 => '4',
-                        5 => '5',
-                    ]),
+                SelectFilter::make('percentage')
+                    ->label('Hodnocení')
+                    ->options(fn () => collect(RatingScale::options())
+                        ->mapWithKeys(fn (int $percentage) => [$percentage => $percentage . ' %'])
+                        ->all()),
             ])
             ->recordActions([
                 DeleteAction::make()

@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Profile;
+use App\Services\CountryStatsService;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
@@ -230,129 +231,40 @@ class CountryProfiles extends Component
         return $count;
     }
 
+    /**
+     * The country list rendered in the sidebar.
+     *
+     * Previously this had two branches: a real aggregation, and a hardcoded
+     * "mock" list that was returned for both `profiles.index` and
+     * `countries.index` — i.e. always, on the only two routes that render this
+     * component. The mock listed eight countries three times over, each
+     * repetition carrying a different invented count.
+     *
+     * Both are gone. CountryStatsService is now the single source of truth for
+     * every country list on the site; the shape below is preserved exactly so
+     * the Blade template is untouched.
+     */
     public function getCountriesProperty()
     {
-        if ($this->usesEnglishHomepageMockCountries()) {
-            return $this->getEnglishHomepageCountries();
-        }
-
-        $codes = include base_path('lang/en/codes.php');
-        $regions = DB::table('profiles')
-            ->join('cities', function ($join) {
-                $join->on('cities.country_code', '=', 'profiles.country_code')
-                    ->whereRaw('LOWER(cities.name) = LOWER(profiles.city)');
-            })
-            ->where('profiles.is_public', true)
-            ->whereNotNull('profiles.country_code')
-            ->whereNotNull('profiles.verified_at')
-            ->whereNotNull('cities.admin_name')
-            ->where('cities.admin_name', '!=', '')
-            ->select('profiles.country_code', 'cities.admin_name', DB::raw('COUNT(*) as profiles_count'))
-            ->groupBy('profiles.country_code', 'cities.admin_name')
-            ->get();
-
-        if ($regions->isEmpty()) {
-            return DB::table('profiles')
-                ->where('profiles.is_public', true)
-                ->whereNotNull('profiles.country_code')
-                ->whereNotNull('profiles.verified_at')
-                ->select('profiles.country_code', DB::raw('COUNT(*) as profiles_count'))
-                ->groupBy('profiles.country_code')
-                ->get()
-                ->map(function ($country) use ($codes) {
-                    return (object) [
-                        'country_code' => $country->country_code,
-                        'country_name' => $codes[strtolower($country->country_code)] ?? $country->country_code,
-                        'profiles_count' => $country->profiles_count,
-                        'regions' => collect(),
-                    ];
-                })
-                ->sortBy('country_name')
-                ->values();
-        }
-
-        return $regions
-            ->groupBy('country_code')
-            ->map(function ($regionsInCountry, $code) use ($codes) {
-                return (object) [
-                    'country_code' => $code,
-                    'country_name' => $codes[strtolower($code)] ?? $code,
-                    'profiles_count' => $regionsInCountry->sum('profiles_count'),
-                    'regions' => $regionsInCountry
-                        ->map(fn ($region) => [
-                            'region' => $region->admin_name,
-                            'profiles_count' => $region->profiles_count,
-                        ])
-                        ->sortBy(fn (array $region) => $this->regionSortKey($region['region']), SORT_NATURAL | SORT_FLAG_CASE)
-                        ->values(),
-                ];
-            })
-            ->sortBy('country_name')
-            ->values();
-    }
-
-    private function usesEnglishHomepageMockCountries(): bool
-    {
-        return request()->routeIs('profiles.index') || request()->routeIs('countries.index');
-    }
-
-    private function getEnglishHomepageCountries()
-    {
-        $primaryCountries = [
-            ['country_code' => 'al', 'country_name' => 'Albánie', 'profiles_count' => 484, 'regions' => []],
-            ['country_code' => 'ad', 'country_name' => 'Andorra', 'profiles_count' => 45, 'regions' => []],
-            ['country_code' => 'am', 'country_name' => 'Arménie', 'profiles_count' => 24, 'regions' => []],
-            ['country_code' => 'be', 'country_name' => 'Belgie', 'profiles_count' => 114, 'regions' => []],
-            ['country_code' => 'by', 'country_name' => 'Bělorusko', 'profiles_count' => 20, 'regions' => []],
-            [
-                'country_code' => 'ba',
-                'country_name' => 'Bosna a Hercegovina',
-                'profiles_count' => 50,
-                'regions' => [
-                    ['region' => 'Bihać', 'profiles_count' => 484],
-                    ['region' => 'Brčko', 'profiles_count' => 45],
-                    ['region' => 'Doboj', 'profiles_count' => 24],
-                    ['region' => 'Foča', 'profiles_count' => 114],
-                    ['region' => 'Jahorina', 'profiles_count' => 457],
-                    ['region' => 'Konjic', 'profiles_count' => 87],
-                    ['region' => 'Neum', 'profiles_count' => 70],
-                    ['region' => 'Prijedor', 'profiles_count' => 457],
-                    ['region' => 'Šamac', 'profiles_count' => 87],
-                ],
-            ],
-            ['country_code' => 'bg', 'country_name' => 'Bulharsko', 'profiles_count' => 457, 'regions' => []],
-            ['country_code' => 'me', 'country_name' => 'Černá Hora', 'profiles_count' => 87, 'regions' => []],
-            ['country_code' => 'cz', 'country_name' => 'Česká republika', 'profiles_count' => 70, 'regions' => []],
-        ];
-
-        $repeatedCountries = [
-            ['country_code' => 'al', 'country_name' => 'Albánie', 'profiles_count' => 484, 'regions' => []],
-            ['country_code' => 'ad', 'country_name' => 'Andorra', 'profiles_count' => 45, 'regions' => []],
-            ['country_code' => 'am', 'country_name' => 'Arménie', 'profiles_count' => 24, 'regions' => []],
-            ['country_code' => 'be', 'country_name' => 'Belgie', 'profiles_count' => 114, 'regions' => []],
-            ['country_code' => 'by', 'country_name' => 'Bělorusko', 'profiles_count' => 20, 'regions' => []],
-            ['country_code' => 'bg', 'country_name' => 'Bulharsko', 'profiles_count' => 457, 'regions' => []],
-            ['country_code' => 'me', 'country_name' => 'Černá Hora', 'profiles_count' => 87, 'regions' => []],
-            ['country_code' => 'cz', 'country_name' => 'Česká republika', 'profiles_count' => 70, 'regions' => []],
-        ];
-
-        return collect($primaryCountries)
-            ->concat($repeatedCountries)
-            ->concat($repeatedCountries)
-            ->map(function (array $country) {
-                return (object) [
-                    'country_code' => $country['country_code'],
-                    'country_name' => $country['country_name'],
-                    'profiles_count' => $country['profiles_count'],
-                    'regions' => collect($country['regions'] ?? []),
-                ];
-            })
+        return app(CountryStatsService::class)
+            ->countries()
+            ->map(fn ($country) => (object) [
+                'country_code' => $country->code,
+                'country_name' => $country->name,
+                'profiles_count' => $country->profiles_count,
+                'regions' => $country->regions->map(fn ($region) => [
+                    'region' => $region->name,
+                    'profiles_count' => $region->profiles_count,
+                ])->values(),
+            ])
             ->values();
     }
 
     public function getProfilesProperty()
     {
-        $query = Profile::with(['user:id,name,last_activity', 'media'])
+        // `segments` is eager-loaded because x-profile-card calls allSegments()
+        // on every row — without it each card issues its own pivot query.
+        $query = Profile::with(['user:id,name,last_activity', 'media', 'segments'])
             ->where('status', 'approved')
             ->where('is_public', true)
             ->whereNotNull('verified_at')
@@ -377,10 +289,10 @@ class CountryProfiles extends Component
             $sortDirection = $this->sortRecommendation === 'desc' ? 'desc' : 'asc';
             $reverseSortDirection = $this->sortRecommendation === 'desc' ? 'asc' : 'desc';
             
-            $query->withAvg('ratings', 'rating')
+            $query->withAvg('ratings', 'percentage')
                   ->withExists('activeSubscription as is_vip')
                   ->orderBy('is_vip', $sortDirection)
-                  ->orderBy('ratings_avg_rating', $sortDirection)
+                  ->orderBy('ratings_avg_percentage', $sortDirection)
                   ->orderBy('created_at', $reverseSortDirection);
         }
 
@@ -426,6 +338,11 @@ class CountryProfiles extends Component
         });
     }
 
+    /**
+     * @deprecated Region ordering now lives in CountryStatsService, which owns
+     *             every country/region list on the site. Kept only so any
+     *             external caller keeps working; delete once none remain.
+     */
     protected function regionSortKey(string $region): string
     {
         $normalizedRegion = mb_strtolower($region);

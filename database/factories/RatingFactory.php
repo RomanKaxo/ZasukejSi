@@ -5,71 +5,63 @@ namespace Database\Factories;
 use App\Models\Profile;
 use App\Models\Rating;
 use App\Models\User;
+use App\Support\RatingScale;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Faker\Factory as FakerFactory;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Rating>
+ *
+ * The percentage is the stored truth; `rating` is derived from it so factory
+ * rows can never contradict the two columns the way hand-written ones could.
  */
 class RatingFactory extends Factory
 {
     protected $model = Rating::class;
 
     /**
-     * Define the model's default state.
-     *
      * @return array<string, mixed>
      */
     public function definition(): array
     {
-        // Ensure Faker is available (important for production)
-        if (!function_exists('fake')) {
-            $faker = FakerFactory::create();
-        } else {
-            $faker = fake();
-        }
-        
         return [
             'profile_id' => Profile::factory(),
             'user_id' => User::factory(),
-            'rating' => $faker->numberBetween(1, 5),
+            'percentage' => fake()->numberBetween(1, 100),
         ];
     }
 
-    /**
-     * Create a positive rating (4-5 stars).
-     */
+    /** Build a rating from a percentage, keeping the star mirror in step. */
+    public function percentage(int $percentage): static
+    {
+        return $this->state(fn () => ['percentage' => RatingScale::clamp($percentage)]);
+    }
+
+    /** Create a positive rating. */
     public function positive(): static
     {
-        return $this->state(function (array $attributes) {
-            if (!function_exists('fake')) {
-                $faker = FakerFactory::create();
-            } else {
-                $faker = fake();
-            }
-            return [
-                'rating' => $faker->numberBetween(4, 5),
-            ];
-        });
+        return $this->state(fn () => ['percentage' => fake()->numberBetween(80, 100)]);
     }
 
-    /**
-     * Create a neutral rating (3 stars).
-     */
+    /** Create a neutral rating. */
     public function neutral(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'rating' => 3,
-        ]);
+        return $this->state(fn () => ['percentage' => 60]);
     }
 
-    /**
-     * Create a negative rating (1-2 stars).
-     */
+    /** Create a negative rating. */
     public function negative(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'rating' => fake()->numberBetween(1, 2),
-        ]);
+        return $this->state(fn () => ['percentage' => fake()->numberBetween(1, 39)]);
+    }
+
+    public function configure(): static
+    {
+        // The model keeps `rating` in step on save; this only covers models
+        // that are made but never persisted.
+        return $this->afterMaking(function (Rating $rating) {
+            if ($rating->percentage > 0) {
+                $rating->rating = RatingScale::toWholeStars((float) $rating->percentage);
+            }
+        });
     }
 }

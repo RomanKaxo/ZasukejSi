@@ -1,0 +1,202 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\MemberSubscription;
+use App\Models\SubscriptionType;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Stripe\StripeClient;
+
+/**
+ * Stripe checkout for the member Premium membership.
+ *
+ * Kept separate from SubscriptionCheckoutController, which sells VIP tiers to
+ * providers and lives behind `gender:female` + `profile.exists` middleware.
+ * A member has no profile, so it could not have been reused.
+ *
+ * Deliberately renders no views: `success` redirects back to the member
+ * dashboard with a flash message. The activation itself happens in the
+ * webhook, which is the only source of truth for "was this actually paid".
+ */
+class MembershipCheckoutController extends \Illuminate\Routing\Controller
+{
+    /**
+     * Plans available to members, plus the membership currently in force.
+     * Returned as data so any caller (page, panel, API) can render it.
+     *
+     * @return array{types: \Illuminate\Support\Collection, active: ?MemberSubscription}
+     */
+    public static function membershipOptions(?int $userId = null): array
+    {
+        $userId = $userId ?? Auth::id();
+
+        return [
+            'types' => SubscriptionType::active()->forMembers()->ordered()->get(),
+            'active' => $userId
+                ? MemberSubscription::forUser($userId)->active()->latest('ends_at')->first()
+                : null,
+        ];
+    }
+
+    /**
+     * The plan list a member buys from — the destination of the sidebar's
+     * "Začít PRÉMIUM" button and of the profile detail's "Obnovit přístup".
+     */
+    public function index()
+    {
+        return view('member.membership', self::membershipOptions());
+    }
+
+    public function checkout(Request $request, SubscriptionType $subscriptionType)
+    {
+        $user = Auth::user();
+
+        abort_unless($subscriptionType->isForMembers(), 404);
+        abort_unless($subscriptionType->is_active, 404);
+
+        $stripe = new StripeClient(config('services.stripe.secret'));
+
+        $session = $stripe->checkout->sessions->create([
+            'mode' => 'payment',
+            'payment_method_types' => ['card'],
+            'customer_email' => $user->email,
+            'line_items' => [[
+                'quantity' => 1,
+                'price_data' => [
+                    'currency' => 'czk',
+                    'unit_amount' => (int) round($subscriptionType->price * 100),
+                    'product_data' => [
+                        'name' => $subscriptionType->getTranslation('name', app()->getLocale()),
+                    ],
+                ],
+            ]],
+            'success_url' => route('account.member.membership.success') . '?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url' => route('account.member.membership.cancel'),
+            // `member_user_id` is what tells the shared webhook this is a
+            // membership rather than a profile VIP tier.
+            'metadata' => [
+                'member_user_id' => $user->id,
+                'subscription_type_id' => $subscriptionType->id,
+            ],
+        ]);
+
+        return redirect($session->url);
+    }
+
+    /**
+     * Stripe returns here after checkout. The membership is created by the
+     * webhook, so this only reports what actually happened — it never claims
+     * success on its own.
+     */
+    public function success(Request $request)
+    {
+        $sessionId = (string) $request->query('session_id', '');
+        $user = Auth::user();
+
+        $paid = false;
+
+        if ($sessionId !== '') {
+            try {
+                $session = (new StripeClient(config('services.stripe.secret')))
+                    ->checkout->sessions->retrieve($sessionId);
+
+                $paid = ($session->payment_status ?? null) === 'paid'
+                    && (int) ($session->metadata->member_user_id ?? 0) === $user->id;
+            } catch (\Throwable $e) {
+                Log::warning('Could not verify Stripe membership session', [
+                    'session_id' => $sessionId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        $activated = $paid && MemberSubscription::query()
+            ->where('user_id', $user->id)
+            ->where('metadata->stripe_session_id', $sessionId)
+            ->exists();
+
+        $status = match (true) {
+            $activated => __('front.membership.activated'),
+            $paid => __('front.membership.activation_pending'),
+            default => __('front.membership.not_verified'),
+        };
+
+        return redirect()
+            ->route('account.member.dashboard')
+            ->with($paid ? 'status' : 'error', $status);
+    }
+
+    public function cancel()
+    {
+        return redirect()
+            ->route('account.member.dashboard')
+            ->with('status', __('front.membership.checkout_cancelled'));
+    }
+
+    /**
+     * Turn a paid Stripe session into a membership.
+     *
+     * Called from the shared webhook in SubscriptionCheckoutController. Renewing
+     * an existing membership extends it instead of stacking a second row, so a
+     * member who buys twice keeps one continuous end date.
+     */
+    public static function activateFromSession(object $session): void
+    {
+        $userId = $session->metadata->member_user_id ?? null;
+        $typeId = $session->metadata->subscription_type_id ?? null;
+
+        if (! $userId || ! $typeId) {
+            Log::warning('Stripe membership session missing metadata', ['session_id' => $session->id]);
+
+            return;
+        }
+
+        // Stripe retries webhooks; the session id keeps this idempotent.
+        $alreadyProcessed = MemberSubscription::query()
+            ->where('metadata->stripe_session_id', $session->id)
+            ->exists();
+
+        if ($alreadyProcessed) {
+            return;
+        }
+
+        $type = SubscriptionType::find($typeId);
+
+        if (! $type || ! $type->isForMembers()) {
+            Log::warning('Stripe membership session referenced a non-member plan', [
+                'session_id' => $session->id,
+                'subscription_type_id' => $typeId,
+            ]);
+
+            return;
+        }
+
+        $metadata = [
+            'stripe_session_id' => $session->id,
+            'stripe_payment_intent' => $session->payment_intent ?? null,
+            'amount_total' => $session->amount_total ?? null,
+            'currency' => $session->currency ?? null,
+        ];
+
+        $existing = MemberSubscription::forUser($userId)->active()->latest('ends_at')->first();
+
+        if ($existing) {
+            $existing->renew($type->duration_days);
+            $existing->update(['metadata' => $metadata]);
+
+            return;
+        }
+
+        MemberSubscription::create([
+            'user_id' => $userId,
+            'subscription_type_id' => $type->id,
+            'starts_at' => now(),
+            'ends_at' => now()->addDays($type->duration_days),
+            'status' => MemberSubscription::STATUS_ACTIVE,
+            'auto_renew' => false,
+            'metadata' => $metadata,
+        ]);
+    }
+}

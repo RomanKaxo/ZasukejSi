@@ -7,10 +7,19 @@
     
     $cardContent = (isset($profile->content) && is_array($profile->content)) ? $profile->content : [];
     $cardLocation = $cardContent['card_location'] ?? ($profile->city ?? null);
-    $cardHeightCm = $cardContent['card_height_cm'] ?? 168;
+    // No default height: a profile that has not filled it in shows an empty
+    // placeholder, never a plausible-looking number. The tile itself stays.
+    // NOTE: this only works because every query feeding this card selects the
+    // `content` column — see ProfileList/ProfileSlider::getPublicProfileColumns().
+    $cardHeightCm = $cardContent['card_height_cm'] ?? null;
     
     // Check if profile is a model instance (has methods) or a plain object
     $isModel = method_exists($profile, 'isVerified');
+
+    // Ratings are Premium-gated: a guest or a member without an active
+    // membership sees a padlock instead of the number, which is what the design
+    // shows on every card. Providers and admins always see the value.
+    $ratingLocked = ! \Illuminate\Support\Facades\Gate::allows('view-ratings');
     
     // Compute profile URL - handle both model and plain object cases
     $profileUrl = $shouldBlur ? '#' : ($isModel ? route('profiles.show', $profile) : route('profiles.show', $profile->id ?? 0));
@@ -41,14 +50,10 @@
         $imageUrls = [$profile->image_url];
     }
     
-    // Fallback if no images found
-    if (empty($imageUrls)) {
-        $imageUrls = [
-            asset('images/models/model6.png'),
-            asset('images/models/model10.png'),
-            asset('images/models/model12.png')
-        ];
-    }
+    // No stock-photo fallback: showing images/models/*.png for a profile that has
+    // no photos puts a stranger's picture on someone's card. When the list is
+    // empty the media box below renders its neutral silhouette placeholder
+    // instead, at the same 210x265 size, so the card keeps its geometry.
 
     $imageUrls = array_slice($imageUrls, 0, 5);
     $hasMultiplePhotos = count($imageUrls) > 1;
@@ -231,10 +236,22 @@
 
             <div class="flex {{ $isReported ? 'justify-center' : 'justify-between gap-x-3' }} home-profile-card-stats" style="{{ $isReported ? 'gap:6px;' : '' }}">
                 <div class="home-profile-card-stat" style="width:{{ $simpleMode ? '95px' : '82px' }};height:30px;border-radius:8px;background:#F2F2F2;display:flex;align-items:center;justify-content:center;">
-                    <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:11px;color:#505050;">{{ $cardHeightCm }} cm</div>
+                    <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:11px;color:#505050;">
+                        @if(filled($cardHeightCm))
+                            {{ $cardHeightCm }} cm
+                        @else
+                            <x-empty-value />
+                        @endif
+                    </div>
                 </div>
                 <div class="home-profile-card-stat" style="width:{{ $simpleMode ? '95px' : '82px' }};height:30px;border-radius:8px;background:#F2F2F2;display:flex;align-items:center;justify-content:center;">
-                    <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:11px;color:#505050;">{{ $profileAge }} {{ __('front.profiles.list.years') }}</div>
+                    <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:11px;color:#505050;">
+                        @if(filled($profileAge))
+                            {{ $profileAge }} {{ __('front.profiles.list.years') }}
+                        @else
+                            <x-empty-value />
+                        @endif
+                    </div>
                 </div>
             </div>
 
@@ -251,15 +268,43 @@
             @if(!$simpleMode && !$isReported)
             <!-- Rating Badge -->
             @php
-                $rating = $isModel && $profile->getTotalRatings() > 0 
-                    ? $profile->getAverageRating() 
-                    : (4.5 + ((isset($profile->id) ? $profile->id : 0) % 5) * 0.1);
+                // Null when nobody has rated yet. This used to synthesise a
+                // score from the profile id — `4.5 + (id % 5) * 0.1` — so every
+                // unrated profile advertised a 4.5–4.9 rating it had not earned.
+                $rating = $isModel && $profile->getTotalRatings() > 0
+                    ? $profile->getAverageRating()
+                    : null;
             @endphp
-            <div class="home-profile-card-rating-badge" style="display:flex;align-items:center;justify-content:center;gap:8px;height:40px;border-radius:8px;{{ $rating < 4 ? 'background:transparent;border: 2px solid #F2F2F2;' : 'background:#E6FEE8;' }}padding:0 12px;">
-                <div style="font-family:'Plus Jakarta Sans', sans-serif;font-weight:600;font-size:11px;color:#505050;line-height:1;">{{ __('front.profiles.list.rating') }}:</div>
-                <div style="font-family:'Poppins', sans-serif;font-weight:600;font-size:14px;color:#5C2D62;line-height:1;">{{ number_format($rating, 1) }}/5</div>
-                <x-icons name="HeartFilled" class="inline-block flex-shrink-0" style="width:20px;height:20px;" preserveColors="true" />
-            </div>
+            @if($ratingLocked)
+                {{-- The design keeps the rating behind a lock and sells the key
+                     as the Premium membership — hence the "Premium účet vám
+                     odemkne hodnocení" bar on the detail page. Two-tone pill,
+                     label on the left, pink padlock on the right. --}}
+                <div class="home-profile-card-rating-badge home-profile-card-rating-badge--locked"
+                     style="display:flex;align-items:stretch;height:40px;border-radius:8px;overflow:hidden;"
+                     title="{{ __('front.membership.locked_rating') }}">
+                    <div style="display:flex;align-items:center;justify-content:center;flex:1;background:#D9D9D9;padding:0 12px;font-family:'Plus Jakarta Sans', sans-serif;font-weight:600;font-size:11px;color:#505050;line-height:1;">
+                        {{ __('front.profiles.list.rating') }}:
+                    </div>
+                    <div style="display:flex;align-items:center;justify-content:center;flex:1;background:#E8E8E8;">
+                        <x-icons name="lock" class="inline-block flex-shrink-0" style="width:18px;height:18px;color:#DD3888;" />
+                    </div>
+                </div>
+            @else
+                <div class="home-profile-card-rating-badge" style="display:flex;align-items:center;justify-content:center;gap:8px;height:40px;border-radius:8px;{{ $rating === null || $rating < 4 ? 'background:transparent;border: 2px solid #F2F2F2;' : 'background:#E6FEE8;' }}padding:0 12px;">
+                    <div style="font-family:'Plus Jakarta Sans', sans-serif;font-weight:600;font-size:11px;color:#505050;line-height:1;">{{ __('front.profiles.list.rating') }}:</div>
+                    <div style="font-family:'Poppins', sans-serif;font-weight:600;font-size:14px;color:#5C2D62;line-height:1;">
+                        @if($rating !== null)
+                            {{ number_format($rating, 1) }}/5
+                        @else
+                            <x-empty-value />
+                        @endif
+                    </div>
+                    @if($rating !== null)
+                        <x-icons name="HeartFilled" class="inline-block flex-shrink-0" style="width:20px;height:20px;" preserveColors="true" />
+                    @endif
+                </div>
+            @endif
             @endif
 
         </div>

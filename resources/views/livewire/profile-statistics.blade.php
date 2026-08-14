@@ -1,4 +1,21 @@
-<div id="profileStatsRoot-{{ $instanceId }}">
+{{--
+    The chart data rides on this root element, not inside the <script> below.
+
+    Livewire does not re-execute inline scripts on update, so a script that
+    closed over server-rendered values could never redraw — and the canvas
+    itself sits inside a wire:ignore block (Chart.js owns that DOM), so the
+    attribute cannot live there either. The root element is re-rendered on every
+    month change, so reading from it is what makes the arrows work.
+--}}
+<div id="profileStatsRoot-{{ $instanceId }}"
+     data-chart="{{ json_encode([
+         'labels' => $chartLabels,
+         'values' => $chartValues,
+         'colors' => $chartColors,
+         'vip' => $chartVip,
+         'yAxisMax' => $yAxisMax,
+         'yAxisStep' => $yAxisStep,
+     ]) }}">
     @php
         $chartId = 'profileStatsChart-' . $instanceId;
         $badgesId = 'profileStatsBadges-' . $instanceId;
@@ -10,6 +27,14 @@
     <h3 class="mb-4 text-left max-[426px]:hidden" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">
         {{ $variant === 'detail' ? __('front.account.statistics.detail_views_title') : __('front.account.statistics.profile_views_title') }}
     </h3>
+
+    @unless($this->hasProfile)
+        {{-- No profile means no statistics. This used to fall back to
+             Profile::first(), i.e. it charted a stranger's traffic. --}}
+        <div class="rounded-[15px] border border-[#F2F2F2] p-8 text-center" style="font-family:'Poppins',sans-serif;color:#505050;">
+            {{ __('front.account.statistics.no_profile') }}
+        </div>
+    @else
 
     <div class="w-full h-[510px] rounded-[15px] relative mx-auto max-[426px]:hidden">
     <!-- Chart will draw its own grid; removed static HTML grid to avoid duplication -->
@@ -30,17 +55,19 @@
             <div class="w-[255px] h-px bg-[#E6E6E6]"></div>
 
             <div class="flex items-center gap-4">
-                <button id="stats-prev" type="button" aria-label="Previous month" class="w-[45px] h-[45px] rounded-[8px] bg-[#DD3888] flex items-center justify-center text-white transition">
+                {{-- These two arrows were inert markup with no handler at all,
+                     so the chart could only ever show the current month. --}}
+                <button id="stats-prev" type="button" wire:click="previousMonth" aria-label="Previous month" class="w-[45px] h-[45px] rounded-[8px] bg-[#DD3888] flex items-center justify-center text-white transition">
                     <svg width="7" height="9" viewBox="0 0 7 9" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M6 0L0 4.5L6 9V0Z" fill="currentColor"/>
                     </svg>
                 </button>
 
                 <div class="text-[#5C2D62] font-bold text-[16px] whitespace-nowrap" style="font-family:Poppins, sans-serif;">
-                    {{ isset($currentMonth) ? $currentMonth->locale('cs')->translatedFormat('F Y') : now()->locale('cs')->translatedFormat('F Y') }}
+                    {{ $this->currentMonth->locale(app()->getLocale())->translatedFormat('F Y') }}
                 </div>
 
-                <button id="stats-next" type="button" aria-label="Next month" class="w-[45px] h-[45px] rounded-[8px] bg-[#FFF4F9] flex items-center justify-center text-[#DD3888] transition">
+                <button id="stats-next" type="button" wire:click="nextMonth" @disabled($this->isCurrentMonth) aria-label="Next month" class="w-[45px] h-[45px] rounded-[8px] bg-[#FFF4F9] flex items-center justify-center text-[#DD3888] transition @if($this->isCurrentMonth) opacity-40 cursor-not-allowed @endif">
                     <svg width="7" height="9" viewBox="0 0 7 9" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M1 0L7 4.5L1 9V0Z" fill="currentColor"/>
                     </svg>
@@ -133,12 +160,21 @@
         const badgesId = @json($badgesId);
         const controlsId = @json($controlsId);
         const chartGlobalName = @json($chartGlobalName);
-        const labels = @json($chartLabels ?? []);
-        const values = @json($chartValues ?? []);
-        const yAxisMax = @json($yAxisMax ?? 120);
-        const yAxisStep = @json($yAxisStep ?? 20);
         const canvas = document.getElementById(chartId);
         if (!canvas) { console.warn('profileStatsChart canvas not found'); return; }
+
+        // Read the freshly rendered data off the component root, so switching
+        // months redraws with the new values instead of the ones present at
+        // page load.
+        const root = document.getElementById(@json('profileStatsRoot-' . $instanceId));
+        let chartData = {};
+        try { chartData = JSON.parse((root && root.dataset.chart) || '{}'); } catch (e) { console.warn('Invalid chart data', e); }
+
+        const labels = chartData.labels || [];
+        const values = chartData.values || [];
+        const barColors = chartData.colors || [];
+        const yAxisMax = chartData.yAxisMax ?? 10;
+        const yAxisStep = chartData.yAxisStep ?? 2;
 
         // Ensure canvas has explicit pixel size so Chart.js can draw correctly
         const parentRect = canvas.parentElement.getBoundingClientRect();
@@ -230,7 +266,7 @@
                 labels: labels,
                 datasets: [{
                     data: values,
-                    backgroundColor: @json($chartColors ?? []),
+                    backgroundColor: barColors,
                     barThickness: 30,
                     maxBarThickness: 30,
                     borderRadius: { topLeft: 8, topRight: 8, bottomLeft: 0, bottomRight: 0 },
@@ -276,7 +312,7 @@
         });
 
         // VIP flags from server
-        const vipFlags = @json($chartVip ?? []);
+        const vipFlags = chartData.vip || [];
 
         // Render VIP badges positioned precisely under each bar using Chart.js coordinates
         function renderVipBadges(chart) {
@@ -365,18 +401,24 @@
         });
     }
 
-    if (window.Livewire) {
-        document.addEventListener('livewire:load', initChart);
-        Livewire.hook('message.processed', (message, component) => {
-            // Re-init after Livewire updates
-            initChart();
-        });
-    } else {
-        document.addEventListener('DOMContentLoaded', initChart);
-    }
+    // Livewire 3 hook names. This used to listen for 'livewire:load' and
+    // 'message.processed', which are Livewire 2 — neither ever fired here, so
+    // the chart was never redrawn after an update.
+    document.addEventListener('livewire:initialized', function () {
+        initChart();
+
+        if (window.Livewire && typeof window.Livewire.hook === 'function') {
+            window.Livewire.hook('morph.updated', function () {
+                initChart();
+            });
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', initChart);
 
     // Try to initialize immediately in case events already fired
     initChart();
 })();
 </script>
+    @endunless
 </div>

@@ -5,6 +5,9 @@ namespace App\Livewire;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\DB;
 use App\Models\City;
+use App\Models\User;
+use App\Services\CountryStatsService;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 
 class SearchProfiles extends Component
@@ -52,24 +55,28 @@ class SearchProfiles extends Component
         return app()->getLocale() === 'en';
     }
 
+    /**
+     * Countries offered in the location search.
+     *
+     * This used to be a hardcoded array of nine countries with invented counts,
+     * disagreeing with the two other hardcoded country lists elsewhere in the
+     * app. It now reads from CountryStatsService, the single source of truth.
+     *
+     * The returned shape (lowercase `code`, `name`, `count`, `regions` as plain
+     * strings) is preserved so the Blade template stays untouched.
+     */
     protected function englishCountriesData(): array
     {
-        return [
-            [
-                'code' => 'ba',
-                'name' => 'Bosna a Hercegovina',
-                'count' => 50,
-                'regions' => ['Bihać', 'Brčko', 'Doboj', 'Foča', 'Jahorina', 'Konjic', 'Neum', 'Prijedor', 'Šamac'],
-            ],
-            ['code' => 'al', 'name' => 'Albánie', 'count' => 484, 'regions' => []],
-            ['code' => 'ad', 'name' => 'Andorra', 'count' => 45, 'regions' => []],
-            ['code' => 'am', 'name' => 'Arménie', 'count' => 24, 'regions' => []],
-            ['code' => 'be', 'name' => 'Belgie', 'count' => 114, 'regions' => []],
-            ['code' => 'by', 'name' => 'Bělorusko', 'count' => 20, 'regions' => []],
-            ['code' => 'bg', 'name' => 'Bulharsko', 'count' => 457, 'regions' => []],
-            ['code' => 'me', 'name' => 'Černá Hora', 'count' => 87, 'regions' => []],
-            ['code' => 'cz', 'name' => 'Česká republika', 'count' => 70, 'regions' => []],
-        ];
+        return app(CountryStatsService::class)
+            ->countries()
+            ->map(fn ($country) => [
+                // The template builds flagcdn URLs from this, which need lowercase.
+                'code' => strtolower($country->code),
+                'name' => $country->name,
+                'count' => $country->profiles_count,
+                'regions' => $country->regions->pluck('name')->all(),
+            ])
+            ->all();
     }
 
     protected function resolveEnglishCountry(?string $name, ?string $code): ?array
@@ -90,6 +97,32 @@ class SearchProfiles extends Component
     public function getEnglishCountriesProperty()
     {
         return $this->englishCountriesData();
+    }
+
+    /**
+     * Registered provider/member counts shown in the search hero badges.
+     *
+     * These were printed as the hardcoded "1 420" and "382". They are cached
+     * briefly because the badges render on every page and the numbers move
+     * slowly.
+     */
+    public function getGirlsCountProperty(): int
+    {
+        return $this->registeredCount('female');
+    }
+
+    public function getGentsCountProperty(): int
+    {
+        return $this->registeredCount('male');
+    }
+
+    private function registeredCount(string $gender): int
+    {
+        return Cache::remember(
+            "registered-users-count:{$gender}",
+            now()->addMinutes(5),
+            fn () => User::where('gender', $gender)->count()
+        );
     }
 
     /**
@@ -191,7 +224,9 @@ class SearchProfiles extends Component
             return [];
         }
 
-        // prefer static regions declared for the mock english countries
+        // Prefer the regions that actually hold profiles for this country; only
+        // fall back to the full admin_name/city list when none do, so the picker
+        // leads somewhere useful rather than to empty result pages.
         foreach ($this->englishCountriesData() as $country) {
             if ((isset($country['code']) && strcasecmp($country['code'], $code) === 0)
                 || (isset($country['name']) && $country['name'] === $this->country)) {

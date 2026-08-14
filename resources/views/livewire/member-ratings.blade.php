@@ -26,13 +26,15 @@
     <div class="w-full bg-white rounded-2xl overflow-hidden mx-auto lg:mx-0 rating-photo-card" style="max-width:510px;">
         @if($selectedProfile)
             @php
+                // Real photos only — no stock model image standing in for a
+                // profile that has none, and no canned service list.
                 $ratingImageUrls = $selectedProfile->getAllImages()->map(fn($i) => $i->getUrl())->values()->all();
-                if (empty($ratingImageUrls)) {
-                    $ratingImageUrls = [$selectedProfile->getFirstImageUrl() ?? asset('images/models/model6.png')];
+                if (empty($ratingImageUrls) && $selectedProfile->getFirstImageUrl()) {
+                    $ratingImageUrls = [$selectedProfile->getFirstImageUrl()];
                 }
                 $ratingServices = ($selectedProfile->services && $selectedProfile->services->count() > 0)
                     ? $selectedProfile->services->pluck('name')
-                    : collect(__('front.profiles.detail_page.services_default'));
+                    : collect();
                 $ratingVisibleServices = $ratingServices->take(10);
                 $ratingMoreServicesCount = $ratingServices->count() - $ratingVisibleServices->count();
                 $ratingSlideCount = count($ratingImageUrls) + 1;
@@ -220,61 +222,61 @@
                     </div>
 
                     {{-- 100% Rating --}}
-                    <div class="relative" wire:key="rating-action-100">
-                        @if($userRating == 5)
+                    <div class="relative" wire:key="rating-action-high">
+                        @if($userPercentage === $ratingOptions['high'])
                             <p class="absolute left-0 right-0 text-center whitespace-nowrap" style="bottom:100%;margin-bottom:8px;font-family:'Poppins',sans-serif;font-weight:500;font-size:13px;color:#FFFFFF;text-shadow:4px 4px 4px #00000066;">
                                 {{ __('front.member.ratings.your_rating') }}
                             </p>
                         @endif
                         <button
-                            wire:click="rateProfile(100)"
+                            wire:click="rateProfile({{ $ratingOptions['high'] }})"
                             wire:loading.attr="disabled"
                             class="flex items-center justify-center gap-1.5 shrink-0 text-white
-                                {{ $userRating == 5 ? 'ring-2 ring-white' : '' }}"
+                                {{ $userPercentage === $ratingOptions['high'] ? 'ring-2 ring-white' : '' }}"
                             style="width:100px;height:45px;border-radius:8px;background:#00B80F;box-shadow:4px 4px 4px #00000040;"
                             title="{{ __('front.member.ratings.rate_100') }}"
                         >
-                            <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:#FFFFFF;">100 %</span>
+                            <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:#FFFFFF;">{{ $ratingOptions['high'] }} %</span>
                             <x-icons name="happy-smile" class="w-6 h-6 text-white" />
                         </button>
                     </div>
 
                     {{-- 70% Rating --}}
-                    <div class="relative" wire:key="rating-action-70">
-                        @if($userRating == 4)
+                    <div class="relative" wire:key="rating-action-mid">
+                        @if($userPercentage === $ratingOptions['mid'])
                             <p class="absolute left-0 right-0 text-center whitespace-nowrap" style="bottom:100%;margin-bottom:8px;font-family:'Poppins',sans-serif;font-weight:500;font-size:13px;color:#FFFFFF;text-shadow:4px 4px 4px #00000066;">
                                 {{ __('front.member.ratings.your_rating') }}
                             </p>
                         @endif
                         <button
-                            wire:click="rateProfile(70)"
+                            wire:click="rateProfile({{ $ratingOptions['mid'] }})"
                             wire:loading.attr="disabled"
                             class="flex items-center justify-center gap-1.5 shrink-0 text-white
-                                {{ $userRating == 4 ? 'ring-2 ring-white' : '' }}"
+                                {{ $userPercentage === $ratingOptions['mid'] ? 'ring-2 ring-white' : '' }}"
                             style="width:100px;height:45px;border-radius:8px;background:#FFB700;box-shadow:4px 4px 4px #00000040;"
                             title="{{ __('front.member.ratings.rate_70') }}"
                         >
-                            <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:#FFFFFF;">70 %</span>
+                            <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:#FFFFFF;">{{ $ratingOptions['mid'] }} %</span>
                             <x-icons name="smile" class="w-5 h-5 text-white" />
                         </button>
                     </div>
 
                     {{-- 30% Rating --}}
-                    <div class="relative" wire:key="rating-action-30">
-                        @if($userRating == 2)
+                    <div class="relative" wire:key="rating-action-low">
+                        @if($userPercentage === $ratingOptions['low'])
                             <p class="absolute left-0 right-0 text-center whitespace-nowrap" style="bottom:100%;margin-bottom:8px;font-family:'Poppins',sans-serif;font-weight:500;font-size:13px;color:#FFFFFF;text-shadow:4px 4px 4px #00000066;">
                                 {{ __('front.member.ratings.your_rating') }}
                             </p>
                         @endif
                         <button
-                            wire:click="rateProfile(30)"
+                            wire:click="rateProfile({{ $ratingOptions['low'] }})"
                             wire:loading.attr="disabled"
                             class="flex items-center justify-center gap-1.5 shrink-0 text-white
-                                {{ $userRating == 2 ? 'ring-2 ring-white' : '' }}"
+                                {{ $userPercentage === $ratingOptions['low'] ? 'ring-2 ring-white' : '' }}"
                             style="width:100px;height:45px;border-radius:8px;background:#F47216;box-shadow:4px 4px 4px #00000040;"
                             title="{{ __('front.member.ratings.rate_30') }}"
                         >
-                            <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:#FFFFFF;">30 %</span>
+                            <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:#FFFFFF;">{{ $ratingOptions['low'] }} %</span>
                             <x-icons name="meh" class="w-5 h-5 text-white" />
                         </button>
                     </div>
@@ -299,42 +301,42 @@
         {{-- Mobile-only Rating Buttons (100% / 70% / 30%) --}}
         <div class="flex md:hidden flex-col items-center" style="margin-top:14px;" wire:key="rating-mobile-rate-{{ $selectedProfile->id }}">
             <p style="font-family:'Poppins',sans-serif;font-weight:500;font-size:13px;color:#505050;min-height:16px;">
-                @if(in_array($userRating, [5, 4, 2]))
+                @if(in_array($userPercentage, array_values($ratingOptions), true))
                     {{ __('front.member.ratings.your_rating') }}
                 @endif
             </p>
             <div class="flex items-center justify-center gap-[6px]" style="margin-top:4px;">
                 <button
-                    wire:click="rateProfile(100)"
+                    wire:click="rateProfile({{ $ratingOptions['high'] }})"
                     wire:loading.attr="disabled"
                     class="flex items-center justify-center gap-1 text-white flex-shrink-0
-                        {{ $userRating == 5 ? 'ring-2 ring-[#00B80F]' : '' }}"
+                        {{ $userPercentage === $ratingOptions['high'] ? 'ring-2 ring-[#00B80F]' : '' }}"
                     style="width:96px;height:45px;border-radius:8px;background:#00B80F;"
                     title="{{ __('front.member.ratings.rate_100') }}"
                 >
-                    <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:14px;color:#FFFFFF;">100 %</span>
+                    <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:14px;color:#FFFFFF;">{{ $ratingOptions['high'] }} %</span>
                     <x-icons name="happy-smile" class="w-5 h-5 text-white" />
                 </button>
                 <button
-                    wire:click="rateProfile(70)"
+                    wire:click="rateProfile({{ $ratingOptions['mid'] }})"
                     wire:loading.attr="disabled"
                     class="flex items-center justify-center gap-1 text-white flex-shrink-0
-                        {{ $userRating == 4 ? 'ring-2 ring-[#FFB700]' : '' }}"
+                        {{ $userPercentage === $ratingOptions['mid'] ? 'ring-2 ring-[#FFB700]' : '' }}"
                     style="width:96px;height:45px;border-radius:8px;background:#FFB700;"
                     title="{{ __('front.member.ratings.rate_70') }}"
                 >
-                    <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:14px;color:#FFFFFF;">70 %</span>
+                    <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:14px;color:#FFFFFF;">{{ $ratingOptions['mid'] }} %</span>
                     <x-icons name="smile" class="w-5 h-5 text-white" />
                 </button>
                 <button
-                    wire:click="rateProfile(30)"
+                    wire:click="rateProfile({{ $ratingOptions['low'] }})"
                     wire:loading.attr="disabled"
                     class="flex items-center justify-center gap-1 text-white flex-shrink-0
-                        {{ $userRating == 2 ? 'ring-2 ring-[#F47216]' : '' }}"
+                        {{ $userPercentage === $ratingOptions['low'] ? 'ring-2 ring-[#F47216]' : '' }}"
                     style="width:96px;height:45px;border-radius:8px;background:#F47216;"
                     title="{{ __('front.member.ratings.rate_30') }}"
                 >
-                    <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:14px;color:#FFFFFF;">30 %</span>
+                    <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:14px;color:#FFFFFF;">{{ $ratingOptions['low'] }} %</span>
                     <x-icons name="meh" class="w-5 h-5 text-white" />
                 </button>
             </div>
@@ -357,10 +359,11 @@
                     // All three figures come from the eager-loaded query in
                     // MemberRatings::availableProfilesQuery(), so this loop
                     // issues no additional database queries.
-                    $userRatingForProfile = $profile->ratings->first()?->rating;
-                    $userRatingPercent = $userRatingForProfile ? ($userRatingForProfile / 5) * 100 : 0;
-                    $avgRatingPercent = $profile->ratings_count > 0 ? (($profile->ratings_avg_rating ?? 0) / 5) * 100 : 0;
-                    $ratingBarColor = fn ($percent) => $percent >= 80 ? '#00B80F' : ($percent >= 40 ? '#FFB700' : '#F47216');
+                    // The percentage the member actually chose. Deriving it back
+                    // from the star mirror drew a 70% rating as 80%.
+                    $userRatingPercent = (int) ($profile->ratings->first()?->percentage ?? 0);
+                    $avgRatingPercent = $profile->ratings_count > 0 ? round((float) ($profile->ratings_avg_percentage ?? 0), 1) : 0;
+                    $ratingBarColor = fn ($percent) => \App\Support\RatingScale::color((float) $percent);
                 @endphp
                 <button
                     wire:click="selectProfile({{ $profile->id }})"

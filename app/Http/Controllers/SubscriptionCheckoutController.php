@@ -18,7 +18,10 @@ class SubscriptionCheckoutController extends \Illuminate\Routing\Controller
         $user = Auth::user();
         $profile = $user->profile;
 
-        $types = SubscriptionType::active()->orderBy('sort_order')->get();
+        // Scoped to provider plans: since member Premium plans live in the same
+        // table (distinguished by `audience`), an unscoped query would offer a
+        // provider the membership meant for members.
+        $types = SubscriptionType::active()->forProfiles()->orderBy('sort_order')->get();
 
         $activeSubscription = $profile
             ? $profile->subscriptions()
@@ -65,10 +68,56 @@ class SubscriptionCheckoutController extends \Illuminate\Routing\Controller
         return redirect($session->url);
     }
 
+    /**
+     * Stripe redirects here after checkout.
+     *
+     * This used to render an unconditional "payment successful" page for
+     * anything that hit the URL, including a hand-typed one — the page said the
+     * subscription was active while the webhook (which is what actually creates
+     * it) may not have arrived, or may never arrive.
+     *
+     * The session is now verified against Stripe, and the page distinguishes
+     * "paid and active", "paid, activation pending" and "not paid".
+     */
     public function success(Request $request)
     {
+        $sessionId = (string) $request->query('session_id', '');
+        $profile = Auth::user()?->profile;
+
+        $paid = false;
+        $subscription = null;
+
+        if ($sessionId !== '') {
+            try {
+                $session = (new StripeClient(config('services.stripe.secret')))
+                    ->checkout->sessions->retrieve($sessionId);
+
+                $paid = ($session->payment_status ?? null) === 'paid';
+
+                // Only trust a session that belongs to this user's profile.
+                if ($paid && $profile && (int) ($session->metadata->profile_id ?? 0) !== $profile->id) {
+                    $paid = false;
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Could not verify Stripe checkout session', [
+                    'session_id' => $sessionId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        if ($paid && $profile) {
+            $subscription = Subscription::query()
+                ->where('profile_id', $profile->id)
+                ->where('metadata->stripe_session_id', $sessionId)
+                ->first();
+        }
+
         return view('account.subscription-success', [
-            'sessionId' => $request->query('session_id'),
+            'sessionId' => $sessionId,
+            'paid' => $paid,
+            // Null while the webhook has not been processed yet.
+            'subscription' => $subscription,
         ]);
     }
 
@@ -95,7 +144,15 @@ class SubscriptionCheckoutController extends \Illuminate\Routing\Controller
 
         if ($event->type === 'checkout.session.completed') {
             $session = $event->data->object;
-            $this->activateSubscription($session);
+
+            // One Stripe endpoint serves both products. The metadata says which:
+            // `member_user_id` is a member's Premium membership, `profile_id` is
+            // a provider's VIP tier.
+            if (! empty($session->metadata->member_user_id)) {
+                MembershipCheckoutController::activateFromSession($session);
+            } else {
+                $this->activateSubscription($session);
+            }
         }
 
         return response('OK', Response::HTTP_OK);

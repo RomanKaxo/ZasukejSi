@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use App\Models\Page;
+use App\Models\User;
+use App\Services\DatabaseTranslationLoader;
+use App\Support\Locales;
 use BezhanSalleh\LanguageSwitch\LanguageSwitch;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
@@ -15,7 +18,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Let the database override lang files, so every `__()` string on the
+        // site becomes editable from the admin. Files stay the defaults.
         //
+        // Registered by extending the container's existing binding rather than
+        // replacing it, so Laravel's own path/namespace setup still applies.
+        $this->app->extend('translation.loader', function ($loader, $app) {
+            return new DatabaseTranslationLoader($app['files'], $app['path.lang']);
+        });
     }
 
     /**
@@ -28,18 +38,17 @@ class AppServiceProvider extends ServiceProvider
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
 
-        // Configure language switch
+        // Configure language switch — driven by config/locales.php so adding a
+        // language does not need a change here.
         $languageSwitch = LanguageSwitch::make()
-            ->locales(['en', 'cs'])
-            ->labels([
-                'en' => 'English',
-                'cs' => 'Čeština',
-            ])
-            ->flags([
-                'en' => 'https://flagcdn.com/w20/gb.png',
-                'cs' => 'https://flagcdn.com/w20/cz.png',
-            ])
-            ->displayLocale('cs')
+            ->locales(Locales::codes())
+            ->labels(collect(Locales::all())
+                ->map(fn (array $meta) => $meta['native'])
+                ->all())
+            ->flags(collect(Locales::all())
+                ->map(fn (array $meta, string $code) => asset($meta['flag']))
+                ->all())
+            ->displayLocale(Locales::source())
             ->visible(insidePanels: true, outsidePanels: false)
             ->renderHook('panels::global-search.after');
 
@@ -51,11 +60,20 @@ class AppServiceProvider extends ServiceProvider
             return $user->hasRole('admin');
         });
 
+        // Profile ratings are behind the paid membership — the lock icon the
+        // design shows on every card, and the "Premium účet vám odemkne
+        // hodnocení" bar on the detail page. Guests never see them.
+        Gate::define('view-ratings', function (?User $user) {
+            return $user?->canSeeRatings() ?? false;
+        });
+
         // Share navigation pages with all views
         View::composer('components.navbar', function ($view) {
             $pages = Page::where('display_in_menu', true)
                 ->where('is_published', true)
-                ->orderBy('created_at', 'asc')
+                // Ordered by the admin-managed sort_order; created_at alone put
+                // FAQ ahead of VIP & Premium, against the design.
+                ->ordered()
                 ->get();
             
             $view->with('navPages', $pages);
@@ -65,7 +83,9 @@ class AppServiceProvider extends ServiceProvider
         View::composer('components.footer', function ($view) {
             $pages = Page::where('display_in_footer', true)
                 ->where('is_published', true)
-                ->orderBy('created_at', 'asc')
+                // Ordered by the admin-managed sort_order; created_at alone put
+                // FAQ ahead of VIP & Premium, against the design.
+                ->ordered()
                 ->get();
             
             $view->with('footerPages', $pages);

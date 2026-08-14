@@ -64,9 +64,17 @@ class DatabaseSeeder extends Seeder
             'view_profile',
         ]);
 
+        // CMS pages drive the header navigation, the footer links and the
+        // homepage news section. The seeder existed but was never registered,
+        // so the pages table stayed empty and all three fell back to hardcoded
+        // markup.
+        $this->call(PageSeeder::class);
+
         // Seed cities for autocomplete (must run before profiles are created)
         $this->call(CitySeeder::class);
         $this->call(SubscriptionTypeSeeder::class);
+        // Premium plans for members — separate audience, same table.
+        $this->call(MemberSubscriptionTypeSeeder::class);
         $this->call(SegmentSeeder::class);
 
         // Create admin user
@@ -355,5 +363,10 @@ class DatabaseSeeder extends Seeder
         $this->call(DevProfileSeeder::class);
 
         $this->call(ReportSeeder::class);
+
+        // Must run after every profile exists: it lists the countries that hold
+        // profiles alongside the ones the site displayed before the `countries`
+        // table replaced the hardcoded arrays.
+        $this->call(CountrySeeder::class);
     }
 }

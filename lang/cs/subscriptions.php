@@ -28,6 +28,18 @@ return [
     ],
 
     // Status labels
+    // Who a plan is sold to
+    'audience' => [
+        'profile' => 'Profil (VIP pro dívky)',
+        'member' => 'Členství (Premium pro muže)',
+    ],
+    'member_subscription' => [
+        'singular' => 'Členské předplatné',
+        'plural' => 'Členská předplatná',
+        'navigation' => 'Členská předplatná',
+        'user' => 'Člen',
+    ],
+
     'status' => [
         'active' => 'Aktivní',
         'expired' => 'Vypršelo',
@@ -59,6 +71,9 @@ return [
         'feature_value' => 'Popis',
         'add_feature' => 'Přidat funkci',
         'features_helper' => 'Přidejte páry klíč-hodnota pro funkce předplatného (např. "prioritni_zobrazeni" => "Profil se zobrazuje první ve vyhledávání")',
+
+        'audience' => 'Určeno pro',
+        'audience_helper' => 'Profilové plány kupují dívky pro svůj inzerát, členské plány kupují muži pro odemčení hodnocení.',
 
         'profile' => 'Profil',
         'subscription_type' => 'Typ předplatného',

@@ -46,6 +46,24 @@ return [
         'expiring_soon_message' => 'Your subscription will expire in :days days. Consider renewing.',
     ],
 
+    // Premium membership notifications (for members)
+    'membership' => [
+        'created_title' => 'Premium membership activated',
+        'created_message' => 'Your :type membership is active until :ends_at.',
+
+        'renewed_title' => 'Premium membership renewed',
+        'renewed_message' => 'Your membership has been renewed until :ends_at.',
+
+        'expired_title' => 'Premium membership expired',
+        'expired_message' => 'Your membership has expired. Profile ratings are hidden again.',
+
+        'cancelled_title' => 'Premium membership cancelled',
+        'cancelled_message' => 'Your membership has been cancelled.',
+
+        'expiring_soon_title' => 'Premium membership expiring soon',
+        'expiring_soon_message' => 'Your membership expires in :days days.',
+    ],
+
     // Favorite notifications (for profile owners)
     'favorite' => [
         'added_title' => 'New Favorite',

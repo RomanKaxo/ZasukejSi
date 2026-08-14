@@ -1,6 +1,32 @@
 <?php
 
 return [
+    // Shared building blocks used across the whole frontend. `common.dash` and
+    // `common.not_specified` back the <x-empty-value /> component: the project
+    // never invents a value, so a missing attribute renders as a neutral
+    // placeholder while its tile/section stays in place.
+    'common' => [
+        'dash' => '—',
+        'not_specified' => 'Not specified',
+    ],
+
+    // Premium membership for members — what unlocks profile ratings.
+    'membership' => [
+        'activated' => 'Your Premium membership is active.',
+        'activation_pending' => 'Payment received. We are activating your membership.',
+        'not_verified' => 'We could not verify this payment. If you were charged, please contact us.',
+        'checkout_cancelled' => 'Payment was cancelled.',
+        'valid_until' => 'Your Premium membership is valid until :date',
+        'locked_rating' => 'Ratings are unlocked by Premium membership',
+        'page_title' => 'Premium membership',
+        'page_description' => 'Unlocks profile ratings, the archive and more.',
+        'current' => 'Current membership',
+        'none' => 'You do not have an active membership yet.',
+        'buy_button' => 'Activate',
+        'extend_button' => 'Extend',
+        'no_plans' => 'No plans are available right now.',
+    ],
+
     'landing' => [
         'wearecommunity' => 'We are a community',
         'fucking' => 'of people who enjoy sex',
@@ -69,6 +95,13 @@ return [
     'account' => [
         'profile_required' => 'You must create your profile first. Fill in the basic information and save your profile.',
         'profile_required_short' => 'Create your profile first',
+        'reviews' => [
+            'average' => 'Average rating',
+            'total' => 'Number of ratings',
+            'anonymous' => 'Anonymous user',
+            'stars' => ':count out of 5 stars',
+            'empty_hint' => 'Ratings will appear here once members rate you.',
+        ],
         'sidebar' => [
             'basic' => 'Basic Information',
             'photos' => 'Photos & Videos',
@@ -192,8 +225,17 @@ return [
                 'sunday' => 'Sunday FROM',
             ],
         ],
+        'completion' => [
+            'prompt' => 'Still missing from your profile:',
+            'about' => 'about you',
+            'photos' => 'photos',
+            'prices' => 'price list',
+            'services' => 'services',
+        ],
+
         'statistics' => [
             'page_title' => 'Statistics',
+            'no_profile' => 'Statistics will appear once you have created a profile.',
             'profile_views_title' => 'Number of Profile Views on the Homepage',
             'detail_views_title' => 'Number of Profile Detail Views',
             'listing_views_title' => 'Listing Impressions',
@@ -264,6 +306,9 @@ return [
         'days' => ':count days',
         'success_title' => 'Payment successful',
         'success_description' => 'Thank you, your subscription is now active.',
+        'activation_pending' => 'Payment received. We are activating your subscription — it will appear in your subscription overview as soon as the confirmation arrives.',
+        'unverified_title' => 'We could not verify this payment',
+        'unverified_description' => 'Stripe does not report this checkout as completed. If you were charged, please contact us — you will not be billed twice.',
         'back_to_subscription' => 'Back to subscription',
     ],
     'auth' => [
@@ -738,6 +783,7 @@ return [
         'received' => 'Received',
         'archived' => 'Archived',
         'go_back' => 'Go back',
+        'mark_all_read' => 'Mark all as read',
         'notification_archived' => 'Notification archived',
         'notification_deleted' => 'Notification deleted',
     ],

@@ -32,6 +32,7 @@ class Page extends Model implements HasMedia
         'content',
         'display_in_menu',
         'display_in_footer',
+        'sort_order',
         'is_published',
     ];
 
@@ -46,6 +47,7 @@ class Page extends Model implements HasMedia
             'content' => 'array',
             'display_in_menu' => 'boolean',
             'display_in_footer' => 'boolean',
+            'sort_order' => 'integer',
             'is_published' => 'boolean',
         ];
     }
@@ -83,6 +85,15 @@ class Page extends Model implements HasMedia
     public function scopeInMenu($query)
     {
         return $query->where('display_in_menu', true);
+    }
+
+    /**
+     * Menu/footer order as configured in the admin. Ties fall back to
+     * creation order so the result is always deterministic.
+     */
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('sort_order')->orderBy('created_at');
     }
 
     /**

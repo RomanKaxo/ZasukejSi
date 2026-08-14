@@ -23,48 +23,25 @@
         return url()->current() . '?' . http_build_query($query);
     };
 
-    $countries = [
-        ['code' => 'al', 'name' => 'Albania', 'count' => 484, 'regions' => []],
-        ['code' => 'ad', 'name' => 'Andorra', 'count' => 45, 'regions' => []],
-        ['code' => 'am', 'name' => 'Armenia', 'count' => 24, 'regions' => []],
-        ['code' => 'be', 'name' => 'Belgium', 'count' => 114, 'regions' => []],
-        ['code' => 'by', 'name' => 'Belarus', 'count' => 20, 'regions' => []],
-        [
-            'code' => 'ba',
-            'name' => 'Bosnia and Herzegovina',
-            'count' => 50,
-            'regions' => [
-                ['name' => 'Bihać', 'count' => 484],
-                ['name' => 'Brčko', 'count' => 45],
-                ['name' => 'Doboj', 'count' => 24],
-                ['name' => 'Foča', 'count' => 114],
-                ['name' => 'Jahorina', 'count' => 457],
-                ['name' => 'Konjic', 'count' => 87],
-                ['name' => 'Neum', 'count' => 70],
-                ['name' => 'Prijedor', 'count' => 457],
-                ['name' => 'Šamac', 'count' => 87],
-            ],
-        ],
-        ['code' => 'bg', 'name' => 'Bulgaria', 'count' => 457, 'regions' => []],
-        ['code' => 'me', 'name' => 'Montenegro', 'count' => 87, 'regions' => []],
-        ['code' => 'cz', 'name' => 'Czech Republic', 'count' => 70, 'regions' => []],
-        ['code' => 'al', 'name' => 'Albania', 'count' => 484, 'regions' => []],
-        ['code' => 'ad', 'name' => 'Andorra', 'count' => 45, 'regions' => []],
-        ['code' => 'am', 'name' => 'Armenia', 'count' => 24, 'regions' => []],
-        ['code' => 'be', 'name' => 'Belgium', 'count' => 114, 'regions' => []],
-        ['code' => 'by', 'name' => 'Belarus', 'count' => 20, 'regions' => []],
-        ['code' => 'bg', 'name' => 'Bulgaria', 'count' => 50, 'regions' => []],
-        ['code' => 'me', 'name' => 'Montenegro', 'count' => 457, 'regions' => []],
-        ['code' => 'cz', 'name' => 'Czech Republic', 'count' => 87, 'regions' => []],
-        ['code' => 'al', 'name' => 'Albania', 'count' => 70, 'regions' => []],
-        ['code' => 'ad', 'name' => 'Andorra', 'count' => 484, 'regions' => []],
-        ['code' => 'am', 'name' => 'Armenia', 'count' => 45, 'regions' => []],
-        ['code' => 'be', 'name' => 'Belgium', 'count' => 24, 'regions' => []],
-        ['code' => 'by', 'name' => 'Belarus', 'count' => 114, 'regions' => []],
-        ['code' => 'bg', 'name' => 'Bulgaria', 'count' => 20, 'regions' => []],
-        ['code' => 'me', 'name' => 'Montenegro', 'count' => 50, 'regions' => []],
-        ['code' => 'cz', 'name' => 'Czech Republic', 'count' => 457, 'regions' => []],
-    ];
+    // This list used to be hardcoded here: the same eight countries repeated
+    // three times over (24 entries), each repetition carrying a different
+    // invented count for the same country. It now comes from
+    // CountryStatsService — the single source of truth shared with the search
+    // component and the countries page — so every country appears exactly once
+    // with its real profile count.
+    $countries = app(\App\Services\CountryStatsService::class)
+        ->countries()
+        ->map(fn ($country) => [
+            // flagcdn URLs below need the lowercase code.
+            'code' => strtolower($country->code),
+            'name' => $country->name,
+            'count' => $country->profiles_count,
+            'regions' => $country->regions->map(fn ($region) => [
+                'name' => $region->name,
+                'count' => $region->profiles_count,
+            ])->all(),
+        ])
+        ->all();
 
     $openCountries = [];
 

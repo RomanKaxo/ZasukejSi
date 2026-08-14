@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Profiles\Pages;
 
 use App\Filament\Resources\Profiles\ProfileResource;
+use App\Support\ProfileContentState;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateProfile extends CreateRecord
@@ -25,6 +26,10 @@ class CreateProfile extends CreateRecord
                 $currentLocale => $data['about']
             ];
         }
+
+        // Normalise the attribute map the same way an edit does, so a blank
+        // field is stored as absent rather than as an empty string.
+        $data['content'] = ProfileContentState::merge(null, $data['content'] ?? []);
 
         return $data;
     }

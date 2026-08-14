@@ -3,6 +3,11 @@
 @section('content')
 <!-- Add top padding to account for fixed navbar -->
 <div class="container mx-auto pt-24 md:pt-38 min-h-screen px-4 md:px-0">
+    {{-- Membership status. Lives here rather than pasted into each member view
+         — it used to be duplicated across five of them, each with a hardcoded
+         date. Renders only when the member actually holds a membership. --}}
+    <x-premium-banner />
+
     <div class="flex flex-col md:flex-row md:justify-center md:gap-[20px]">
         <!-- Sidebar -->
         <div class="{{ ($wideContent ?? false) ? 'md:mt-[110px]' : '' }}">

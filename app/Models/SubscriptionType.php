@@ -11,9 +11,18 @@ class SubscriptionType extends Model
 {
     use HasFactory, HasTranslations;
 
+    /**
+     * Who a plan is sold to. Profile plans are VIP tiers bought by a provider
+     * for her listing; member plans are the Premium membership a male member
+     * buys to unlock ratings.
+     */
+    public const AUDIENCE_PROFILE = 'profile';
+    public const AUDIENCE_MEMBER = 'member';
+
     protected $fillable = [
         'name',
         'slug',
+        'audience',
         'description',
         'features',
         'price',
@@ -48,6 +57,39 @@ class SubscriptionType extends Model
         return $query->orderBy('sort_order');
     }
 
+    /**
+     * VIP tiers sold to providers. Everything that existed before the
+     * `audience` column was added is one of these.
+     */
+    public function scopeForProfiles($query)
+    {
+        return $query->where('audience', self::AUDIENCE_PROFILE);
+    }
+
+    /**
+     * Premium membership sold to members.
+     */
+    public function scopeForMembers($query)
+    {
+        return $query->where('audience', self::AUDIENCE_MEMBER);
+    }
+
+    public function isForMembers(): bool
+    {
+        return $this->audience === self::AUDIENCE_MEMBER;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function audiences(): array
+    {
+        return [
+            self::AUDIENCE_PROFILE => __('subscriptions.audience.profile'),
+            self::AUDIENCE_MEMBER => __('subscriptions.audience.member'),
+        ];
+    }
+
     // Relationships
     public function subscriptions(): HasMany
     {
@@ -57,6 +99,11 @@ class SubscriptionType extends Model
     public function activeSubscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class)->where('status', 'active');
+    }
+
+    public function memberSubscriptions(): HasMany
+    {
+        return $this->hasMany(MemberSubscription::class);
     }
 
     // Helpers

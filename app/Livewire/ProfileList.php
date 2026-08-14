@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Profile;
+use App\Models\ProfileView;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -198,63 +199,52 @@ class ProfileList extends Component
         return \App\Models\Segment::active()->ordered()->get();
     }
 
+    /**
+     * The two posts shown in the "latest news" block under the listing.
+     *
+     * That block used to be two hardcoded cards with a fixed date, a fixed
+     * reading time and filler copy. Posts are managed in the admin under
+     * "Blog příspěvky" (Page with type = blog).
+     */
+    #[Computed]
+    public function latestPosts()
+    {
+        return \App\Models\Page::blog()
+            ->published()
+            ->with('media')
+            ->latest()
+            ->take(2)
+            ->get();
+    }
+
     #[Computed]
     public function profiles()
     {
-        if ($this->usesShowcaseProfiles()) {
-            // Get showcase profiles (identified by content->is_showcase = true or by emails)
-            $showcaseQuery = Profile::with(['user:id,name,last_activity', 'media', 'segments'])
-                ->approved()
-                ->public()
-                ->select($this->getPublicProfileColumns())
-                ->where('content->is_showcase', true)
-                ->orderBy('created_at', 'desc');
-
-            $showcaseProfiles = $showcaseQuery->get();
-
-            // If we have showcase profiles, create a repeated virtual list and paginate it
-            if ($showcaseProfiles->count() > 0) {
-                // Number of pages to expose in pagination (repeat showcase profiles)
-                $pagesCount = 6; // show 6 pages by default
-                $total = $this->perPage * $pagesCount;
-
-                // Determine current page (Livewire maintains $this->page when using WithPagination)
-                $currentPage = $this->page ?? request()->get('page', 1);
-
-                // Build a large repeated collection to cover total items
-                $needed = $total;
-                $result = collect();
-                while ($result->count() < $needed) {
-                    $result = $result->concat($showcaseProfiles);
-                }
-
-                // Slice the items for the current page
-                $offset = ($currentPage - 1) * $this->perPage;
-                $items = $result->slice($offset, $this->perPage)->values();
-
-                // Create a paginator manually with the requested total and current page
-                $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
-                    $items,
-                    $total,
-                    $this->perPage,
-                    $currentPage,
-                    ['path' => request()->url(), 'pageName' => 'page']
-                );
-
-                return $paginator;
-            }
-        }
-
-        // Fallback to normal query if no showcase profiles exist
         $query = Profile::with(['user:id,name,last_activity', 'media', 'segments'])
             ->approved()
             ->public()
-            ->select($this->getPublicProfileColumns())
-            ->orderBy('created_at', 'desc');
+            ->select($this->getPublicProfileColumns());
+
+        // Featured profiles lead the unfiltered homepage. This used to be done by
+        // taking the featured profiles, repeating them until they filled six
+        // pages, and handing the paginator a fabricated total (perPage * 6) — so
+        // the homepage advertised 150 results built from five profiles shown over
+        // and over, and no other profile was reachable from it at all.
+        //
+        // Now it is purely an ordering hint: featured profiles sort first, every
+        // real profile is still in the list, and the total is the real count.
+        // The flag is editable per profile in the admin (ProfileResource).
+        if ($this->usesShowcaseProfiles()) {
+            $query->orderByDesc('content->is_showcase');
+        }
+
+        $query->orderBy('created_at', 'desc');
 
         // Apply search filters (from search component)
         if ($this->countryCode) {
-            $query->whereRaw('LOWER(country_code) = ?', [mb_strtolower($this->countryCode)]);
+            // Codes are stored uppercase (Profile::setCountryCodeAttribute), so a
+            // plain equality can use the index — LOWER() forced a full scan.
+            $query->where('country_code', strtoupper($this->countryCode));
         }
 
         if ($this->region) {
@@ -283,10 +273,10 @@ class ProfileList extends Component
             $sortDirection = $this->sortRecommendation === 'desc' ? 'desc' : 'asc';
             $reverseSortDirection = $this->sortRecommendation === 'desc' ? 'asc' : 'desc';
             
-            $query->withAvg('ratings', 'rating')
+            $query->withAvg('ratings', 'percentage')
                   ->withExists('activeSubscription as is_vip')
                   ->orderBy('is_vip', $sortDirection)
-                  ->orderBy('ratings_avg_rating', $sortDirection)
+                  ->orderBy('ratings_avg_percentage', $sortDirection)
                   ->orderBy('created_at', $reverseSortDirection);
         }
 
@@ -371,9 +361,48 @@ class ProfileList extends Component
 
     public function render()
     {
+        // Impressions are recorded here, over the page that is actually being
+        // rendered. ProfileController@index used to run its own separate query
+        // and log impressions for that result set instead — a different set of
+        // profiles from the ones this component then displayed, which made
+        // `profile_views` wrong at the source and the provider statistics along
+        // with it.
+        $this->recordImpressions();
+
         return view('livewire.profile-list');
     }
 
+    /**
+     * Log one impression per profile visible on the current page.
+     *
+     * A provider's own profile is excluded so browsing the site does not inflate
+     * her own numbers — matching the rule ProfileController already applied to
+     * click views.
+     */
+    private function recordImpressions(): void
+    {
+        // Property access, not profiles() — a direct method call bypasses the
+        // #[Computed] memoisation and would run the whole listing query a
+        // second time on every render.
+        $profileIds = collect($this->profiles->items())->pluck('id')->all();
+
+        $user = auth()->user();
+        if ($user && $user->isFemale() && $user->profile) {
+            $profileIds = array_values(array_filter(
+                $profileIds,
+                fn ($id) => $id !== $user->profile->id
+            ));
+        }
+
+        if ($profileIds !== []) {
+            ProfileView::recordImpressions($profileIds);
+        }
+    }
+
+    /**
+     * True when the visitor has not narrowed the list in any way — the state in
+     * which featured profiles are allowed to sort to the front.
+     */
     private function usesShowcaseProfiles(): bool
     {
         return $this->region === ''
@@ -401,9 +430,13 @@ class ProfileList extends Component
             'id',
             'user_id',
             'display_name',
-            'age', 
+            'age',
             'city',
             'about',
+            // The card reads card_height_cm / card_location out of this JSON
+            // column. Without it every profile fell back to a placeholder height
+            // even when it had a real one stored.
+            'content',
             'verified_at',
             'status',
             'created_at',

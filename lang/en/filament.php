@@ -37,12 +37,25 @@ return [
         'no' => 'No',
     ],
     
+    'dashboard' => [
+        'pending_profiles' => 'Profiles awaiting approval',
+        'pending_profiles_hint' => 'Waiting for review',
+        'open_reports' => 'Open reports',
+        'open_reports_hint' => 'Member and anonymous',
+        'expiring_subscriptions' => 'Subscriptions expiring in 7 days',
+        'expiring_subscriptions_hint' => 'About to lapse',
+        'expiring_subscriptions_split' => 'Profiles: :profiles · Memberships: :members',
+        'traffic_30_days' => 'Clicks in the last 30 days',
+        'traffic_30_days_hint' => 'Listing impressions: :impressions',
+    ],
+
     'navigation' => [
         'dashboard' => 'Dashboard',
         'users' => 'Users',
         'profiles' => 'Profiles',
         'services' => 'Services',
         'segments' => 'Segments',
+        'countries' => 'Countries',
         'pages' => 'Pages',
         'blog_posts' => 'Blog Posts',
         'roles' => 'Roles',

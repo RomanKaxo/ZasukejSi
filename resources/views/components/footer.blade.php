@@ -22,20 +22,31 @@
                 @endguest
             </div>
 
-            <!-- Center: Static Links (3 columns, left-aligned vertically stacked) -->
+            {{-- CMS-driven footer links.
+
+                 These were six <a href="#"> anchors that went nowhere, even
+                 though Page already had a `display_in_footer` column and
+                 AppServiceProvider was already sharing $footerPages with this
+                 component. Which pages appear here is now managed in the admin
+                 (Stránky -> "Zobrazit v patičce"); the three-column layout is
+                 unchanged and fills column by column. --}}
+            @php
+                // Already ordered by AppServiceProvider's view composer
+                // (sort_order, then created_at) — same order as the header.
+                $footerLinks = collect($footerPages ?? [])->filter(fn ($page) => filled($page->slug));
+                $footerColumns = $footerLinks->isEmpty()
+                    ? collect()
+                    : $footerLinks->chunk((int) ceil($footerLinks->count() / 3));
+            @endphp
+
             <div class="footer-links">
-                <div class="footer-col">
-                    <a href="#" class="footer-link">{{ __('front.footer.faq') }}</a>
-                    <a href="#" class="footer-link">{{ __('front.footer.contact') }}</a>
-                </div>
-                <div class="footer-col">
-                    <a href="#" class="footer-link">{{ __('front.footer.privacy') }}</a>
-                    <a href="#" class="footer-link">{{ __('front.footer.ethics') }}</a>
-                </div>
-                <div class="footer-col">
-                    <a href="#" class="footer-link">{{ __('front.footer.vipgirls') }}</a>
-                    <a href="#" class="footer-link">{{ __('front.footer.premiummale') }}</a>
-                </div>
+                @foreach($footerColumns as $column)
+                    <div class="footer-col">
+                        @foreach($column as $page)
+                            <a href="{{ url('/' . ltrim($page->slug, '/')) }}" class="footer-link">{{ $page->title }}</a>
+                        @endforeach
+                    </div>
+                @endforeach
             </div>
 
             <!-- Right: Security box -->
@@ -48,14 +59,14 @@
         </div>
 
         <div class="footer-mobile-languages lg:hidden">
-            <a href="{{ url()->current() }}?locale=cs" class="footer-lang-card {{ app()->getLocale() === 'cs' ? 'is-active' : '' }}">
-                <img src="{{ asset('flags/cs.png') }}" alt="Czech" class="footer-lang-flag">
-                <span class="footer-lang-label">{{ __('front.nav.czech') }}</span>
-            </a>
-            <a href="{{ url()->current() }}?locale=en" class="footer-lang-card {{ app()->getLocale() === 'en' ? 'is-active' : '' }}">
-                <img src="{{ asset('flags/en.png') }}" alt="English" class="footer-lang-flag">
-                <span class="footer-lang-label">{{ __('front.nav.english') }}</span>
-            </a>
+            {{-- Driven by config/locales.php — the design shows three languages
+                 and this used to be hardcoded to two. --}}
+            @foreach(\App\Support\Locales::all() as $code => $meta)
+                <a href="{{ url()->current() }}?locale={{ $code }}" class="footer-lang-card {{ app()->getLocale() === $code ? 'is-active' : '' }}">
+                    <img src="{{ asset($meta['flag']) }}" alt="{{ $meta['native'] }}" class="footer-lang-flag">
+                    <span class="footer-lang-label">{{ $meta['native'] }}</span>
+                </a>
+            @endforeach
         </div>
 
         <!-- Security Info -->

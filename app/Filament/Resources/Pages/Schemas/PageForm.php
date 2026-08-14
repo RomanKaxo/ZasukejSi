@@ -71,6 +71,15 @@ class PageForm
                     ->label(__('pages.form.is_published'))
                     ->helperText(__('pages.form.is_published_helper'))
                     ->default(true),
+
+                // Menu and footer used to be ordered by creation date, so their
+                // order could not be changed at all without re-creating pages.
+                \Filament\Forms\Components\TextInput::make('sort_order')
+                    ->label(__('pages.form.sort_order'))
+                    ->helperText(__('pages.form.sort_order_helper'))
+                    ->numeric()
+                    ->default(0)
+                    ->required(),
             ]);
     }
 }

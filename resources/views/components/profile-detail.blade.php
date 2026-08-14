@@ -1,16 +1,11 @@
 @props(['profile'])
 
 @php
+    // Only the profile's own photos. This used to be padded out to three slides
+    // with images/models/model{6,10,12}.png, i.e. a stranger's photos shown on
+    // someone else's profile page.
     $images = $profile->getAllImages();
     $gallerySlides = $images->map(fn ($image) => $image->getUrl())->values();
-    $galleryFallbacks = collect([
-        asset('images/models/model6.png'),
-        asset('images/models/model10.png'),
-        asset('images/models/model12.png'),
-    ]);
-    while ($gallerySlides->count() < 3) {
-        $gallerySlides->push($galleryFallbacks[$gallerySlides->count() % $galleryFallbacks->count()]);
-    }
     $averageRating = $profile->getAverageRating();
     $totalRatings = $profile->getTotalRatings();
     $isOnline = $profile->isOnline();
@@ -20,44 +15,62 @@
     $contactPhone = $profile->user->phone ?? null;
     $contactDigits = $contactPhone ? preg_replace('/\D+/', '', $contactPhone) : null;
     $prices = collect($profile->local_prices ?? [])->filter(fn ($price) => filled($price['time_hours'] ?? null))->values();
-    $displayPrices = $prices->isNotEmpty()
-        ? $prices
-        : collect([
-            ['time_hours' => 0.5, 'incall_price' => 4000, 'outcall_price' => null],
-            ['time_hours' => 1, 'incall_price' => 6000, 'outcall_price' => null],
-            ['time_hours' => 2, 'incall_price' => 14000, 'outcall_price' => null],
-            ['time_hours' => 3, 'incall_price' => 18000, 'outcall_price' => null],
-        ]);
+    // A profile with no price list shows no prices. It used to fall back to an
+    // invented 4 000 / 6 000 / 14 000 / 18 000 Kč tariff presented as the
+    // provider's own — a price the visitor could be quoted and the provider had
+    // never agreed to.
+    $displayPrices = $prices;
     // International (EUR) prices are only shown on the English version of the
     // page — Czech visitors see local_prices (Kč) only.
     $globalPrices = collect($profile->global_prices ?? [])->filter(fn ($price) => filled($price['time_hours'] ?? null))->values();
     $globalCurrency = (is_array($profile->content) ? ($profile->content['global_currency'] ?? null) : null) ?: 'EUR';
+    // Services, languages and the about text are the provider's own or absent.
+    // Each of these used to fall back to a canned list/paragraph from the
+    // translation files, which reads as the provider's own content.
     $displayServices = ($profile->services && $profile->services->count() > 0)
         ? $profile->services->pluck('name')
-        : collect(__('front.profiles.detail_page.services_default'));
-    $languagesList = collect(explode(',', $profile->languages ?? __('front.profiles.detail_page.languages_default')))
+        : collect();
+    $languagesList = collect(explode(',', (string) ($profile->languages ?? '')))
         ->map(fn ($lang) => trim($lang))
         ->filter()
         ->map(fn ($lang) => \Illuminate\Support\Facades\Lang::has('front.account.services.language_names.' . $lang) ? __('front.account.services.language_names.' . $lang) : $lang)
         ->values();
     $languagesExtraCount = max(0, $languagesList->count() - 2);
-    $languages = $languagesList->take(2)->implode(', ')
-        . ($languagesExtraCount > 0 ? ' ' . __('front.profiles.detail_page.languages_more', ['count' => $languagesExtraCount]) : '');
-    $aboutText = trim((string) ($profile->about ?? '')) !== '' ? $profile->about : __('front.profiles.detail_page.about_default');
+    $languages = $languagesList->isEmpty()
+        ? null
+        : $languagesList->take(2)->implode(', ')
+            . ($languagesExtraCount > 0 ? ' ' . __('front.profiles.detail_page.languages_more', ['count' => $languagesExtraCount]) : '');
+    $aboutText = trim((string) ($profile->about ?? '')) !== '' ? $profile->about : null;
     // Weight/height live in the `content` JSON column and are exposed via
     // accessors on the Profile model, which also derive the imperial values.
     $weightKg = $profile->weight;
     $heightCm = $profile->height;
     $weightLbs = $profile->weight_lbs;
     $heightFeet = $profile->height_feet;
-    $videoPoster = $images->first()?->getUrl() ?: asset('images/models/model16.png');
+    // No stock-photo poster: if there is no real photo the player renders
+    // without one rather than borrowing someone else's picture.
+    $videoPoster = $images->first()?->getUrl();
+    // Targets for the two action links that used to be href="#".
+    // "Obnovit přístup" is the Premium call to action: a signed-in member goes
+    // straight to the plans, everyone else to the public VIP & Premium page.
+    $premiumPage = \App\Models\Page::published()->where('slug', 'vip-premium')->first();
+    $premiumUrl = auth()->check() && auth()->user()->isMale() && ! auth()->user()->hasRole('admin')
+        ? route('account.member.membership.index')
+        : ($premiumPage ? url('/' . $premiumPage->slug) : url('/'));
+    // "Dát hodnocení" opens the member rating screen on this profile.
+    $rateUrl = \Illuminate\Support\Facades\Route::has('account.member.ratings')
+        ? route('account.member.ratings', ['profile' => $profile->id])
+        : url('/');
+
     $messageRouteAvailable = \Illuminate\Support\Facades\Route::has('messages.show');
     $registerRouteAvailable = \Illuminate\Support\Facades\Route::has('register');
     // availability_hours shape: {'always_online': bool, 'schedule': {day => {from, to}}}
     // (see ServicesManager::saveAvailability()).
     $availability = is_array($profile->availability_hours) ? $profile->availability_hours : [];
-    $availabilityStart = '18';
-    $availabilityEnd = '18';
+    // Null until a real schedule says otherwise. These were seeded with '18',
+    // so a provider who had never set her hours advertised 18:00–18:00 daily.
+    $availabilityStart = null;
+    $availabilityEnd = null;
     $availabilityCaption = __('front.profiles.detail_page.availability_every_day');
     $isVerifiedProfile = $profile->isVerified();
     $photoStatusLabel = $isVerifiedProfile ? __('front.profiles.photos.verified_badge') : __('front.profiles.detail_page.photos_unverified');
@@ -74,10 +87,9 @@
         }
     }
 
+    // Up to three real photos; the gallery markup below handles 0, 1, 2 or 3.
     $heroSlides = $gallerySlides->take(3)->values();
-    while ($heroSlides->count() < 3) {
-        $heroSlides->push($galleryFallbacks[$heroSlides->count() % $galleryFallbacks->count()]);
-    }
+    $hasGallery = $gallerySlides->isNotEmpty();
 @endphp
 
 <style>
@@ -871,7 +883,10 @@
 
     .vip-pricing-table th,
     .vip-pricing-table td {
-        padding: 12px 6px;
+        /* 7px + 21px line-height + 7px + 1px border = 36px, the row pitch the
+           design uses (separators at y = 1223 / 1259 / 1295 / 1331). Was 12px,
+           which made each row 45.5px and the table 38px too tall. */
+        padding: 7px 6px;
         border-bottom: 1px solid #f0e7f3;
         font-size: 14px;
     }
@@ -1409,7 +1424,9 @@
             position: relative;
             display: grid;
             grid-template-columns: minmax(180px, 0.88fr) minmax(280px, 1.18fr) minmax(150px, 0.78fr);
-            gap: 14px;
+            /* 10px in the design: tiles end/start at 1020.33→1030.32 and
+               1567.57→1577.57. */
+            gap: 10px;
             align-items: stretch;
         }
 
@@ -1473,7 +1490,10 @@
         }
 
         .vip-profile-meta-table {
-            gap: 18px;
+            /* No gap: each row is a fixed 36px tall (see below), which is the
+               row pitch the design's separators describe. An 18px gap on top of
+               that pushed them 54px apart. */
+            gap: 0;
             margin-bottom: 12px;
         }
 
@@ -1481,6 +1501,11 @@
             gap: 12px;
             padding-bottom: 6px;
             font-size: 12px;
+            /* The design spaces these rows 36px apart (separators in Group 397
+               at y = 296.6 / 332.6 / 368.6 / 404.6 / 440.6); they were 21.6px,
+               leaving the panel 72px short over five rows. */
+            min-height: 36px;
+            align-items: center;
         }
 
         .vip-profile-flags {
@@ -1531,8 +1556,10 @@
         }
 
         .vip-gallery-desktop {
+            /* Exactly the design's tile widths; the gutter is 10px, not 14px —
+               tiles end/start at 1020.33→1030.32 and 1567.57→1577.57. */
             grid-template-columns: 337px 537px 337px;
-            gap: 14px;
+            gap: 10px;
         }
 
         .vip-gallery-desktop-left,
@@ -2510,8 +2537,15 @@
             @endif
 
             <div class="vip-profile-links lg:hidden" aria-label="Profile actions">
-                <a href="#" class="vip-profile-link">{{ __('front.profiles.detail_page.refresh_access') }}</a>
-                <a href="#" class="vip-profile-link">{{ __('front.profiles.detail_page.give_rating') }}</a>
+                {{-- Both used to be href="#". "Obnovit přístup" is the Premium
+                     call to action, "Dát hodnocení" opens the rating screen with
+                     this profile preselected; a guest gets the login modal. --}}
+                <a href="{{ $premiumUrl }}" class="vip-profile-link">{{ __('front.profiles.detail_page.refresh_access') }}</a>
+                @auth
+                    <a href="{{ $rateUrl }}" class="vip-profile-link">{{ __('front.profiles.detail_page.give_rating') }}</a>
+                @else
+                    <a href="#" class="vip-profile-link" x-data @click.prevent="$dispatch('show-login-modal')">{{ __('front.profiles.detail_page.give_rating') }}</a>
+                @endauth
                 <a href="#" class="vip-profile-link" x-data @click.prevent="$dispatch('show-report-modal', { profileId: {{ $profile->id }} })">{{ __('front.profiles.detail_page.report_profile') }}</a>
             </div>
 
@@ -2537,7 +2571,13 @@
             <div class="vip-profile-meta-table">
                 <div class="vip-profile-meta-row">
                     <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.age') }}</span>
-                    <span class="vip-profile-meta-value">{{ $profile->age ?? '19' }} {{ __('front.profiles.detail_page.years') }}</span>
+                    <span class="vip-profile-meta-value">
+                        @if(filled($profile->age))
+                            {{ $profile->age }} {{ __('front.profiles.detail_page.years') }}
+                        @else
+                            <x-empty-value />
+                        @endif
+                    </span>
                 </div>
                 <div class="vip-profile-meta-row">
                     <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.weight') }}</span>
@@ -2565,7 +2605,13 @@
                 </div>
                 <div class="vip-profile-meta-row">
                     <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.languages') }}</span>
-                    <span class="vip-profile-meta-value">{{ $languages }}</span>
+                    <span class="vip-profile-meta-value">
+                        @if(filled($languages))
+                            {{ $languages }}
+                        @else
+                            <x-empty-value />
+                        @endif
+                    </span>
                 </div>
             </div>
 
@@ -2622,11 +2668,18 @@
         <div class="vip-profile-main">
             <div class="vip-profile-desktop-actions hidden lg:grid" aria-label="Profile actions">
                 <div class="vip-profile-desktop-actions-inner">
-                    <a href="#" class="vip-profile-desktop-action">
-                        <img src="{{ asset('images/icons/pinkStar.svg') }}" alt="" aria-hidden="true">
-                        <span>{{ __('front.profiles.detail_page.give_rating') }}</span>
-                    </a>
-                    <a href="#" class="vip-profile-desktop-action">
+                    @auth
+                        <a href="{{ $rateUrl }}" class="vip-profile-desktop-action">
+                            <img src="{{ asset('images/icons/pinkStar.svg') }}" alt="" aria-hidden="true">
+                            <span>{{ __('front.profiles.detail_page.give_rating') }}</span>
+                        </a>
+                    @else
+                        <a href="#" class="vip-profile-desktop-action" x-data @click.prevent="$dispatch('show-login-modal')">
+                            <img src="{{ asset('images/icons/pinkStar.svg') }}" alt="" aria-hidden="true">
+                            <span>{{ __('front.profiles.detail_page.give_rating') }}</span>
+                        </a>
+                    @endauth
+                    <a href="{{ $premiumUrl }}" class="vip-profile-desktop-action">
                         <img src="{{ asset('images/icons/KeySquare.svg') }}" alt="" aria-hidden="true">
                         <span>{{ __('front.profiles.detail_page.refresh_access') }}</span>
                     </a>
@@ -2654,22 +2707,35 @@
                     @endauth
                 </div>
 
+                {{-- The three-card desktop gallery keeps its layout whether the
+                     profile has three photos, one, or none. It used to be padded
+                     out with stock model images so it always looked full. --}}
                 <div class="vip-gallery-desktop">
-                    <button type="button" class="vip-gallery-desktop-card vip-gallery-desktop-left lightbox-trigger" data-index="0">
-                        <img src="{{ $heroSlides->get(0, $heroSlides->first()) }}" alt="{{ $profile->display_name }}">
-                    </button>
-                    <button type="button" class="vip-gallery-desktop-card vip-gallery-desktop-main lightbox-trigger" data-index="{{ $heroSlides->count() > 1 ? 1 : 0 }}">
-                        <img src="{{ $heroSlides->get(1, $heroSlides->first()) }}" alt="{{ $profile->display_name }}">
-                    </button>
-                    <button type="button" class="vip-gallery-desktop-card vip-gallery-desktop-right lightbox-trigger" data-index="{{ $heroSlides->count() > 2 ? 2 : 0 }}">
-                        <img src="{{ $heroSlides->get(2, $heroSlides->first()) }}" alt="{{ $profile->display_name }}">
+                    @if($hasGallery)
+                        <button type="button" class="vip-gallery-desktop-card vip-gallery-desktop-left lightbox-trigger" data-index="0">
+                            <img src="{{ $heroSlides->get(0, $heroSlides->first()) }}" alt="{{ $profile->display_name }}">
+                        </button>
+                        <button type="button" class="vip-gallery-desktop-card vip-gallery-desktop-main lightbox-trigger" data-index="{{ $heroSlides->count() > 1 ? 1 : 0 }}">
+                            <img src="{{ $heroSlides->get(1, $heroSlides->first()) }}" alt="{{ $profile->display_name }}">
+                        </button>
+                        <button type="button" class="vip-gallery-desktop-card vip-gallery-desktop-right lightbox-trigger" data-index="{{ $heroSlides->count() > 2 ? 2 : 0 }}">
+                            <img src="{{ $heroSlides->get(2, $heroSlides->first()) }}" alt="{{ $profile->display_name }}">
+                            @if($gallerySlides->count() > 1)
+                                <span class="vip-gallery-next-hint" aria-hidden="true"></span>
+                            @endif
+                        </button>
                         @if($gallerySlides->count() > 1)
-                            <span class="vip-gallery-next-hint" aria-hidden="true"></span>
+                            <button type="button" class="vip-gallery-desktop-nav vip-gallery-desktop-prev" id="vip-gallery-desktop-prev" aria-label="Previous slide">&#10094;</button>
+                            <button type="button" class="vip-gallery-desktop-nav vip-gallery-desktop-next" id="vip-gallery-desktop-next" aria-label="Next slide">&#10095;</button>
                         @endif
-                    </button>
-                    @if($gallerySlides->count() > 1)
-                        <button type="button" class="vip-gallery-desktop-nav vip-gallery-desktop-prev" id="vip-gallery-desktop-prev" aria-label="Previous slide">&#10094;</button>
-                        <button type="button" class="vip-gallery-desktop-nav vip-gallery-desktop-next" id="vip-gallery-desktop-next" aria-label="Next slide">&#10095;</button>
+                    @else
+                        @foreach (['left', 'main', 'right'] as $slot)
+                            <div class="vip-gallery-desktop-card vip-gallery-desktop-{{ $slot }}" style="display:flex;align-items:center;justify-content:center;background:#f6eef7;">
+                                <svg class="h-16 w-16 text-[#d6c7dc]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                        @endforeach
                     @endif
                 </div>
 
@@ -2708,19 +2774,36 @@
 
             <section class="vip-about-card">
                 <h2 class="vip-section-title">{{ __('front.profiles.detail_page.about_me') }}</h2>
-                <div class="vip-about-copy">{{ $aboutText }}</div>
+                <div class="vip-about-copy">
+                    @if(filled($aboutText))
+                        {{ $aboutText }}
+                    @else
+                        <x-empty-value variant="text" />
+                    @endif
+                </div>
             </section>
 
-            @if($profile->hasVideo() || $displayPrices->isNotEmpty() || $displayServices->isNotEmpty())
+            {{-- Always rendered. The section used to be hidden unless the profile
+                 had a video, prices or services — but the prices themselves were
+                 invented when missing, so in practice it was always "full". The
+                 section now stays put and each block states plainly when the
+                 provider has not filled it in. --}}
                 <section class="vip-media-grid">
                     <div class="vip-video-card-wrap">
                         <h3 class="vip-video-card-title">Video</h3>
                         <div class="vip-video-card">
                             <div class="vip-video-surface">
                                 @if($profile->hasVideo())
-                                    <video id="vip-profile-video" src="{{ $profile->getVideoUrl() }}" preload="metadata" playsinline poster="{{ $videoPoster }}"></video>
-                                @else
+                                    <video id="vip-profile-video" src="{{ $profile->getVideoUrl() }}" preload="metadata" playsinline @if($videoPoster) poster="{{ $videoPoster }}" @endif></video>
+                                @elseif($videoPoster)
                                     <img src="{{ $videoPoster }}" alt="{{ $profile->display_name }}">
+                                @else
+                                    {{-- No video and no photo to stand in for one. --}}
+                                    <div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#f6eef7;">
+                                        <svg class="h-16 w-16 text-[#d6c7dc]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
                                 @endif
                                 <button type="button" class="vip-video-play" id="vip-profile-video-toggle" aria-label="Play video">
                                     <span class="vip-video-play__inner">
@@ -2836,21 +2919,27 @@
                                     </tbody>
                                 </table>
                             </div>
+                        @else
+                            <div class="vip-prices-block">
+                                <h3>{{ __('front.profiles.detail_page.my_prices') }}</h3>
+                                <p><x-empty-value variant="text" /></p>
+                            </div>
                         @endif
 
-                        @if($displayServices->isNotEmpty())
-                            <div class="vip-services-block" style="margin-top:24px;">
-                                <h3 style="margin-bottom:14px;">{{ __('front.profiles.detail_page.services') }}</h3>
+                        <div class="vip-services-block" style="margin-top:24px;">
+                            <h3 style="margin-bottom:14px;">{{ __('front.profiles.detail_page.services') }}</h3>
+                            @if($displayServices->isNotEmpty())
                                 <div class="vip-services-grid">
                                     @foreach($displayServices as $serviceName)
                                         <span class="vip-service-pill">{{ $serviceName }}</span>
                                     @endforeach
                                 </div>
-                            </div>
-                        @endif
+                            @else
+                                <p><x-empty-value variant="text" /></p>
+                            @endif
+                        </div>
                     </div>
                 </section>
-            @endif
         </div>
     </section>
 

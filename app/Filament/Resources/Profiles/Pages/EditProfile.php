@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Profiles\Pages;
 
 use App\Filament\Resources\Profiles\ProfileResource;
+use App\Support\ProfileContentState;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
@@ -37,6 +38,8 @@ class EditProfile extends EditRecord
             $existingTranslations[$currentLocale] = $data['about'];
             $data['about'] = $existingTranslations;
         }
+
+        $data['content'] = ProfileContentState::merge($this->record->content, $data['content'] ?? []);
 
         return $data;
     }

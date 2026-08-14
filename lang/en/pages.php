@@ -21,6 +21,8 @@ return [
         'display_in_footer_helper' => 'Show this page in the website footer',
         'is_published' => 'Published',
         'is_published_helper' => 'Make this page visible to the public',
+        'sort_order' => 'Order',
+        'sort_order_helper' => 'Controls the order in the menu and the footer. Lower numbers appear first.',
     ],
     'table' => [
         'title' => 'Title',

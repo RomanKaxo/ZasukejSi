@@ -54,7 +54,13 @@
     <div class="vip-profile-meta-table">
         <div class="vip-profile-meta-row">
             <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.age') }}</span>
-            <span class="vip-profile-meta-value">{{ $profile->age ?? '19' }} {{ __('front.profiles.detail_page.years') }}</span>
+            <span class="vip-profile-meta-value">
+                @if(filled($profile->age))
+                    {{ $profile->age }} {{ __('front.profiles.detail_page.years') }}
+                @else
+                    <x-empty-value />
+                @endif
+            </span>
         </div>
         <div class="vip-profile-meta-row">
             <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.weight') }}</span>
@@ -74,7 +80,13 @@
         </div>
         <div class="vip-profile-meta-row">
             <span class="vip-profile-meta-label">{{ __('front.profiles.detail_page.languages') }}</span>
-            <span class="vip-profile-meta-value">{{ $profile->languages ?: __('front.profiles.detail_page.languages_default') }}</span>
+            <span class="vip-profile-meta-value">
+                @if(filled($profile->languages))
+                    {{ $profile->languages }}
+                @else
+                    <x-empty-value />
+                @endif
+            </span>
         </div>
     </div>
 

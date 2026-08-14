@@ -37,12 +37,25 @@ return [
         'no' => 'Ne',
     ],
     
+    'dashboard' => [
+        'pending_profiles' => 'Profily ke schválení',
+        'pending_profiles_hint' => 'Čekají na kontrolu',
+        'open_reports' => 'Nevyřízená nahlášení',
+        'open_reports_hint' => 'Přihlášená i anonymní',
+        'expiring_subscriptions' => 'Předplatná do 7 dnů',
+        'expiring_subscriptions_hint' => 'Brzy vyprší',
+        'expiring_subscriptions_split' => 'Profily: :profiles · Členství: :members',
+        'traffic_30_days' => 'Kliknutí za 30 dnů',
+        'traffic_30_days_hint' => 'Zobrazení v seznamu: :impressions',
+    ],
+
     'navigation' => [
         'dashboard' => 'Nástěnka',
         'users' => 'Uživatelé',
         'profiles' => 'Profily',
         'services' => 'Služby',
         'segments' => 'Segmenty',
+        'countries' => 'Země',
         'pages' => 'Stránky',
         'blog_posts' => 'Blog příspěvky',
         'roles' => 'Role',

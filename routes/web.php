@@ -159,6 +159,16 @@ Route::middleware(['auth', 'verified', 'gender:male'])->prefix('account/member')
     Route::get('/girls-of-month', [\App\Http\Controllers\Auth\MemberController::class, 'girlsOfMonth'])->name('girls-of-month');
     Route::get('/archive', [\App\Http\Controllers\Auth\MemberController::class, 'archive'])->name('archive');
     Route::get('/reported', [\App\Http\Controllers\Auth\MemberController::class, 'reported'])->name('reported');
+
+    // Premium membership — what unlocks profile ratings for members.
+    // Mirrors the provider subscription routes; activation happens in the
+    // shared Stripe webhook, not here.
+    Route::prefix('membership')->name('membership.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\MembershipCheckoutController::class, 'index'])->name('index');
+        Route::post('/{subscriptionType}/checkout', [\App\Http\Controllers\MembershipCheckoutController::class, 'checkout'])->name('checkout');
+        Route::get('/success', [\App\Http\Controllers\MembershipCheckoutController::class, 'success'])->name('success');
+        Route::get('/cancel', [\App\Http\Controllers\MembershipCheckoutController::class, 'cancel'])->name('cancel');
+    });
 });
 
 // Dynamic Pages

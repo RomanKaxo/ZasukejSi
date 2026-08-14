@@ -110,11 +110,26 @@
                 <!-- Terms and Submit Button -->
                 <div class="w-full flex items-center justify-between space-x-6">
                     <div class="text-xs text-gray-600 max-w-xs">
+                        {{-- Both were href="#" even though the pages exist as CMS
+                             entries. Rendered as plain text if either is missing,
+                             so the sentence never links nowhere. --}}
+                        @php
+                            $termsPage = \App\Models\Page::published()->where('slug', 'terms-of-service')->first();
+                            $privacyPage = \App\Models\Page::published()->where('slug', 'privacy-policy')->first();
+                        @endphp
                         {{ __('front.auth.register.agree') }}
                         <br/>
-                        <a href="#" class="text-primary-600 hover:text-primary-500">{{ __('front.auth.register.terms') }}</a>
+                        @if($termsPage)
+                            <a href="{{ url('/' . $termsPage->slug) }}" class="text-primary-600 hover:text-primary-500">{{ __('front.auth.register.terms') }}</a>
+                        @else
+                            {{ __('front.auth.register.terms') }}
+                        @endif
                         {{ __('front.auth.register.and') }}
-                        <a href="#" class="text-primary-600 hover:text-primary-500">{{ __('front.auth.register.privacy') }}</a>.
+                        @if($privacyPage)
+                            <a href="{{ url('/' . $privacyPage->slug) }}" class="text-primary-600 hover:text-primary-500">{{ __('front.auth.register.privacy') }}</a>
+                        @else
+                            {{ __('front.auth.register.privacy') }}
+                        @endif.
                     </div>
                     <button type="submit" class="btn-primary btn-small justify-center">
                         {{ __('front.auth.register.createbutton') }}

@@ -65,7 +65,9 @@ class ProfileSlider extends Component
     #[Computed]
     public function profiles()
     {
-        $query = Profile::with(['user:id,name,last_activity', 'media'])
+        // `segments` is eager-loaded because x-profile-card calls allSegments()
+        // on every row — without it each card issues its own pivot query.
+        $query = Profile::with(['user:id,name,last_activity', 'media', 'segments'])
             ->approved()
             ->public()
             ->select($this->getPublicProfileColumns());
@@ -105,26 +107,13 @@ class ProfileSlider extends Component
             $this->applyAgeGroupFilter($query, $this->ageGroup);
         }
 
-        $sortedQuery = clone $query;
-        $this->applySorting($sortedQuery);
-        
-        $profiles = $sortedQuery->limit($this->limit)->get();
-        
-        if ($profiles->isEmpty() && $this->sortBy === 'rating_this_month') {
-            $fallbackQuery = clone $query;
-            $fallbackQuery->withAvg('ratings', 'rating')
-                ->orderByDesc('ratings_avg_rating')
-                ->orderByDesc('created_at');
+        $this->applySorting($query);
 
-            $profiles = $fallbackQuery->limit($this->limit)->get();
-        }
-
-        if ($profiles->isEmpty()) {
-            $fallbackQuery = clone $query;
-            $profiles = $fallbackQuery->orderByDesc('created_at')->limit($this->limit)->get();
-        }
-
-        return $profiles;
+        // No cascading fallbacks. A slider headed "top rated this month" used to
+        // silently fall back to best-rated-ever, and then to newest-first, so it
+        // was never empty — it just showed profiles that did not match its own
+        // heading. An empty slider renders its empty state instead.
+        return $query->limit($this->limit)->get();
     }
 
     /**
@@ -162,26 +151,26 @@ class ProfileSlider extends Component
         switch ($this->sortBy) {
             case 'rating':
                 // Best rated profiles (all time)
-                $query->withAvg('ratings', 'rating')
+                $query->withAvg('ratings', 'percentage')
                       ->whereHas('ratings')
-                      ->orderBy('ratings_avg_rating', $this->sortDirection);
+                      ->orderBy('ratings_avg_percentage', $this->sortDirection);
                 break;
             case 'rating_this_month':
                 // Best rated profiles this month (based on ratings created this month)
                 $query->withAvg(['ratings' => function($q) {
                           $q->where('created_at', '>=', now()->startOfMonth());
-                      }], 'rating')
+                      }], 'percentage')
                       ->whereHas('ratings', function($q) {
                           $q->where('created_at', '>=', now()->startOfMonth());
                       })
-                      ->orderBy('ratings_avg_rating', $this->sortDirection);
+                      ->orderBy('ratings_avg_percentage', $this->sortDirection);
                 break;
             case 'recommendation':
                 // Sort by: 1) VIP status, 2) average rating, 3) newest
-                $query->withAvg('ratings', 'rating')
+                $query->withAvg('ratings', 'percentage')
                       ->withExists('activeSubscription as is_vip')
                       ->orderBy('is_vip', $this->sortDirection)
-                      ->orderBy('ratings_avg_rating', $this->sortDirection)
+                      ->orderBy('ratings_avg_percentage', $this->sortDirection)
                       ->orderBy('created_at', $this->sortDirection === 'desc' ? 'asc' : 'desc');
                 break;
             case 'created_at':
@@ -203,6 +192,8 @@ class ProfileSlider extends Component
             'age',
             'city',
             'about',
+            // Needed by x-profile-card for card_height_cm / card_location.
+            'content',
             'verified_at',
             'status',
             'is_porn_actress',

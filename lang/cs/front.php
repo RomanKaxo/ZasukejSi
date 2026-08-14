@@ -1,6 +1,32 @@
 <?php
 
 return [
+    // Shared building blocks used across the whole frontend. `common.dash` and
+    // `common.not_specified` back the <x-empty-value /> component: the project
+    // never invents a value, so a missing attribute renders as a neutral
+    // placeholder while its tile/section stays in place.
+    'common' => [
+        'dash' => '—',
+        'not_specified' => 'Neuvedeno',
+    ],
+
+    // Premium membership for members — what unlocks profile ratings.
+    'membership' => [
+        'activated' => 'Premium členství je aktivní.',
+        'activation_pending' => 'Platba proběhla. Členství aktivujeme během okamžiku.',
+        'not_verified' => 'Platbu se nepodařilo ověřit. Pokud jste částku uhradili, kontaktujte nás.',
+        'checkout_cancelled' => 'Platba byla zrušena.',
+        'valid_until' => 'Vaše Premium členství platí do :date',
+        'locked_rating' => 'Hodnocení odemkne Premium členství',
+        'page_title' => 'Premium členství',
+        'page_description' => 'Odemkne hodnocení dívek, archiv a další funkce.',
+        'current' => 'Aktuální členství',
+        'none' => 'Zatím nemáte aktivní členství.',
+        'buy_button' => 'Aktivovat',
+        'extend_button' => 'Prodloužit',
+        'no_plans' => 'Momentálně nejsou k dispozici žádné plány.',
+    ],
+
     'landing' => [
         'wearecommunity' => 'Jsme komunita lidí',
         'fucking' => 'co rádi šukají.',
@@ -69,6 +95,13 @@ return [
     'account' => [
         'profile_required' => 'Nejprve musíte vytvořit svůj profil. Vyplňte základní údaje a uložte profil.',
         'profile_required_short' => 'Nejprve vytvořte profil',
+        'reviews' => [
+            'average' => 'Průměrné hodnocení',
+            'total' => 'Počet hodnocení',
+            'anonymous' => 'Anonymní uživatel',
+            'stars' => ':count z 5 hvězdiček',
+            'empty_hint' => 'Hodnocení se zde zobrazí, jakmile vás členové ohodnotí.',
+        ],
         'sidebar' => [
             'basic' => 'Základní údaje',
             'photos' => 'Fotografie a video',
@@ -194,8 +227,17 @@ return [
                 'sunday' => 'Neděle OD',
             ],
         ],
+        'completion' => [
+            'prompt' => 'Do dokončení profilu zbývá:',
+            'about' => 'text o vás',
+            'photos' => 'fotografie',
+            'prices' => 'ceník',
+            'services' => 'služby',
+        ],
+
         'statistics' => [
             'page_title' => 'Statistiky',
+            'no_profile' => 'Statistiky se zobrazí, jakmile budete mít vytvořený profil.',
             'profile_views_title' => 'Počet zobrazení profilu na hlavní stránce',
             'detail_views_title' => 'Počet zobrazení detailu profilu',
             'listing_views_title' => 'Zobrazení v seznamu',
@@ -267,6 +309,9 @@ return [
         'days' => ':count dní',
         'success_title' => 'Platba proběhla úspěšně',
         'success_description' => 'Děkujeme, vaše předplatné je nyní aktivní.',
+        'activation_pending' => 'Platba proběhla. Předplatné aktivujeme během okamžiku — jakmile potvrzení dorazí, uvidíte ho v přehledu předplatného.',
+        'unverified_title' => 'Platbu se nepodařilo ověřit',
+        'unverified_description' => 'Tuto platbu jsme u Stripe nenašli jako dokončenou. Pokud jste částku uhradili, kontaktujte nás — nic vám nebude účtováno dvakrát.',
         'back_to_subscription' => 'Zpět na předplatné',
     ],
     'auth' => [
@@ -741,6 +786,7 @@ return [
         'received' => 'Přijato',
         'archived' => 'Archivováno',
         'go_back' => 'Zpět',
+        'mark_all_read' => 'Označit vše jako přečtené',
         'notification_archived' => 'Oznámení archivováno',
         'notification_deleted' => 'Oznámení smazáno',
     ],
