@@ -104,7 +104,66 @@ class ProfileForm
                     ->default(false)
                     ->inline(false),
 
-                BlocksInput::make('content')
+                // Physical/descriptive attributes live in the `content` JSON map
+                // and were previously only writable from the provider-facing
+                // Livewire form — an admin could not correct them. The frontend
+                // renders an empty placeholder wherever one of these is blank
+                // (it never invents a value), so making them editable here is
+                // what actually fills the profile cards and detail pages.
+                //
+                // EditProfile/CreateProfile merge this map over the stored one,
+                // so keys not present in this form are preserved.
+                TextInput::make('content.card_height_cm')
+                    ->label(__('profiles.form.card_height_cm'))
+                    ->numeric()
+                    ->minValue(120)
+                    ->maxValue(230)
+                    ->suffix('cm')
+                    ->helperText(__('profiles.form.card_height_cm_helper')),
+
+                TextInput::make('content.weight_kg')
+                    ->label(__('profiles.form.weight_kg'))
+                    ->numeric()
+                    ->minValue(30)
+                    ->maxValue(300)
+                    ->suffix('kg'),
+
+                Select::make('content.bust_size')
+                    ->label(__('profiles.form.bust_size'))
+                    ->options(array_combine(
+                        ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
+                        ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+                    ))
+                    ->native(false),
+
+                TextInput::make('content.nationality')
+                    ->label(__('profiles.form.nationality'))
+                    ->maxLength(2)
+                    ->helperText(__('profiles.form.nationality_helper')),
+
+                TextInput::make('content.languages')
+                    ->label(__('profiles.form.languages'))
+                    ->maxLength(255)
+                    ->helperText(__('profiles.form.languages_helper'))
+                    ->columnSpanFull(),
+
+                TextInput::make('content.card_location')
+                    ->label(__('profiles.form.card_location'))
+                    ->maxLength(255)
+                    ->helperText(__('profiles.form.card_location_helper'))
+                    ->columnSpanFull(),
+
+                Toggle::make('content.is_showcase')
+                    ->label(__('profiles.form.is_showcase'))
+                    ->inline(false)
+                    ->visible($isAdmin)
+                    ->helperText(__('profiles.form.is_showcase_helper')),
+
+                // Bound to `content_blocks`, not `content`. Both used to share
+                // one column, which made every profile with physical attributes
+                // throw on open ("Argument #1 ($itemData) must be of type array,
+                // int given") and would have wiped those attributes on save.
+                BlocksInput::make('content_blocks')
                     ->label(__('profiles.form.profile_content_builder'))
                     ->blocks(fn() => [
                         Blocks\Card::block($schema),

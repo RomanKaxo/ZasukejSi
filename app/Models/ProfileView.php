@@ -43,6 +43,23 @@ class ProfileView extends Model
     public const TYPE_IMPRESSION = 'impression';
 
     /**
+     * Store the day only.
+     *
+     * The two write paths disagreed: recordClick() goes through create(), where
+     * the `date` cast serialises via the model's date format and yields
+     * "2026-08-14 00:00:00", while recordImpressions() does a raw insert() that
+     * bypasses casts and yields "2026-08-14". getDailyStats() groups by the raw
+     * column, so the same day landed in two different buckets and daily totals
+     * came out split — or empty, depending on which path wrote the row.
+     */
+    public function setViewedDateAttribute($value): void
+    {
+        $this->attributes['viewed_date'] = $value instanceof \DateTimeInterface
+            ? $value->format('Y-m-d')
+            : \Illuminate\Support\Carbon::parse($value)->toDateString();
+    }
+
+    /**
      * Get the profile that was viewed.
      */
     public function profile()
@@ -133,7 +150,7 @@ class ProfileView extends Model
     /**
      * Get daily stats for a profile within a date range.
      */
-    public static function getDailyStats(int $profileId, string $startDate, string $endDate, string $type = null): array
+    public static function getDailyStats(int $profileId, string $startDate, string $endDate, ?string $type = null): array
     {
         $query = self::query()
             ->where('profile_id', $profileId)
@@ -146,13 +163,17 @@ class ProfileView extends Model
             $query->where('type', $type);
         }
 
-        return $query->pluck('count', 'viewed_date')->toArray();
+        // Normalise the key to Y-m-d: rows written before the mutator above may
+        // still carry a time component, and callers index by date.
+        return $query->pluck('count', 'viewed_date')
+            ->mapWithKeys(fn ($count, $date) => [substr((string) $date, 0, 10) => (int) $count])
+            ->toArray();
     }
 
     /**
      * Get total view counts for a profile.
      */
-    public static function getTotalStats(int $profileId, string $type = null): int
+    public static function getTotalStats(int $profileId, ?string $type = null): int
     {
         $query = self::where('profile_id', $profileId);
 

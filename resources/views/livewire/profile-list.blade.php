@@ -35,7 +35,9 @@
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                padding: 8px 16px;
+                /* 4px + 21px line-height + 4px + 4px border = 33px, matching the
+                   design's pill. Was 8px, which made them 41px tall. */
+                padding: 4px 16px;
                 border-radius: 9999px;
                 font-size: 14px;
                 font-weight: 500;
@@ -337,6 +339,18 @@
                 }
             }
 
+            /* Desktop grid pinned to the design's measurements: five 210px cards
+               with a 21.5px gutter = 1136px, the same content width as the eco
+               badge. The fluid `xl:grid-cols-5 gap-4` gave 217.6px columns, so
+               cards sat 23.6px apart instead of 21.5px. */
+            @media (min-width: 1280px) {
+                .profile-list-cards-grid {
+                    grid-template-columns: repeat(5, 210px);
+                    gap: 21.5px;
+                    justify-content: center;
+                }
+            }
+
             @media (max-width: 767px) {
 
             @media (max-width: 320px) {
@@ -487,18 +501,21 @@
                 </button>
 
                 <button wire:click.debounce.300ms="toggleVerifiedPhoto"
+                    aria-pressed="{{ $hasVerifiedPhoto ? 'true' : 'false' }}"
                     class="mobile-filter-pill switch-pill {{ $hasVerifiedPhoto ? 'is-active' : '' }}">
                     {{ __('front.profiles.list.verified_photo') }}
                     <span class="mobile-filter-switch"></span>
                 </button>
 
                 <button wire:click.debounce.300ms="toggleVideo"
+                    aria-pressed="{{ $hasVideo ? 'true' : 'false' }}"
                     class="mobile-filter-pill switch-pill {{ $hasVideo ? 'is-active' : '' }}">
                     {{ __('front.profiles.list.video') }}
                     <span class="mobile-filter-switch"></span>
                 </button>
 
                 <button wire:click.debounce.300ms="togglePornActress"
+                    aria-pressed="{{ $isPornActress ? 'true' : 'false' }}"
                     class="mobile-filter-pill switch-pill {{ $isPornActress ? 'is-active' : '' }}">
                     {{ __('front.profiles.list.porn_actress') }}
                     <span class="mobile-filter-switch"></span>
@@ -584,7 +601,10 @@
             </button>
 
             <!-- Verified Photo Filter -->
+            {{-- The switch is a <div>, so the pressed state is invisible to
+                 assistive tech without aria-pressed. --}}
             <button wire:click.debounce.300ms="toggleVerifiedPhoto"
+                aria-pressed="{{ $hasVerifiedPhoto ? 'true' : 'false' }}"
                 :class="{
                     'filter-pill active': {{ $hasVerifiedPhoto ? 'true' : 'false' }},
                     'filter-pill inactive': {{ !$hasVerifiedPhoto ? 'true' : 'false' }}
@@ -597,6 +617,7 @@
 
             <!-- Video Filter -->
             <button wire:click.debounce.300ms="toggleVideo"
+                aria-pressed="{{ $hasVideo ? 'true' : 'false' }}"
                 :class="{
                     'filter-pill active': {{ $hasVideo ? 'true' : 'false' }},
                     'filter-pill inactive': {{ !$hasVideo ? 'true' : 'false' }}
@@ -609,6 +630,7 @@
 
             <!-- Porn Actress Filter -->
             <button wire:click.debounce.300ms="togglePornActress"
+                aria-pressed="{{ $isPornActress ? 'true' : 'false' }}"
                 :class="{
                     'filter-pill active': {{ $isPornActress ? 'true' : 'false' }},
                     'filter-pill inactive': {{ !$isPornActress ? 'true' : 'false' }}
@@ -702,11 +724,15 @@
                         </div>
                     @endif
 
-                    @php
-                        $isOpenProfile = crc32((string) ($profile->id ?? $loop->index)) % 2 === 0;
-                        $cardVariant = (auth()->check() || $isOpenProfile) ? null : 'vip-detail';
-                    @endphp
-                    <x-profile-card :profile="$profile" :variant="$cardVariant" />
+                    {{-- Photos are never blurred here.
+
+                         This used to pick roughly every second card by
+                         `crc32($id) % 2` and render it in the blurred
+                         `vip-detail` variant. The design does the opposite: the
+                         photo is always sharp and it is the *rating* that is
+                         locked, which x-profile-card now handles through the
+                         `view-ratings` gate. --}}
+                    <x-profile-card :profile="$profile" />
                 @endforeach
             </div>
 
@@ -727,50 +753,51 @@
             <h2 class="news-title m-0">{{ __('blogs.latest_news') }}</h2>
         </div>
 
+        {{-- Real blog posts, managed in the admin under "Blog příspěvky".
+
+             These two cards were hardcoded: fixed images, a fixed "25. 4. 2025"
+             date, a fixed "5 min" reading time, filler body text and a <button>
+             that led nowhere — while the Page model, the blog admin resource and
+             aproximateReadingTime() all already existed. --}}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {{-- Card 1 --}}
-            <div class="news-card">
-                <div class="relative">
-                    <img src="{{ asset('images/news1.png') }}" alt="News 1" class="news-image" />
-                    <div class="news-badges">
-                        <div class="news-badge badge-date">
-                            <img src="{{ asset('images/icons/calendar.svg') }}" alt="calendar" width="16" height="16" />
-                            <span class="badge-text">25. 4. 2025</span>
+            @forelse($this->latestPosts as $post)
+                <article class="news-card">
+                    <a href="{{ route('pages.show', $post->slug) }}" class="block relative">
+                        @if($post->hasMedia('header-image'))
+                            <img src="{{ $post->getFirstMediaUrl('header-image') }}" alt="{{ $post->title }}" class="news-image" />
+                        @else
+                            <div class="news-image" style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f9edf4,#efe4f2);">
+                                <img src="{{ asset('images/icons/Newspaper.svg') }}" alt="" aria-hidden="true" width="48" height="48" style="opacity:.5;" />
+                            </div>
+                        @endif
+
+                        <div class="news-badges">
+                            <div class="news-badge badge-date">
+                                <img src="{{ asset('images/icons/calendar.svg') }}" alt="calendar" width="16" height="16" />
+                                <span class="badge-text">{{ $post->created_at->translatedFormat('j. n. Y') }}</span>
+                            </div>
+                            @if($post->aproximateReadingTime() > 0)
+                                <div class="news-badge badge-time">
+                                    <img src="{{ asset('images/icons/clock.svg') }}" alt="clock" width="16" height="16" />
+                                    <span class="badge-text">{{ $post->aproximateReadingTime() }} {{ __('blogs.min_read') }}</span>
+                                </div>
+                            @endif
                         </div>
-                        <div class="news-badge badge-time">
-                            <img src="{{ asset('images/icons/clock.svg') }}" alt="clock" width="16" height="16" />
-                            <span class="badge-text">5 {{ __('blogs.min_read') }}</span>
-                        </div>
-                    </div>
-                </div>
+                    </a>
 
-                <h3 class="news-card-title">Považována užitého za nesou užitých</h3>
-                <p class="news-card-desc">Oprávněné aniž i odstoupil o snadno osoby vede grafikou osobami úmyslu 60 % poskytovat, dělí způsobem, § 36 veletrhu pověřit spravují zřejmém, k před platbě státu zvláštních tuzemsku. Dohodnou zvláštní provádí o nebezpečí kódech § 6 příjmu vhodným třetím</p>
+                    <h3 class="news-card-title">
+                        <a href="{{ route('pages.show', $post->slug) }}">{{ $post->title }}</a>
+                    </h3>
 
-                <button class="news-button">{{ __('blogs.read_article') }}</button>
-            </div>
+                    @if($post->description)
+                        <p class="news-card-desc">{{ $post->description }}</p>
+                    @endif
 
-            {{-- Card 2 --}}
-            <div class="news-card">
-                <div class="relative">
-                    <img src="{{ asset('images/news2.png') }}" alt="News 2" class="news-image" />
-                    <div class="news-badges">
-                        <div class="news-badge badge-date">
-                            <img src="{{ asset('images/icons/calendar.svg') }}" alt="calendar" width="16" height="16" />
-                            <span class="badge-text">25. 4. 2025</span>
-                        </div>
-                        <div class="news-badge badge-time">
-                            <img src="{{ asset('images/icons/clock.svg') }}" alt="clock" width="16" height="16" />
-                            <span class="badge-text">5 {{ __('blogs.min_read') }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <h3 class="news-card-title">Souhlasem o tato i vždy každý k že nabytí uděleného, vůbec se skončením</h3>
-                <p class="news-card-desc">Oprávněné aniž i odstoupil o snadno osoby vede osobami úmyslu 60 % poskytovat, dělí způsobem, § 36 veletrhu pověřit spravují zřejmém, k před platbě státu zvláštních tuzemsku. Dohodnou zvláštní provádí o nebezpečí kódech § 6 příjmu vhodným třetím</p>
-
-                <button class="news-button">{{ __('blogs.read_article') }}</button>
-            </div>
+                    <a href="{{ route('pages.show', $post->slug) }}" class="news-button">{{ __('blogs.read_article') }}</a>
+                </article>
+            @empty
+                <p class="news-card-desc md:col-span-2"><x-empty-value variant="text" /></p>
+            @endforelse
         </div>
     </div>
 </section>

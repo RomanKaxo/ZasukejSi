@@ -46,6 +46,24 @@ return [
         'expiring_soon_message' => 'Vaše předplatné vyprší za :days dní. Zvažte obnovení.',
     ],
 
+    // Premium membership notifications (for members)
+    'membership' => [
+        'created_title' => 'Premium členství aktivováno',
+        'created_message' => 'Vaše členství :type je aktivní do :ends_at.',
+
+        'renewed_title' => 'Premium členství obnoveno',
+        'renewed_message' => 'Vaše členství bylo obnoveno do :ends_at.',
+
+        'expired_title' => 'Premium členství vypršelo',
+        'expired_message' => 'Vaše členství vypršelo. Hodnocení dívek je znovu skryté.',
+
+        'cancelled_title' => 'Premium členství zrušeno',
+        'cancelled_message' => 'Vaše členství bylo zrušeno.',
+
+        'expiring_soon_title' => 'Premium členství brzy vyprší',
+        'expiring_soon_message' => 'Vaše členství vyprší za :days dní.',
+    ],
+
     // Favorite notifications (for profile owners)
     'favorite' => [
         'added_title' => 'Nový oblíbenec',

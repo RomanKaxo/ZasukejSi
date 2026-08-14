@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\Locales;
 use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\Request;
@@ -23,8 +24,9 @@ class SetLocale
             ?? $request->cookie('filament_language_switch_locale') // Cookie
             ?? config('app.locale'); // Default
 
-        // Validate and set locale
-        if (in_array($locale, ['en', 'cs'])) {
+        // Validate and set locale. The supported list lives in
+        // config/locales.php so a new language does not need edits here.
+        if (Locales::isSupported($locale)) {
             App::setLocale($locale);
             // Store in session for consistency
             session()->put('locale', $locale);

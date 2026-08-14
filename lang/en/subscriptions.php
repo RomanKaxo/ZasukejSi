@@ -28,6 +28,18 @@ return [
     ],
 
     // Status labels
+    // Who a plan is sold to
+    'audience' => [
+        'profile' => 'Profile (VIP for providers)',
+        'member' => 'Membership (Premium for members)',
+    ],
+    'member_subscription' => [
+        'singular' => 'Member subscription',
+        'plural' => 'Member subscriptions',
+        'navigation' => 'Member subscriptions',
+        'user' => 'Member',
+    ],
+
     'status' => [
         'active' => 'Active',
         'expired' => 'Expired',
@@ -59,6 +71,9 @@ return [
         'feature_value' => 'Description',
         'add_feature' => 'Add Feature',
         'features_helper' => 'Add key-value pairs for subscription features (e.g., "priority_listing" => "Profile appears first in search")',
+
+        'audience' => 'Sold to',
+        'audience_helper' => 'Profile plans are bought by providers for their listing; member plans are bought by members to unlock ratings.',
 
         'profile' => 'Profile',
         'subscription_type' => 'Subscription Type',

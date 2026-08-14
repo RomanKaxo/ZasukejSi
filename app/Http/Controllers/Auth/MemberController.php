@@ -102,7 +102,10 @@ class MemberController extends Controller
     }
 
     /**
-     * Show the girls of the month page (TOP 50 all-time ranking).
+     * Girls of the month: the TOP 50 by average rating **received this month**.
+     *
+     * The ranking used to be all-time despite the page (and the route name)
+     * promising a monthly one, so it never changed from month to month.
      */
     public function girlsOfMonth(Request $request)
     {
@@ -111,18 +114,25 @@ class MemberController extends Controller
         $ageRange = $request->string('age_range')->toString();
         $ageBounds = self::AGE_RANGES[$ageRange] ?? null;
 
+        $monthStart = now()->startOfMonth();
+        // Unqualified on purpose: inside the relation subquery the default table
+        // is `profile_ratings` (the Rating model's table), so prefixing with
+        // "ratings." would reference a table that does not exist.
+        $ratedThisMonth = fn ($query) => $query->where('created_at', '>=', $monthStart);
+
         $topIds = \App\Models\Profile::approved()
             ->public()
-            ->withAvg('ratings', 'rating')
+            ->withAvg(['ratings' => $ratedThisMonth], 'percentage')
+            ->whereHas('ratings', $ratedThisMonth)
             ->when($ageBounds, fn ($query) => $query->whereBetween('age', $ageBounds))
-            ->orderByDesc('ratings_avg_rating')
+            ->orderByDesc('ratings_avg_percentage')
             ->limit(50)
             ->pluck('id');
 
         $profiles = \App\Models\Profile::whereIn('id', $topIds)
-            ->with(['media'])
-            ->withAvg('ratings', 'rating')
-            ->orderByDesc('ratings_avg_rating')
+            ->with(['media', 'segments'])
+            ->withAvg(['ratings' => $ratedThisMonth], 'percentage')
+            ->orderByDesc('ratings_avg_percentage')
             ->paginate(16)
             ->withQueryString();
 

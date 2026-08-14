@@ -50,7 +50,13 @@
 
         <div class="flex items-center justify-between rounded-xl border border-[#f3e9f5] px-3 py-2 text-[12px]">
             <span class="font-medium text-[#8c6c93]">{{ __('front.profiles.list.rating') }}</span>
-            <span class="font-semibold text-[#54b26b]">{{ $profile->getTotalRatings() > 0 ? (float)$profile->getAverageRating() . '/5' : '4,9/5' }}</span>
+            <span class="font-semibold text-[#54b26b]">
+                @if($profile->getTotalRatings() > 0)
+                    {{ (float) $profile->getAverageRating() }}/5
+                @else
+                    <x-empty-value />
+                @endif
+            </span>
         </div>
     </div>
 </div>
@@ -166,7 +172,15 @@
 
             <div class="flex justify-between gap-x-3">
                 <div class="flex-1 bg-gray-100 rounded-lg p-3 text-center">
-                    <div class="text-xs ">168 cm</div>
+                    <div class="text-xs ">
+                        @php $orphanHeight = data_get($profile->content, 'card_height_cm'); @endphp
+
+                        @if($orphanHeight)
+                            {{ $orphanHeight }} cm
+                        @else
+                            <x-empty-value />
+                        @endif
+                    </div>
                 </div>
                 <div class="flex-1 bg-gray-100 rounded-lg p-3 text-center">
                     <div class="text-xs ">{{ $profile->age }} {{ __('front.profiles.list.years') }}</div>

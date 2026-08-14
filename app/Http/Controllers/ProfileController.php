@@ -14,18 +14,25 @@ class ProfileController extends Controller
     /**
      * Display a listing of public profiles.
      */
+    /**
+     * The homepage.
+     *
+     * The listing itself is rendered by the ProfileList Livewire component,
+     * which runs its own (filterable, paginated) query. This method used to run
+     * a second, unrelated query and record impressions against it — profiles the
+     * visitor never saw — while the `$profiles` it passed to the view went
+     * unused. Impressions now live in ProfileList::render(), over the page that
+     * is actually displayed.
+     */
     public function index(Request $request): View
     {
-        $profiles = $this->getPublicProfiles($request);
-        
-        // Record impressions for profiles shown in listing (don't track for authenticated female users viewing their own)
-        $this->recordListingImpressions($profiles);
-        
-        // Get user counts by gender
+        // Real registration counts for the hero badges. These were already being
+        // computed here and silently ignored by the view, which printed the
+        // hardcoded "1 420" and "382" instead.
         $girlsCount = User::where('gender', 'female')->count();
         $gentsCount = User::where('gender', 'male')->count();
 
-        return view('profiles.index', compact('profiles', 'girlsCount', 'gentsCount'));
+        return view('profiles.index', compact('girlsCount', 'gentsCount'));
     }
 
     /**

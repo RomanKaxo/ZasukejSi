@@ -19,6 +19,7 @@ class Subscription extends Model
         'status',
         'cancelled_at',
         'auto_renew',
+        'expiring_notified_at',
         'notes',
         'metadata',
     ];
@@ -29,6 +30,7 @@ class Subscription extends Model
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'cancelled_at' => 'datetime',
+            'expiring_notified_at' => 'datetime',
             'auto_renew' => 'boolean',
             'metadata' => 'array',
         ];
@@ -145,6 +147,8 @@ class Subscription extends Model
         $this->update([
             'ends_at' => $baseDate->addDays($days),
             'status' => self::STATUS_ACTIVE,
+            // New period, so the expiry warning is owed again.
+            'expiring_notified_at' => null,
         ]);
 
         $this->logAction('renewed', [

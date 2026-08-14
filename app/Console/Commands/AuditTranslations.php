@@ -175,7 +175,10 @@ class AuditTranslations extends Command
         $missing = [];
 
         foreach ($keyedCalls as $key => $locations) {
-            foreach (['cs', 'en'] as $locale) {
+            // Only locales marked complete in config/locales.php. A partial
+            // translation falls back at runtime and must not report every key
+            // in the project as missing.
+            foreach (\App\Support\Locales::audited() as $locale) {
                 if (! Lang::hasForLocale($key, $locale)) {
                     $missing[] = "{$locale}: {$key} (used in {$locations[0]})";
                 }
@@ -190,7 +193,10 @@ class AuditTranslations extends Command
         $missing = [];
 
         foreach ($jsonCalls as $key => $locations) {
-            foreach (['cs', 'en'] as $locale) {
+            // Only locales marked complete in config/locales.php. A partial
+            // translation falls back at runtime and must not report every key
+            // in the project as missing.
+            foreach (\App\Support\Locales::audited() as $locale) {
                 $jsonPath = lang_path("{$locale}.json");
                 $translations = File::exists($jsonPath)
                     ? json_decode(File::get($jsonPath), true, 512, JSON_THROW_ON_ERROR)

@@ -31,22 +31,31 @@
                     <h3 class="text-center mt-1" style="font-family:'Poppins',sans-serif;font-weight:700;font-size:24px;color:#DD3888;" x-text="$store.reportedCase.data.name"></h3>
 
                     <div class="mt-1" style="width:190px;height:30px;border-radius:8px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:auto;">
-                        <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:11px;color:#505050;" x-text="$store.reportedCase.data.location"></span>
+                        {{-- Each tile keeps its size and shows a dash when the
+                             value is absent, rather than "null cm". --}}
+                        <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:11px;color:#505050;" x-text="$store.reportedCase.data.location || '—'"></span>
                     </div>
 
                     <div class="flex gap-3 mt-1 justify-center">
                         <div style="width:91px;height:30px;border-radius:8px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;">
-                            <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:11px;color:#505050;" x-text="$store.reportedCase.data.height + ' cm'"></span>
+                            <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:11px;color:#505050;" x-text="$store.reportedCase.data.height ? $store.reportedCase.data.height + ' cm' : '—'"></span>
                         </div>
                         <div style="width:91px;height:30px;border-radius:8px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;">
-                            <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:11px;color:#505050;" x-text="$store.reportedCase.data.age + ' {{ __('front.profiles.list.years') }}'"></span>
+                            <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:11px;color:#505050;" x-text="$store.reportedCase.data.age ? $store.reportedCase.data.age + ' {{ __('front.profiles.list.years') }}' : '—'"></span>
                         </div>
                     </div>
 
                     <div class="mt-4 mx-auto p-4 md:p-5" style="width:510px;max-width:100%;background:#F2F2F2;border-radius:15px;box-sizing:border-box;">
                         <div class="flex flex-col md:flex-row items-center md:items-stretch gap-4">
                             <div class="relative flex-shrink-0 w-[180px] h-[227px] md:w-[210px] md:h-[265px]" style="border-radius:15px;overflow:hidden;">
-                                <img :src="$store.reportedCase.data.image" alt="" class="w-full h-full object-cover" />
+                                {{-- Real photo or a neutral placeholder; never a
+                                     stock model image belonging to someone else. --}}
+                                <img x-show="$store.reportedCase.data.image" :src="$store.reportedCase.data.image" alt="" class="w-full h-full object-cover" />
+                                <div x-show="!$store.reportedCase.data.image" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#f6eef7;">
+                                    <svg class="h-14 w-14" style="color:#d6c7dc;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </div>
                                 <div class="absolute left-0 right-0 bottom-3 flex justify-center" style="gap:3px;">
                                     <template x-for="n in 5" :key="n">
                                         <span class="w-2.5 h-2.5 rounded-full bg-white flex items-center justify-center" style="box-shadow: 0 0 0 1px rgba(0,0,0,0.04);">

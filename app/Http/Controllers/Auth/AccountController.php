@@ -110,11 +110,34 @@ class AccountController extends Controller
     }
 
     /**
-     * Show reviews page.
+     * Show reviews page — the ratings this provider's profile has received.
+     *
+     * Ratings are stored 1-5; the member-facing UI collects them as 100/70/30
+     * and maps those to 5/4/2 (see MemberRatings::rateProfile). The page shows
+     * the stored star value so both sides agree on the number.
      */
     public function showReviews()
     {
-        return view('account.reviews');
+        $profile = auth()->user()->profile;
+
+        $ratings = $profile
+            ? $profile->ratings()
+                ->with('user:id,name')
+                ->latest()
+                ->paginate(20)
+            : null;
+
+        return view('account.reviews', [
+            'profile' => $profile,
+            'ratings' => $ratings,
+            'averageRating' => $profile && $profile->getTotalRatings() > 0
+                ? $profile->getAverageRating()
+                : null,
+            'averagePercentage' => $profile && $profile->getTotalRatings() > 0
+                ? $profile->getAveragePercentage()
+                : null,
+            'totalRatings' => $profile ? $profile->getTotalRatings() : 0,
+        ]);
     }
 
     /**

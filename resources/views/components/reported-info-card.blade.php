@@ -11,10 +11,13 @@
         ->values()
         ->all();
 
+    // Null rather than a stand-in value: the modal renders a neutral placeholder
+    // for whatever is missing. A reported-profile case file is the last place
+    // that should carry an invented height or a stranger's photograph.
     $cardContent = (isset($profile->content) && is_array($profile->content)) ? $profile->content : [];
-    $location = $cardContent['card_location'] ?? ($profile->city ?? '');
-    $heightCm = $cardContent['card_height_cm'] ?? 168;
-    $imageUrl = $profile->getFirstImageThumbUrl() ?? asset('images/models/model6.png');
+    $location = $cardContent['card_location'] ?? ($profile->city ?? null);
+    $heightCm = $cardContent['card_height_cm'] ?? null;
+    $imageUrl = $profile->getFirstImageThumbUrl();
 @endphp
 
 <div x-data style="width:230px;height:510px;background:#F2F2F2;border-top-right-radius:15px;border-bottom-right-radius:15px;border-top-left-radius:0;border-bottom-left-radius:0;box-shadow:0 15px 15px 0 rgba(92,45,98,0.1);box-sizing:border-box;position:relative;z-index:1;" class="p-5 flex flex-col reported-info-card">

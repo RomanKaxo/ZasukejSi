@@ -147,6 +147,67 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
     }
 
     /**
+     * Paid memberships held by this user.
+     *
+     * Distinct from Profile::subscriptions(), which are the VIP tiers a
+     * provider buys for her listing. See migration 2026_08_14_000005.
+     */
+    public function memberSubscriptions()
+    {
+        return $this->hasMany(MemberSubscription::class);
+    }
+
+    /**
+     * The membership currently in force, if any.
+     */
+    public function activeMembership()
+    {
+        return $this->hasOne(MemberSubscription::class)
+            ->where('status', MemberSubscription::STATUS_ACTIVE)
+            ->where('ends_at', '>', now())
+            ->latest('ends_at');
+    }
+
+    /**
+     * Whether the user currently holds a paid membership.
+     *
+     * Reuses a `has_membership` attribute when the caller has already added
+     * `->withExists('activeMembership as has_membership')`, mirroring the
+     * N+1-safe pattern Profile::hasActiveSubscription() established.
+     */
+    public function hasActiveMembership(): bool
+    {
+        if (array_key_exists('has_membership', $this->attributes)) {
+            return (bool) $this->attributes['has_membership'];
+        }
+
+        return $this->activeMembership()->exists();
+    }
+
+    /**
+     * When the current membership lapses — the date the "Vaše Premium členství
+     * platí do …" banner reports. Null when there is no membership.
+     */
+    public function membershipEndsAt(): ?\Illuminate\Support\Carbon
+    {
+        return $this->activeMembership?->ends_at;
+    }
+
+    /**
+     * Whether this user may see profile ratings.
+     *
+     * The design keeps ratings behind a lock and sells the key as the Premium
+     * membership. Providers see them as part of running a listing, and admins
+     * always do.
+     */
+    public function canSeeRatings(): bool
+    {
+        return $this->hasRole('admin')
+            || $this->isFemale()
+            || $this->hasActiveMembership();
+    }
+
+    /**
      * Determine if the user can access the Filament admin panel.
      * Only users with the 'admin' role can access the panel.
      */

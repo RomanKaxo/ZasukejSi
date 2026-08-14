@@ -213,20 +213,16 @@
                     @auth
                     <!-- Custom Icon Buttons - Auth Only -->
                     <div class="flex items-center space-x-3">
-                        <!-- Notifications Button -->
-                        <div class="relative w-[60px] h-[60px]">
-                            <div class="w-[60px] h-[60px] border border-[#DD3888] rounded-[8px] flex items-center justify-center">
-                                <img src="{{ asset('images/icons/bell.svg') }}" class="w-[26px] h-[26px]" alt="Bell">
-                            </div>
-                            <div class="absolute -top-1 -right-1 w-[26px] h-[26px] bg-[#00B80F] rounded-full flex items-center justify-center font-bold text-[10px] text-white" style="font-family: 'Poppins', sans-serif;">14</div>
-                        </div>
-                        
-                        <!-- Mail Button -->
-                        <a href="{{ route('messages.index') }}" class="w-[60px] h-[60px] border border-[#DD3888] rounded-[8px] flex items-center justify-center relative">
-                            <img src="{{ asset('images/icons/mail.svg') }}" class="w-[26px] h-[26px]" alt="Mail">
-                            <div class="absolute -top-1 -right-1 w-[26px] h-[26px] bg-[#00B80F] rounded-full flex items-center justify-center font-bold text-[10px] text-white" style="font-family: 'Poppins', sans-serif;">654</div>
-                        </a>
-                        
+                        {{-- Notifications: a fully working dropdown (unread count,
+                             mark read, archive) that reuses this button's exact
+                             geometry. It replaced a static div whose badge read
+                             "14" and which had no click handler at all, while
+                             App\Livewire\NotificationsDropdown sat unused. --}}
+                        <livewire:notifications-dropdown />
+
+                        {{-- Inbox link with the real unread count (was a literal "654"). --}}
+                        <livewire:messages-badge />
+
                         <!-- User Button -->
                         <x-account-dropdown />
                     </div>
@@ -246,11 +242,12 @@
                     <div class="hidden lg:inline" x-data="{ langOpen: false }" @click.outside="langOpen = false">
                         <div class="language-dropdown relative">
                             <button class="language-dropdown-toggle flex items-center" id="nav-language" @click.stop="langOpen = !langOpen" type="button">
-                                @if(app()->getLocale() === 'cs')
-                                    <img src="{{ asset('flags/cs.png') }}" alt="Czech" class="w-6 h-6 rounded">
-                                @else
-                                    <img src="{{ asset('flags/en.png') }}" alt="English" class="w-6 h-6 rounded">
-                                @endif
+                                {{-- Current language; the flag comes from
+                                     config/locales.php rather than an if-chain
+                                     that only knew two languages. --}}
+                                <img src="{{ asset(\App\Support\Locales::flag(app()->getLocale())) }}"
+                                     alt="{{ \App\Support\Locales::nativeName(app()->getLocale()) }}"
+                                     class="w-6 h-6 rounded">
                             </button>
                             
                             <div class="language-dropdown-menu absolute top-full right-0 bg-white p-2 rounded-lg shadow-lg transition-opacity duration-200 z-50"
@@ -262,16 +259,14 @@
                                  x-transition:leave="transition ease-in duration-100"
                                  x-transition:leave-start="opacity-100 scale-100"
                                  x-transition:leave-end="opacity-0 scale-95">
-                                <a href="{{ url()->current() }}?locale=en" 
-                                   class="language-dropdown-item flex items-center gap-2 mb-1"
-                                   title="English">
-                                    <img src="{{ asset('flags/en.png') }}" alt="English" class="w-6 h-6">
-                                </a>
-                                <a href="{{ url()->current() }}?locale=cs" 
-                                   class="language-dropdown-item flex items-center gap-2"
-                                   title="{{ __('front.nav.czech') }}">
-                                    <img src="{{ asset('flags/cs.png') }}" alt="Czech" class="w-6 h-6">
-                                </a>
+                                @foreach(\App\Support\Locales::all() as $code => $meta)
+                                    @continue($code === app()->getLocale())
+                                    <a href="{{ url()->current() }}?locale={{ $code }}"
+                                       class="language-dropdown-item flex items-center gap-2 {{ ! $loop->last ? 'mb-1' : '' }}"
+                                       title="{{ $meta['native'] }}">
+                                        <img src="{{ asset($meta['flag']) }}" alt="{{ $meta['native'] }}" class="w-6 h-6">
+                                    </a>
+                                @endforeach
                             </div>
                         </div>
                     </div>
@@ -313,8 +308,30 @@
             <div class="flex flex-col items-center p-4 py-5 pt-6 bg-white" style="border-radius:0 0 24px 24px;">
 
                 @php
-                    $mobileMailCount = 654;
+                    // Real unread count, matching the desktop badge. This was a
+                    // literal 654 for every account.
+                    $mobileMailCount = auth()->check()
+                        ? \App\Models\Message::where('to_user_id', auth()->id())->whereNull('read_at')->count()
+                        : 0;
                     $mobileMailBadge = $mobileMailCount > 99 ? '99+' : $mobileMailCount;
+
+                    // The bell only exists in the desktop header, so on mobile
+                    // notifications had no entry point at all. Same unread rule
+                    // as NotificationsDropdown: personal ones count while
+                    // read_at is null, global ones until this user has a read
+                    // state of their own.
+                    $mobileNotificationCount = auth()->check()
+                        ? \App\Models\Notification::activeForUser(auth()->id())
+                            ->where(function ($query) {
+                                $query->where(fn ($q) => $q->where('is_global', false)->whereNull('read_at'))
+                                    ->orWhere(fn ($q) => $q->where('is_global', true)
+                                        ->whereDoesntHave('userStates', fn ($inner) => $inner
+                                            ->where('user_id', auth()->id())
+                                            ->whereNotNull('read_at')));
+                            })
+                            ->count()
+                        : 0;
+                    $mobileNotificationBadge = $mobileNotificationCount > 99 ? '99+' : $mobileNotificationCount;
                 @endphp
 
                 @foreach($resolvedNavPages as $page)
@@ -346,6 +363,7 @@
                         $mobileTabs = $isMobileMemberAccount ? [
                             ['route' => 'account.member.dashboard', 'label' => __('front.account.member.settings'), 'icon' => 'Settings'],
                             ['route' => 'messages.index', 'label' => __('front.account.member.messages'), 'icon' => 'mail', 'badge' => $mobileMailBadge],
+                            ['route' => 'notifications.archived', 'label' => __('front.nav.notifications'), 'icon' => 'bell', 'badge' => $mobileNotificationBadge],
                             ['route' => 'account.member.favorites', 'label' => __('front.account.member.favorites'), 'icon' => 'heart'],
                             ['route' => 'account.member.ratings', 'label' => __('front.account.member.ratings'), 'icon' => 'star'],
                             ['route' => 'account.member.girls-of-month', 'label' => __('front.account.member.girls_of_month'), 'icon' => 'CalendarDays'],
@@ -357,6 +375,7 @@
                             ['route' => 'account.services', 'label' => __('front.account.sidebar.services'), 'icon' => 'List'],
                             ['route' => 'account.statistics', 'label' => __('front.account.sidebar.statistics'), 'icon' => 'BarChart4'],
                             ['route' => 'messages.index', 'label' => __('front.account.member.messages'), 'icon' => 'mail', 'badge' => $mobileMailBadge],
+                            ['route' => 'notifications.archived', 'label' => __('front.nav.notifications'), 'icon' => 'bell', 'badge' => $mobileNotificationBadge],
                         ];
                     @endphp
                     @foreach($mobileTabs as $tab)
@@ -369,11 +388,13 @@
                                color:{{ $mobileTabActive ? '#FFFFFF' : '#505050' }};">
                             <x-icons :name="$tab['icon']" class="w-6 h-6" style="color:{{ $mobileTabActive ? '#FFFFFF' : '#DD3888' }};" />
                             {{ $tab['label'] }}
-                            @isset($tab['badge'])
+                            {{-- Only render the badge when there is something to
+                                 report; a green "0" is noise, not information. --}}
+                            @if(!empty($tab['badge']))
                                 <span class="absolute flex items-center justify-center" style="right:16px;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:999px;background:#00B80F;font-family:'Poppins',sans-serif;font-weight:700;font-size:11px;color:#FFFFFF;">
                                     {{ $tab['badge'] }}
                                 </span>
-                            @endisset
+                            @endif
                         </a>
                     @endforeach
 
@@ -395,16 +416,16 @@
                     </button>
                 @endauth
 
-                <!-- Language Switcher -->
+                {{-- Language switcher — the design shows three (Česky, English,
+                     Русский). Driven by config/locales.php, so a new language
+                     appears here without touching this markup. --}}
                 <div class="w-full flex justify-center gap-3 mt-4">
-                    <a href="{{ url()->current() }}?locale=cs" class="flex flex-col items-center justify-center gap-1" style="width:96px;height:94px;border-radius:8px;background:{{ app()->getLocale() === 'cs' ? '#F2F2F2' : '#FFFFFF' }};">
-                        <img src="{{ asset('flags/cs.png') }}" alt="Czech" style="width:35px;height:35px;border-radius:999px;object-fit:cover;">
-                        <span style="font-family:'Poppins',sans-serif;font-weight:400;font-size:13px;color:#505050;">{{ __('front.nav.czech') }}</span>
-                    </a>
-                    <a href="{{ url()->current() }}?locale=en" class="flex flex-col items-center justify-center gap-1" style="width:96px;height:94px;border-radius:8px;background:{{ app()->getLocale() === 'en' ? '#F2F2F2' : '#FFFFFF' }};">
-                        <img src="{{ asset('flags/en.png') }}" alt="English" style="width:35px;height:35px;border-radius:999px;object-fit:cover;">
-                        <span style="font-family:'Poppins',sans-serif;font-weight:400;font-size:13px;color:#505050;">{{ __('front.nav.english') }}</span>
-                    </a>
+                    @foreach(\App\Support\Locales::all() as $code => $meta)
+                        <a href="{{ url()->current() }}?locale={{ $code }}" class="flex flex-col items-center justify-center gap-1" style="width:96px;height:94px;border-radius:8px;background:{{ app()->getLocale() === $code ? '#F2F2F2' : '#FFFFFF' }};">
+                            <img src="{{ asset($meta['flag']) }}" alt="{{ $meta['native'] }}" style="width:35px;height:35px;border-radius:999px;object-fit:cover;">
+                            <span style="font-family:'Poppins',sans-serif;font-weight:400;font-size:13px;color:#505050;">{{ $meta['native'] }}</span>
+                        </a>
+                    @endforeach
                 </div>
             </div>
         </div>

@@ -74,6 +74,18 @@ class SubscriptionTypeResource extends Resource
                             ->unique(ignoreRecord: true)
                             ->alphaDash(),
 
+                        // Plans are sold to two different audiences: VIP tiers
+                        // for provider profiles, and the Premium membership that
+                        // unlocks ratings for members. The checkout flows query
+                        // this to avoid offering one audience the other's plan.
+                        Select::make('audience')
+                            ->label(__('subscriptions.fields.audience'))
+                            ->options(SubscriptionType::audiences())
+                            ->default(SubscriptionType::AUDIENCE_PROFILE)
+                            ->required()
+                            ->native(false)
+                            ->helperText(__('subscriptions.fields.audience_helper')),
+
                         Textarea::make('description')
                             ->label(__('subscriptions.form.description'))
                             ->rows(3)

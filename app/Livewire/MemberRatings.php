@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Notification;
 use App\Models\Profile;
+use App\Support\RatingScale;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
@@ -30,6 +31,23 @@ class MemberRatings extends Component
 
     public function mount()
     {
+        // Arriving from a profile's "Dát hodnocení" link — open that profile
+        // straight away instead of a random one.
+        $requested = (int) request('profile', 0);
+
+        if ($requested > 0) {
+            $target = Profile::approved()
+                ->public()
+                ->whereHas('user', fn ($q) => $q->where('gender', 'female'))
+                ->find($requested);
+
+            if ($target) {
+                $this->selectProfile($target->id);
+
+                return;
+            }
+        }
+
         // Land on a random profile rather than always the same
         // alphabetically-first one.
         $userId = Auth::id();
@@ -70,7 +88,7 @@ class MemberRatings extends Component
                 'ratings' => fn ($q) => $q->where('user_id', Auth::id()),
             ])
             ->withCount('ratings')
-            ->withAvg('ratings', 'rating')
+            ->withAvg('ratings', 'percentage')
             ->orderBy('display_name');
     }
 
@@ -141,10 +159,10 @@ class MemberRatings extends Component
 
     /**
      * Rate the selected profile with a percentage value.
-     * Maps percentages to 1-5 star ratings:
-     * - 100% = 5 stars
-     * - 70% = 4 stars (rounded from 3.5)
-     * - 30% = 2 stars (rounded from 1.5)
+     *
+     * The percentage is stored as given. It used to be squeezed into 1-5 stars
+     * first (100=>5, 70=>4, 30=>2), which both made star values 3 and 1
+     * unreachable and inflated 70% to 80% wherever it was drawn back as a bar.
      */
     public function rateProfile(int $percentage)
     {
@@ -152,18 +170,19 @@ class MemberRatings extends Component
             return;
         }
 
-        // Map percentage to star rating (1-5)
-        $starRating = match ($percentage) {
-            100 => 5,
-            70 => 4,
-            30 => 2,
-            default => 3,
-        };
+        // Only the presets the UI actually offers are accepted; the value
+        // arrives from the browser and must not be able to set an arbitrary
+        // score.
+        if (! RatingScale::isOffered($percentage)) {
+            $this->ratingError = __('front.profiles.rating.invalid_rating');
+
+            return;
+        }
 
         try {
             // Shared implementation on the model — identical authorization to
             // the rating widget on the public profile detail page.
-            $result = $this->selectedProfile->rateBy(Auth::user(), $starRating);
+            $result = $this->selectedProfile->rateByPercentage(Auth::user(), $percentage);
 
             if ($result !== Profile::RATE_OK) {
                 $this->ratingError = match ($result) {
@@ -241,11 +260,26 @@ class MemberRatings extends Component
         return $this->selectedProfile->getUserRating(Auth::id());
     }
 
+    /**
+     * The percentage the member gave the selected profile, which is what the
+     * three preset buttons compare against to show the "your rating" marker.
+     */
+    public function getUserPercentageForSelected(): ?int
+    {
+        if (! Auth::check() || ! $this->selectedProfile) {
+            return null;
+        }
+
+        return $this->selectedProfile->getUserPercentage(Auth::id());
+    }
+
     public function render()
     {
         return view('livewire.member-ratings', [
             'profiles' => $this->getAvailableProfiles(),
             'userRating' => $this->getUserRatingForSelected(),
+            'userPercentage' => $this->getUserPercentageForSelected(),
+            'ratingOptions' => RatingScale::options(),
             'regions' => \App\Http\Controllers\Auth\MemberController::CZECH_REGIONS,
         ]);
     }

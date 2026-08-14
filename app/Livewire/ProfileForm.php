@@ -67,6 +67,17 @@ class ProfileForm extends Component
     #[Rule('nullable|string|max:2')]
     public $bust_size = '';
 
+    /**
+     * Comma-separated language codes, e.g. "cs,en,de".
+     *
+     * Profile::getLanguagesAttribute() reads this back out of the `content`
+     * JSON and the detail page renders it, but the property was missing here —
+     * so a provider had no way to set her languages at all and the detail page
+     * always fell back to a canned default.
+     */
+    #[Rule('nullable|string|max:255')]
+    public $languages = '';
+
     #[Rule('nullable|string|max:10')]
     public $local_currency = 'Kč';
 
@@ -139,6 +150,7 @@ class ProfileForm extends Component
             $this->height_cm = $content['card_height_cm'] ?? '';
             $this->nationality = $content['nationality'] ?? '';
             $this->bust_size = $content['bust_size'] ?? '';
+            $this->languages = $content['languages'] ?? '';
             $this->local_currency = $content['local_currency'] ?? 'Kč';
             $this->global_currency = $content['global_currency'] ?? 'EUR';
             $this->has_whatsapp = $content['has_whatsapp'] ?? false;
@@ -546,6 +558,7 @@ class ProfileForm extends Component
             $validationRules['weight_kg'] = 'nullable|numeric|min:30|max:300';
             $validationRules['height_cm'] = 'nullable|integer|min:100|max:250';
             $validationRules['bust_size'] = 'nullable|string|in:' . implode(',', $this->bustSizeOptions);
+            $validationRules['languages'] = 'nullable|string|max:255';
             $validationRules['availability_hours'] = 'nullable|string';
             $validationRules['local_prices'] = 'nullable|array';
             $validationRules['local_prices.*.time_hours'] = 'required|numeric|min:0|max:24';
@@ -623,7 +636,9 @@ class ProfileForm extends Component
                 'display_name' => $this->display_name,
                 'age' => $this->age,
                 'city' => $this->city ?: null,
-                'country_code' => $this->country_code ? strtolower($this->country_code) : null,
+                // Profile::setCountryCodeAttribute() normalises this to
+                // uppercase so it joins cleanly against cities.country_code.
+                'country_code' => $this->country_code ?: null,
                 'address' => $this->address ?: null,
                 'about' => $this->about ?: null,
                 'content' => array_merge(is_array($user->profile->content) ? $user->profile->content : [], [
@@ -631,6 +646,7 @@ class ProfileForm extends Component
                     'card_height_cm' => $this->height_cm ?: null,
                     'nationality' => $this->nationality ? strtolower($this->nationality) : null,
                     'bust_size' => $this->bust_size ?: null,
+                    'languages' => $this->languages ?: null,
                     'local_currency' => $this->local_currency ?: 'Kč',
                     'global_currency' => $this->global_currency ?: 'EUR',
                     'has_whatsapp' => (bool) $this->has_whatsapp,
