@@ -11,8 +11,6 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Database\Seeders\SegmentSeeder;
 use Database\Seeders\ShowcaseProfilesSeeder;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 
 class DatabaseSeeder extends Seeder
 {
@@ -21,48 +19,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create roles
-        $superAdminRole = Role::firstOrCreate(['name' => 'super_admin']);
-        $adminRole = Role::firstOrCreate(['name' => 'admin']);
-        $userRole = Role::firstOrCreate(['name' => 'user']);
-        $vipRole = Role::firstOrCreate(['name' => 'vip']);
-
-        // Create permissions if they don't exist
-        $permissions = [
-            'view_user',
-            'view_any_user',
-            'create_user',
-            'update_user',
-            'delete_user',
-            'restore_user',
-            'force_delete_user',
-            'view_profile',
-            'view_any_profile',
-            'create_profile',
-            'update_profile',
-            'delete_profile',
-            'restore_profile',
-            'force_delete_profile',
-        ];
-
-        foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission]);
-        }
-
-        // Assign all permissions to admin
-        $adminRole->givePermissionTo(Permission::all());
-
-        // User permissions
-        $userRole->givePermissionTo([
-            'view_profile',
-            'create_profile',
-            'update_profile',
-            'delete_profile',
-        ]);
-
-        $vipRole->givePermissionTo([
-            'view_profile',
-        ]);
+        // Roles and permissions. Kept in RoleSeeder so that deploy.sh, which
+        // runs it on its own, and a full seed produce the same result.
+        $this->call(RoleSeeder::class);
 
         // CMS pages drive the header navigation, the footer links and the
         // homepage news section. The seeder existed but was never registered,
