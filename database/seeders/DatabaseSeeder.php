@@ -23,6 +23,10 @@ class DatabaseSeeder extends Seeder
         // runs it on its own, and a full seed produce the same result.
         $this->call(RoleSeeder::class);
 
+        // Scraper sources arrive disabled; seeding one is not permission to
+        // run it.
+        $this->call(ScrapeSourceSeeder::class);
+
         // CMS pages drive the header navigation, the footer links and the
         // homepage news section. The seeder existed but was never registered,
         // so the pages table stayed empty and all three fell back to hardcoded
