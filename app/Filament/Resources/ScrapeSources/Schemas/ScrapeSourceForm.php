@@ -1,0 +1,86 @@
+<?php
+
+namespace App\Filament\Resources\ScrapeSources\Schemas;
+
+use App\Models\ScrapeSource;
+use App\Services\Scraping\AdapterRegistry;
+use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Illuminate\Support\Str;
+
+class ScrapeSourceForm
+{
+    public static function configure(Schema $schema): Schema
+    {
+        return $schema->components([
+            Section::make('Zdroj')
+                ->schema([
+                    TextInput::make('name')
+                        ->label('Název')
+                        ->required()
+                        ->live(onBlur: true)
+                        ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug((string) $state))),
+
+                    TextInput::make('slug')
+                        ->label('Identifikátor')
+                        ->required()
+                        ->unique(ignoreRecord: true)
+                        ->helperText('Používá se v příkazu: php artisan scrape:run <identifikátor>'),
+
+                    TextInput::make('base_url')
+                        ->label('Základní URL')
+                        ->url()
+                        ->required()
+                        ->helperText('Bez koncového lomítka, např. https://www.priklad.cz'),
+
+                    Select::make('adapter')
+                        ->label('Adaptér')
+                        ->options(fn () => app(AdapterRegistry::class)->options())
+                        ->default('generic')
+                        ->required()
+                        ->helperText('Generický adaptér zvládne běžný výpis s odkazy a stránkováním.'),
+
+                    Toggle::make('is_enabled')
+                        ->label('Zapnuto')
+                        ->helperText('Vypnutý zdroj lze spustit jen s --dry-run.'),
+                ])
+                ->columns(2),
+
+            Section::make('Chování při stahování')
+                ->description('Prodleva se nikdy nesníží pod hodnotu, kterou požaduje robots.txt daného webu.')
+                ->schema([
+                    KeyValue::make('settings')
+                        ->label('Nastavení')
+                        ->keyLabel('Klíč')
+                        ->valueLabel('Hodnota')
+                        ->default(ScrapeSource::DEFAULT_SETTINGS)
+                        ->addActionLabel('Přidat položku')
+                        ->helperText(
+                            'crawl_delay (s), timeout (s), max_pages, listing_path, pagination_param, '
+                            . 'detail_link_selector, detail_url_pattern, external_id_pattern, '
+                            . 'image_selector, image_attribute, image_prefer_pattern, image_limit, respect_robots'
+                        )
+                        ->columnSpanFull(),
+                ]),
+
+            Section::make('Poznámky a robots.txt')
+                ->schema([
+                    Textarea::make('notes')
+                        ->label('Poznámky')
+                        ->rows(3)
+                        ->columnSpanFull(),
+
+                    KeyValue::make('robots_rules')
+                        ->label('Poslední načtený robots.txt')
+                        ->disabled()
+                        ->columnSpanFull(),
+                ])
+                ->collapsed(),
+        ]);
+    }
+}
