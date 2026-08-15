@@ -50,6 +50,7 @@ class Profile extends Model implements HasMedia
         'availability_hours',
         'local_prices',
         'global_prices',
+        'price_currency',
         'contacts',
         'verified_at',
         'status',

@@ -31,6 +31,33 @@ class ProfileForm
         return $schema
             ->columns(2)
             ->components([
+            // The subscription lived only in a relation tab, so the one thing
+            // an admin usually opens a profile to check needed a click to see.
+            \Filament\Forms\Components\Placeholder::make('subscription_summary')
+                ->label(__('profiles.form.subscription_state'))
+                ->visible(fn () => $record && $record->exists)
+                ->columnSpanFull()
+                ->content(function () use ($record): string {
+                    if (! $record) {
+                        return '—';
+                    }
+
+                    $subscription = $record->activeSubscription()->with('subscriptionType')->first();
+
+                    if (! $subscription) {
+                        return __('profiles.form.subscription_none');
+                    }
+
+                    $name = $subscription->subscriptionType?->getTranslation('name', app()->getLocale())
+                        ?? $subscription->subscriptionType?->slug
+                        ?? '—';
+
+                    return __('profiles.form.subscription_active', [
+                        'plan' => $name,
+                        'date' => optional($subscription->ends_at)->format('d.m.Y') ?? '—',
+                    ]);
+                }),
+
             Select::make('user_id')
                 ->relationship('user', 'name')
                 ->required()
@@ -202,12 +229,57 @@ class ProfileForm
                     ->maxLength(1200)
                     ->columnSpanFull(),
 
+                // Two writers, two shapes: the member-facing ProfileForm saves
+                // this as a list (explode on ", "), the admin as a day => hours
+                // map. Whichever wrote last decided the shape, and a nested
+                // value reached the KeyValue as an array — which is what
+                // rendered as "[object Object]".
                 KeyValue::make('availability_hours')
                     ->label(__('profiles.form.availability_hours'))
                     ->keyLabel(__('profiles.form.day_label'))
                     ->valueLabel(__('profiles.form.hours_label'))
+                    ->formatStateUsing(function ($state): array {
+                        if (! is_array($state) || $state === []) {
+                            return [];
+                        }
+
+                        $normalized = [];
+
+                        foreach ($state as $key => $value) {
+                            // A list entry carries the day inside the text
+                            // ("Pondělí 9:00-17:00"); split it back apart.
+                            if (is_int($key) && is_string($value)) {
+                                if (preg_match('/^\s*(\p{L}+)\s+(.*)$/u', $value, $m)) {
+                                    $normalized[$m[1]] = trim($m[2]);
+                                } else {
+                                    $normalized[trim($value)] = '';
+                                }
+
+                                continue;
+                            }
+
+                            // A nested value (from/to pairs) flattened to text.
+                            $normalized[(string) $key] = is_array($value)
+                                ? implode('-', array_map('strval', $value))
+                                : (string) $value;
+                        }
+
+                        return $normalized;
+                    })
                     ->columnSpanFull()
                     ->helperText(__('profiles.form.availability_helper')),
+
+                // The price fields hardcoded a "$" prefix, so a Czech provider
+                // entering korunas had them labelled as dollars. The amounts
+                // now carry the currency they were entered in, and the prefix
+                // follows it.
+                Select::make('price_currency')
+                    ->label(__('profiles.form.price_currency'))
+                    ->options(\App\Support\Currencies::all())
+                    ->default(\App\Support\Currencies::CZK)
+                    ->required()
+                    ->live()
+                    ->helperText(__('profiles.form.price_currency_helper')),
 
                 Repeater::make('local_prices')
                     ->label(__('profiles.form.local_prices'))
@@ -220,12 +292,16 @@ class ProfileForm
                             ->label(__('profiles.form.incall_price'))
                             ->required()
                             ->numeric()
-                            ->prefix('$'),
+                            ->prefix(fn ($get) => \App\Support\Currencies::symbol(
+                                (string) ($get('../../price_currency') ?: \App\Support\Currencies::CZK)
+                            )),
                         TextInput::make('outcall_price')
                             ->label(__('profiles.form.outcall_price'))
                             ->required()
                             ->numeric()
-                            ->prefix('$'),
+                            ->prefix(fn ($get) => \App\Support\Currencies::symbol(
+                                (string) ($get('../../price_currency') ?: \App\Support\Currencies::CZK)
+                            )),
                     ])
                     ->columns(3)
                     ->columnSpanFull()
@@ -244,12 +320,16 @@ class ProfileForm
                             ->label(__('profiles.form.incall_price'))
                             ->required()
                             ->numeric()
-                            ->prefix('$'),
+                            ->prefix(fn ($get) => \App\Support\Currencies::symbol(
+                                (string) ($get('../../price_currency') ?: \App\Support\Currencies::CZK)
+                            )),
                         TextInput::make('outcall_price')
                             ->label(__('profiles.form.outcall_price'))
                             ->required()
                             ->numeric()
-                            ->prefix('$'),
+                            ->prefix(fn ($get) => \App\Support\Currencies::symbol(
+                                (string) ($get('../../price_currency') ?: \App\Support\Currencies::CZK)
+                            )),
                     ])
                     ->columns(3)
                     ->columnSpanFull()

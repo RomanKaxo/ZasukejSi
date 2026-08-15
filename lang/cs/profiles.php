@@ -23,6 +23,9 @@ return [
         'segment' => 'Segment',
     ],
     'actions' => [
+        'approve' => 'Schválit',
+        'block' => 'Blokovat',
+        'block_description' => 'Profil se zároveň skryje z webu.',
         'verify' => 'Ověřit',
         'unverify' => 'Zrušit ověření',
     ],
@@ -37,6 +40,11 @@ return [
         'female' => 'Žena',
     ],
     'form' => [
+        'price_currency' => 'Měna ceníku',
+        'price_currency_helper' => 'V této měně jsou zadané všechny ceny níže.',
+        'subscription_state' => 'Předplatné',
+        'subscription_none' => 'Bez aktivního předplatného.',
+        'subscription_active' => 'Aktivní: :plan, platí do :date',
         'profile_url' => 'Veřejná adresa profilu',
         'profile_url_helper' => 'Adresa, na které je profil vidět na webu. Vyplňuje se automaticky.',
         'display_name' => 'Zobrazované jméno',
