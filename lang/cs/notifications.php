@@ -1,6 +1,14 @@
 <?php
 
 return [
+    'types' => [
+        'success' => 'Úspěch',
+        'info' => 'Informace',
+        'warning' => 'Upozornění',
+        'danger' => 'Důležité',
+        'system' => 'Systémové',
+    ],
+
     // Profile notifications (for users)
     'profile' => [
         'approved_title' => 'Profil schválen',

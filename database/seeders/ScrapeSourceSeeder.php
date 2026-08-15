@@ -34,7 +34,11 @@ class ScrapeSourceSeeder extends Seeder
                     'crawl_delay' => 5,
                     'timeout' => 30,
                     'max_pages' => 3,
-                    'listing_path' => '/eskort',
+                    // The listing lives at /eskorty/<země>/ (plural). /eskort/
+                    // is the prefix of a *detail* page, so pointing the listing
+                    // at it returned a page with no profile links at all.
+                    'listing_path' => '/eskorty/ceska-republika',
+                    'pagination_pattern' => '/{page}/',
                     'pagination_param' => 'page',
                     'detail_link_selector' => 'a[href*="/eskort/"]',
                     'detail_url_pattern' => '#/eskort/[^/]+/\d+/?$#',

@@ -38,6 +38,8 @@ return [
         'female' => 'Female',
     ],
     'form' => [
+        'profile_url' => 'Public profile address',
+        'profile_url_helper' => 'Where the profile is visible on the site. Filled in automatically.',
         'display_name' => 'Display Name',
         'about' => 'About',
         'age' => 'Age',

@@ -26,6 +26,8 @@ class NotificationsTable
                 TextColumn::make('type')
                     ->label('Typ')
                     ->badge()
+                    ->formatStateUsing(fn ($record) => $record->typeLabel())
+                    ->color(fn ($record) => $record->typeBadgeColor())
                     ->sortable(),
 
                 TextColumn::make('user.email')

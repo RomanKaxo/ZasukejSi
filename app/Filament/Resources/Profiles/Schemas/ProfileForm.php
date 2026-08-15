@@ -40,11 +40,16 @@ class ProfileForm
                 ->columnSpanFull(),
 
             // Display profile URL if record exists
+            // `profile_url` is derived, not a column, so there is no state to
+            // hydrate from the record. `default()` only fires on create, which
+            // left the field blank on every edit — the one screen where the
+            // address is actually wanted.
             TextInput::make('profile_url')
                 ->label(__('profiles.form.profile_url'))
-                ->default($profileUrl)
+                ->formatStateUsing(fn () => $profileUrl)
+                ->dehydrated(false)
                 ->disabled()
-                ->visible(fn() => $profileUrl !== null)
+                ->visible(fn () => $profileUrl !== null)
                 ->columnSpanFull()
                 ->helperText(__('profiles.form.profile_url_helper')),
 

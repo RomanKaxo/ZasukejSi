@@ -37,6 +37,8 @@ return [
         'female' => 'Žena',
     ],
     'form' => [
+        'profile_url' => 'Veřejná adresa profilu',
+        'profile_url_helper' => 'Adresa, na které je profil vidět na webu. Vyplňuje se automaticky.',
         'display_name' => 'Zobrazované jméno',
         'about' => 'O mně',
         'age' => 'Věk',

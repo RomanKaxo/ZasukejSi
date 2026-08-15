@@ -1,6 +1,14 @@
 <?php
 
 return [
+    'types' => [
+        'success' => 'Success',
+        'info' => 'Information',
+        'warning' => 'Warning',
+        'danger' => 'Important',
+        'system' => 'System',
+    ],
+
     // Profile notifications (for users)
     'profile' => [
         'approved_title' => 'Profile Approved',
