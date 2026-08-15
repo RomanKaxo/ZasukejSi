@@ -25,6 +25,9 @@ return [
         'buy_button' => 'Activate',
         'extend_button' => 'Extend',
         'no_plans' => 'No plans are available right now.',
+        'payments_unavailable' => 'Payments are unavailable right now. Please try again later.',
+        'price_unavailable' => 'This plan has no price set.',
+        'checkout_failed' => 'The order could not be created. Please try again.',
         'period_days' => '{1} :count day|[2,*] :count days',
         'period_months' => '{1} :count month|[2,*] :count months',
         'period_years' => '{1} :count year|[2,*] :count years',
@@ -418,6 +421,7 @@ return [
             'call' => 'Call',
             'give_rating' => 'Give Rating',
             'refresh_access' => 'Refresh Access',
+            'access_valid_until' => 'Access valid until :date',
             'report_profile' => 'Report Profile',
             'report_modal' => [
                 'title' => 'Report Profile',

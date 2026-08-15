@@ -50,13 +50,39 @@
     // No stock-photo poster: if there is no real photo the player renders
     // without one rather than borrowing someone else's picture.
     $videoPoster = $images->first()?->getUrl();
-    // Targets for the two action links that used to be href="#".
-    // "Obnovit přístup" is the Premium call to action: a signed-in member goes
-    // straight to the plans, everyone else to the public VIP & Premium page.
+    // "Obnovit přístup" used to point everyone at a page, which is why it read
+    // as a button that does nothing: a guest was sent to marketing copy, and a
+    // member who already had access was offered to buy it again.
+    //
+    // What restores access depends on why it is missing:
+    //   guest              -> sign in; they may already have a membership
+    //   member, no access  -> the plans
+    //   member, has access -> their membership, showing what it runs to
+    //   provider / admin   -> the public VIP & Premium page
     $premiumPage = \App\Models\Page::published()->where('slug', 'vip-premium')->first();
-    $premiumUrl = auth()->check() && auth()->user()->isMale() && ! auth()->user()->hasRole('admin')
-        ? route('account.member.membership.index')
-        : ($premiumPage ? url('/' . $premiumPage->slug) : url('/'));
+    $premiumPageUrl = $premiumPage ? url('/' . $premiumPage->slug) : url('/');
+
+    $accessUser = auth()->user();
+    $accessIsMember = $accessUser && $accessUser->isMale() && ! $accessUser->hasRole('admin');
+    $accessHasMembership = $accessIsMember && $accessUser->hasActiveMembership();
+
+    // A guest gets the login modal rather than a link, so the label matches
+    // what actually happens.
+    $premiumOpensLogin = ! auth()->check();
+
+    $premiumUrl = match (true) {
+        $premiumOpensLogin => '#',
+        $accessIsMember => route('account.member.membership.index'),
+        default => $premiumPageUrl,
+    };
+
+    // Someone who already has access is not restoring it; they are looking at
+    // how long it runs for.
+    $premiumLabel = $accessHasMembership
+        ? __('front.profiles.detail_page.access_valid_until', [
+            'date' => optional($accessUser->membershipEndsAt())->format('d.m.Y') ?? '',
+          ])
+        : __('front.profiles.detail_page.refresh_access');
     // "Dát hodnocení" opens the member rating screen on this profile.
     $rateUrl = \Illuminate\Support\Facades\Route::has('account.member.ratings')
         ? route('account.member.ratings', ['profile' => $profile->id])
@@ -2540,7 +2566,8 @@
                 {{-- Both used to be href="#". "Obnovit přístup" is the Premium
                      call to action, "Dát hodnocení" opens the rating screen with
                      this profile preselected; a guest gets the login modal. --}}
-                <a href="{{ $premiumUrl }}" class="vip-profile-link">{{ __('front.profiles.detail_page.refresh_access') }}</a>
+                <a href="{{ $premiumUrl }}" class="vip-profile-link"
+                   @if($premiumOpensLogin) x-data @click.prevent="$dispatch('show-login-modal')" @endif>{{ $premiumLabel }}</a>
                 @auth
                     <a href="{{ $rateUrl }}" class="vip-profile-link">{{ __('front.profiles.detail_page.give_rating') }}</a>
                 @else
@@ -2679,9 +2706,10 @@
                             <span>{{ __('front.profiles.detail_page.give_rating') }}</span>
                         </a>
                     @endauth
-                    <a href="{{ $premiumUrl }}" class="vip-profile-desktop-action">
+                    <a href="{{ $premiumUrl }}" class="vip-profile-desktop-action"
+                       @if($premiumOpensLogin) x-data @click.prevent="$dispatch('show-login-modal')" @endif>
                         <img src="{{ asset('images/icons/KeySquare.svg') }}" alt="" aria-hidden="true">
-                        <span>{{ __('front.profiles.detail_page.refresh_access') }}</span>
+                        <span>{{ $premiumLabel }}</span>
                     </a>
                     <a href="#" class="vip-profile-desktop-action" x-data @click.prevent="$dispatch('show-report-modal', { profileId: {{ $profile->id }} })">
                         <img src="{{ asset('images/icons/TriangleAlert.svg') }}" alt="" aria-hidden="true">
