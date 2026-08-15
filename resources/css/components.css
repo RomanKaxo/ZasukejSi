@@ -1554,3 +1554,19 @@ body.modal-open {
 }
 
 
+
+/* Phone frame (360px): the card is 146px wide with the photo filling it edge
+   to edge, two per row, 20px apart, in a 23px gutter. The 767px block above
+   sizes the card at 160px with a 145px photo centred inside it, which leaves
+   the photo inset and the columns too wide. Scoped to the same breakpoint as
+   .profile-list-cards-grid so tablets keep the wider card. */
+@media (max-width: 426px) {
+  .home-profile-card,
+  .home-profile-card-content {
+    width: 146px !important;
+  }
+
+  .home-profile-card-media {
+    width: 146px !important;
+  }
+}

@@ -141,11 +141,22 @@
         }
 
         .hero-main-title { font-size: 36px; }
-        .hero-subtitle { font-size: 18px; }
+        /* Phone frame: three subtitle lines 28px apart, not the 1.3 ratio. */
+        .hero-subtitle { font-size: 18px; line-height: 28px; }
         .hero-inner { display: flex !important; flex-direction: column !important; }
-        .hero-copy-block { order: 1 !important; transform: none !important; padding-bottom: 0 !important; }
+        /* 16px from .hero-inner + 9px here = the 25px gutter the phone frame
+           uses for the heading, subtitle and counter pills alike. */
+        .hero-copy-block { order: 1 !important; transform: none !important; padding-bottom: 0 !important; padding-left: 9px !important; padding-right: 9px !important; }
         .hero-text-block { width: 100%; min-height: auto; }
         .hero-search-wrap { order: 2 !important; transform: translateY(40px) !important; margin-top: 0 !important; }
+    }
+
+    /* Same breakpoint as the counter pills in search-profiles. They are shown
+       only below 426px, so only there does the card need to clear the subtitle
+       by the space they occupy (31 + 76 + 33). Above it the gap stays 40px,
+       otherwise 426-640px would show an empty band where no pills render. */
+    @media (max-width: 425px) {
+        .hero-search-wrap { transform: translateY(140px) !important; }
     }
 </style>
 

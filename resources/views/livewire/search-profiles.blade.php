@@ -604,8 +604,27 @@
     }
 
     @media (max-width: 425px) {
+        /* The phone frame shows both counters stacked on the hero photo just
+           above the white search card — 310x35 each, 6px apart, 33px clear of
+           the card. They were display:none, so mobile lost them entirely
+           while the CSS below still sized badges that never rendered. */
+        /* Static so the card, not the title row, becomes the containing block
+           the badges are positioned against. */
+        .search-hero-top {
+            position: static !important;
+        }
+
         .search-hero-badges {
-            display: none !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 6px !important;
+            position: absolute !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            bottom: 100% !important;
+            margin: 0 0 33px 0 !important;
+            width: 310px !important;
+            z-index: 26 !important;
         }
 
         .search-badge {
