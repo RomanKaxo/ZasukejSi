@@ -2,11 +2,16 @@
 
 namespace App\Support;
 
+use App\Models\Currency;
+
 /**
- * The currencies a plan can be priced in, and which one a locale gets.
+ * Thin façade over the `currencies` table.
  *
- * Prices are entered per currency rather than converted at display time — a
- * rate that drifts would quietly misquote the price to the customer.
+ * The list used to be hardcoded here, so adding a currency — or turning one
+ * off — took a deploy. Callers keep the same API; the data moved.
+ *
+ * The constants remain because they name the currencies the site ships with
+ * and are used as defaults; they are not a limit on what can exist.
  */
 class Currencies
 {
@@ -14,14 +19,13 @@ class Currencies
     public const EUR = 'EUR';
     public const USD = 'USD';
 
-    /** @return array<string, string> */
+    /** @return array<string, string> code => symbol */
     public static function all(): array
     {
-        return [
-            self::CZK => 'Kč',
-            self::EUR => '€',
-            self::USD => '$',
-        ];
+        $symbols = Currency::symbols();
+
+        // Before the table is seeded the app still has to quote something.
+        return $symbols === [] ? [self::CZK => 'Kč'] : $symbols;
     }
 
     /** @return array<int, string> */
@@ -43,36 +47,43 @@ class Currencies
     /** The currency a given site language is quoted in. */
     public static function forLocale(?string $locale = null): string
     {
-        return match ($locale ?? app()->getLocale()) {
+        $preferred = match ($locale ?? app()->getLocale()) {
             'cs' => self::CZK,
             'ru' => self::USD,
             default => self::EUR,
         };
+
+        // An admin may have switched that currency off; fall back to the base
+        // rather than quoting in something not on offer.
+        if (self::isSupported($preferred)) {
+            return $preferred;
+        }
+
+        return Currency::base()?->code ?? self::CZK;
     }
 
-    /**
-     * Format an amount the way the currency is normally written: korunas after
-     * the number, euros and dollars before it.
-     */
     public static function format(float|int|string|null $amount, string $currency): string
     {
         if ($amount === null) {
             return '';
         }
 
-        $currency = strtoupper($currency);
+        $model = Currency::findByCode($currency);
+
+        if ($model) {
+            return $model->format($amount);
+        }
+
+        // Unknown currency: still print something readable.
         $value = (float) $amount;
-        $hasFraction = fmod($value, 1.0) !== 0.0;
+        $decimals = fmod($value, 1.0) === 0.0 ? 0 : 2;
 
-        $formatted = number_format(
-            $value,
-            $hasFraction ? 2 : 0,
-            $currency === self::CZK ? ',' : '.',
-            $currency === self::CZK ? ' ' : ',',
-        );
+        return number_format($value, $decimals, ',', ' ') . ' ' . strtoupper($currency);
+    }
 
-        return $currency === self::CZK
-            ? $formatted . ' ' . self::symbol($currency)
-            : self::symbol($currency) . $formatted;
+    /** @see Currency::convert() */
+    public static function convert(float $amount, string $from, string $to): ?float
+    {
+        return Currency::convert($amount, $from, $to);
     }
 }

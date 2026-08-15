@@ -40,6 +40,13 @@ return [
         'female' => 'Žena',
     ],
     'form' => [
+        'auto_convert' => 'Dopočítat chybějící měny podle kurzu',
+        'auto_convert_helper' => 'Ceny, které zadáte ručně, se nikdy nepřepočítávají. Doplní se jen měny, které necháte prázdné.',
+        'service_prices' => 'Ceník služeb',
+        'service_prices_helper' => 'U každé služby lze zadat cenu v každé zapnuté měně. Prázdné pole znamená, že služba v této měně nemá cenu.',
+        'service' => 'Služba',
+        'service_note' => 'Poznámka ke službě',
+        'add_service_price' => 'Přidat službu',
         'price_currency' => 'Měna ceníku',
         'price_currency_helper' => 'V této měně jsou zadané všechny ceny níže.',
         'subscription_state' => 'Předplatné',

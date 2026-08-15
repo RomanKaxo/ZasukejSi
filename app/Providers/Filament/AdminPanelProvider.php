@@ -87,7 +87,35 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
                 \App\Http\Middleware\EnsureUserIsAdmin::class,
-            ])->plugins([
+            ])
+            // Photo thumbnails four to five across instead of stacked one per
+            // row, which made the profile form scroll for a screen and a half.
+            // Injected here because the panel has no compiled theme of its own.
+            ->renderHook(
+                \Filament\View\PanelsRenderHook::HEAD_END,
+                fn (): string => <<<'HTML'
+                    <style>
+                        .profile-media-grid .fi-fo-file-upload-file-list {
+                            display: grid;
+                            grid-template-columns: repeat(4, minmax(0, 1fr));
+                            gap: 0.75rem;
+                        }
+
+                        @media (min-width: 1280px) {
+                            .profile-media-grid .fi-fo-file-upload-file-list {
+                                grid-template-columns: repeat(5, minmax(0, 1fr));
+                            }
+                        }
+
+                        @media (max-width: 767px) {
+                            .profile-media-grid .fi-fo-file-upload-file-list {
+                                grid-template-columns: repeat(2, minmax(0, 1fr));
+                            }
+                        }
+                    </style>
+                    HTML,
+            )
+            ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
             ]);
     }

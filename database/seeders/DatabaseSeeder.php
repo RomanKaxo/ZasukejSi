@@ -23,6 +23,9 @@ class DatabaseSeeder extends Seeder
         // runs it on its own, and a full seed produce the same result.
         $this->call(RoleSeeder::class);
 
+        // Currencies before anything that quotes a price.
+        $this->call(CurrencySeeder::class);
+
         // Scraper sources arrive disabled; seeding one is not permission to
         // run it.
         $this->call(ScrapeSourceSeeder::class);
