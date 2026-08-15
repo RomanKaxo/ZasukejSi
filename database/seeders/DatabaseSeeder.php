@@ -263,14 +263,24 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($services as $serviceData) {
-            Service::firstOrCreate(
-                ['name' => $serviceData['name']],
-                [
-                    'description' => ['cs' => '', 'en' => ''],
-                    'sort_order' => $serviceData['sort_order'],
-                    'is_active' => true,
-                ]
-            );
+            // Match on the JSON path, not on the whole `name` value. `name` is
+            // translatable, so firstOrCreate(['name' => [...]]) compares the
+            // encoded JSON as a string; that never matched the stored row and
+            // every db:seed run appended another copy of the whole list.
+            $exists = Service::query()
+                ->where('name->cs', $serviceData['name']['cs'])
+                ->exists();
+
+            if ($exists) {
+                continue;
+            }
+
+            Service::create([
+                'name' => $serviceData['name'],
+                'description' => ['cs' => '', 'en' => ''],
+                'sort_order' => $serviceData['sort_order'],
+                'is_active' => true,
+            ]);
         }
 
         // Create some test ratings for profiles

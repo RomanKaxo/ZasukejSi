@@ -65,6 +65,13 @@ class ServicesSeeder extends Seeder
             ],
         ];
 
+        // `name` is a translatable JSON column, so there is no natural key to
+        // match on. Guard the whole seeder instead — without this, every run
+        // appends a second copy of the list rather than failing visibly.
+        if (Service::count() > 0) {
+            return;
+        }
+
         foreach ($services as $service) {
             Service::create([
                 'name' => $service['name'],
