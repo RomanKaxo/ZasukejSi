@@ -1,6 +1,16 @@
 <?php
 
 return [
+    'days' => [
+        'monday' => 'Monday',
+        'tuesday' => 'Tuesday',
+        'wednesday' => 'Wednesday',
+        'thursday' => 'Thursday',
+        'friday' => 'Friday',
+        'saturday' => 'Saturday',
+        'sunday' => 'Sunday',
+    ],
+
     'table' => [
         'display_name' => 'Display Name',
         'user' => 'User',
@@ -41,6 +51,8 @@ return [
         'female' => 'Female',
     ],
     'form' => [
+        'always_online' => 'Always available',
+        'hours_to' => 'to',
         'auto_convert' => 'Fill missing currencies from the exchange rate',
         'auto_convert_helper' => 'Prices you enter are never recalculated. Only the currencies you leave empty are filled in.',
         'service_prices' => 'Service price list',
