@@ -25,6 +25,9 @@ return [
         'buy_button' => 'Activate',
         'extend_button' => 'Extend',
         'no_plans' => 'No plans are available right now.',
+        'period_days' => '{1} :count day|[2,*] :count days',
+        'period_months' => '{1} :count month|[2,*] :count months',
+        'period_years' => '{1} :count year|[2,*] :count years',
     ],
 
     'landing' => [

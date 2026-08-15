@@ -17,15 +17,25 @@ class CountrySeeder extends Seeder
      * @var array<int, string>
      */
     private const PREVIOUSLY_LISTED = [
-        'AL', // Albánie
-        'AD', // Andorra
-        'AM', // Arménie
-        'BE', // Belgie
-        'BY', // Bělorusko
-        'BA', // Bosna a Hercegovina
-        'BG', // Bulharsko
-        'ME', // Černá Hora
-        'CZ', // Česká republika
+        'AL', 'AD', 'AM', 'BE', 'BY', 'BA', 'BG', 'ME', 'CZ',
+    ];
+
+    /**
+     * The rest of Europe.
+     *
+     * The old hardcoded list stopped at "Česká republika" — it was the first
+     * screenful of a longer list, not a deliberate selection — so a visitor
+     * from Denmark onwards had no country to pick. Names come from
+     * lang/{cs,en}/codes.php and flags from the ISO code, so adding a code
+     * here is all a country needs.
+     *
+     * @var array<int, string>
+     */
+    private const EUROPE = [
+        'AT', 'CH', 'CY', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR', 'GB',
+        'GE', 'GR', 'HR', 'HU', 'IE', 'IS', 'IT', 'LI', 'LT', 'LU',
+        'LV', 'MC', 'MD', 'MK', 'MT', 'NL', 'NO', 'PL', 'PT', 'RO',
+        'RS', 'RU', 'SE', 'SI', 'SK', 'SM', 'TR', 'UA', 'XK',
     ];
 
     public function run(): void
@@ -40,6 +50,7 @@ class CountrySeeder extends Seeder
             ->all();
 
         $codes = collect(self::PREVIOUSLY_LISTED)
+            ->merge(self::EUROPE)
             ->merge($withProfiles)
             ->filter()
             ->unique()

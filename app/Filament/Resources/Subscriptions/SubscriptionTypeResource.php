@@ -95,10 +95,31 @@ class SubscriptionTypeResource extends Resource
 
                 Section::make(__('subscriptions.form.pricing'))
                     ->schema([
-                        TextInput::make('price')
-                            ->label(__('subscriptions.form.price'))
+                        // One field per currency. Prices are not converted at
+                        // display time, because a rate that drifts would
+                        // quietly misquote what the customer is charged.
+                        TextInput::make('price_czk')
+                            ->label('Cena (Kč)')
+                            ->numeric()
+                            ->suffix('Kč')
+                            ->minValue(0),
+
+                        TextInput::make('price_eur')
+                            ->label('Cena (EUR)')
+                            ->numeric()
+                            ->prefix('€')
+                            ->minValue(0),
+
+                        TextInput::make('price_usd')
+                            ->label('Cena (USD)')
                             ->numeric()
                             ->prefix('$')
+                            ->minValue(0),
+
+                        TextInput::make('price')
+                            ->label(__('subscriptions.form.price'))
+                            ->helperText('Původní sloupec bez měny. Zůstává kvůli starším záznamům; vyplňujte ceny výše.')
+                            ->numeric()
                             ->required()
                             ->default(0),
 
@@ -106,10 +127,15 @@ class SubscriptionTypeResource extends Resource
                             ->label(__('subscriptions.form.duration'))
                             ->options([
                                 7 => __('subscriptions.duration.weekly'),
+                                14 => '14 dní',
                                 30 => __('subscriptions.duration.monthly'),
+                                60 => '60 dní',
                                 90 => __('subscriptions.duration.quarterly'),
+                                120 => '120 dní',
                                 180 => __('subscriptions.duration.semi_annual'),
+                                270 => '270 dní',
                                 365 => __('subscriptions.duration.yearly'),
+                                730 => '2 roky',
                             ])
                             ->required()
                             ->default(30),
@@ -182,8 +208,23 @@ class SubscriptionTypeResource extends Resource
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                TextColumn::make('formatted_price')
+                // All three currencies at once, so a plan priced in only one of
+                // them is visible as such rather than looking complete.
+                TextColumn::make('prices')
                     ->label(__('subscriptions.table.price'))
+                    ->state(function ($record) {
+                        $parts = [];
+
+                        foreach (\App\Support\Currencies::codes() as $code) {
+                            $amount = $record->priceIn($code);
+
+                            if ($amount !== null) {
+                                $parts[] = \App\Support\Currencies::format($amount, $code);
+                            }
+                        }
+
+                        return $parts === [] ? '—' : implode(' · ', $parts);
+                    })
                     ->sortable(query: fn (Builder $query, string $direction) => $query->orderBy('price', $direction)),
 
                 TextColumn::make('duration_label')

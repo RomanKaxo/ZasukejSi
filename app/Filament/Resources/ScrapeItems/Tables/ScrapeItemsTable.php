@@ -72,7 +72,10 @@ class ScrapeItemsTable
             ->filters([
                 SelectFilter::make('status')
                     ->label('Stav')
-                    ->options(ScrapeItem::statusOptions()),
+                    ->options(ScrapeItem::statusOptions())
+                    // Opens on the queue: the items waiting for a decision are
+                    // the reason to visit this screen.
+                    ->default(ScrapeItem::STATUS_PENDING),
 
                 SelectFilter::make('scrape_source_id')
                     ->label('Zdroj')

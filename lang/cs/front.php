@@ -25,6 +25,9 @@ return [
         'buy_button' => 'Aktivovat',
         'extend_button' => 'Prodloužit',
         'no_plans' => 'Momentálně nejsou k dispozici žádné plány.',
+        'period_days' => '{1} :count den|[2,4] :count dny|[5,*] :count dní',
+        'period_months' => '{1} :count měsíc|[2,4] :count měsíce|[5,*] :count měsíců',
+        'period_years' => '{1} :count rok|[2,4] :count roky|[5,*] :count let',
     ],
 
     'landing' => [

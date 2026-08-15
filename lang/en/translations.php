@@ -31,6 +31,8 @@ return [
 
     'actions' => [
         'reset' => 'Reset to default',
+        'all_locales' => 'Translate into all languages',
+        'all_locales_saved' => 'Saved in all languages',
         'reset_selected' => 'Reset selected to default',
         'import' => 'Load new strings',
         'import_description' => 'Loads strings from the lang/ files. Anything you have edited here is kept.',

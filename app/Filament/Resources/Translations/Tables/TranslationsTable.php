@@ -58,9 +58,12 @@ class TranslationsTable
             ])
             ->defaultSort('key')
             ->filters([
+                // Defaults to the language the admin is working in, so the list
+                // opens on one mutation instead of every row three times over.
                 SelectFilter::make('locale')
                     ->label(__('translations.table.locale'))
-                    ->options(collect(Locales::all())->map(fn ($m) => $m['native'])->all()),
+                    ->options(collect(Locales::all())->map(fn ($m) => $m['native'])->all())
+                    ->default(app()->getLocale()),
 
                 SelectFilter::make('group')
                     ->label(__('translations.table.group'))
@@ -81,6 +84,56 @@ class TranslationsTable
                     ->query(fn ($query) => $query->whereColumn('value', 'default_value')),
             ])
             ->recordActions([
+                // One key, every language, saved in a single step. Editing row
+                // by row meant hunting down the same key once per locale.
+                Action::make('translateAll')
+                    ->label(__('translations.actions.all_locales'))
+                    ->icon('heroicon-o-language')
+                    ->color('primary')
+                    ->modalWidth('2xl')
+                    ->fillForm(function (Translation $record) {
+                        $siblings = Translation::query()
+                            ->where('group', $record->group)
+                            ->where('key', $record->key)
+                            ->pluck('value', 'locale');
+
+                        $data = [];
+
+                        foreach (Locales::codes() as $locale) {
+                            $data[$locale] = $siblings[$locale] ?? null;
+                        }
+
+                        return $data;
+                    })
+                    ->form(fn (Translation $record) => collect(Locales::codes())
+                        ->map(fn (string $locale) => \Filament\Forms\Components\Textarea::make($locale)
+                            ->label(Locales::nativeName($locale))
+                            ->rows(2)
+                            ->maxLength(5000)
+                            // The source string, so the translator can see what
+                            // they are translating without leaving the modal.
+                            ->helperText($locale === $record->locale ? $record->default_value : null))
+                        ->all())
+                    ->action(function (Translation $record, array $data) {
+                        foreach ($data as $locale => $value) {
+                            if (! Locales::isSupported($locale)) {
+                                continue;
+                            }
+
+                            Translation::updateOrCreate(
+                                ['locale' => $locale, 'group' => $record->group, 'key' => $record->key],
+                                ['value' => $value, 'default_value' => $record->default_value],
+                            );
+                        }
+
+                        Translation::flushCache();
+
+                        \Filament\Notifications\Notification::make()
+                            ->title(__('translations.actions.all_locales_saved'))
+                            ->success()
+                            ->send();
+                    }),
+
                 EditAction::make(),
 
                 Action::make('reset')
