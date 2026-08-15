@@ -24,6 +24,9 @@ return [
         'segment' => 'Segment',
     ],
     'actions' => [
+        'approve' => 'Approve',
+        'block' => 'Block',
+        'block_description' => 'The profile is also hidden from the site.',
         'verify' => 'Verify',
         'unverify' => 'Unverify',
     ],
@@ -38,6 +41,11 @@ return [
         'female' => 'Female',
     ],
     'form' => [
+        'price_currency' => 'Price list currency',
+        'price_currency_helper' => 'All prices below are entered in this currency.',
+        'subscription_state' => 'Subscription',
+        'subscription_none' => 'No active subscription.',
+        'subscription_active' => 'Active: :plan, valid until :date',
         'profile_url' => 'Public profile address',
         'profile_url_helper' => 'Where the profile is visible on the site. Filled in automatically.',
         'display_name' => 'Display Name',

@@ -149,7 +149,37 @@ class ProfilesTable
                 TrashedFilter::make(),
             ])
             ->recordActions([
-                EditAction::make()
+                // Approving and blocking were only reachable by opening the
+                // record and changing a select — the two decisions an admin
+                // makes most often needed the most clicks.
+                \Filament\Actions\Action::make('approve')
+                    ->label(__('profiles.actions.approve'))
+                    ->icon('heroicon-o-check')
+                    ->color('success')
+                    ->visible(fn ($record) => $record->status !== 'approved')
+                    ->requiresConfirmation()
+                    ->action(fn ($record) => $record->update([
+                        'status' => 'approved',
+                        'verified_at' => $record->verified_at ?? now(),
+                    ])),
+
+                \Filament\Actions\Action::make('block')
+                    ->label(__('profiles.actions.block'))
+                    ->icon('heroicon-o-no-symbol')
+                    ->color('danger')
+                    ->visible(fn ($record) => $record->status !== 'rejected')
+                    ->requiresConfirmation()
+                    ->modalDescription(__('profiles.actions.block_description'))
+                    // Blocking also takes it off the site; leaving it public
+                    // would make the status a label with no effect.
+                    ->action(fn ($record) => $record->update([
+                        'status' => 'rejected',
+                        'is_public' => false,
+                    ])),
+
+                \Filament\Actions\ViewAction::make(),
+                EditAction::make(),
+                \Filament\Actions\DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
