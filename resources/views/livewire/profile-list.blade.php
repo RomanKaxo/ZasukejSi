@@ -330,11 +330,15 @@
                 transform: translateX(15px);
             }
 
+            /* Phone frame: two 146px cards, 20px apart, in a 23px gutter.
+               The 1fr tracks were 154px wide, so the 160px cards overflowed
+               them and landed 10px further out than the design. */
             @media (max-width: 426px) {
                 .profile-list-cards-grid {
                     display: grid !important;
-                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                    grid-template-columns: repeat(2, 146px);
                     gap: 20px !important;
+                    justify-content: center;
                     justify-items: center;
                 }
             }

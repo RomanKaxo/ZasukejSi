@@ -340,9 +340,12 @@
                         $mobileIsHomeSlug = $mobileNormalizedSlug === '';
                         $mobileIsActive = $mobileIsHomeSlug ? request()->path() === '/' : request()->is($mobileNormalizedSlug);
                     @endphp
+                    {{-- Phone frame: 310px wide rows 2px apart, which puts them
+                         in the same 25px gutter as the buttons below. Was 304px
+                         with mb-2, so the rows sat 3px in and 6px too far apart. --}}
                     <a href="{{ url('/' . $page->slug) }}"
-                       class="flex items-center w-full mb-2"
-                       style="width:304px;max-width:100%;height:60px;padding:0 16px;border-radius:8px;font-family:'Poppins',sans-serif;font-weight:500;font-size:18px;
+                       class="flex items-center w-full"
+                       style="width:310px;max-width:100%;height:60px;margin-bottom:2px;padding:0 16px;border-radius:8px;font-family:'Poppins',sans-serif;font-weight:500;font-size:18px;
                            background:{{ $mobileIsActive ? '#F2F2F2' : 'transparent' }};
                            color:{{ $mobileIsActive ? '#DD3888' : '#505050' }};">
                         {{ $page->title }}
