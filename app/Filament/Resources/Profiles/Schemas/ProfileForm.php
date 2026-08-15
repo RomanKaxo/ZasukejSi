@@ -243,6 +243,22 @@ class ProfileForm
                             return [];
                         }
 
+                        // Recursive: a value can be nested more than one level
+                        // deep (a day holding slots holding from/to pairs), and
+                        // strval() on an inner array raises "Array to string
+                        // conversion" rather than returning anything.
+                        $flatten = function ($value) use (&$flatten): string {
+                            if (is_array($value)) {
+                                return implode('-', array_filter(array_map($flatten, $value), fn ($p) => $p !== ''));
+                            }
+
+                            if (is_bool($value)) {
+                                return $value ? '1' : '0';
+                            }
+
+                            return $value === null ? '' : (string) $value;
+                        };
+
                         $normalized = [];
 
                         foreach ($state as $key => $value) {
@@ -258,10 +274,9 @@ class ProfileForm
                                 continue;
                             }
 
-                            // A nested value (from/to pairs) flattened to text.
-                            $normalized[(string) $key] = is_array($value)
-                                ? implode('-', array_map('strval', $value))
-                                : (string) $value;
+                            // A nested value (from/to pairs, or slots holding
+                            // pairs) flattened to text.
+                            $normalized[(string) $key] = $flatten($value);
                         }
 
                         return $normalized;

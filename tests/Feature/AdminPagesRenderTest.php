@@ -89,6 +89,41 @@ class AdminPagesRenderTest extends TestCase
     }
 
     /**
+     * availability_hours has had several shapes written to it over time. The
+     * admin field has to render every one of them — a nested value used to
+     * raise "Array to string conversion" and take the edit screen down.
+     *
+     * @dataProvider availabilityShapes
+     */
+    public function test_profile_edit_renders_any_availability_shape(mixed $availability): void
+    {
+        $admin = $this->admin();
+
+        $profile = Profile::factory()->create([
+            'user_id' => User::factory()->create(['gender' => 'female'])->id,
+        ]);
+
+        $profile->forceFill(['availability_hours' => $availability])->save();
+
+        $this->actingAs($admin)
+            ->get("/admin/profiles/{$profile->id}/edit")
+            ->assertSuccessful();
+    }
+
+    public static function availabilityShapes(): array
+    {
+        return [
+            'mapa den => hodiny' => [['Monday' => '9:00-17:00']],
+            'seznam textu' => [['Pondělí 9:00-17:00', 'Úterý 10:00-18:00']],
+            'vnorene od/do' => [['Monday' => ['from' => '9:00', 'to' => '17:00']]],
+            'dvakrat vnorene' => [['Monday' => [['from' => '9:00', 'to' => '12:00'], ['from' => '14:00', 'to' => '20:00']]]],
+            'hodnoty ruznych typu' => [['Monday' => [true, null, 9, '17:00']]],
+            'prazdne' => [[]],
+            'null' => [null],
+        ];
+    }
+
+    /**
      * @dataProvider adminPages
      */
     public function test_admin_page_renders(string $url): void
