@@ -146,17 +146,27 @@ class PageSeeder extends Seeder
         ];
         
         foreach ($blogPosts as $post) {
-            $page = Page::create([
-                'title' => $post['title'],
-                'slug' => $post['slug'],
-                'type' => 'blog',
-                'description' => $post['description'],
-                'content' => $post['content'],
-                'display_in_menu' => false,
-                'display_in_footer' => false,
-                'is_published' => true,
-            ]);
-            
+            // Keyed on the slug so a second run updates the page instead of
+            // failing on the pages_slug_unique constraint.
+            $page = Page::updateOrCreate(
+                ['slug' => $post['slug']],
+                [
+                    'title' => $post['title'],
+                    'type' => 'blog',
+                    'description' => $post['description'],
+                    'content' => $post['content'],
+                    'display_in_menu' => false,
+                    'display_in_footer' => false,
+                    'is_published' => true,
+                ]
+            );
+
+            // A page that already has its header image keeps it; re-running the
+            // seeder must not stack up a second copy in the collection.
+            if ($page->getFirstMedia('header-image')) {
+                continue;
+            }
+
             // Add header image from picsum
             try {
                 $randomSeed = 'blog-' . $post['slug'] . '-' . uniqid();
@@ -188,7 +198,7 @@ class PageSeeder extends Seeder
             }
         }
         
-        $this->command->info('  ✓ Created ' . count($blogPosts) . ' blog posts');
+        $this->command->info('  ✓ Synced ' . count($blogPosts) . ' blog posts');
     }
     
     /**
@@ -196,27 +206,29 @@ class PageSeeder extends Seeder
      */
     private function createFaqPage(): void
     {
-        Page::create([
-            'title' => [
-                'en' => 'FAQ',
-                'cs' => 'FAQ',
-            ],
-            'slug' => 'faq',
-            'type' => 'page',
-            'description' => [
-                'en' => 'Find answers to the most common questions about our platform.',
-                'cs' => 'Najděte odpovědi na nejčastější otázky o naší platformě.',
-            ],
-            'content' => [
-                'en' => $this->generateFaqContent('en'),
-                'cs' => $this->generateFaqContent('cs'),
-            ],
-            'display_in_menu' => true,
-            'display_in_footer' => true,
-            'is_published' => true,
-        ]);
+        Page::updateOrCreate(
+            ['slug' => 'faq'],
+            [
+                'title' => [
+                    'en' => 'FAQ',
+                    'cs' => 'FAQ',
+                ],
+                'type' => 'page',
+                'description' => [
+                    'en' => 'Find answers to the most common questions about our platform.',
+                    'cs' => 'Najděte odpovědi na nejčastější otázky o naší platformě.',
+                ],
+                'content' => [
+                    'en' => $this->generateFaqContent('en'),
+                    'cs' => $this->generateFaqContent('cs'),
+                ],
+                'display_in_menu' => true,
+                'display_in_footer' => true,
+                'is_published' => true,
+            ]
+        );
         
-        $this->command->info('  ✓ Created FAQ page');
+        $this->command->info('  ✓ Synced FAQ page');
     }
     
     /**
@@ -293,19 +305,21 @@ class PageSeeder extends Seeder
         ];
         
         foreach ($pages as $pageData) {
-            Page::create([
-                'title' => $pageData['title'],
-                'slug' => $pageData['slug'],
-                'type' => 'page',
-                'description' => null,
-                'content' => $pageData['content'],
-                'display_in_menu' => $pageData['display_in_menu'],
-                'display_in_footer' => $pageData['display_in_footer'],
-                'is_published' => true,
-            ]);
+            Page::updateOrCreate(
+                ['slug' => $pageData['slug']],
+                [
+                    'title' => $pageData['title'],
+                    'type' => 'page',
+                    'description' => null,
+                    'content' => $pageData['content'],
+                    'display_in_menu' => $pageData['display_in_menu'],
+                    'display_in_footer' => $pageData['display_in_footer'],
+                    'is_published' => true,
+                ]
+            );
         }
         
-        $this->command->info('  ✓ Created ' . count($pages) . ' standard pages');
+        $this->command->info('  ✓ Synced ' . count($pages) . ' standard pages');
     }
     
     /**

@@ -157,8 +157,15 @@ class ShowcaseProfilesSeeder extends Seeder
                         $profile->addMedia($modelImagePath)
                             ->preservingOriginal()
                             ->toMediaCollection('profile-images');
-                    } catch (\Exception $e) {
-                        // Silently continue if image attachment fails
+                    } catch (\Throwable $e) {
+                        // Throwable, not Exception: image conversion raises
+                        // TypeError when the image driver is unusable (a PHP
+                        // build without ext-gd, for one), and an Exception-only
+                        // catch let that abort the entire db:seed run.
+                        $this->command?->warn(
+                            "  ⚠️  Could not attach {$modelImageNumber}.png to profile {$profile->id}: "
+                            . $e->getMessage()
+                        );
                     }
                 }
             }
