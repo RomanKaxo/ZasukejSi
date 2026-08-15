@@ -134,6 +134,49 @@ class Notification extends Model
             ->isNotEmpty();
     }
 
+    /**
+     * The types a notification can carry, and how each one is coloured.
+     *
+     * Kept here rather than in the dropdown blade so the bell, the admin table
+     * and anything added later cannot drift into showing the same type in
+     * different colours.
+     *
+     * @return array<string, array{label: string, hex: string, filament: string}>
+     */
+    public static function types(): array
+    {
+        return [
+            'success' => ['label' => __('notifications.types.success'), 'hex' => '#00B80F', 'filament' => 'success'],
+            'info' => ['label' => __('notifications.types.info'), 'hex' => '#2490FF', 'filament' => 'info'],
+            'warning' => ['label' => __('notifications.types.warning'), 'hex' => '#FFB700', 'filament' => 'warning'],
+            'danger' => ['label' => __('notifications.types.danger'), 'hex' => '#DD3888', 'filament' => 'danger'],
+            'system' => ['label' => __('notifications.types.system'), 'hex' => '#5C2D62', 'filament' => 'gray'],
+        ];
+    }
+
+    /** @return array<string, string> */
+    public static function typeOptions(): array
+    {
+        return collect(self::types())->map(fn ($meta) => $meta['label'])->all();
+    }
+
+    /** Accent colour for the frontend bell. */
+    public function typeColor(): string
+    {
+        return self::types()[$this->type]['hex'] ?? self::types()['system']['hex'];
+    }
+
+    /** Badge colour for the admin table. */
+    public function typeBadgeColor(): string
+    {
+        return self::types()[$this->type]['filament'] ?? 'gray';
+    }
+
+    public function typeLabel(): string
+    {
+        return self::types()[$this->type]['label'] ?? (string) $this->type;
+    }
+
     public static function createGlobal($title, $message, $type = 'info')
     {
         return static::create([

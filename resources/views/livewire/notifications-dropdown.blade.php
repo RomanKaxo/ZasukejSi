@@ -57,12 +57,9 @@
                     // everyone. Notification::isReadBy() handles both kinds.
                     $isRead = $notification->isReadBy(auth()->id());
 
-                    $accent = match ($notification->type) {
-                        'success' => '#00B80F',
-                        'warning' => '#FFB700',
-                        'danger' => '#DD3888',
-                        default => '#5C2D62',
-                    };
+                    // Single definition on the model, so the bell and the admin
+                    // table cannot colour the same type differently.
+                    $accent = $notification->typeColor();
                 @endphp
 
                 <div class="flex items-start gap-3 p-4 border-t border-gray-50 first:border-t-0 {{ $isRead ? '' : 'bg-primary/5' }} hover:bg-gray-50 transition-colors"
