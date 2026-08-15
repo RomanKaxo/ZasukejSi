@@ -25,6 +25,9 @@ return [
         'buy_button' => 'Aktivovat',
         'extend_button' => 'Prodloužit',
         'no_plans' => 'Momentálně nejsou k dispozici žádné plány.',
+        'payments_unavailable' => 'Platby nejsou momentálně dostupné. Zkuste to prosím později.',
+        'price_unavailable' => 'U tohoto plánu není nastavená cena.',
+        'checkout_failed' => 'Objednávku se nepodařilo vytvořit. Zkuste to prosím znovu.',
         'period_days' => '{1} :count den|[2,4] :count dny|[5,*] :count dní',
         'period_months' => '{1} :count měsíc|[2,4] :count měsíce|[5,*] :count měsíců',
         'period_years' => '{1} :count rok|[2,4] :count roky|[5,*] :count let',
@@ -417,6 +420,7 @@ return [
             'call' => 'Zavolat',
             'give_rating' => 'Dát hodnocení',
             'refresh_access' => 'Obnovit přístup',
+            'access_valid_until' => 'Přístup platí do :date',
             'report_profile' => 'Nahlásit profil',
             'report_modal' => [
                 'title' => 'Nahlaš profil',

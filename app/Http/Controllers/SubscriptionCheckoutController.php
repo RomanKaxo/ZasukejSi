@@ -41,7 +41,18 @@ class SubscriptionCheckoutController extends \Illuminate\Routing\Controller
 
         abort_unless($profile, 403, __('front.subscription.no_profile'));
 
-        $stripe = new StripeClient(config('services.stripe.secret'));
+        // Same guard as the membership checkout: missing keys are a deployment
+        // problem and must not reach the buyer as a 500.
+        $stripe = \App\Services\Payments\StripeGateway::client();
+
+        if (! $stripe) {
+            \Illuminate\Support\Facades\Log::error('Subscription checkout attempted with Stripe not configured', [
+                'user_id' => $user->id,
+                'subscription_type_id' => $subscriptionType->id,
+            ]);
+
+            return back()->with('error', __('front.membership.payments_unavailable'));
+        }
 
         $session = $stripe->checkout->sessions->create([
             'mode' => 'payment',
@@ -89,8 +100,8 @@ class SubscriptionCheckoutController extends \Illuminate\Routing\Controller
 
         if ($sessionId !== '') {
             try {
-                $session = (new StripeClient(config('services.stripe.secret')))
-                    ->checkout->sessions->retrieve($sessionId);
+                $session = \App\Services\Payments\StripeGateway::client()
+                    ?->checkout->sessions->retrieve($sessionId);
 
                 $paid = ($session->payment_status ?? null) === 'paid';
 

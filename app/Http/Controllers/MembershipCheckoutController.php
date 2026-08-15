@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Currency;
 use App\Models\MemberSubscription;
 use App\Models\SubscriptionType;
+use App\Services\Payments\StripeGateway;
+use App\Support\Currencies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -56,17 +59,49 @@ class MembershipCheckoutController extends \Illuminate\Routing\Controller
         abort_unless($subscriptionType->isForMembers(), 404);
         abort_unless($subscriptionType->is_active, 404);
 
-        $stripe = new StripeClient(config('services.stripe.secret'));
+        // Missing keys are a deployment problem, not something the buyer did.
+        // Without this the Stripe client threw "$config must be a string or an
+        // array" and the customer got a 500 on the checkout route.
+        $stripe = StripeGateway::client();
 
-        $session = $stripe->checkout->sessions->create([
+        if (! $stripe) {
+            Log::error('Membership checkout attempted with Stripe not configured', [
+                'user_id' => $user->id,
+                'subscription_type_id' => $subscriptionType->id,
+            ]);
+
+            return back()->with('error', __('front.membership.payments_unavailable'));
+        }
+
+        // Charge in the currency the plan is priced in and the buyer was shown,
+        // rather than assuming korunas.
+        $currency = Currencies::forLocale();
+        $amount = $subscriptionType->priceIn($currency);
+
+        if ($amount === null) {
+            $currency = Currency::base()?->code ?? Currencies::CZK;
+            $amount = $subscriptionType->priceIn($currency);
+        }
+
+        if ($amount === null || $amount <= 0) {
+            Log::error('Membership plan has no usable price', [
+                'subscription_type_id' => $subscriptionType->id,
+                'currency' => $currency,
+            ]);
+
+            return back()->with('error', __('front.membership.price_unavailable'));
+        }
+
+        try {
+            $session = $stripe->checkout->sessions->create([
             'mode' => 'payment',
             'payment_method_types' => ['card'],
             'customer_email' => $user->email,
             'line_items' => [[
                 'quantity' => 1,
                 'price_data' => [
-                    'currency' => 'czk',
-                    'unit_amount' => (int) round($subscriptionType->price * 100),
+                    'currency' => strtolower($currency),
+                    'unit_amount' => StripeGateway::amountInMinorUnits($amount, $currency),
                     'product_data' => [
                         'name' => $subscriptionType->getTranslation('name', app()->getLocale()),
                     ],
@@ -80,7 +115,18 @@ class MembershipCheckoutController extends \Illuminate\Routing\Controller
                 'member_user_id' => $user->id,
                 'subscription_type_id' => $subscriptionType->id,
             ],
-        ]);
+            ]);
+        } catch (\Throwable $e) {
+            // A refused or misconfigured gateway is reported, not rendered as
+            // a stack trace.
+            Log::error('Stripe membership checkout failed', [
+                'user_id' => $user->id,
+                'subscription_type_id' => $subscriptionType->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', __('front.membership.checkout_failed'));
+        }
 
         return redirect($session->url);
     }
@@ -99,8 +145,8 @@ class MembershipCheckoutController extends \Illuminate\Routing\Controller
 
         if ($sessionId !== '') {
             try {
-                $session = (new StripeClient(config('services.stripe.secret')))
-                    ->checkout->sessions->retrieve($sessionId);
+                $session = StripeGateway::client()
+                    ?->checkout->sessions->retrieve($sessionId);
 
                 $paid = ($session->payment_status ?? null) === 'paid'
                     && (int) ($session->metadata->member_user_id ?? 0) === $user->id;
