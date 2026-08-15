@@ -31,6 +31,8 @@ return [
 
     'actions' => [
         'reset' => 'Vrátit výchozí',
+        'all_locales' => 'Přeložit do všech jazyků',
+        'all_locales_saved' => 'Uloženo ve všech jazycích',
         'reset_selected' => 'Vrátit výchozí u vybraných',
         'import' => 'Načíst nové texty',
         'import_description' => 'Načte řetězce ze souborů lang/. Texty, které jste zde upravili, zůstanou zachované.',

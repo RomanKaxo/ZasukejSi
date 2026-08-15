@@ -16,6 +16,9 @@ return [
     ],
 
     'membership' => [
+        'period_days' => '{1} :count день|[2,4] :count дня|[5,*] :count дней',
+        'period_months' => '{1} :count месяц|[2,4] :count месяца|[5,*] :count месяцев',
+        'period_years' => '{1} :count год|[2,4] :count года|[5,*] :count лет',
         'activated' => 'Premium-членство активно.',
         'activation_pending' => 'Платёж получен. Членство активируется в ближайшее время.',
         'not_verified' => 'Не удалось подтвердить платёж. Если деньги были списаны, свяжитесь с нами.',

@@ -55,11 +55,18 @@
                 </h3>
 
                 <p class="mb-4 text-sm text-[#505050]">
-                    {{ __('front.subscription.days', ['count' => $type->duration_days]) }}
+                    {{ $type->periodLabel() }}
                 </p>
 
+                {{-- Priced in the currency of the visitor's language, taken
+                     from its own column rather than converted, so the quoted
+                     amount cannot drift with an exchange rate. --}}
                 <p class="mb-4 text-3xl font-bold" style="color:#DD3888;">
-                    {{ number_format($type->price, 0, ',', ' ') }} Kč
+                    @if ($type->formattedPrice())
+                        {{ $type->formattedPrice() }}
+                    @else
+                        <x-empty-value />
+                    @endif
                 </p>
 
                 @if (is_array($type->features) && count($type->features))

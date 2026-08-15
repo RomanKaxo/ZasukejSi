@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Currencies;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -26,6 +27,9 @@ class SubscriptionType extends Model
         'description',
         'features',
         'price',
+        'price_czk',
+        'price_eur',
+        'price_usd',
         'duration_days',
         'color',
         'icon',
@@ -40,10 +44,65 @@ class SubscriptionType extends Model
         return [
             'features' => 'array',
             'price' => 'decimal:2',
+            'price_czk' => 'decimal:2',
+            'price_eur' => 'decimal:2',
+            'price_usd' => 'decimal:2',
             'duration_days' => 'integer',
             'sort_order' => 'integer',
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * The amount in a given currency, falling back to the legacy `price`
+     * column so a plan priced before the per-currency columns existed still
+     * quotes something rather than nothing.
+     */
+    public function priceIn(?string $currency = null): ?float
+    {
+        $currency = strtoupper($currency ?? Currencies::forLocale());
+
+        $value = match ($currency) {
+            Currencies::CZK => $this->price_czk,
+            Currencies::EUR => $this->price_eur,
+            Currencies::USD => $this->price_usd,
+            default => null,
+        };
+
+        if ($value !== null) {
+            return (float) $value;
+        }
+
+        // Only fall back for the currency the plan was originally entered in;
+        // showing a koruna amount labelled in euros would misquote it.
+        $legacyCurrency = $this->audience === self::AUDIENCE_MEMBER
+            ? Currencies::CZK
+            : Currencies::EUR;
+
+        return $currency === $legacyCurrency && $this->price !== null
+            ? (float) $this->price
+            : null;
+    }
+
+    /** Ready-to-print price, e.g. "299 Kč" or "€24.99". */
+    public function formattedPrice(?string $currency = null): ?string
+    {
+        $currency = strtoupper($currency ?? Currencies::forLocale());
+        $amount = $this->priceIn($currency);
+
+        return $amount === null ? null : Currencies::format($amount, $currency);
+    }
+
+    /** "30 dní" / "3 měsíce" / "1 rok", derived from duration_days. */
+    public function periodLabel(): string
+    {
+        $days = (int) $this->duration_days;
+
+        return match (true) {
+            $days % 365 === 0 && $days >= 365 => trans_choice('front.membership.period_years', intdiv($days, 365), ['count' => intdiv($days, 365)]),
+            $days % 30 === 0 && $days >= 60 => trans_choice('front.membership.period_months', intdiv($days, 30), ['count' => intdiv($days, 30)]),
+            default => trans_choice('front.membership.period_days', $days, ['count' => $days]),
+        };
     }
 
     // Scopes
