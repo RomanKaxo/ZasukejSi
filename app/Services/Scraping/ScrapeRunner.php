@@ -51,6 +51,21 @@ class ScrapeRunner
             }
         };
 
+        // The same guard the console command applies, enforced here so the
+        // admin actions cannot bypass it either: a disabled source may be
+        // examined but not harvested.
+        if (! $source->is_enabled && ! ($options['dry_run'] ?? false)) {
+            $run->forceFill([
+                'status' => ScrapeRun::STATUS_FAILED,
+                'error' => 'Zdroj je vypnutý. Zapněte ho, nebo použijte zkušební běh.',
+                'finished_at' => now(),
+            ])->save();
+
+            $notify('Zdroj je vypnutý — nic se nestahovalo.');
+
+            return $run;
+        }
+
         try {
             $this->rememberRobots($source, $notify);
 

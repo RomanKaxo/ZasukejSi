@@ -20,7 +20,14 @@ class GenericAdapter implements SourceAdapter
 
     public function listingUrl(ScrapeSource $source, int $page): string
     {
-        $base = rtrim($source->base_url, '/') . '/' . ltrim((string) $source->setting('listing_path'), '/');
+        // A run can point at one listing URL without editing the source, which
+        // is what the "download from this address" action in the admin uses.
+        $override = $source->setting('listing_url_override');
+
+        $base = is_string($override) && $override !== ''
+            ? $override
+            : rtrim($source->base_url, '/') . '/' . ltrim((string) $source->setting('listing_path'), '/');
+
         $base = rtrim($base, '/');
 
         if ($page <= 1) {

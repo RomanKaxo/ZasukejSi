@@ -50,18 +50,43 @@ class ScrapeSourceSeeder extends Seeder
             ]
         );
 
+        // Attributes sit in `div.params > div`, each shaped as
+        // "<span>Popisek:</span>Hodnota". Selecting by the span's label is the
+        // only stable handle — the divs carry no per-attribute class.
+        $param = fn (string $label) => '//div[contains(@class,"params")]/div[starts-with(normalize-space(span), "' . $label . '")]';
+
+        // Everything after the colon, which is the value.
+        $afterColon = [['regex', '/:\s*(.*)$/u'], 'trim'];
+
         $maps = [
-            // The h1 reads "Eskort <jméno> - <město> / <země>"; the regex keeps
-            // the name and the city map takes the segment after the dash.
+            // The h1 reads "Eskort <jméno> - <město> / <země>".
             ['display_name', 'h1', 'text', false, ['collapse_whitespace', ['regex', '/^(?:Eskort\s+)?(.+?)\s+-\s+/u'], 'trim'], true, 10],
-            ['city', 'h1', 'text', false, ['collapse_whitespace', ['regex', '/-\s*([^\/]+?)\s*\//u'], 'trim'], false, 20],
+            ['city', $param('Lokace'), 'text', false, ['collapse_whitespace', ['regex', '/:\s*([^\/]+?)\s*\//u'], 'trim'], false, 20],
+            ['country_code', $param('Lokace'), 'text', false, ['collapse_whitespace', ['regex', '/\/\s*(.+)$/u'], 'trim', ['map', ['Česká republika' => 'CZ', 'Slovensko' => 'SK', 'Rakousko' => 'AT', 'Německo' => 'DE', 'Polsko' => 'PL']]], false, 25],
             ['about', '.description, .about, [class*="description"]', 'text', false, ['collapse_whitespace'], false, 30],
-            // `compact` drops the rows whose regex matched nothing, so `first`
-            // returns the row that actually carried the value.
-            ['age', 'table tr', 'text', true, [['regex', '/(\d{2})\s*(?:let|years)/u'], 'compact', 'first', 'int'], false, 40],
-            ['card_height_cm', 'table tr', 'text', true, [['regex', '/(\d{3})\s*cm/u'], 'compact', 'first', 'int'], false, 50],
-            ['weight_kg', 'table tr', 'text', true, [['regex', '/(\d{2,3})\s*kg/u'], 'compact', 'first', 'int'], false, 60],
-            ['photo_count', 'a.js-gallery', 'count', false, [], false, 70],
+
+            ['age', $param('Věk'), 'text', false, ['collapse_whitespace', 'int'], false, 40],
+            // "165 cm / 5'5''" — take the centimetres, not the feet.
+            ['card_height_cm', $param('Výška'), 'text', false, ['collapse_whitespace', ['regex', '/(\d{2,3})\s*cm/u'], 'int'], false, 50],
+            ['weight_kg', $param('Váha'), 'text', false, ['collapse_whitespace', ['regex', '/(\d{2,3})\s*kg/u'], 'int'], false, 60],
+            ['bust_size', $param('Velikost poprsí'), 'text', false, array_merge(['collapse_whitespace'], $afterColon), false, 70],
+            ['nationality', $param('Národnost'), 'text', false, array_merge(['collapse_whitespace'], $afterColon), false, 80],
+            ['languages', $param('Jazyk'), 'text', false, array_merge(['collapse_whitespace'], $afterColon), false, 90],
+
+            // Captured for review; the profile has no column for them yet.
+            ['eye_colour', $param('Oči'), 'text', false, array_merge(['collapse_whitespace'], $afterColon), false, 100],
+            ['hair_colour', $param('Barva vlasů'), 'text', false, array_merge(['collapse_whitespace'], $afterColon), false, 110],
+            ['hair_length', $param('Délka vlasů'), 'text', false, array_merge(['collapse_whitespace'], $afterColon), false, 120],
+            ['bust_type', $param('Typ poprsí'), 'text', false, array_merge(['collapse_whitespace'], $afterColon), false, 130],
+            ['pubic_hair', $param('Pubické ochlupení'), 'text', false, array_merge(['collapse_whitespace'], $afterColon), false, 140],
+            ['travels', $param('Cestuje'), 'text', false, array_merge(['collapse_whitespace'], $afterColon), false, 150],
+            ['gender', $param('Pohlaví'), 'text', false, array_merge(['collapse_whitespace'], $afterColon), false, 160],
+
+            // The page's only table is the service list, with the name in the
+            // row's th. position()>1 skips the "Služby" header row.
+            ['services', '//table//tr[position()>1]/th[1]', 'text', true, ['collapse_whitespace', 'compact', 'unique'], false, 170],
+
+            ['photo_count', 'a.js-gallery', 'count', false, [], false, 200],
         ];
 
         foreach ($maps as [$field, $selector, $extract, $multiple, $transforms, $required, $order]) {

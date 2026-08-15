@@ -100,6 +100,72 @@ class ScrapeSourcesTable
                         }
                     }),
 
+                // The full harvest: paste a listing address and pull what is on
+                // it. Only reachable on an enabled source, and everything still
+                // lands in the review queue.
+                Action::make('crawlListing')
+                    ->label('Stáhnout z odkazu')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('primary')
+                    ->visible(fn (ScrapeSource $record) => $record->is_enabled)
+                    ->form([
+                        TextInput::make('listing_url')
+                            ->label('Odkaz na výpis profilů')
+                            ->url()
+                            ->helperText('Prázdné = použije se listing_path z nastavení zdroje.'),
+
+                        TextInput::make('pages')
+                            ->label('Kolik stránek výpisu projít')
+                            ->numeric()
+                            ->default(1)
+                            ->minValue(1)
+                            ->maxValue(200),
+
+                        TextInput::make('limit')
+                            ->label('Maximálně profilů (0 = bez omezení)')
+                            ->numeric()
+                            ->default(0)
+                            ->minValue(0),
+                    ])
+                    ->requiresConfirmation()
+                    ->modalDescription(fn (ScrapeSource $record) => sprintf(
+                        'Mezi požadavky se čeká %.1f s, takže stahování trvá. Profily se uloží ke kontrole, nic se nepublikuje.',
+                        $record->effectiveCrawlDelay(),
+                    ))
+                    ->action(function (ScrapeSource $record, array $data) {
+                        $listing = $data['listing_url'] ?? null;
+
+                        // Set in memory only — the override applies to this run
+                        // and is not written back to the source.
+                        if ($listing) {
+                            $record->settings = array_merge(
+                                $record->settings ?? [],
+                                ['listing_url_override' => $listing],
+                            );
+                        }
+
+                        try {
+                            $run = app(ScrapeRunner::class)->run($record, array_filter([
+                                'pages' => (int) ($data['pages'] ?? 1),
+                                'limit' => (int) ($data['limit'] ?? 0) ?: null,
+                            ]));
+
+                            if ($run->error) {
+                                Notification::make()->title('Běh selhal')->body($run->error)->danger()->send();
+
+                                return;
+                            }
+
+                            Notification::make()
+                                ->title('Staženo')
+                                ->body("Nalezeno {$run->items_found}, nových {$run->items_new}, změněných {$run->items_updated}, chyb {$run->items_failed}. Čekají ke kontrole.")
+                                ->success()
+                                ->send();
+                        } catch (Throwable $e) {
+                            Notification::make()->title('Běh selhal')->body($e->getMessage())->danger()->send();
+                        }
+                    }),
+
                 EditAction::make()->label('Upravit'),
                 DeleteAction::make()->label('Smazat'),
             ])

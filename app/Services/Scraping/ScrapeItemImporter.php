@@ -96,6 +96,8 @@ class ScrapeItemImporter
                 'error' => null,
             ])->save();
 
+            $this->attachServices($profile, $values['services'] ?? null);
+
             return $profile;
         });
 
@@ -110,5 +112,40 @@ class ScrapeItemImporter
         }
 
         return $profile;
+    }
+
+    /**
+     * Link scraped service names to the services we already offer.
+     *
+     * Only names that already exist are attached — a scraped list must not be
+     * able to invent entries in our own service catalogue. Matching is on the
+     * Czech name, case-insensitively.
+     *
+     * @param  array<int, string>|null  $names
+     */
+    private function attachServices(Profile $profile, ?array $names): void
+    {
+        if (! $names) {
+            return;
+        }
+
+        $wanted = collect($names)
+            ->map(fn ($name) => Str::lower(trim((string) $name)))
+            ->filter()
+            ->unique();
+
+        if ($wanted->isEmpty()) {
+            return;
+        }
+
+        $ids = \App\Models\Service::all()
+            ->filter(fn ($service) => $wanted->contains(
+                Str::lower((string) $service->getTranslation('name', 'cs'))
+            ))
+            ->pluck('id');
+
+        if ($ids->isNotEmpty()) {
+            $profile->services()->sync($ids);
+        }
     }
 }
