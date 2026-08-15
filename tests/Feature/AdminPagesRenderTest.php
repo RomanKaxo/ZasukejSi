@@ -52,6 +52,43 @@ class AdminPagesRenderTest extends TestCase
     }
 
     /**
+     * The status badge used a match with no default, so a profile carrying any
+     * status the list did not name took the whole listing down with a 500
+     * instead of showing one unfamiliar row.
+     */
+    public function test_profile_listing_survives_an_unexpected_status(): void
+    {
+        $admin = $this->admin();
+
+        $profile = Profile::factory()->create([
+            'user_id' => User::factory()->create(['gender' => 'female'])->id,
+        ]);
+
+        // Written straight to the column: the point is a value the resource
+        // has never heard of.
+        \Illuminate\Support\Facades\DB::table('profiles')
+            ->where('id', $profile->id)
+            ->update(['status' => 'blocked']);
+
+        $this->actingAs($admin)->get('/admin/profiles')->assertSuccessful();
+    }
+
+    public function test_profile_listing_survives_an_empty_status(): void
+    {
+        $admin = $this->admin();
+
+        $profile = Profile::factory()->create([
+            'user_id' => User::factory()->create(['gender' => 'female'])->id,
+        ]);
+
+        \Illuminate\Support\Facades\DB::table('profiles')
+            ->where('id', $profile->id)
+            ->update(['status' => '']);
+
+        $this->actingAs($admin)->get('/admin/profiles')->assertSuccessful();
+    }
+
+    /**
      * @dataProvider adminPages
      */
     public function test_admin_page_renders(string $url): void

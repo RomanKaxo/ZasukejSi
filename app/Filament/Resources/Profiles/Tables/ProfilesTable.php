@@ -56,13 +56,29 @@ class ProfilesTable
                 TextColumn::make('status')
                     ->label(__('profiles.table.status'))
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    // A match without a default throws on any status the list
+                    // does not name, which took the whole listing down with a
+                    // 500 rather than showing one odd row. Statuses come from a
+                    // database column, so the set can always grow.
+                    ->color(fn (?string $state): string => match ($state) {
                         'draft' => 'gray',
                         'pending' => 'warning',
                         'approved' => 'success',
                         'rejected' => 'danger',
+                        default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => __("profiles.status.{$state}")),
+                    ->formatStateUsing(function (?string $state): string {
+                        if ($state === null || $state === '') {
+                            return '—';
+                        }
+
+                        $key = "profiles.status.{$state}";
+                        $label = __($key);
+
+                        // An unknown status has no translation; show the raw
+                        // value rather than the key.
+                        return $label === $key ? $state : $label;
+                    }),
 
                 IconColumn::make('is_public')
                     ->label(__('profiles.table.public'))
