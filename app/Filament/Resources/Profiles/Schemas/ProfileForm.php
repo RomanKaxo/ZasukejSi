@@ -81,13 +81,21 @@ class ProfileForm
                 ->helperText(__('profiles.form.profile_url_helper')),
 
 
+                // Thumbnails in a grid rather than one per row: a profile
+                // carries up to ten photos and the stacked list made the form
+                // scroll for a screen and a half.
                 SpatieMediaLibraryFileUpload::make('images')
                     ->label(__('profiles.form.profile_images'))
                     ->collection('profile-images')
                     ->multiple()
-                    ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png'])
+                    ->reorderable()
+                    ->appendFiles()
+                    ->panelLayout('grid')
+                    ->imagePreviewHeight('150')
+                    ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/webp'])
                     ->maxFiles(10)
                     ->imageEditor()
+                    ->extraAttributes(['class' => 'profile-media-grid'])
                     ->columnSpanFull(),
 
                 SpatieMediaLibraryFileUpload::make('video')
@@ -290,11 +298,54 @@ class ProfileForm
                 // follows it.
                 Select::make('price_currency')
                     ->label(__('profiles.form.price_currency'))
-                    ->options(\App\Support\Currencies::all())
-                    ->default(\App\Support\Currencies::CZK)
+                    ->options(fn () => \App\Models\Currency::options())
+                    ->default(fn () => \App\Models\Currency::base()?->code ?? \App\Support\Currencies::CZK)
                     ->required()
                     ->live()
                     ->helperText(__('profiles.form.price_currency_helper')),
+
+                Toggle::make('auto_convert_prices')
+                    ->label(__('profiles.form.auto_convert'))
+                    ->helperText(__('profiles.form.auto_convert_helper')),
+
+                // One amount per active currency, per service. Services had no
+                // price at all before, so a provider could say what she offers
+                // but not what it costs.
+                Repeater::make('servicePrices')
+                    ->label(__('profiles.form.service_prices'))
+                    ->schema([
+                        Select::make('service_id')
+                            ->label(__('profiles.form.service'))
+                            ->options(fn () => \App\Models\Service::query()
+                                ->where('is_active', true)
+                                ->orderBy('sort_order')
+                                ->get()
+                                ->mapWithKeys(fn ($s) => [$s->id => $s->getTranslation('name', app()->getLocale())])
+                                ->all())
+                            ->searchable()
+                            ->required()
+                            ->distinct()
+                            ->columnSpan(2),
+
+                        ...collect(\App\Models\Currency::active())
+                            ->map(fn ($currency) => TextInput::make('prices.' . $currency->code)
+                                ->label($currency->code)
+                                ->numeric()
+                                ->minValue(0)
+                                ->prefix($currency->symbol))
+                            ->all(),
+
+                        TextInput::make('note')
+                            ->label(__('profiles.form.service_note'))
+                            ->maxLength(120)
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2 + max(1, \App\Models\Currency::active()->count()))
+                    ->columnSpanFull()
+                    ->collapsible()
+                    ->defaultItems(0)
+                    ->addActionLabel(__('profiles.form.add_service_price'))
+                    ->helperText(__('profiles.form.service_prices_helper')),
 
                 Repeater::make('local_prices')
                     ->label(__('profiles.form.local_prices'))

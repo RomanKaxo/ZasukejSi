@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Profiles\Pages;
 
+use App\Filament\Resources\Profiles\Concerns\SyncsServicePrices;
 use App\Filament\Resources\Profiles\ProfileResource;
 use App\Support\ProfileContentState;
 use Filament\Actions\DeleteAction;
@@ -11,7 +12,21 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditProfile extends EditRecord
 {
+    use SyncsServicePrices;
+
     protected static string $resource = ProfileResource::class;
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $data['servicePrices'] = $this->readServicePrices($this->record);
+
+        return $data;
+    }
+
+    protected function afterSave(): void
+    {
+        $this->writeServicePrices($this->record);
+    }
 
     protected function getHeaderActions(): array
     {
@@ -41,6 +56,7 @@ class EditProfile extends EditRecord
 
         $data['content'] = ProfileContentState::merge($this->record->content, $data['content'] ?? []);
 
-        return $data;
+        // Not a column; held aside and written to the pivot in afterSave().
+        return $this->extractServicePrices($data);
     }
 }

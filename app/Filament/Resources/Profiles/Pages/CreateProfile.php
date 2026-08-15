@@ -2,13 +2,21 @@
 
 namespace App\Filament\Resources\Profiles\Pages;
 
+use App\Filament\Resources\Profiles\Concerns\SyncsServicePrices;
 use App\Filament\Resources\Profiles\ProfileResource;
 use App\Support\ProfileContentState;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateProfile extends CreateRecord
 {
+    use SyncsServicePrices;
+
     protected static string $resource = ProfileResource::class;
+
+    protected function afterCreate(): void
+    {
+        $this->writeServicePrices($this->record);
+    }
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
@@ -31,6 +39,7 @@ class CreateProfile extends CreateRecord
         // field is stored as absent rather than as an empty string.
         $data['content'] = ProfileContentState::merge(null, $data['content'] ?? []);
 
-        return $data;
+        // Not a column; held aside and written to the pivot in afterCreate().
+        return $this->extractServicePrices($data);
     }
 }

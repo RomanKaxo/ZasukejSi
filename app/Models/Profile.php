@@ -51,6 +51,7 @@ class Profile extends Model implements HasMedia
         'local_prices',
         'global_prices',
         'price_currency',
+        'auto_convert_prices',
         'contacts',
         'verified_at',
         'status',
@@ -75,6 +76,7 @@ class Profile extends Model implements HasMedia
             'verified_at' => 'datetime',
             'is_public' => 'boolean',
             'is_porn_actress' => 'boolean',
+            'auto_convert_prices' => 'boolean',
             'incall' => 'boolean',
             'outcall' => 'boolean',
         ];
@@ -253,7 +255,52 @@ class Profile extends Model implements HasMedia
     public function services()
     {
         return $this->belongsToMany(Service::class, 'profile_service')
+            // Each service carries its own price list, one amount per currency.
+            ->withPivot(['prices', 'note'])
             ->withTimestamps();
+    }
+
+    /**
+     * What this profile charges for a service, in a given currency.
+     *
+     * Falls back to converting from whatever currency the provider did enter,
+     * but only when she asked for that — an amount she typed is never
+     * replaced, and a converted one is reported as such by the caller.
+     */
+    public function servicePrice(Service $service, ?string $currency = null): ?float
+    {
+        $currency = strtoupper($currency ?? \App\Support\Currencies::forLocale());
+        $prices = $service->pivot?->prices;
+
+        if (is_string($prices)) {
+            $prices = json_decode($prices, true);
+        }
+
+        if (! is_array($prices) || $prices === []) {
+            return null;
+        }
+
+        if (isset($prices[$currency]) && $prices[$currency] !== null && $prices[$currency] !== '') {
+            return (float) $prices[$currency];
+        }
+
+        if (! $this->auto_convert_prices) {
+            return null;
+        }
+
+        foreach ($prices as $code => $amount) {
+            if ($amount === null || $amount === '') {
+                continue;
+            }
+
+            $converted = \App\Models\Currency::convert((float) $amount, (string) $code, $currency);
+
+            if ($converted !== null) {
+                return $converted;
+            }
+        }
+
+        return null;
     }
 
     /**

@@ -41,6 +41,13 @@ return [
         'female' => 'Female',
     ],
     'form' => [
+        'auto_convert' => 'Fill missing currencies from the exchange rate',
+        'auto_convert_helper' => 'Prices you enter are never recalculated. Only the currencies you leave empty are filled in.',
+        'service_prices' => 'Service price list',
+        'service_prices_helper' => 'Each service can be priced in every enabled currency. An empty field means the service has no price in that currency.',
+        'service' => 'Service',
+        'service_note' => 'Service note',
+        'add_service_price' => 'Add service',
         'price_currency' => 'Price list currency',
         'price_currency_helper' => 'All prices below are entered in this currency.',
         'subscription_state' => 'Subscription',
