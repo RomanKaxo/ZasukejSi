@@ -1,6 +1,16 @@
 <?php
 
 return [
+    'days' => [
+        'monday' => 'Pondělí',
+        'tuesday' => 'Úterý',
+        'wednesday' => 'Středa',
+        'thursday' => 'Čtvrtek',
+        'friday' => 'Pátek',
+        'saturday' => 'Sobota',
+        'sunday' => 'Neděle',
+    ],
+
     'table' => [
         'display_name' => 'Zobrazované jméno',
         'user' => 'Uživatel',
@@ -40,6 +50,8 @@ return [
         'female' => 'Žena',
     ],
     'form' => [
+        'always_online' => 'Vždy dostupná',
+        'hours_to' => 'do',
         'auto_convert' => 'Dopočítat chybějící měny podle kurzu',
         'auto_convert_helper' => 'Ceny, které zadáte ručně, se nikdy nepřepočítávají. Doplní se jen měny, které necháte prázdné.',
         'service_prices' => 'Ceník služeb',

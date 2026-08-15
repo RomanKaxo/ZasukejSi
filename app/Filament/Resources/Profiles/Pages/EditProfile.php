@@ -20,6 +20,10 @@ class EditProfile extends EditRecord
     {
         $data['servicePrices'] = $this->readServicePrices($this->record);
 
+        // Coerce whichever of the three historical shapes this row was written
+        // in into the canonical one the form is built around.
+        $data['availability_hours'] = \App\Support\Availability::normalize($this->record->availability_hours);
+
         return $data;
     }
 
@@ -55,6 +59,10 @@ class EditProfile extends EditRecord
         }
 
         $data['content'] = ProfileContentState::merge($this->record->content, $data['content'] ?? []);
+
+        // Drops days left blank, so an empty row is absent rather than stored
+        // as an open-ended range.
+        $data['availability_hours'] = \App\Support\Availability::normalize($data['availability_hours'] ?? null);
 
         // Not a column; held aside and written to the pivot in afterSave().
         return $this->extractServicePrices($data);

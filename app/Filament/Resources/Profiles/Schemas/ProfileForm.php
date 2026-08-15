@@ -10,6 +10,8 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Fieldset;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
@@ -237,60 +239,35 @@ class ProfileForm
                     ->maxLength(1200)
                     ->columnSpanFull(),
 
-                // Two writers, two shapes: the member-facing ProfileForm saves
-                // this as a list (explode on ", "), the admin as a day => hours
-                // map. Whichever wrote last decided the shape, and a nested
-                // value reached the KeyValue as an array — which is what
-                // rendered as "[object Object]".
-                KeyValue::make('availability_hours')
-                    ->label(__('profiles.form.availability_hours'))
-                    ->keyLabel(__('profiles.form.day_label'))
-                    ->valueLabel(__('profiles.form.hours_label'))
-                    ->formatStateUsing(function ($state): array {
-                        if (! is_array($state) || $state === []) {
-                            return [];
-                        }
+                // A day is a day: seven fixed rows with a range, not free-form
+                // keys. The KeyValue this replaces showed the raw shape —
+                // "always_online" and "schedule" as literal keys with the
+                // values dumped beside them.
+                Toggle::make('availability_hours.always_online')
+                    ->label(__('profiles.form.always_online'))
+                    ->helperText(__('profiles.form.availability_helper'))
+                    ->live()
+                    ->columnSpanFull(),
 
-                        // Recursive: a value can be nested more than one level
-                        // deep (a day holding slots holding from/to pairs), and
-                        // strval() on an inner array raises "Array to string
-                        // conversion" rather than returning anything.
-                        $flatten = function ($value) use (&$flatten): string {
-                            if (is_array($value)) {
-                                return implode('-', array_filter(array_map($flatten, $value), fn ($p) => $p !== ''));
-                            }
+                Fieldset::make(__('profiles.form.availability_hours'))
+                    ->schema(
+                        collect(\App\Support\Availability::DAYS)
+                            ->map(fn (string $day) => Group::make([
+                                TextInput::make("availability_hours.schedule.{$day}.from")
+                                    ->label(\App\Support\Availability::dayLabel($day))
+                                    ->placeholder('9:00')
+                                    ->maxLength(5),
 
-                            if (is_bool($value)) {
-                                return $value ? '1' : '0';
-                            }
-
-                            return $value === null ? '' : (string) $value;
-                        };
-
-                        $normalized = [];
-
-                        foreach ($state as $key => $value) {
-                            // A list entry carries the day inside the text
-                            // ("Pondělí 9:00-17:00"); split it back apart.
-                            if (is_int($key) && is_string($value)) {
-                                if (preg_match('/^\s*(\p{L}+)\s+(.*)$/u', $value, $m)) {
-                                    $normalized[$m[1]] = trim($m[2]);
-                                } else {
-                                    $normalized[trim($value)] = '';
-                                }
-
-                                continue;
-                            }
-
-                            // A nested value (from/to pairs, or slots holding
-                            // pairs) flattened to text.
-                            $normalized[(string) $key] = $flatten($value);
-                        }
-
-                        return $normalized;
-                    })
+                                TextInput::make("availability_hours.schedule.{$day}.to")
+                                    ->label(__('profiles.form.hours_to'))
+                                    ->placeholder('17:00')
+                                    ->maxLength(5),
+                            ])->columns(2))
+                            ->all()
+                    )
+                    ->columns(2)
                     ->columnSpanFull()
-                    ->helperText(__('profiles.form.availability_helper')),
+                    ->hidden(fn ($get) => (bool) $get('availability_hours.always_online')),
 
                 // The price fields hardcoded a "$" prefix, so a Czech provider
                 // entering korunas had them labelled as dollars. The amounts
