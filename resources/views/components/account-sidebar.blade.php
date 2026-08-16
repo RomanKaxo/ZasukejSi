@@ -22,8 +22,19 @@
 ></div>
 
 {{-- Sidebar --}}
-<aside 
-    class="w-full h-full md:w-[211px] md:relative fixed top-0 left-0 z-40 bg-white transition-transform duration-300 md:translate-x-0 overflow-y-auto pt-28 md:pt-0 {{ in_array($activeItem, ['photos', 'services', 'statistics', 'subscription']) ? 'md:mt-[90px]' : 'md:mt-[258px]' }}"
+@php
+    // Each page's own heading (above the main divider) is a different
+    // height, so the sidebar's top offset is calibrated by hand per page to
+    // line up with that divider. Recalibrate the matching value below
+    // whenever a heading's markup or text changes height.
+    $sidebarOffsetClass = match(true) {
+        in_array($activeItem, ['photos', 'services', 'statistics', 'subscription']) => 'md:mt-[90px]',
+        $activeItem === 'reviews' => 'md:mt-[89px]',
+        default => 'md:mt-[258px]', // dashboard
+    };
+@endphp
+<aside
+    class="w-full h-full md:w-[211px] md:relative fixed top-0 left-0 z-40 bg-white transition-transform duration-300 md:translate-x-0 overflow-y-auto pt-28 md:pt-0 {{ $sidebarOffsetClass }}"
     :class="$store.accountSidebar.isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
 >
     <!-- Navigation Menu -->

@@ -60,7 +60,7 @@ class MemberController extends Controller
         return view('member.ratings', [
             'user' => $user,
             'regions' => self::CZECH_REGIONS,
-        ])->with('wideContent', true);
+        ])->with('wideContent', true)->with('sidebarOffset', 3);
     }
 
     /**
@@ -76,7 +76,7 @@ class MemberController extends Controller
             ->latest('profile_favorites.created_at')
             ->paginate(12);
         
-        return view('member.favorites', compact('user', 'favorites'))->with('wideContent', true);
+        return view('member.favorites', compact('user', 'favorites'))->with('wideContent', true)->with('sidebarOffset', 3);
     }
 
     /**
@@ -141,7 +141,7 @@ class MemberController extends Controller
             'profiles' => $profiles,
             'ageRanges' => self::AGE_RANGES,
             'selectedAgeRange' => $ageRange,
-        ])->with('wideContent', true);
+        ])->with('wideContent', true)->with('sidebarOffset', 95);
     }
 
     /**
@@ -180,7 +180,7 @@ class MemberController extends Controller
             'profiles' => $profiles,
             'ageRanges' => self::AGE_RANGES,
             'selectedAgeRange' => $ageRange,
-        ])->with('wideContent', true);
+        ])->with('wideContent', true)->with('sidebarOffset', 116);
     }
 
     /**
@@ -195,7 +195,7 @@ class MemberController extends Controller
             ->latest()
             ->get();
 
-        return view('member.reported', compact('user', 'reports'))->with('wideContent', true);
+        return view('member.reported', compact('user', 'reports'))->with('wideContent', true)->with('sidebarOffset', 95);
     }
 
     /**

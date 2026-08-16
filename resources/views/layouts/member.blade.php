@@ -8,9 +8,21 @@
          date. Renders only when the member actually holds a membership. --}}
     <x-premium-banner />
 
+    {{-- The sidebar has no way to know how tall the page's own heading (above
+         the main divider) renders, so its top offset is calibrated by hand per
+         page to line up with that divider. Recalibrate the matching value
+         below whenever a heading's text/translation changes height. --}}
+    @php
+        $sidebarOffsetClass = match($sidebarOffset ?? null) {
+            3 => 'md:mt-[3px]',      // ratings, favorites
+            95 => 'md:mt-[95px]',    // girls-of-month, reported
+            116 => 'md:mt-[116px]',  // archive (description wraps to 2 lines)
+            default => ($wideContent ?? false) ? 'md:mt-[110px]' : '',
+        };
+    @endphp
     <div class="flex flex-col md:flex-row md:justify-center md:gap-[20px]">
         <!-- Sidebar -->
-        <div class="{{ ($wideContent ?? false) ? 'md:mt-[110px]' : '' }}">
+        <div class="{{ $sidebarOffsetClass }}">
             <x-member-sidebar :activeItem="$activeItem ?? 'dashboard'" />
         </div>
 
