@@ -202,4 +202,42 @@ class Availability
     {
         return self::normalize($value)['always_online'];
     }
+
+    /**
+     * The schedule as one editable line, e.g.
+     * "Pondělí 9:00 – 17:00, Úterý 10:00 – 18:00".
+     *
+     * The member profile form keeps a single text input for this, so it needs
+     * a text form that can be read back without loss. It used to implode the
+     * stored array directly, which on the canonical shape yielded "Array".
+     */
+    public static function toText(mixed $value): string
+    {
+        $parts = [];
+
+        foreach (self::lines($value) as $day => $range) {
+            $parts[] = $day . ' ' . $range;
+        }
+
+        return implode(', ', $parts);
+    }
+
+    /**
+     * Parse that line back, keeping `always_online` from the stored value —
+     * a text field cannot express it, and saving must not silently clear it.
+     *
+     * @return array{always_online: bool, schedule: array<string, array{from: string, to: string}>}
+     */
+    public static function fromText(?string $text, mixed $existing = null): array
+    {
+        $entries = array_values(array_filter(
+            array_map('trim', explode(',', (string) $text)),
+            fn ($part) => $part !== ''
+        ));
+
+        $normalized = self::normalize($entries);
+        $normalized['always_online'] = self::isAlwaysOnline($existing);
+
+        return $normalized;
+    }
 }

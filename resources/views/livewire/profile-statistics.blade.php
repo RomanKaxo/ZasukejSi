@@ -148,7 +148,8 @@
 <!-- Chart.js (CDN) + init script (re-inits after Livewire updates) -->
  
 <!-- single controls block above is used; removed duplicate centered controls -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{{-- Chart.js is bundled into app.js and exposed as window.Chart, so this page
+     no longer reaches out to a public CDN on every load. --}}
 <script>
 (function () {
     function initChart() {
