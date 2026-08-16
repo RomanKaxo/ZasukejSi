@@ -2,12 +2,11 @@
     <div class="site-footer-container container mx-auto px-4">
         <!-- Logo -->
         <div class="text-center mb-6 md:mb-8">
+            {{-- The wordmark was two hardcoded variants behind an
+                 `@if(locale === 'en')`. Same three parts and the same colours,
+                 but the words come from the admin now (Patička). --}}
             <h2 class="text-xl md:text-2xl font-extrabold">
-                @if(app()->getLocale() === 'en')
-                    <span style="color:#5C2D62">ESCORT</span><span style="color:#DD3888">-ONLINE</span><span style="color:#8C8C8C;opacity:0.78">.COM</span>
-                @else
-                    <span style="color:#5C2D62">ZAŠUKEJ</span><span style="color:#DD3888">SI</span><span style="color:#8C8C8C;opacity:0.78">.CZ</span>
-                @endif
+                <span style="color:#5C2D62">{{ __('front.footer.logo_primary') }}</span><span style="color:#DD3888">{{ __('front.footer.logo_accent') }}</span><span style="color:#8C8C8C;opacity:0.78">{{ __('front.footer.logo_suffix') }}</span>
             </h2>
         </div>
 
@@ -47,19 +46,46 @@
                  (Stránky -> "Zobrazit v patičce"); the three-column layout is
                  unchanged and fills column by column. --}}
             @php
-                // Already ordered by AppServiceProvider's view composer
-                // (sort_order, then created_at) — same order as the header.
-                $footerLinks = collect($footerPages ?? [])->filter(fn ($page) => filled($page->slug));
-                $footerColumns = $footerLinks->isEmpty()
-                    ? collect()
-                    : $footerLinks->chunk((int) ceil($footerLinks->count() / 3));
+                // The footer menu, arranged in the admin exactly like the
+                // header's (Menu v patičce). Until it has a single item the
+                // footer keeps listing CMS pages the way it always did, so
+                // nothing disappears on the deploy that adds this.
+                $footerMenu = \App\Models\FooterMenuItem::columns();
+
+                if ($footerMenu->isEmpty()) {
+                    $footerLinks = collect($footerPages ?? [])->filter(fn ($page) => filled($page->slug));
+
+                    $footerMenu = $footerLinks->isEmpty()
+                        ? collect()
+                        : $footerLinks->chunk((int) ceil($footerLinks->count() / 3))->map(
+                            fn ($chunk) => $chunk->map(fn ($page) => (object) [
+                                'label' => $page->title,
+                                'href' => url('/' . ltrim($page->slug, '/')),
+                                'newTab' => false,
+                            ])
+                        );
+                } else {
+                    $footerMenu = $footerMenu->map(
+                        fn ($column) => $column
+                            // An item whose page was unpublished or deleted
+                            // resolves to nothing; drawing a link into nowhere
+                            // is worse than leaving it out.
+                            ->map(fn ($item) => (object) [
+                                'label' => $item->label,
+                                'href' => $item->resolvedUrl(),
+                                'newTab' => $item->opens_in_new_tab,
+                            ])
+                            ->filter(fn ($item) => filled($item->href))
+                    )->filter(fn ($column) => $column->isNotEmpty());
+                }
             @endphp
 
             <div class="footer-links">
-                @foreach($footerColumns as $column)
+                @foreach($footerMenu as $column)
                     <div class="footer-col">
-                        @foreach($column as $page)
-                            <a href="{{ url('/' . ltrim($page->slug, '/')) }}" class="footer-link">{{ $page->title }}</a>
+                        @foreach($column as $item)
+                            <a href="{{ $item->href }}" class="footer-link"
+                               @if($item->newTab) target="_blank" rel="noopener" @endif>{{ $item->label }}</a>
                         @endforeach
                     </div>
                 @endforeach
