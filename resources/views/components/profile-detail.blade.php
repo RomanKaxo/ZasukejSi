@@ -66,8 +66,8 @@
     $accessIsMember = $accessUser && $accessUser->isMale() && ! $accessUser->hasRole('admin');
     $accessHasMembership = $accessIsMember && $accessUser->hasActiveMembership();
 
-    // A guest gets the login modal rather than a link, so the label matches
-    // what actually happens.
+    // "Obnovit přístup": a guest gets the login modal, because they may
+    // already hold a membership and signing in is what restores it.
     $premiumOpensLogin = ! auth()->check();
 
     $premiumUrl = match (true) {
@@ -75,6 +75,14 @@
         $accessIsMember => route('account.member.membership.index'),
         default => $premiumPageUrl,
     };
+
+    // The "Premium unlocks ratings" note is a different promise: it is about
+    // buying, not about signing in. A guest sent to the login modal had no way
+    // to even see what Premium costs, so it points at the public plans page —
+    // which now lists them — and a signed-in member straight at his own.
+    $premiumBuyUrl = $accessIsMember
+        ? route('account.member.membership.index')
+        : $premiumPageUrl;
 
     // Someone who already has access is not restoring it; they are looking at
     // how long it runs for.
@@ -2993,8 +3001,7 @@
                 @if($accessHasMembership)
                     <span style="color: #505050;">{{ $premiumLabel }}</span>
                 @else
-                    <a href="{{ $premiumUrl }}" style="text-decoration: underline; color: #DD3888;"
-                       @if($premiumOpensLogin) x-data @click.prevent="$dispatch('show-login-modal')" @endif>{{ __('front.profiles.detail_page.premium_unlocks_rating') }}</a>
+                    <a href="{{ $premiumBuyUrl }}" style="text-decoration: underline; color: #DD3888;">{{ __('front.profiles.detail_page.premium_unlocks_rating') }}</a>
                 @endif
             </div>
         </div>
@@ -3018,8 +3025,7 @@
                 @if($accessHasMembership)
                     <span style="color: #505050;">{{ $premiumLabel }}</span>
                 @else
-                    <a href="{{ $premiumUrl }}" style="text-decoration: underline; color: #DD3888;"
-                       @if($premiumOpensLogin) x-data @click.prevent="$dispatch('show-login-modal')" @endif>{{ __('front.profiles.detail_page.premium_unlocks_rating') }}</a>
+                    <a href="{{ $premiumBuyUrl }}" style="text-decoration: underline; color: #DD3888;">{{ __('front.profiles.detail_page.premium_unlocks_rating') }}</a>
                 @endif
             </div>
         </div>
