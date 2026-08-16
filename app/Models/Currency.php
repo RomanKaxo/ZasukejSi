@@ -78,8 +78,10 @@ class Currency extends Model
     /**
      * Active currencies in display order.
      *
-     * Falls back to an empty collection before the table exists, so the app
-     * still boots during a migration run.
+     * Never empty: before the table exists — or before it is seeded, or if an
+     * admin switches the last one off — the site still has to be able to quote
+     * a price, and the admin profile form still has to offer a currency to
+     * pick. In those cases a single unsaved koruna row stands in.
      */
     public static function active(): Collection
     {
@@ -89,16 +91,39 @@ class Currency extends Model
 
         try {
             if (! Schema::hasTable('currencies')) {
-                return collect();
+                return self::fallback();
             }
 
-            return self::$memo = static::query()
+            $active = static::query()
                 ->where('is_active', true)
                 ->orderBy('sort_order')
                 ->get();
+
+            return self::$memo = $active->isEmpty() ? self::fallback() : $active;
         } catch (Throwable) {
-            return collect();
+            return self::fallback();
         }
+    }
+
+    /**
+     * The one currency the site ships with, as an unsaved model.
+     *
+     * Not memoized — the moment a real row is inserted this must stop being
+     * the answer.
+     */
+    private static function fallback(): Collection
+    {
+        return collect([
+            (new self)->forceFill([
+                'code' => \App\Support\Currencies::CZK,
+                'symbol' => 'Kč',
+                'name' => ['cs' => 'Koruna česká', 'en' => 'Czech koruna', 'ru' => 'Чешская крона'],
+                'exchange_rate' => 1,
+                'is_base' => true,
+                'is_active' => true,
+                'sort_order' => 0,
+            ]),
+        ]);
     }
 
     public static function base(): ?self

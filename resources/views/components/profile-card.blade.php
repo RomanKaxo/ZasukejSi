@@ -1,7 +1,6 @@
 @props(['profile', 'imageOverride' => null, 'imagesOverride' => null, 'variant' => null, 'showRemoveButton' => false, 'removeUrl' => null, 'cardHeight' => '520px', 'imageHeight' => '265px', 'simpleMode' => false, 'isReported' => false])
 
 @php
-    $shouldBlur = $variant === 'vip-detail';
     // Zajistíme, že $isReported je vždy bool
     $isReported = (bool)($isReported ?? false);
     
@@ -21,16 +20,21 @@
     // shows on every card. Providers and admins always see the value.
     $ratingLocked = ! \Illuminate\Support\Facades\Gate::allows('view-ratings');
     
-    // Compute profile URL - handle both model and plain object cases
-    $profileUrl = $shouldBlur ? '#' : ($isModel ? route('profiles.show', $profile) : route('profiles.show', $profile->id ?? 0));
-    
     // Safe property accessors for plain objects
     $profileName = $profile->display_name ?? 'Profile';
     $profileAge = $profile->age ?? null;
-    
+
     // Check if profile is verified or VIP (works for both models and plain objects)
     $isVerified = $isModel ? $profile->isVerified() : ($profile->is_verified ?? false);
     $isVip = $isModel ? $profile->isVip() : ($profile->is_vip ?? false);
+
+    // Only VIP profiles are held back on the detail page's sliders. This used
+    // to blur the whole variant, so every girl in "top rated" was obscured and
+    // — because the URL below was tied to it — none of them was clickable.
+    $shouldBlur = $variant === 'vip-detail' && $isVip;
+
+    // Compute profile URL - handle both model and plain object cases
+    $profileUrl = $shouldBlur ? '#' : ($isModel ? route('profiles.show', $profile) : route('profiles.show', $profile->id ?? 0));
     $isOnline = $isModel ? $profile->isOnline() : ($profile->is_online ?? false);
     $extraSegments = $isModel ? $profile->allSegments()->reject(fn ($segment) => $segment['is_vip']) : collect();
 @endphp
