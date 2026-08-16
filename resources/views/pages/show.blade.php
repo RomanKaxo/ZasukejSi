@@ -67,6 +67,15 @@
             @endphp
             @blocks($content)
         </div>
+
+        {{-- The VIP & Premium page described the plans in prose with nothing
+             behind it: the two products were only reachable from inside an
+             account, so a visitor reading about them had no way through.
+             Rendered by slug rather than by a marker in the content, so an
+             editor cannot remove the plans by editing the copy. --}}
+        @if (trim($page->slug, '/') === 'vip-premium')
+            <x-subscription-plans />
+        @endif
     </div>
 
     <style>

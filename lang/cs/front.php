@@ -11,6 +11,17 @@ return [
     ],
 
     // Premium membership for members — what unlocks profile ratings.
+    'plans' => [
+        'for_women' => 'Předplatné pro ženy',
+        'for_women_subtitle' => 'Zviditelněte svůj profil a získejte více zákazníků.',
+        'for_men' => 'Členství pro muže',
+        'for_men_subtitle' => 'Odemkněte hodnocení dívek a další funkce.',
+        'choose' => 'Vybrat',
+        'register_to_buy' => 'Registrovat se',
+        'men_only' => 'Toto členství je určeno pro muže.',
+        'women_only' => 'Toto předplatné je určeno pro ženy.',
+    ],
+
     'membership' => [
         'activated' => 'Premium členství je aktivní.',
         'activation_pending' => 'Platba proběhla. Členství aktivujeme během okamžiku.',

@@ -11,6 +11,17 @@ return [
     ],
 
     // Premium membership for members — what unlocks profile ratings.
+    'plans' => [
+        'for_women' => 'Subscriptions for women',
+        'for_women_subtitle' => 'Make your profile stand out and reach more clients.',
+        'for_men' => 'Membership for men',
+        'for_men_subtitle' => 'Unlock profile ratings and more.',
+        'choose' => 'Choose',
+        'register_to_buy' => 'Sign up',
+        'men_only' => 'This membership is for men.',
+        'women_only' => 'This subscription is for women.',
+    ],
+
     'membership' => [
         'activated' => 'Your Premium membership is active.',
         'activation_pending' => 'Payment received. We are activating your membership.',
