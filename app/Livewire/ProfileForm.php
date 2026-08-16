@@ -158,9 +158,10 @@ class ProfileForm extends Component
             $this->incall = $profile->incall ?? false;
             $this->outcall = $profile->outcall ?? false;
             $this->is_porn_actress = $profile->is_porn_actress ?? false;
-            $this->availability_hours = is_array($profile->availability_hours) 
-                ? implode(', ', $profile->availability_hours) 
-                : ($profile->availability_hours ?? '');
+            // imploding the stored array gave "Array" on the canonical shape,
+            // which nests a schedule under a key. Availability::toText knows
+            // every shape this column has been written in.
+            $this->availability_hours = \App\Support\Availability::toText($profile->availability_hours);
             $this->local_prices = $this->normalizePriceRows($profile->local_prices);
             $this->global_prices = $this->normalizePriceRows($profile->global_prices);
             $this->contacts = is_array($profile->contacts) 
@@ -655,7 +656,13 @@ class ProfileForm extends Component
                 'incall' => $this->incall,
                 'outcall' => $this->outcall,
                 'is_porn_actress' => $this->is_porn_actress,
-                'availability_hours' => $this->availability_hours ? explode(', ', $this->availability_hours) : null,
+                // explode() stored a flat list, which is not a shape any reader
+                // expects — every save from this form undid the canonical one.
+                // fromText() parses the same text back into it and carries
+                // `always_online` over, since a text field cannot express it.
+                'availability_hours' => $this->availability_hours
+                    ? \App\Support\Availability::fromText($this->availability_hours, $user->profile->availability_hours ?? null)
+                    : null,
                 'local_prices' => $this->local_prices ?: null,
                 'global_prices' => $this->global_prices ?: null,
                 'contacts' => $this->contacts ?: null,

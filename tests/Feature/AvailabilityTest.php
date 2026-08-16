@@ -95,6 +95,58 @@ class AvailabilityTest extends TestCase
         $this->assertArrayHasKey('tuesday', $normalized['schedule']);
     }
 
+    // --- the member form's single text field --------------------------------
+
+    public function test_the_schedule_survives_a_round_trip_through_text(): void
+    {
+        app()->setLocale('cs');
+
+        $stored = [
+            'always_online' => false,
+            'schedule' => [
+                'monday' => ['from' => '9:00', 'to' => '17:00'],
+                'saturday' => ['from' => '12:00', 'to' => '20:00'],
+            ],
+        ];
+
+        $text = Availability::toText($stored);
+
+        $this->assertSame('Pondělí 9:00 – 17:00, Sobota 12:00 – 20:00', $text);
+        $this->assertSame($stored, Availability::fromText($text, $stored));
+    }
+
+    public function test_text_never_reads_as_the_word_array(): void
+    {
+        app()->setLocale('cs');
+
+        // imploding the canonical shape directly produced "Array", which is
+        // what the member form used to put in the field.
+        $text = Availability::toText([
+            'always_online' => false,
+            'schedule' => ['monday' => ['from' => '9:00', 'to' => '17:00']],
+        ]);
+
+        $this->assertStringNotContainsString('Array', $text);
+    }
+
+    public function test_saving_text_does_not_clear_always_online(): void
+    {
+        app()->setLocale('cs');
+
+        // The text field cannot express "always online", so saving must carry
+        // the stored value over rather than silently dropping it.
+        $result = Availability::fromText('Pondělí 9:00 – 17:00', ['always_online' => true, 'schedule' => []]);
+
+        $this->assertTrue($result['always_online']);
+        $this->assertArrayHasKey('monday', $result['schedule']);
+    }
+
+    public function test_empty_text_yields_an_empty_schedule(): void
+    {
+        $this->assertSame([], Availability::fromText('', null)['schedule']);
+        $this->assertSame([], Availability::fromText(null, null)['schedule']);
+    }
+
     public function test_lines_read_as_a_named_day_and_a_range(): void
     {
         app()->setLocale('cs');
