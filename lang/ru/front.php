@@ -90,6 +90,18 @@ return [
     'messages' => [
         'cannot_message_self' => 'Нельзя написать самому себе.',
         'message_sent' => 'Сообщение отправлено',
+        'you_prefix' => 'Вы:',
+        'unread_one' => 'непрочитанное сообщение',
+        'unread_few' => 'непрочитанных сообщения',
+        'unread_many' => 'непрочитанных сообщений',
+        'today' => 'Сегодня',
+        'yesterday' => 'Вчера',
+        'read' => 'Прочитано',
+        'delivered' => 'Доставлено',
+        'view_profile' => 'Открыть профиль',
+        'conversations_count' => 'Диалогов: :count',
+        'deleted_user' => 'Удалённый пользователь',
+        'send_hint' => 'Отправить можно и клавишами Ctrl + Enter.',
     ],
 
     'favorites' => [
