@@ -34,6 +34,9 @@ class MessagesTable
                     ->label('Zpráva')
                     ->limit(80)
                     ->wrap()
+                    // Anything past 80 characters was simply cut off with no
+                    // way to read the rest anywhere in the admin.
+                    ->tooltip(fn ($record) => mb_strlen((string) $record->message) > 80 ? $record->message : null)
                     ->searchable(),
 
                 IconColumn::make('read_at')
