@@ -20,3 +20,16 @@ Schedule::command('subscriptions:lifecycle')
     ->dailyAt('03:10')
     ->withoutOverlapping()
     ->onOneServer();
+
+/**
+ * Scrape sources that carry an interval.
+ *
+ * Checked hourly rather than run hourly: the command only touches sources
+ * whose own slot has come, so an interval of 24 hours means one run a day.
+ * `withoutOverlapping` matters more here than anywhere — a harvest waits out
+ * the crawl delay between requests and can easily outlive its hour.
+ */
+Schedule::command('scrape:due')
+    ->hourly()
+    ->withoutOverlapping(120)
+    ->onOneServer();

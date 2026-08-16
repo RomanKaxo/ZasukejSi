@@ -32,6 +32,36 @@ php artisan scrape:run eurogirlsescort-cz --dry-run --limit=3
 
 Vypnutý zdroj jde spustit jen s `--dry-run`. V administraci je u zdroje tlačítko **Zkušební běh** se stejnými volbami.
 
+Každý běh si zapisuje, co dělal — které stránky výpisu přečetl, kolik na nich bylo odkazů, co si vyžádal robots.txt a u zkušebního běhu jaké hodnoty selektory vrátily. V administraci je to u běhu pod **Průběh**; ladit selektory se dá odtud, bez konzole.
+
+---
+
+## Automatické spouštění
+
+Zdroj se sám nespouští, dokud mu nenastavíte interval (**Zdroj → Automatické spouštění**). Bez něj se chová jako dosud, tedy jen ručně.
+
+| Pole | Význam |
+|---|---|
+| Interval (hodiny) | prázdné = žádné automatické spouštění; 24 znamená jednou denně |
+| Další běh | prázdné a s vyplněným intervalem = hned při nejbližší kontrole |
+| Stránek výpisu na běh | prázdné = `max_pages` z nastavení zdroje |
+| Maximálně profilů na běh | prázdné = bez omezení |
+
+Vypnutý zdroj se nespustí ani s intervalem — stejná pojistka, jakou má runner.
+
+Plánovač kontroluje každou hodinu a spustí jen zdroje, jejichž slot nastal:
+
+```bash
+php artisan scrape:due
+```
+
+| Přepínač | K čemu |
+|---|---|
+| `--source=slug` | omezí na jeden zdroj |
+| `--force` | spustí zapnuté zdroje bez ohledu na plán |
+
+Vyžaduje cron `* * * * * php artisan schedule:run`, stejně jako životní cyklus předplatných. Běh, který selže, si slot přesto posune — jinak by každá další kontrola začínala tímtéž rozbitým zdrojem.
+
 ---
 
 ## Ohleduplnost k cílovému webu

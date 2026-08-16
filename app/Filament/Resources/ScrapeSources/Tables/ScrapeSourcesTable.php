@@ -67,6 +67,18 @@ class ScrapeSourcesTable
                     ->state(fn (ScrapeSource $record) => $record->effectiveCrawlDelay() . ' s')
                     ->tooltip('Vyšší z nastavení zdroje a hodnoty z robots.txt'),
 
+                // Whether a source runs on its own, and when next.
+                TextColumn::make('schedule')
+                    ->label('Plán')
+                    ->state(fn (ScrapeSource $record) => $record->isScheduled()
+                        ? 'každých ' . $record->schedule_hours . ' h'
+                        : 'ručně')
+                    ->description(fn (ScrapeSource $record) => $record->isScheduled()
+                        ? ($record->next_run_at?->format('d.m. H:i') ?? 'při nejbližší kontrole')
+                        : null)
+                    ->badge()
+                    ->color(fn (ScrapeSource $record) => $record->isScheduled() ? 'success' : 'gray'),
+
                 TextColumn::make('robots_checked_at')
                     ->label('robots.txt')
                     ->since()

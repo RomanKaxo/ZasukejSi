@@ -33,6 +33,7 @@ class AdminPagesRenderTest extends TestCase
     public static function adminPages(): array
     {
         return [
+            'nastenka' => ['/admin'],
             'profily' => ['/admin/profiles'],
             'uzivatele' => ['/admin/users'],
             'hodnoceni' => ['/admin/ratings'],

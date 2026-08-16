@@ -56,6 +56,11 @@ return [
         'expiring_subscriptions_split' => 'Profiles: :profiles · Memberships: :members',
         'traffic_30_days' => 'Clicks in the last 30 days',
         'traffic_30_days_hint' => 'Listing impressions: :impressions',
+        'unread_messages' => 'Unread messages',
+        'unread_messages_hint' => 'From the contact form',
+        'scrape_queue' => 'Scraper queue',
+        'scrape_queue_hint' => 'Failed items: :failed',
+        'recent_runs' => 'Recent scraper runs',
     ],
 
     'navigation' => [

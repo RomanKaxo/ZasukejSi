@@ -22,6 +22,10 @@ class ScrapeSource extends Model
         'base_url',
         'adapter',
         'is_enabled',
+        'schedule_hours',
+        'next_run_at',
+        'schedule_pages',
+        'schedule_limit',
         'settings',
         'notes',
         'robots_checked_at',
@@ -35,7 +39,57 @@ class ScrapeSource extends Model
             'settings' => 'array',
             'robots_rules' => 'array',
             'robots_checked_at' => 'datetime',
+            'schedule_hours' => 'integer',
+            'schedule_pages' => 'integer',
+            'schedule_limit' => 'integer',
+            'next_run_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Whether this source runs on its own.
+     *
+     * A disabled source never does, whatever the interval says — the same
+     * guard the runner applies.
+     */
+    public function isScheduled(): bool
+    {
+        return $this->is_enabled && $this->schedule_hours !== null && $this->schedule_hours > 0;
+    }
+
+    public function isDue(): bool
+    {
+        return $this->isScheduled()
+            && ($this->next_run_at === null || $this->next_run_at->isPast());
+    }
+
+    /**
+     * Move the source to its next slot.
+     *
+     * Counted from now rather than from the previous slot, so a run that took
+     * an hour does not immediately come due again.
+     */
+    public function scheduleNextRun(): void
+    {
+        if (! $this->isScheduled()) {
+            $this->forceFill(['next_run_at' => null])->save();
+
+            return;
+        }
+
+        $this->forceFill(['next_run_at' => now()->addHours($this->schedule_hours)])->save();
+    }
+
+    /** @param  \Illuminate\Database\Eloquent\Builder  $query */
+    public function scopeDue($query)
+    {
+        return $query
+            ->where('is_enabled', true)
+            ->whereNotNull('schedule_hours')
+            ->where('schedule_hours', '>', 0)
+            ->where(function ($q) {
+                $q->whereNull('next_run_at')->orWhere('next_run_at', '<=', now());
+            });
     }
 
     /**

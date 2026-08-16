@@ -56,6 +56,11 @@ return [
         'expiring_subscriptions_split' => 'Profily: :profiles · Členství: :members',
         'traffic_30_days' => 'Kliknutí za 30 dnů',
         'traffic_30_days_hint' => 'Zobrazení v seznamu: :impressions',
+        'unread_messages' => 'Nepřečtené zprávy',
+        'unread_messages_hint' => 'Z kontaktního formuláře',
+        'scrape_queue' => 'Scraper ke kontrole',
+        'scrape_queue_hint' => 'Chybných položek: :failed',
+        'recent_runs' => 'Poslední běhy scraperu',
     ],
 
     'navigation' => [
