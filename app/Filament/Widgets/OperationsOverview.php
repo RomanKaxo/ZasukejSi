@@ -2,11 +2,13 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\ContactMessage;
 use App\Models\MemberSubscription;
 use App\Models\Profile;
 use App\Models\ProfileReport;
 use App\Models\ProfileView;
 use App\Models\Report;
+use App\Models\ScrapeItem;
 use App\Models\Subscription;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -29,9 +31,46 @@ class OperationsOverview extends StatsOverviewWidget
         return [
             $this->pendingProfiles(),
             $this->openReports(),
+            $this->unreadMessages(),
+            $this->scrapeQueue(),
             $this->expiringSubscriptions(),
             $this->trafficLast30Days(),
         ];
+    }
+
+    /**
+     * Messages from the contact form. They arrive from outside and nobody is
+     * notified, so an unanswered one is invisible until somebody opens the
+     * screen.
+     */
+    private function unreadMessages(): Stat
+    {
+        $count = ContactMessage::query()->whereNull('read_at')->count();
+
+        return Stat::make(__('filament.dashboard.unread_messages'), $count)
+            ->description(__('filament.dashboard.unread_messages_hint'))
+            ->color($count > 0 ? 'warning' : 'success')
+            ->url(route('filament.admin.resources.contact-messages.index'));
+    }
+
+    /**
+     * The review queue, plus whatever the last runs could not extract — a
+     * source whose selectors have gone stale shows up here as failures rather
+     * than as silence.
+     */
+    private function scrapeQueue(): Stat
+    {
+        $pending = ScrapeItem::query()->where('status', ScrapeItem::STATUS_PENDING)->count();
+        $failed = ScrapeItem::query()->where('status', ScrapeItem::STATUS_FAILED)->count();
+
+        return Stat::make(__('filament.dashboard.scrape_queue'), $pending)
+            ->description(__('filament.dashboard.scrape_queue_hint', ['failed' => $failed]))
+            ->color(match (true) {
+                $failed > 0 => 'danger',
+                $pending > 0 => 'warning',
+                default => 'success',
+            })
+            ->url(route('filament.admin.resources.scrape-items.index'));
     }
 
     private function pendingProfiles(): Stat

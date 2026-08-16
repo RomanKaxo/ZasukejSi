@@ -1,0 +1,81 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\Models\ScrapeSource;
+use App\Services\Scraping\ScrapeRunner;
+use Illuminate\Console\Command;
+use Throwable;
+
+/**
+ * Runs the sources whose slot has come.
+ *
+ * Harvesting used to require somebody to click a button or type a command, so
+ * anything recurring depended on remembering to do it. Sources without an
+ * interval are untouched, which is every source until one is given.
+ */
+class ScrapeDueCommand extends Command
+{
+    protected $signature = 'scrape:due
+        {--source= : Limit to one source slug}
+        {--force : Ignore the schedule and run the source now}';
+
+    protected $description = 'Run every scrape source whose scheduled slot has come';
+
+    public function handle(ScrapeRunner $runner): int
+    {
+        $query = $this->option('force')
+            ? ScrapeSource::query()->where('is_enabled', true)
+            : ScrapeSource::query()->due();
+
+        if ($slug = $this->option('source')) {
+            $query->where('slug', $slug);
+        }
+
+        $sources = $query->get();
+
+        if ($sources->isEmpty()) {
+            $this->info('Žádný zdroj není na řadě.');
+
+            return self::SUCCESS;
+        }
+
+        $failed = 0;
+
+        foreach ($sources as $source) {
+            $this->info("Zdroj: {$source->name} ({$source->slug})");
+
+            try {
+                $run = $runner->run($source, array_filter([
+                    'pages' => $source->schedule_pages,
+                    'limit' => $source->schedule_limit,
+                ]));
+
+                $this->line(sprintf(
+                    '  %s — nalezeno %d, nových %d, změněných %d, chyb %d',
+                    $run->status,
+                    $run->items_found,
+                    $run->items_new,
+                    $run->items_updated,
+                    $run->items_failed,
+                ));
+
+                if ($run->error) {
+                    $this->warn('  ' . $run->error);
+                    $failed++;
+                }
+            } catch (Throwable $e) {
+                // One broken source must not stop the others, and it must not
+                // stay due forever either — the slot moves regardless.
+                $this->error('  ' . $e->getMessage());
+                $failed++;
+            }
+
+            $source->scheduleNextRun();
+
+            $this->line('  další běh: ' . ($source->next_run_at?->format('d.m.Y H:i') ?? '—'));
+        }
+
+        return $failed > 0 ? self::FAILURE : self::SUCCESS;
+    }
+}

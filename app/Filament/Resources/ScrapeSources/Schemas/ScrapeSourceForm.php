@@ -4,6 +4,7 @@ namespace App\Filament\Resources\ScrapeSources\Schemas;
 
 use App\Models\ScrapeSource;
 use App\Services\Scraping\AdapterRegistry;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -48,6 +49,36 @@ class ScrapeSourceForm
                     Toggle::make('is_enabled')
                         ->label('Zapnuto')
                         ->helperText('Vypnutý zdroj lze spustit jen s --dry-run.'),
+                ])
+                ->columns(2),
+
+            Section::make('Automatické spouštění')
+                ->description('Bez intervalu se zdroj spouští jen ručně, jak tomu bylo dosud. Vypnutý zdroj se nespustí ani s intervalem.')
+                ->schema([
+                    TextInput::make('schedule_hours')
+                        ->label('Interval (hodiny)')
+                        ->helperText('Prázdné = žádné automatické spouštění. 24 znamená jednou denně.')
+                        ->numeric()
+                        ->minValue(1)
+                        ->maxValue(24 * 30),
+
+                    DateTimePicker::make('next_run_at')
+                        ->label('Další běh')
+                        ->helperText('Prázdné a s vyplněným intervalem znamená „hned při nejbližší kontrole".')
+                        ->seconds(false),
+
+                    TextInput::make('schedule_pages')
+                        ->label('Stránek výpisu na běh')
+                        ->helperText('Prázdné = použije se max_pages z nastavení zdroje.')
+                        ->numeric()
+                        ->minValue(1)
+                        ->maxValue(200),
+
+                    TextInput::make('schedule_limit')
+                        ->label('Maximálně profilů na běh')
+                        ->helperText('Prázdné = bez omezení. Stahování čeká mezi požadavky, takže velký běh trvá.')
+                        ->numeric()
+                        ->minValue(1),
                 ])
                 ->columns(2),
 
