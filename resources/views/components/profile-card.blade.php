@@ -29,12 +29,13 @@
     $isVip = $isModel ? $profile->isVip() : ($profile->is_vip ?? false);
 
     // Only VIP profiles are held back on the detail page's sliders. This used
-    // to blur the whole variant, so every girl in "top rated" was obscured and
-    // — because the URL below was tied to it — none of them was clickable.
+    // to blur the whole variant, so every girl in "top rated" was obscured.
     $shouldBlur = $variant === 'vip-detail' && $isVip;
 
-    // Compute profile URL - handle both model and plain object cases
-    $profileUrl = $shouldBlur ? '#' : ($isModel ? route('profiles.show', $profile) : route('profiles.show', $profile->id ?? 0));
+    // The blur is a teaser, not a barrier: the card still leads to the profile,
+    // where the visitor decides what to do next. Tying the URL to the blur left
+    // the "Detail" button pointing at "#".
+    $profileUrl = $isModel ? route('profiles.show', $profile) : route('profiles.show', $profile->id ?? 0);
     $isOnline = $isModel ? $profile->isOnline() : ($profile->is_online ?? false);
     $extraSegments = $isModel ? $profile->allSegments()->reject(fn ($segment) => $segment['is_vip']) : collect();
 @endphp
@@ -220,7 +221,7 @@
         <!-- Details Button -->
             <a href="{{ $profileUrl }}"
             class="flex items-center justify-between home-profile-card-cta"
-            style="width:170px;height:45px;border-radius:8px;background:#5C2D62;color:#FFFFFF; display:inline-flex; align-items:center; justify-content:space-between; padding:0 16px; font-family:'Poppins', sans-serif; font-weight:600; font-size:16px; text-decoration:none; {{ $shouldBlur ? 'pointer-events-none;' : '' }}">
+            style="width:170px;height:45px;border-radius:8px;background:#5C2D62;color:#FFFFFF; display:inline-flex; align-items:center; justify-content:space-between; padding:0 16px; font-family:'Poppins', sans-serif; font-weight:600; font-size:16px; text-decoration:none;">
             <span>{{ __('front.profiles.list.detail') }}</span>
             <x-icons name="search" class="inline-block" style="width:24px;height:24px;color:#FFFFFF;" />
         </a>

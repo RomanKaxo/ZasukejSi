@@ -47,6 +47,7 @@ class AdminPagesRenderTest extends TestCase
             'scraper-zdroje' => ['/admin/scrape-sources'],
             'scraper-polozky' => ['/admin/scrape-items'],
             'scraper-behy' => ['/admin/scrape-runs'],
+            'kontaktni-zpravy' => ['/admin/contact-messages'],
             'nastaveni' => ['/admin/manage-settings'],
         ];
     }
