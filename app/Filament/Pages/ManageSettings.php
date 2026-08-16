@@ -2,10 +2,14 @@
 
 namespace App\Filament\Pages;
 
+// Aliased: this class extends Filament's own Page.
+use App\Models\Page as ContentPage;
 use App\Models\Setting;
+use App\Support\FooterButton;
 use App\Support\RatingScale;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -58,6 +62,11 @@ class ManageSettings extends Page
                 'site.online_simulation_percent',
                 (int) config('site.online_simulation_percent', 0)
             ),
+            'footer_guest_page_id' => Setting::get(FooterButton::KEY_GUEST_PAGE),
+            'footer_guest_label' => Setting::get(FooterButton::KEY_GUEST_LABEL),
+            'footer_auth_page_id' => Setting::get(FooterButton::KEY_AUTH_PAGE)
+                ?? ContentPage::published()->where("slug", FooterButton::DEFAULT_AUTH_SLUG)->value("id"),
+            'footer_auth_label' => Setting::get(FooterButton::KEY_AUTH_LABEL),
         ]);
     }
 
@@ -92,6 +101,34 @@ class ManageSettings extends Page
                     ])
                     ->columns(3),
 
+                Section::make('Patička — tlačítko')
+                    ->description('Tlačítko vlevo v patičce. Nepřihlášenému a přihlášenému lze nabídnout jinou stránku. Popisek nechte prázdný a použije se název stránky. Které odkazy patička vypisuje a v jakém pořadí, se nastavuje u jednotlivých stránek (Stránky → „Zobrazit v patičce" a „Pořadí v patičce").')
+                    ->schema([
+                        Select::make('footer_guest_page_id')
+                            ->label('Nepřihlášený — cílová stránka')
+                            ->helperText('Prázdné = otevře se okno registrace, jak je v návrhu.')
+                            ->options(fn () => ContentPage::linkOptions())
+                            ->searchable()
+                            ->placeholder('Okno registrace'),
+
+                        TextInput::make('footer_guest_label')
+                            ->label('Nepřihlášený — popisek')
+                            ->placeholder(__('front.footer.registration'))
+                            ->maxLength(40),
+
+                        Select::make('footer_auth_page_id')
+                            ->label('Přihlášený — cílová stránka')
+                            ->helperText('Registrovat se podruhé nelze, proto tento stav okno registrace nikdy neotevírá.')
+                            ->options(fn () => ContentPage::linkOptions())
+                            ->searchable()
+                            ->placeholder(__('front.nav.myaccount')),
+
+                        TextInput::make('footer_auth_label')
+                            ->label('Přihlášený — popisek')
+                            ->maxLength(40),
+                    ])
+                    ->columns(2),
+
                 Section::make('Online stav')
                     ->description('Skutečná aktivita má vždy přednost. Tato hodnota řídí jen podíl ostatních profilů, které se zobrazí jako online. 0 simulaci zcela vypne.')
                     ->schema([
@@ -113,6 +150,13 @@ class ManageSettings extends Page
         Setting::set(RatingScale::KEY_MID, RatingScale::clamp((int) $data['option_mid']));
         Setting::set(RatingScale::KEY_LOW, RatingScale::clamp((int) $data['option_low']));
         Setting::set('site.online_simulation_percent', max(0, min(100, (int) $data['online_simulation_percent'])));
+
+        // Stored empty rather than deleted: an empty value is what makes the
+        // button fall back to its built-in behaviour.
+        Setting::set(FooterButton::KEY_GUEST_PAGE, $data['footer_guest_page_id'] ?? '');
+        Setting::set(FooterButton::KEY_GUEST_LABEL, $data['footer_guest_label'] ?? '');
+        Setting::set(FooterButton::KEY_AUTH_PAGE, $data['footer_auth_page_id'] ?? '');
+        Setting::set(FooterButton::KEY_AUTH_LABEL, $data['footer_auth_label'] ?? '');
 
         Notification::make()
             ->title('Nastavení uloženo')

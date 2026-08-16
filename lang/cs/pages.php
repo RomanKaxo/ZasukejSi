@@ -21,8 +21,10 @@ return [
         'display_in_footer_helper' => 'Zobrazit tuto stránku v patičce webu',
         'is_published' => 'Publikováno',
         'is_published_helper' => 'Zveřejnit tuto stránku pro veřejnost',
-        'sort_order' => 'Pořadí',
-        'sort_order_helper' => 'Určuje pořadí v menu i v patičce. Nižší číslo se zobrazí dřív.',
+        'sort_order' => 'Pořadí v menu',
+        'sort_order_helper' => 'Určuje pořadí v horním menu. Nižší číslo se zobrazí dřív.',
+        'footer_sort_order' => 'Pořadí v patičce',
+        'footer_sort_order_helper' => 'Nižší číslo se zobrazí dřív. Necháte-li prázdné, použije se pořadí v menu.',
     ],
     'table' => [
         'title' => 'Název',

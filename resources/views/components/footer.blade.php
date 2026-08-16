@@ -15,33 +15,27 @@
         <div class="footer-main mx-auto h-[275px] flex items-center justify-between mb-6 md:mb-8">
             {{-- Left: the design's 141x55 button.
 
-                 It used to be wrapped in @guest, so for a signed-in visitor the
-                 slot vanished entirely — and because this row is
-                 `justify-content: space-between`, the links and the security box
-                 then slid left and the footer stopped matching the design on
-                 every page behind a login.
+                 It used to be a hardcoded "Registrace" wrapped in @guest, so for
+                 a signed-in visitor the slot vanished entirely — and because
+                 this row is `justify-content: space-between`, the links and the
+                 security box then slid left.
 
-                 The slot is now always filled. A guest gets the button from the
-                 design; someone already registered cannot register again, so the
-                 same button takes them to their account instead. --}}
+                 Both states are configured in the admin (Nastavení systému ->
+                 Patička): which page the button opens and what it says. The slot
+                 is never empty — an unpublished or deleted target falls back to
+                 the built-in behaviour rather than disappearing. --}}
+            @php $footerButton = \App\Support\FooterButton::forCurrentVisitor(); @endphp
+
             <div class="flex-shrink-0">
-                @guest
+                @if($footerButton['opensRegisterModal'])
                     <button @click="$dispatch('show-register-modal')" class="btn-primary footer-register px-6 md:px-8 py-2.5 md:py-3 rounded-lg font-semibold text-sm md:text-base">
-                        {{ __('front.footer.registration') }}
+                        {{ $footerButton['label'] }}
                     </button>
                 @else
-                    @php
-                        // Same split as the navbar: men without the admin role
-                        // have the member dashboard, everyone else the provider
-                        // one.
-                        $footerAccountRoute = auth()->user()->isMale() && ! auth()->user()->hasRole('admin')
-                            ? 'account.member.dashboard'
-                            : 'account.dashboard';
-                    @endphp
-                    <a href="{{ route($footerAccountRoute) }}" class="btn-primary footer-register px-6 md:px-8 py-2.5 md:py-3 rounded-lg font-semibold text-sm md:text-base">
-                        {{ __('front.nav.myaccount') }}
+                    <a href="{{ $footerButton['url'] }}" class="btn-primary footer-register px-6 md:px-8 py-2.5 md:py-3 rounded-lg font-semibold text-sm md:text-base">
+                        {{ $footerButton['label'] }}
                     </a>
-                @endguest
+                @endif
             </div>
 
             {{-- CMS-driven footer links.
