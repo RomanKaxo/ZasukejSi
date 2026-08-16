@@ -158,4 +158,38 @@ class CurrencyTest extends TestCase
         // currency that is no longer on offer.
         $this->assertSame('CZK', Currencies::forLocale('ru'));
     }
+
+    /**
+     * With no currency rows at all — a fresh install, or an admin who switched
+     * the last one off — the admin profile form offered an empty currency
+     * select while still requiring one, so no profile could be saved.
+     */
+    public function test_an_empty_table_still_offers_a_currency(): void
+    {
+        Currency::query()->delete();
+        Currency::flush();
+
+        $this->assertNotEmpty(Currency::options());
+        $this->assertSame(Currencies::CZK, Currency::base()?->code);
+        $this->assertTrue(Currencies::isSupported(Currencies::CZK));
+    }
+
+    public function test_a_real_row_takes_over_from_the_stand_in(): void
+    {
+        Currency::query()->delete();
+        Currency::flush();
+
+        Currency::create([
+            'code' => 'gbp',
+            'symbol' => '£',
+            'name' => ['cs' => 'Libra', 'en' => 'Pound'],
+            'exchange_rate' => 0.034,
+            'is_base' => true,
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        $this->assertSame(['GBP'], Currency::active()->pluck('code')->all());
+        $this->assertSame('GBP', Currency::base()?->code);
+    }
 }
