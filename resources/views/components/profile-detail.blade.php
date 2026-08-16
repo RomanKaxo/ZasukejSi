@@ -2983,7 +2983,7 @@
             </div>
         </div>
         <div class="vip-rec-slider">
-            <livewire:profile-slider sort-by="rating_this_month" sort-direction="desc" :limit="30" card-variant="vip-detail" :key="'vip-month-'.$profile->id" />
+            <livewire:profile-slider sort-by="rating_this_month" sort-direction="desc" :limit="30" card-variant="vip-detail" :exclude-profile-id="$profile->id" :key="'vip-month-'.$profile->id" />
         </div>
     </section>
 
@@ -2999,7 +2999,10 @@
             </div>
         </div>
         <div class="vip-rec-slider">
-            <livewire:profile-slider sort-by="rating_this_month" sort-direction="desc" :limit="30" card-variant="vip-detail" :key="'vip-all-'.$profile->id" />
+            {{-- The heading beside this slider says "all time", but it was
+                 given the same rating_this_month sort as the section above, so
+                 both listed exactly the same profiles. --}}
+            <livewire:profile-slider sort-by="rating" sort-direction="desc" :limit="30" card-variant="vip-detail" :exclude-profile-id="$profile->id" :key="'vip-all-'.$profile->id" />
         </div>
     </section>
 

@@ -29,7 +29,15 @@ class ProfileSlider extends Component
     public string $title = '';
     public string $sliderId = '';
     public string $cardVariant = 'default';
-    
+
+    /**
+     * A profile to leave out.
+     *
+     * On a profile's own detail page these sliders are a recommendation, and
+     * recommending the page you are already on is not one.
+     */
+    public ?int $excludeProfileId = null;
+
     public function mount(
         bool $vipOnly = false,
         bool $verifiedOnly = false,
@@ -44,7 +52,8 @@ class ProfileSlider extends Component
         int $limit = 10,
         string $title = '',
         ?string $sliderId = null,
-        string $cardVariant = 'default'
+        string $cardVariant = 'default',
+        ?int $excludeProfileId = null
     ) {
         $this->vipOnly = $vipOnly;
         $this->verifiedOnly = $verifiedOnly;
@@ -60,6 +69,7 @@ class ProfileSlider extends Component
         $this->title = $title;
         $this->sliderId = $sliderId ?? 'profile-slider-' . uniqid();
         $this->cardVariant = $cardVariant;
+        $this->excludeProfileId = $excludeProfileId;
     }
 
     #[Computed]
@@ -71,6 +81,12 @@ class ProfileSlider extends Component
             ->approved()
             ->public()
             ->select($this->getPublicProfileColumns());
+
+        // Recommending the page the visitor is already on is not a
+        // recommendation.
+        if ($this->excludeProfileId !== null) {
+            $query->whereKeyNot($this->excludeProfileId);
+        }
 
         // Apply filters
         if ($this->vipOnly) {
