@@ -2,9 +2,12 @@
 
 namespace App\Filament\Resources\ScrapeSources\Tables;
 
+use App\Filament\Resources\ScrapeRuns\ScrapeRunResource;
+use App\Models\ScrapeRun;
 use App\Models\ScrapeSource;
 use App\Services\Scraping\ScrapeRunner;
 use Filament\Actions\Action;
+use Filament\Notifications\Actions\Action as NotificationAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -44,6 +47,20 @@ class ScrapeSourcesTable
                 TextColumn::make('items_count')
                     ->label('Položek')
                     ->counts('items'),
+
+                // Whether the source still works was only answerable by opening
+                // the runs screen and filtering it.
+                TextColumn::make('last_run')
+                    ->label('Poslední běh')
+                    ->state(fn (ScrapeSource $record) => $record->runs()->first()?->started_at?->diffForHumans() ?? 'nikdy')
+                    ->badge()
+                    ->color(fn (ScrapeSource $record) => match ($record->runs()->first()?->status) {
+                        ScrapeRun::STATUS_COMPLETED => 'success',
+                        ScrapeRun::STATUS_FAILED => 'danger',
+                        ScrapeRun::STATUS_RUNNING => 'warning',
+                        default => 'gray',
+                    })
+                    ->tooltip(fn (ScrapeSource $record) => $record->runs()->first()?->error),
 
                 TextColumn::make('effective_delay')
                     ->label('Prodleva')
@@ -86,10 +103,18 @@ class ScrapeSourcesTable
                                 'dry_run' => (bool) ($data['dry_run'] ?? true),
                             ]));
 
+                            // The point of a test run is what it extracted, not
+                            // how many rows it touched — the run's log holds
+                            // the field values and is one click away.
                             Notification::make()
                                 ->title('Běh dokončen')
-                                ->body("Nalezeno {$run->items_found}, nových {$run->items_new}, změněných {$run->items_updated}, chyb {$run->items_failed}.")
+                                ->body("Nalezeno {$run->items_found}, nových {$run->items_new}, změněných {$run->items_updated}, chyb {$run->items_failed}. Průběh běhu #{$run->id} ukáže, co selektory vrátily.")
                                 ->success()
+                                ->actions([
+                                    NotificationAction::make('showRun')
+                                        ->label('Zobrazit průběh')
+                                        ->url(ScrapeRunResource::getUrl('index')),
+                                ])
                                 ->send();
                         } catch (Throwable $e) {
                             Notification::make()

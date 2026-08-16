@@ -8,9 +8,12 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
@@ -22,10 +25,22 @@ class ScrapeItemsTable
     {
         return $table
             ->columns([
+                // The queue used to be a wall of names. The first photo is what
+                // an admin actually recognises a profile by.
+                ImageColumn::make('preview')
+                    ->label('')
+                    ->getStateUsing(fn (ScrapeItem $record) => collect($record->images ?? [])->first())
+                    ->height(56)
+                    ->extraImgAttributes(['style' => 'object-fit:cover;border-radius:6px;width:42px;height:56px;']),
+
                 TextColumn::make('normalized.display_name')
                     ->label('Jméno')
                     ->searchable(query: fn ($query, $search) => $query->where('normalized', 'like', "%{$search}%"))
-                    ->description(fn (ScrapeItem $record) => $record->value('city'))
+                    ->description(fn (ScrapeItem $record) => collect([
+                        $record->value('city'),
+                        $record->value('age') ? $record->value('age') . ' let' : null,
+                    ])->filter()->implode(' · ') ?: null)
+                    ->weight('bold')
                     ->placeholder('—'),
 
                 TextColumn::make('source.name')
@@ -48,7 +63,20 @@ class ScrapeItemsTable
 
                 TextColumn::make('images')
                     ->label('Fotek')
-                    ->formatStateUsing(fn ($state) => is_array($state) ? count($state) : 0),
+                    ->formatStateUsing(fn ($state) => is_array($state) ? count($state) : 0)
+                    // Nothing to import photos from is worth noticing before
+                    // the profile is created, not after.
+                    ->color(fn ($state) => is_array($state) && count($state) > 0 ? null : 'warning')
+                    ->alignCenter(),
+
+                TextColumn::make('imported_profile_id')
+                    ->label('Profil')
+                    ->formatStateUsing(fn ($state) => $state ? '#' . $state : '—')
+                    ->url(fn (ScrapeItem $record) => $record->imported_profile_id
+                        ? route('filament.admin.resources.profiles.view', $record->imported_profile_id)
+                        : null)
+                    ->color(fn ($state) => $state ? 'info' : 'gray')
+                    ->toggleable(),
 
                 TextColumn::make('source_url')
                     ->label('Zdrojová adresa')
@@ -80,8 +108,22 @@ class ScrapeItemsTable
                 SelectFilter::make('scrape_source_id')
                     ->label('Zdroj')
                     ->relationship('source', 'name'),
+
+                SelectFilter::make('scrape_run_id')
+                    ->label('Běh')
+                    ->relationship('run', 'id')
+                    ->searchable(),
+
+                // A profile without a photo is worth catching before it exists.
+                Filter::make('without_images')
+                    ->label('Bez fotografií')
+                    ->query(fn ($query) => $query->where(function ($q) {
+                        $q->whereNull('images')->orWhere('images', '[]');
+                    })),
             ])
             ->recordActions([
+                ViewAction::make()->label('Detail'),
+
                 Action::make('approve')
                     ->label('Schválit')
                     ->icon('heroicon-o-check')
@@ -149,6 +191,79 @@ class ScrapeItemsTable
                         ->color('gray')
                         ->requiresConfirmation()
                         ->action(fn (Collection $records) => $records->each->update(['status' => ScrapeItem::STATUS_REJECTED])),
+
+                    // Importing one at a time made a harvest of fifty profiles
+                    // fifty separate confirmations.
+                    BulkAction::make('importSelected')
+                        ->label('Vytvořit profily z vybraných')
+                        ->icon('heroicon-o-user-plus')
+                        ->color('primary')
+                        ->form([
+                            Toggle::make('with_images')
+                                ->label('Stáhnout i fotografie')
+                                ->default(true)
+                                ->helperText('Stahuje se s prodlevou podle nastavení zdroje, takže u většího výběru to trvá.'),
+                        ])
+                        ->requiresConfirmation()
+                        ->modalDescription('Vzniknou nepublikované profily ve stavu ke schválení. Zpracují se jen schválené položky.')
+                        ->action(function (Collection $records, array $data) {
+                            $importer = app(ScrapeItemImporter::class);
+                            $created = 0;
+                            $failed = 0;
+
+                            foreach ($records->where('status', ScrapeItem::STATUS_APPROVED) as $record) {
+                                try {
+                                    $importer->import($record, (bool) ($data['with_images'] ?? true));
+                                    $created++;
+                                } catch (Throwable $e) {
+                                    // One bad row must not stop the rest; the
+                                    // reason is kept on the row itself.
+                                    $record->forceFill([
+                                        'status' => ScrapeItem::STATUS_FAILED,
+                                        'error' => $e->getMessage(),
+                                    ])->save();
+                                    $failed++;
+                                }
+                            }
+
+                            $skipped = $records->count() - $created - $failed;
+
+                            Notification::make()
+                                ->title("Vytvořeno profilů: {$created}")
+                                ->body(trim(
+                                    ($failed > 0 ? "Selhalo: {$failed}. " : '')
+                                    . ($skipped > 0 ? "Přeskočeno neschválených: {$skipped}." : '')
+                                ) ?: 'Vše proběhlo bez chyby.')
+                                ->color($failed > 0 ? 'warning' : 'success')
+                                ->send();
+                        }),
+
+                    // A failed import is usually a fixable value, not a dead
+                    // row — this puts it back in reach instead of leaving it
+                    // stuck in an end state.
+                    BulkAction::make('retrySelected')
+                        ->label('Vrátit ke kontrole')
+                        ->icon('heroicon-o-arrow-path')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->action(function (Collection $records) {
+                            $reset = $records->whereIn('status', [
+                                ScrapeItem::STATUS_FAILED,
+                                ScrapeItem::STATUS_REJECTED,
+                            ]);
+
+                            foreach ($reset as $record) {
+                                $record->forceFill([
+                                    'status' => ScrapeItem::STATUS_PENDING,
+                                    'error' => null,
+                                ])->save();
+                            }
+
+                            Notification::make()
+                                ->title('Vráceno ke kontrole: ' . $reset->count())
+                                ->success()
+                                ->send();
+                        }),
 
                     DeleteBulkAction::make(),
                 ]),

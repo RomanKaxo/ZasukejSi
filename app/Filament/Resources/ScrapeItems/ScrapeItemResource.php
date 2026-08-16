@@ -2,11 +2,15 @@
 
 namespace App\Filament\Resources\ScrapeItems;
 
+use App\Filament\Resources\ScrapeItems\Pages\EditScrapeItem;
 use App\Filament\Resources\ScrapeItems\Pages\ListScrapeItems;
+use App\Filament\Resources\ScrapeItems\Pages\ViewScrapeItem;
+use App\Filament\Resources\ScrapeItems\Schemas\ScrapeItemForm;
 use App\Filament\Resources\ScrapeItems\Tables\ScrapeItemsTable;
 use App\Models\ScrapeItem;
 use BackedEnum;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
@@ -58,6 +62,11 @@ class ScrapeItemResource extends Resource
         return false;
     }
 
+    public static function form(Schema $schema): Schema
+    {
+        return ScrapeItemForm::configure($schema);
+    }
+
     public static function table(Table $table): Table
     {
         return ScrapeItemsTable::configure($table);
@@ -67,6 +76,8 @@ class ScrapeItemResource extends Resource
     {
         return [
             'index' => ListScrapeItems::route('/'),
+            'view' => ViewScrapeItem::route('/{record}'),
+            'edit' => EditScrapeItem::route('/{record}/edit'),
         ];
     }
 }
