@@ -23,6 +23,8 @@ return [
         'status' => 'Status',
         'public' => 'Veřejné',
         'verified' => 'Ověřeno',
+        'photos' => 'Fotek',
+        'rating' => 'Hodnocení',
         'created_at' => 'Vytvořeno',
         'updated_at' => 'Aktualizováno',
     ],
@@ -31,6 +33,9 @@ return [
         'city' => 'Město',
         'gender' => 'Pohlaví',
         'segment' => 'Segment',
+        'waiting' => 'Čeká na schválení',
+        'without_photos' => 'Bez fotografií',
+        'vip' => 'S aktivním VIP',
     ],
     'actions' => [
         'approve' => 'Schválit',
@@ -38,6 +43,8 @@ return [
         'block_description' => 'Profil se zároveň skryje z webu.',
         'verify' => 'Ověřit',
         'unverify' => 'Zrušit ověření',
+        'publish' => 'Zveřejnit',
+        'publish_description' => 'Zveřejní se jen schválené profily, neschválené se přeskočí.',
     ],
     'status' => [
         'draft' => 'Koncept',

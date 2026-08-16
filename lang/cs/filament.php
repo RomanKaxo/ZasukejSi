@@ -21,6 +21,15 @@ return [
         'gender_female' => 'Žena',
         'user_id' => 'Uživatel',
         'roles' => 'Role',
+        'email_verified' => 'E-mail ověřen',
+        'unverified' => 'Neověřený e-mail',
+        'verify_email' => 'Ověřit e-mail',
+        'profile' => 'Profil',
+        'without_profile' => 'Bez profilu',
+        'published' => 'Zveřejněný',
+        'unpublished' => 'Nezveřejněný',
+        'membership' => 'Členství',
+        'membership_active' => 'Aktivní',
     ],
     
     'values' => [

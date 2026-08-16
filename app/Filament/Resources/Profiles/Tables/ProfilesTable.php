@@ -2,16 +2,20 @@
 
 namespace App\Filament\Resources\Profiles\Tables;
 
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 
 class ProfilesTable
 {
@@ -19,6 +23,16 @@ class ProfilesTable
     {
         return $table
             ->columns([
+                // A listing of names alone: an admin recognises a profile by
+                // its photo, and a profile with no photo at all is worth
+                // spotting without opening it.
+                ImageColumn::make('thumbnail')
+                    ->label('')
+                    ->getStateUsing(fn ($record) => $record->getFirstImageThumbUrl())
+                    ->height(56)
+                    ->extraImgAttributes(['style' => 'object-fit:cover;border-radius:6px;width:42px;height:56px;'])
+                    ->default(null),
+
                 TextColumn::make('display_name')
                     ->label(__('profiles.table.display_name'))
                     ->searchable()
@@ -84,6 +98,33 @@ class ProfilesTable
                     ->label(__('profiles.table.public'))
                     ->boolean(),
 
+                // Whether a profile is paying was only visible inside the
+                // record, on a tab.
+                TextColumn::make('vip')
+                    ->label('VIP')
+                    ->state(fn ($record) => $record->isVip() ? 'VIP' : '—')
+                    ->badge()
+                    ->color(fn ($record) => $record->isVip() ? 'warning' : 'gray')
+                    // A relation, not a model: `activeSubscription()` returns
+                    // the HasOne itself.
+                    ->tooltip(fn ($record) => $record->activeSubscription?->ends_at?->format('d.m.Y')),
+
+                TextColumn::make('photos')
+                    ->label(__('profiles.table.photos'))
+                    ->state(fn ($record) => $record->getAllImages()->count())
+                    // No photos means the profile cannot really go live.
+                    ->color(fn ($record) => $record->getAllImages()->isEmpty() ? 'danger' : null)
+                    ->alignCenter()
+                    ->toggleable(),
+
+                TextColumn::make('rating')
+                    ->label(__('profiles.table.rating'))
+                    ->state(fn ($record) => $record->getTotalRatings() > 0
+                        ? number_format($record->getAverageRating(), 1) . ' (' . $record->getTotalRatings() . ')'
+                        : '—')
+                    ->alignCenter()
+                    ->toggleable(),
+
                 TextColumn::make('segments.name')
                     ->label(__('common.Segments'))
                     ->badge()
@@ -146,6 +187,24 @@ class ProfilesTable
                         'female' => __('profiles.gender.female'),
                     ]),
 
+                // The three questions an admin opens this screen to answer,
+                // each of which previously meant scrolling the whole list.
+                Filter::make('waiting')
+                    ->label(__('profiles.filters.waiting'))
+                    ->query(fn ($query) => $query->where('status', 'pending')),
+
+                Filter::make('without_photos')
+                    ->label(__('profiles.filters.without_photos'))
+                    ->query(fn ($query) => $query->whereDoesntHave('media', fn ($q) => $q->where('collection_name', 'profile-images'))),
+
+                Filter::make('vip')
+                    ->label(__('profiles.filters.vip'))
+                    ->query(fn ($query) => $query->whereHas('subscriptions', fn ($q) => $q
+                        ->where('status', 'active')
+                        ->where(function ($dates) {
+                            $dates->whereNull('ends_at')->orWhere('ends_at', '>', now());
+                        }))),
+
                 TrashedFilter::make(),
             ])
             ->recordActions([
@@ -183,6 +242,35 @@ class ProfilesTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    // Approving a batch of scraped imports one by one was the
+                    // slowest part of the whole import flow.
+                    BulkAction::make('approveSelected')
+                        ->label(__('profiles.actions.approve'))
+                        ->icon('heroicon-o-check')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->action(function (Collection $records) {
+                            foreach ($records as $record) {
+                                $record->update([
+                                    'status' => 'approved',
+                                    'verified_at' => $record->verified_at ?? now(),
+                                ]);
+                            }
+                        }),
+
+                    BulkAction::make('publishSelected')
+                        ->label(__('profiles.actions.publish'))
+                        ->icon('heroicon-o-globe-alt')
+                        ->color('primary')
+                        ->requiresConfirmation()
+                        // Publishing an unapproved profile would put it on the
+                        // site ahead of its own review.
+                        ->modalDescription(__('profiles.actions.publish_description'))
+                        ->action(fn (Collection $records) => $records
+                            ->where('status', 'approved')
+                            ->each
+                            ->update(['is_public' => true])),
+
                     DeleteBulkAction::make(),
                     ForceDeleteBulkAction::make(),
                     RestoreBulkAction::make(),
