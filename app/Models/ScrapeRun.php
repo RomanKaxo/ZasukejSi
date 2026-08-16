@@ -32,6 +32,7 @@ class ScrapeRun extends Model
         'items_failed',
         'options',
         'error',
+        'log',
     ];
 
     protected function casts(): array

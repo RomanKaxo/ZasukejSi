@@ -45,7 +45,25 @@ class ScrapeRunner
             'items_failed' => 0,
         ]);
 
-        $notify = function (string $message, array $data = []) use ($progress): void {
+        // The narration is kept on the run as well as handed to the caller.
+        // It used to exist only for the console command, so a run started from
+        // the admin could report counts but never show what it saw.
+        $log = [];
+
+        $notify = function (string $message, array $data = []) use ($progress, &$log): void {
+            $line = $message;
+
+            if ($data !== []) {
+                $line .= ' — ' . self::describe($data);
+            }
+
+            // Bounded so a large harvest cannot turn one row into megabytes.
+            if (count($log) < self::LOG_LINE_LIMIT) {
+                $log[] = $line;
+            } elseif (count($log) === self::LOG_LINE_LIMIT) {
+                $log[] = '… další řádky se už nezaznamenávají.';
+            }
+
             if ($progress !== null) {
                 $progress($message, $data);
             }
@@ -101,9 +119,54 @@ class ScrapeRunner
         }
 
         $run->finished_at = now();
+        $run->log = $log === [] ? null : implode("\n", $log);
         $run->save();
 
         return $run;
+    }
+
+    /** Keeps one row from growing without bound on a large harvest. */
+    private const LOG_LINE_LIMIT = 500;
+
+    /**
+     * The extra data a notification carries, flattened to one readable line.
+     *
+     * A dry run reports the values it extracted this way, which is the whole
+     * point of running one.
+     */
+    private static function describe(array $data): string
+    {
+        $parts = [];
+
+        foreach ($data as $key => $value) {
+            if ($key === 'values' && is_array($value)) {
+                foreach ($value as $field => $fieldValue) {
+                    $parts[] = $field . '=' . self::stringify($fieldValue);
+                }
+
+                continue;
+            }
+
+            $parts[] = $key . '=' . self::stringify($value);
+        }
+
+        return implode(', ', $parts);
+    }
+
+    private static function stringify(mixed $value): string
+    {
+        if (is_array($value)) {
+            return '[' . implode('|', array_map(
+                fn ($item) => is_scalar($item) ? (string) $item : gettype($item),
+                $value
+            )) . ']';
+        }
+
+        if (is_bool($value)) {
+            return $value ? 'ano' : 'ne';
+        }
+
+        return (string) ($value ?? '—');
     }
 
     /**
