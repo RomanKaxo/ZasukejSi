@@ -63,7 +63,7 @@
 
                 <a href="{{ route('pages.show', $post->slug) }}" 
                          class="block mt-8 w-full py-3 px-6 bg-secondary text-white text-center font-medium rounded-lg hover:bg-secondary-600 transition-colors blog-card-button">
-                    {{ __('Číst článek') }}
+                    {{ __('blogs.read_article') }}
                 </a>
             </div>
         </article>

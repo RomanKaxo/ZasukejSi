@@ -4,7 +4,7 @@ return [
     'date_format' => 'j. F Y',
     'min_read' => 'min čtení',
     'latest_news' => 'Poslední novinky',
-    'read_article' => 'číst článek',
+    'read_article' => 'Číst článek',
     'table' => [
         'header_image' => 'Hlavní obrázek',
         'title' => 'Název',

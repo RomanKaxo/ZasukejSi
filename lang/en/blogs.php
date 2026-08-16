@@ -4,7 +4,7 @@ return [
     'date_format' => 'F j, Y',
     'min_read' => 'min read',
     'latest_news' => 'Latest News',
-    'read_article' => 'read article',
+    'read_article' => 'Read article',
     'table' => [
         'header_image' => 'Header Image',
         'title' => 'Title',
