@@ -1857,6 +1857,13 @@
             margin: 8px 0 0;
         }
 
+        /* Left at 310px on purpose. The phone frame shows the photo at x=25
+           and 310px wide, with a further slide starting at 335 and running off
+           the right edge — but widening this container to 335px widens the
+           grid column it shares with the rating bar and the action links, and
+           those then overflow to 385px. Reproducing the bleed needs the
+           carousel taken out of the grid, which is a structural change, not a
+           width. Recorded in docs/audit/2026-08-16-mobil-detail-profilu.md. */
         .vip-profile-gallery-mobile {
             grid-column: 1 / -1;
             grid-row: 4;
