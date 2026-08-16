@@ -347,9 +347,14 @@
                with a 21.5px gutter = 1136px, the same content width as the eco
                badge. The fluid `xl:grid-cols-5 gap-4` gave 217.6px columns, so
                cards sat 23.6px apart instead of 21.5px. */
+            /* auto-fill rather than a fixed five: the English homepage puts a
+               208px country sidebar beside this grid, leaving ~897px, and five
+               pinned 210px columns came to 1136px — so the row overflowed and
+               the first card sat underneath the sidebar. The card keeps its
+               210px design width; the row simply holds as many as fit. */
             @media (min-width: 1280px) {
                 .profile-list-cards-grid {
-                    grid-template-columns: repeat(5, 210px);
+                    grid-template-columns: repeat(auto-fill, 210px);
                     gap: 21.5px;
                     justify-content: center;
                 }
@@ -544,12 +549,9 @@
                     {{ __('front.profiles.list.rating') }}
                 </button>
 
-                <select wire:model.live="segmentId" class="mobile-filter-pill" style="appearance:auto;">
-                    <option value="">{{ __('profiles.filters.segment') }}</option>
-                    @foreach($this->availableSegments as $segment)
-                        <option value="{{ $segment->id }}">{{ $segment->getTranslation('name', app()->getLocale()) }}</option>
-                    @endforeach
-                </select>
+                {{-- The segment dropdown is not in the design's filter row. It
+                     stayed a filter you can still reach: ?segment=<id> keeps
+                     working, and the admin's segment links rely on it. --}}
 
                 @if ($this->activeFiltersCount() > 0)
                     <button wire:click.debounce.300ms="resetFilters" wire:loading.attr="disabled" wire:target="resetFilters"
@@ -664,13 +666,8 @@
                 {{ __('front.profiles.list.rating') }}
             </button>
 
-            <!-- Segment Filter -->
-            <select wire:model.live="segmentId" class="filter-pill" style="appearance:auto;">
-                <option value="">{{ __('profiles.filters.segment') }}</option>
-                @foreach($this->availableSegments as $segment)
-                    <option value="{{ $segment->id }}">{{ $segment->getTranslation('name', app()->getLocale()) }}</option>
-                @endforeach
-            </select>
+            {{-- Same on desktop: the design's filter row has pills, not a
+                 segment dropdown. The filter itself is untouched. --}}
 
             <!-- Clear All Filters Button -->
             @if ($this->activeFiltersCount() > 0)
