@@ -2977,9 +2977,18 @@
                 <h2 class="vip-section-title" style="margin-bottom:4px;">{{ __('front.profiles.detail_page.top_rated_girls') }}</h2>
                 <div class="vip-slider-kicker">{{ __('front.profiles.detail_page.this_month') }}</div>
             </div>
+            {{-- Looked like a link, went nowhere, and told a member who already
+                 has Premium to go and get it. It now states what is true for
+                 this visitor and, when there is something to do about it,
+                 takes them there. --}}
             <div class="vip-slider-note">
                 <img src="{{ asset('images/icons/diamond.svg') }}" alt="" aria-hidden="true" class="h-4 w-4">
-                <span style="text-decoration: underline; color: #DD3888;">{{ __('front.profiles.detail_page.premium_unlocks_rating') }}</span>
+                @if($accessHasMembership)
+                    <span style="color: #505050;">{{ $premiumLabel }}</span>
+                @else
+                    <a href="{{ $premiumUrl }}" style="text-decoration: underline; color: #DD3888;"
+                       @if($premiumOpensLogin) x-data @click.prevent="$dispatch('show-login-modal')" @endif>{{ __('front.profiles.detail_page.premium_unlocks_rating') }}</a>
+                @endif
             </div>
         </div>
         <div class="vip-rec-slider">
@@ -2993,9 +3002,18 @@
                 <h2 class="vip-section-title" style="margin-bottom:4px;">{{ __('front.profiles.detail_page.top_rated_girls') }}</h2>
                 <div class="vip-slider-kicker">{{ __('front.profiles.detail_page.all_time') }}</div>
             </div>
+            {{-- Looked like a link, went nowhere, and told a member who already
+                 has Premium to go and get it. It now states what is true for
+                 this visitor and, when there is something to do about it,
+                 takes them there. --}}
             <div class="vip-slider-note">
                 <img src="{{ asset('images/icons/diamond.svg') }}" alt="" aria-hidden="true" class="h-4 w-4">
-                <span style="text-decoration: underline; color: #DD3888;">{{ __('front.profiles.detail_page.premium_unlocks_rating') }}</span>
+                @if($accessHasMembership)
+                    <span style="color: #505050;">{{ $premiumLabel }}</span>
+                @else
+                    <a href="{{ $premiumUrl }}" style="text-decoration: underline; color: #DD3888;"
+                       @if($premiumOpensLogin) x-data @click.prevent="$dispatch('show-login-modal')" @endif>{{ __('front.profiles.detail_page.premium_unlocks_rating') }}</a>
+                @endif
             </div>
         </div>
         <div class="vip-rec-slider">
