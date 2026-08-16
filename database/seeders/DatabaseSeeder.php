@@ -36,6 +36,11 @@ class DatabaseSeeder extends Seeder
         // markup.
         $this->call(PageSeeder::class);
 
+        // Gives the footer menu its starting arrangement from those pages, so
+        // the admin edits what the footer already shows instead of a blank
+        // screen. Skips itself once anybody has arranged it.
+        $this->call(FooterMenuSeeder::class);
+
         // Seed cities for autocomplete (must run before profiles are created)
         $this->call(CitySeeder::class);
         $this->call(SubscriptionTypeSeeder::class);

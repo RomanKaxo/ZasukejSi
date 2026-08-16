@@ -64,6 +64,9 @@ return [
         'ecological' => 'Наш проект экологичен',
         'verification' => '— благодаря проверке девушек вы не поедете напрасно',
         'copyright' => '© ZašukejSi.cz',
+        'logo_primary' => 'ZAŠUKEJ',
+        'logo_accent' => 'SI',
+        'logo_suffix' => '.CZ',
     ],
 
     'countries' => [

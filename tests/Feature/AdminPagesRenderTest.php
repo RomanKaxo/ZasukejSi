@@ -48,6 +48,8 @@ class AdminPagesRenderTest extends TestCase
             'scraper-polozky' => ['/admin/scrape-items'],
             'scraper-behy' => ['/admin/scrape-runs'],
             'kontaktni-zpravy' => ['/admin/contact-messages'],
+            'menu-paticky' => ['/admin/footer-menu-items'],
+            'texty-paticky' => ['/admin/manage-footer'],
             'nastaveni' => ['/admin/manage-settings'],
         ];
     }
