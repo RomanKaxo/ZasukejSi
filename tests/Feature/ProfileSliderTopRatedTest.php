@@ -100,6 +100,31 @@ class ProfileSliderTopRatedTest extends TestCase
         $this->assertTrue($ids->contains($one->id));
     }
 
+    /**
+     * "Premium unlocks ratings" is a promise about buying, not about signing
+     * in. A guest used to get the login modal, so they could not even see what
+     * Premium costs.
+     */
+    public function test_the_premium_note_leads_a_guest_to_the_plans(): void
+    {
+        \App\Models\Page::updateOrCreate(
+            ['slug' => 'vip-premium'],
+            [
+                'title' => ['cs' => 'VIP a Premium', 'en' => 'VIP & Premium'],
+                'type' => 'page',
+                'content' => ['cs' => [], 'en' => []],
+                'is_published' => true,
+            ]
+        );
+
+        $profile = $this->profile('Jana');
+
+        $response = $this->get(route('profiles.show', $profile));
+
+        $response->assertSuccessful();
+        $response->assertSee(url('/vip-premium'), false);
+    }
+
     public function test_the_ranking_follows_the_ratings(): void
     {
         $best = $this->profile('Nejlepší');
