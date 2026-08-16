@@ -33,6 +33,7 @@ class Page extends Model implements HasMedia
         'display_in_menu',
         'display_in_footer',
         'sort_order',
+        'footer_sort_order',
         'is_published',
     ];
 
@@ -48,6 +49,7 @@ class Page extends Model implements HasMedia
             'display_in_menu' => 'boolean',
             'display_in_footer' => 'boolean',
             'sort_order' => 'integer',
+            'footer_sort_order' => 'integer',
             'is_published' => 'boolean',
         ];
     }
@@ -94,6 +96,34 @@ class Page extends Model implements HasMedia
     public function scopeOrdered($query)
     {
         return $query->orderBy('sort_order')->orderBy('created_at');
+    }
+
+    /**
+     * Footer order, which the admin sets independently of the header menu.
+     *
+     * A page with no footer order follows its menu position, so switching a
+     * page into the footer needs no second number unless the admin wants one.
+     */
+    public function scopeFooterOrdered($query)
+    {
+        return $query
+            ->orderByRaw('COALESCE(footer_sort_order, sort_order)')
+            ->orderBy('created_at');
+    }
+
+    /**
+     * Pages offered wherever an admin picks a target page.
+     *
+     * @return array<int, string>
+     */
+    public static function linkOptions(): array
+    {
+        return static::query()
+            ->published()
+            ->ordered()
+            ->get()
+            ->mapWithKeys(fn (self $page) => [$page->id => $page->title])
+            ->all();
     }
 
     /**

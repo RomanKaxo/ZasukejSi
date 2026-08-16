@@ -65,7 +65,9 @@ class PageForm
                 Toggle::make('display_in_footer')
                     ->label(__('pages.form.display_in_footer'))
                     ->helperText(__('pages.form.display_in_footer_helper'))
-                    ->default(false),
+                    ->default(false)
+                    // Drives the visibility of the footer order below.
+                    ->live(),
 
                 Toggle::make('is_published')
                     ->label(__('pages.form.is_published'))
@@ -80,6 +82,14 @@ class PageForm
                     ->numeric()
                     ->default(0)
                     ->required(),
+
+                // The footer shared this number with the header menu, so the
+                // two could not be arranged independently.
+                \Filament\Forms\Components\TextInput::make('footer_sort_order')
+                    ->label(__('pages.form.footer_sort_order'))
+                    ->helperText(__('pages.form.footer_sort_order_helper'))
+                    ->numeric()
+                    ->visible(fn ($get) => (bool) $get('display_in_footer')),
             ]);
     }
 }

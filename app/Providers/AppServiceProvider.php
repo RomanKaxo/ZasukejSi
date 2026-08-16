@@ -83,11 +83,11 @@ class AppServiceProvider extends ServiceProvider
         View::composer('components.footer', function ($view) {
             $pages = Page::where('display_in_footer', true)
                 ->where('is_published', true)
-                // Ordered by the admin-managed sort_order; created_at alone put
-                // FAQ ahead of VIP & Premium, against the design.
-                ->ordered()
+                // The footer has its own order. It used to share sort_order
+                // with the header, so arranging one dragged the other along.
+                ->footerOrdered()
                 ->get();
-            
+
             $view->with('footerPages', $pages);
         });
     }

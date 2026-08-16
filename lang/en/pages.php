@@ -21,8 +21,10 @@ return [
         'display_in_footer_helper' => 'Show this page in the website footer',
         'is_published' => 'Published',
         'is_published_helper' => 'Make this page visible to the public',
-        'sort_order' => 'Order',
-        'sort_order_helper' => 'Controls the order in the menu and the footer. Lower numbers appear first.',
+        'sort_order' => 'Menu order',
+        'sort_order_helper' => 'Controls the order in the top menu. Lower numbers appear first.',
+        'footer_sort_order' => 'Footer order',
+        'footer_sort_order_helper' => 'Lower numbers appear first. Left empty, the menu order is used.',
     ],
     'table' => [
         'title' => 'Title',
