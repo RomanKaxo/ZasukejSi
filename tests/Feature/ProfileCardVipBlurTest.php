@@ -67,14 +67,17 @@ class ProfileCardVipBlurTest extends TestCase
         ])->render();
     }
 
-    public function test_a_vip_profile_stays_blurred_and_unclickable(): void
+    public function test_a_vip_profile_is_blurred_but_still_leads_to_its_profile(): void
     {
         $profile = $this->makeVip($this->profile('VIP dívka'));
 
         $html = $this->render($profile);
 
+        // The blur is a teaser, not a barrier — the visitor has to be able to
+        // reach the profile to find out what unlocking it is worth.
         $this->assertStringContainsString('blur-md', $html);
-        $this->assertStringNotContainsString(route('profiles.show', $profile), $html);
+        $this->assertStringContainsString(route('profiles.show', $profile), $html);
+        $this->assertStringNotContainsString('pointer-events-none;', $html);
     }
 
     public function test_a_profile_without_vip_is_shown_and_links_to_itself(): void

@@ -50,15 +50,6 @@
     // No stock-photo poster: if there is no real photo the player renders
     // without one rather than borrowing someone else's picture.
     $videoPoster = $images->first()?->getUrl();
-    // "Obnovit přístup" used to point everyone at a page, which is why it read
-    // as a button that does nothing: a guest was sent to marketing copy, and a
-    // member who already had access was offered to buy it again.
-    //
-    // What restores access depends on why it is missing:
-    //   guest              -> sign in; they may already have a membership
-    //   member, no access  -> the plans
-    //   member, has access -> their membership, showing what it runs to
-    //   provider / admin   -> the public VIP & Premium page
     $premiumPage = \App\Models\Page::published()->where('slug', 'vip-premium')->first();
     $premiumPageUrl = $premiumPage ? url('/' . $premiumPage->slug) : url('/');
 
@@ -66,31 +57,34 @@
     $accessIsMember = $accessUser && $accessUser->isMale() && ! $accessUser->hasRole('admin');
     $accessHasMembership = $accessIsMember && $accessUser->hasActiveMembership();
 
-    // "Obnovit přístup": a guest gets the login modal, because they may
-    // already hold a membership and signing in is what restores it.
-    $premiumOpensLogin = ! auth()->check();
-
-    $premiumUrl = match (true) {
-        $premiumOpensLogin => '#',
-        $accessIsMember => route('account.member.membership.index'),
-        default => $premiumPageUrl,
+    // "Obnovit přístup" is password recovery — someone locked out of their
+    // account. It pointed at the VIP & Premium page, which is a different
+    // thing entirely and left the button reading as marketing.
+    //
+    // The forgot-password form is behind the `guest` middleware, so a visitor
+    // who is already signed in has to be sent to their own password screen
+    // instead — otherwise the link bounces them back to the homepage.
+    $accessUrl = match (true) {
+        ! $accessUser => route('password.request'),
+        $accessIsMember => route('account.member.password.edit'),
+        default => route('account.password.edit'),
     };
 
+    $accessLabel = __('front.profiles.detail_page.refresh_access');
+
     // The "Premium unlocks ratings" note is a different promise: it is about
-    // buying, not about signing in. A guest sent to the login modal had no way
-    // to even see what Premium costs, so it points at the public plans page —
-    // which now lists them — and a signed-in member straight at his own.
+    // buying. A guest sent to the login modal had no way to even see what
+    // Premium costs, so it points at the public plans page — which now lists
+    // them — and a signed-in member straight at his own.
     $premiumBuyUrl = $accessIsMember
         ? route('account.member.membership.index')
         : $premiumPageUrl;
 
-    // Someone who already has access is not restoring it; they are looking at
-    // how long it runs for.
-    $premiumLabel = $accessHasMembership
-        ? __('front.profiles.detail_page.access_valid_until', [
-            'date' => optional($accessUser->membershipEndsAt())->format('d.m.Y') ?? '',
-          ])
-        : __('front.profiles.detail_page.refresh_access');
+    // Shown beside the sliders to a member who already has Premium: not an
+    // offer to buy, just how long what he has runs for.
+    $membershipValidLabel = __('front.profiles.detail_page.access_valid_until', [
+        'date' => optional($accessUser?->membershipEndsAt())->format('d.m.Y') ?? '',
+    ]);
     // "Dát hodnocení" opens the member rating screen on this profile.
     $rateUrl = \Illuminate\Support\Facades\Route::has('account.member.ratings')
         ? route('account.member.ratings', ['profile' => $profile->id])
@@ -2578,11 +2572,10 @@
             @endif
 
             <div class="vip-profile-links lg:hidden" aria-label="Profile actions">
-                {{-- Both used to be href="#". "Obnovit přístup" is the Premium
-                     call to action, "Dát hodnocení" opens the rating screen with
+                {{-- Both used to be href="#". "Obnovit přístup" is password
+                     recovery, "Dát hodnocení" opens the rating screen with
                      this profile preselected; a guest gets the login modal. --}}
-                <a href="{{ $premiumUrl }}" class="vip-profile-link"
-                   @if($premiumOpensLogin) x-data @click.prevent="$dispatch('show-login-modal')" @endif>{{ $premiumLabel }}</a>
+                <a href="{{ $accessUrl }}" class="vip-profile-link">{{ $accessLabel }}</a>
                 @auth
                     <a href="{{ $rateUrl }}" class="vip-profile-link">{{ __('front.profiles.detail_page.give_rating') }}</a>
                 @else
@@ -2721,10 +2714,9 @@
                             <span>{{ __('front.profiles.detail_page.give_rating') }}</span>
                         </a>
                     @endauth
-                    <a href="{{ $premiumUrl }}" class="vip-profile-desktop-action"
-                       @if($premiumOpensLogin) x-data @click.prevent="$dispatch('show-login-modal')" @endif>
+                    <a href="{{ $accessUrl }}" class="vip-profile-desktop-action">
                         <img src="{{ asset('images/icons/KeySquare.svg') }}" alt="" aria-hidden="true">
-                        <span>{{ $premiumLabel }}</span>
+                        <span>{{ $accessLabel }}</span>
                     </a>
                     <a href="#" class="vip-profile-desktop-action" x-data @click.prevent="$dispatch('show-report-modal', { profileId: {{ $profile->id }} })">
                         <img src="{{ asset('images/icons/TriangleAlert.svg') }}" alt="" aria-hidden="true">
@@ -2999,7 +2991,7 @@
             <div class="vip-slider-note">
                 <img src="{{ asset('images/icons/diamond.svg') }}" alt="" aria-hidden="true" class="h-4 w-4">
                 @if($accessHasMembership)
-                    <span style="color: #505050;">{{ $premiumLabel }}</span>
+                    <span style="color: #505050;">{{ $membershipValidLabel }}</span>
                 @else
                     <a href="{{ $premiumBuyUrl }}" style="text-decoration: underline; color: #DD3888;">{{ __('front.profiles.detail_page.premium_unlocks_rating') }}</a>
                 @endif
@@ -3023,7 +3015,7 @@
             <div class="vip-slider-note">
                 <img src="{{ asset('images/icons/diamond.svg') }}" alt="" aria-hidden="true" class="h-4 w-4">
                 @if($accessHasMembership)
-                    <span style="color: #505050;">{{ $premiumLabel }}</span>
+                    <span style="color: #505050;">{{ $membershipValidLabel }}</span>
                 @else
                     <a href="{{ $premiumBuyUrl }}" style="text-decoration: underline; color: #DD3888;">{{ __('front.profiles.detail_page.premium_unlocks_rating') }}</a>
                 @endif

@@ -76,6 +76,13 @@
         @if (trim($page->slug, '/') === 'vip-premium')
             <x-subscription-plans />
         @endif
+
+        {{-- The contact page described how to get in touch but offered nothing
+             to get in touch with. Rendered by slug for the same reason as the
+             plans above: an editor cannot remove it by editing the copy. --}}
+        @if (trim($page->slug, '/') === 'contact')
+            <livewire:contact-form />
+        @endif
     </div>
 
     <style>
