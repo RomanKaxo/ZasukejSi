@@ -21,6 +21,15 @@ return [
         'gender_female' => 'Female',
         'user_id' => 'User',
         'roles' => 'Roles',
+        'email_verified' => 'E-mail verified',
+        'unverified' => 'Unverified e-mail',
+        'verify_email' => 'Verify e-mail',
+        'profile' => 'Profile',
+        'without_profile' => 'Without profile',
+        'published' => 'Published',
+        'unpublished' => 'Not published',
+        'membership' => 'Membership',
+        'membership_active' => 'Active',
     ],
     
     'values' => [

@@ -23,6 +23,8 @@ return [
         'status' => 'Status',
         'public' => 'Public',
         'verified' => 'Verified',
+        'photos' => 'Photos',
+        'rating' => 'Rating',
         'created_at' => 'Created At',
         'updated_at' => 'Updated At',
     ],
@@ -32,6 +34,9 @@ return [
         'country' => 'Country',
         'gender' => 'Gender',
         'segment' => 'Segment',
+        'waiting' => 'Awaiting approval',
+        'without_photos' => 'Without photos',
+        'vip' => 'With active VIP',
     ],
     'actions' => [
         'approve' => 'Approve',
@@ -39,6 +44,8 @@ return [
         'block_description' => 'The profile is also hidden from the site.',
         'verify' => 'Verify',
         'unverify' => 'Unverify',
+        'publish' => 'Publish',
+        'publish_description' => 'Only approved profiles are published; the rest are skipped.',
     ],
     'status' => [
         'draft' => 'Draft',
