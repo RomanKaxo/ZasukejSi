@@ -38,7 +38,9 @@ class UnknownValueCollector
             }
 
             $candidates = $this->catalogues->isListField($field)
-                ? collect($values[$field] ?? [])
+                // A list field can arrive as an array (services) or as one
+                // string with separators in it (languages).
+                ? $this->asList($values[$field] ?? null)
                 : collect([$values[$field] ?? null]);
 
             $missing = $candidates
@@ -55,6 +57,24 @@ class UnknownValueCollector
         }
 
         return $gaps;
+    }
+
+    /**
+     * A list field's values, however the source happened to deliver them.
+     *
+     * @return Collection<int, mixed>
+     */
+    private function asList(mixed $value): Collection
+    {
+        if (is_array($value)) {
+            return collect($value);
+        }
+
+        if (! is_scalar($value)) {
+            return collect();
+        }
+
+        return collect(preg_split('/\s*[,;\/|]\s*/u', (string) $value) ?: []);
     }
 
     /**

@@ -83,6 +83,8 @@ class UsersTable
                 TextColumn::make('roles.name')
                     ->label(__('filament.attributes.roles'))
                     ->badge()
+                    // Uloženo zůstává `super_admin`, čte se „Super admin".
+                    ->formatStateUsing(fn (?string $state) => \App\Support\RoleLabels::for($state))
                     ->separator(','),
 
                 TextColumn::make('created_at')

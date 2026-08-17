@@ -62,6 +62,8 @@ class UserForm
                 Select::make('roles')
                     ->label(__('filament.attributes.roles'))
                     ->relationship('roles', 'name')
+                    // Popisek se čte, název se ukládá.
+                    ->getOptionLabelFromRecordUsing(fn ($record) => \App\Support\RoleLabels::for($record->name))
                     ->multiple()
                     ->preload()
                     ->searchable(),

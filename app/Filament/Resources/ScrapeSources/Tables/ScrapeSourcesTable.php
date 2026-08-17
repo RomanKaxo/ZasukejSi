@@ -7,7 +7,9 @@ use App\Models\ScrapeRun;
 use App\Models\ScrapeSource;
 use App\Services\Scraping\ScrapeRunner;
 use Filament\Actions\Action;
-use Filament\Notifications\Actions\Action as NotificationAction;
+// Filament 4 dropped `Filament\Notifications\Actions\Action`; notifications
+// take the ordinary action class. Ten import shodil zkušební běh scraperu
+// hláškou „Class ... not found" v okamžiku, kdy chtěl ohlásit výsledek.
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -123,7 +125,7 @@ class ScrapeSourcesTable
                                 ->body("Nalezeno {$run->items_found}, nových {$run->items_new}, změněných {$run->items_updated}, chyb {$run->items_failed}. Průběh běhu #{$run->id} ukáže, co selektory vrátily.")
                                 ->success()
                                 ->actions([
-                                    NotificationAction::make('showRun')
+                                    Action::make('showRun')
                                         ->label('Zobrazit průběh')
                                         ->url(ScrapeRunResource::getUrl('index')),
                                 ])

@@ -60,6 +60,25 @@ class ProfileAttributeOptionSeeder extends Seeder
             ['cs' => 'Evropa', 'en' => 'Europe'],
             ['cs' => 'Celý svět', 'en' => 'Worldwide'],
         ],
+        // Jazyky, které se na profilech objevují nejčastěji. Zbytek doplní
+        // administrátor sám nebo přijde frontou z scraperu.
+        'languages' => [
+            ['cs' => 'Čeština', 'en' => 'Czech'],
+            ['cs' => 'Slovenština', 'en' => 'Slovak'],
+            ['cs' => 'Angličtina', 'en' => 'English'],
+            ['cs' => 'Němčina', 'en' => 'German'],
+            ['cs' => 'Ruština', 'en' => 'Russian'],
+            ['cs' => 'Ukrajinština', 'en' => 'Ukrainian'],
+            ['cs' => 'Polština', 'en' => 'Polish'],
+            ['cs' => 'Maďarština', 'en' => 'Hungarian'],
+            ['cs' => 'Španělština', 'en' => 'Spanish'],
+            ['cs' => 'Italština', 'en' => 'Italian'],
+            ['cs' => 'Francouzština', 'en' => 'French'],
+            ['cs' => 'Rumunština', 'en' => 'Romanian'],
+            ['cs' => 'Bulharština', 'en' => 'Bulgarian'],
+            ['cs' => 'Srbština', 'en' => 'Serbian'],
+            ['cs' => 'Chorvatština', 'en' => 'Croatian'],
+        ],
     ];
 
     public function run(): void

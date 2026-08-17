@@ -95,21 +95,24 @@ class AdminPanelProvider extends PanelProvider
                 \Filament\View\PanelsRenderHook::HEAD_END,
                 fn (): string => <<<'HTML'
                     <style>
-                        .profile-media-grid .fi-fo-file-upload-file-list {
-                            display: grid;
-                            grid-template-columns: repeat(4, minmax(0, 1fr));
-                            gap: 0.75rem;
+                        /* FilePond neskládá mřížku CSS gridem — položky jsou
+                           absolutně pozicované a počet sloupců si dopočítá ze
+                           šířky jedné položky. Předchozí `display: grid` na
+                           seznamu proto nedělal nic a zůstávaly tři na řádek.
+                           Šířka položky je jediná páka, která zabírá. */
+                        .profile-media-grid .filepond--item {
+                            width: calc(20% - 0.5em);
                         }
 
-                        @media (min-width: 1280px) {
-                            .profile-media-grid .fi-fo-file-upload-file-list {
-                                grid-template-columns: repeat(5, minmax(0, 1fr));
+                        @media (max-width: 1279px) {
+                            .profile-media-grid .filepond--item {
+                                width: calc(25% - 0.5em);
                             }
                         }
 
                         @media (max-width: 767px) {
-                            .profile-media-grid .fi-fo-file-upload-file-list {
-                                grid-template-columns: repeat(2, minmax(0, 1fr));
+                            .profile-media-grid .filepond--item {
+                                width: calc(50% - 0.5em);
                             }
                         }
                     </style>

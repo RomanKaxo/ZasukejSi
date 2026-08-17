@@ -33,6 +33,9 @@ class ProfileAttributeOption extends Model
         'hair_length' => 'Délka vlasů',
         'pubic_hair' => 'Ochlupení',
         'travels' => 'Cestování',
+        // Jazyky se dosud psaly volným textem, takže „Angličtina", „anglicky"
+        // a „EN" byly tři různé hodnoty a nešlo podle nich filtrovat.
+        'languages' => 'Jazyky',
     ];
 
     protected $fillable = [
