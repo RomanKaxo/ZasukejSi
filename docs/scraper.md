@@ -36,6 +36,27 @@ Každý běh si zapisuje, co dělal — které stránky výpisu přečetl, kolik
 
 ---
 
+## Import do profilů
+
+Schválená položka se stane profilem. V administraci je to akce u řádku a hromadná akce u výběru; u větší sklizně se hodí konzole, protože stahování fotek čeká prodlevu podle zdroje a u dvou tuctů profilů to trvá čtvrt hodiny.
+
+```bash
+php artisan scrape:import eurogirlsescort-cz --approve
+```
+
+| Přepínač | K čemu |
+|---|---|
+| `--approve` | vezme i čekající položky, ne jen schválené |
+| `--limit=N` | zastaví po N položkách |
+| `--without-images` | přeskočí stahování fotek |
+| `--skip-duplicates` | vynechá položky označené jako možná duplicita |
+
+Duplicita se před každým importem ověří znovu — uložený nález je snímek z okamžiku stažení a profil vzniklý tímtéž během v něm není. Jedna chybná položka nezastaví zbytek; skončí ve stavu `failed` s důvodem.
+
+**Co vznikne, je nepublikované a ve stavu ke schválení.** Import přesouvá řádky do fronty, nedává nic na web.
+
+---
+
 ## Duplicity
 
 Scraper dřív poznal jen opakování sebe sama — tutéž `external_id` z téhož zdroje. Tatáž žena inzerovaná na druhém webu, nebo už existující jako profil u nás, prošla bez povšimnutí a import z ní udělal druhý profil.
@@ -128,7 +149,11 @@ Web s neobvyklým výpisem dostane vlastní adaptér: implementujte `SourceAdapt
 
 Spouštějí se v zadaném pořadí. Bez argumentu jako `"trim"`, s argumentem jako `["regex", "/(\\d+)/"]`.
 
-`trim` · `collapse_whitespace` · `lower` · `upper` · `strip_tags` · `digits` · `int` · `float` · `boolean` · `regex` · `replace` · `prefix` · `suffix` · `absolute_url` · `map` · `first` · `compact` · `unique`
+`trim` · `collapse_whitespace` · `lower` · `upper` · `strip_tags` · `digits` · `int` · `float` · `boolean` · `regex` · `replace` · `prefix` · `suffix` · `absolute_url` · `map` · `first` · `compact` · `unique` · `strip_invisible` · `reject`
+
+**`strip_invisible`** odstraní mezery nulové šířky, spojovníky a BOM. Některé weby je sypou do textů proti kopírování; přežijí `trim` a skončí v profilu jako neviditelný chuchvalec na konci popisu.
+
+**`reject`** zahodí celé položky odpovídající vzoru — `["reject", "/^\\d+\\s*Hodiny$/ui"]`. Běží nad seznamem dřív než transformace po prvcích, protože maže položky místo aby je přepisovala. Hodí se, když jeden selektor sbírá víc tabulek najednou: na eurogirlsescort.cz sdílí tabulka služeb značkování s otevírací dobou a ceníkem, takže mezi službami skončí „Úterý" a „12 Hodiny".
 
 **Časté zaseknutí:** selektor jako `table tr` vrátí desítky řádků a `regex` proběhne na každém, takže většina vyjde prázdná. `compact` je zahodí, teprve pak má `first` smysl:
 
