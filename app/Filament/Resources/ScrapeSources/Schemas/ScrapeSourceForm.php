@@ -94,7 +94,9 @@ class ScrapeSourceForm
                         ->helperText(
                             'crawl_delay (s), timeout (s), max_pages, listing_path, pagination_param, '
                             . 'detail_link_selector, detail_url_pattern, external_id_pattern, '
-                            . 'image_selector, image_attribute, image_prefer_pattern, image_limit, respect_robots'
+                            . 'image_selector, image_attribute, image_prefer_pattern, image_limit, respect_robots, '
+                            . 'user_agent, headers. — Když web začne vracet 403, mění se user_agent nebo se přidá '
+                            . 'headers jako JSON, třeba {"Referer":"https://www.example.com/"}.'
                         )
                         ->columnSpanFull(),
                 ]),

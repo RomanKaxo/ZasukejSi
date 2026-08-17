@@ -87,6 +87,46 @@ class ScrapeSourcesTable
                     ->placeholder('nenačten'),
             ])
             ->recordActions([
+                // Jestli nás web vůbec pustí. Bez tohohle se 403 dalo zjistit
+                // jen spuštěním celého běhu, a odpověď „selhalo" nerozlišila
+                // blokaci od špatného selektoru. Testuje se ze serveru, kde
+                // na tom záleží — z vývojářského stroje ta samá adresa může
+                // odpovídat úplně jinak.
+                Action::make('testConnection')
+                    ->label('Otestovat spojení')
+                    ->icon('heroicon-o-signal')
+                    ->color('gray')
+                    ->form([
+                        TextInput::make('url')
+                            ->label('Adresa k otestování')
+                            ->url()
+                            ->helperText('Prázdné = domovská adresa zdroje.'),
+                    ])
+                    ->action(function (ScrapeSource $record, array $data) {
+                        $url = $data['url'] ?: $record->base_url;
+
+                        try {
+                            $body = app(\App\Services\Scraping\HttpFetcher::class)->get($record, $url);
+
+                            Notification::make()
+                                ->title('Web odpověděl')
+                                ->body(sprintf(
+                                    'Staženo %s znaků. Odesláno jako „%s".',
+                                    number_format(strlen($body), 0, ',', ' '),
+                                    $record->setting('user_agent'),
+                                ))
+                                ->success()
+                                ->send();
+                        } catch (Throwable $e) {
+                            Notification::make()
+                                ->title('Spojení selhalo')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->persistent()
+                                ->send();
+                        }
+                    }),
+
                 // A one-off run from the admin, deliberately capped: this is
                 // for checking the selectors, not for harvesting a whole site.
                 Action::make('testRun')

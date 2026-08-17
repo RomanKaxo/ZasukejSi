@@ -9,6 +9,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -98,6 +99,32 @@ class ContactMessagesTable
 
                         Notification::make()
                             ->title(__('contact.admin.marked_as_read'))
+                            ->success()
+                            ->send();
+                    }),
+
+                // Poznámka šla napsat jen přes editaci celé zprávy, což je
+                // formulář o pěti sekcích kvůli jednomu poli. Tohle je to
+                // pole samo.
+                Action::make('note')
+                    ->label(__('contact.admin.admin_note'))
+                    ->icon('heroicon-o-pencil-square')
+                    ->color('gray')
+                    ->modalHeading(__('contact.admin.admin_note'))
+                    ->modalDescription(__('contact.admin.admin_note_helper'))
+                    ->modalSubmitActionLabel(__('contact.admin.save_note'))
+                    ->fillForm(fn (ContactMessage $record) => ['admin_note' => $record->admin_note])
+                    ->schema([
+                        Textarea::make('admin_note')
+                            ->label(__('contact.admin.admin_note'))
+                            ->rows(5)
+                            ->maxLength(2000),
+                    ])
+                    ->action(function (ContactMessage $record, array $data) {
+                        $record->update(['admin_note' => $data['admin_note'] ?? null]);
+
+                        Notification::make()
+                            ->title(__('contact.admin.note_saved'))
                             ->success()
                             ->send();
                     }),

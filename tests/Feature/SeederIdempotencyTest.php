@@ -52,7 +52,9 @@ class SeederIdempotencyTest extends TestCase
         $this->seed(RoleSeeder::class);
 
         $this->assertSame(count(RoleSeeder::ROLES), Role::count());
-        $this->assertSame(count(RoleSeeder::PERMISSIONS), Permission::count());
+        // Seznam oprávnění se čte z politik, ne z konstanty — dvě sady, které
+        // se musí shodovat, byly původní příčinou toho, že se rozešly.
+        $this->assertSame(count(RoleSeeder::permissions()), Permission::count());
     }
 
     public function test_services_are_matched_on_the_translated_name(): void

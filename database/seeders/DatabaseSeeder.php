@@ -370,6 +370,10 @@ class DatabaseSeeder extends Seeder
         }
 
         $this->call(ShowcaseProfilesSeeder::class);
+
+        // Bez návštěvnosti hlásí sekce „Zobrazení profilů" u každého profilu
+        // „bez zobrazení" a nedá se na ní nic ověřit.
+        $this->call(ProfileViewDemoSeeder::class);
         $this->call(DevProfileSeeder::class);
 
         $this->call(ReportSeeder::class);

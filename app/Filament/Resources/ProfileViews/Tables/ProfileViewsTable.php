@@ -77,12 +77,13 @@ class ProfileViewsTable
                 ViewColumn::make('trend')
                     ->label(fn () => ProfileViewSeries::isDaily(self::period()) ? 'Průběh po dnech' : 'Průběh po měsících')
                     ->view('filament.columns.view-sparkline')
-                    ->state(function (Profile $record, $livewire) {
+                    ->state(function (Profile $record) {
                         $period = self::period();
-                        $ids = collect($livewire->getTableRecords() ?? [])->pluck('id')->all();
 
-                        // Jeden dotaz na celou stránku, ne na každý řádek.
-                        $buckets = app(ProfileViewSeries::class)->buckets($ids ?: [$record->id], $period);
+                        // Prázdný seznam = všechny profily jedním dotazem.
+                        // Seznam řádků stránky tu k dispozici není, a dotaz
+                        // na každý řádek zvlášť by byl dvacet pět dotazů.
+                        $buckets = app(ProfileViewSeries::class)->buckets([], $period);
 
                         return ProfileViewSeries::seriesFor($buckets, $record->id, $period);
                     }),

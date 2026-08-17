@@ -25,6 +25,10 @@ return [
         'leave' => 'Выйти',
     ],
 
+    'plans' => [
+        'sign_in_to_buy' => 'Войдите, чтобы купить',
+    ],
+
     'membership' => [
         'period_days' => '{1} :count день|[2,4] :count дня|[5,*] :count дней',
         'period_months' => '{1} :count месяц|[2,4] :count месяца|[5,*] :count месяцев',

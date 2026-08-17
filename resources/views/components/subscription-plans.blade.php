@@ -23,16 +23,17 @@
         ],
     ];
 
-    // A signed-in visitor is only shown what they can actually buy. Both sets
-    // used to be listed to everyone, so half the page was plans the reader
-    // could only be told "this one is for men" about.
+    // A signed-in visitor is only shown what they can actually buy — their
+    // gender decides, administrator or not. Both sets used to be listed to
+    // everyone, so half the page was plans the reader could only be told
+    // "this one is for men" about.
     //
-    // A guest still sees both — the page is the general one the footer links
-    // to, and nobody knows yet which side they are on. Admins see both too,
-    // because they are checking the page, not shopping.
+    // A guest sees both: the page is the general one the footer links to and
+    // nobody knows yet which side they are on. What a guest gets instead of a
+    // buy button is an invitation to sign in.
     $planUser = auth()->user();
 
-    if ($planUser && ! $planUser->hasRole('admin')) {
+    if ($planUser) {
         $visibleAudience = $planUser->isMale() ? 'member' : 'profile';
         $groups = array_values(array_filter(
             $groups,
@@ -118,10 +119,13 @@
                                     {{ __('front.plans.choose') }}
                                 </a>
                             @elseif (! $planUser)
-                                <button type="button" x-data @click="$dispatch('show-register-modal')"
+                                {{-- Přihlášení, ne registrace: kdo účet má, tomu
+                                     by okno registrace bylo k ničemu, a odsud
+                                     se na registraci stejně proklikne. --}}
+                                <button type="button" x-data @click="$dispatch('show-login-modal')"
                                         class="flex h-[45px] w-full items-center justify-center rounded-lg font-semibold text-white"
                                         style="background:#DD3888;">
-                                    {{ __('front.plans.register_to_buy') }}
+                                    {{ __('front.plans.sign_in_to_buy') }}
                                 </button>
                             @else
                                 {{-- Signed in, but this plan is for the other

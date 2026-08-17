@@ -34,6 +34,7 @@ return [
         'for_men_subtitle' => 'Odemkněte hodnocení dívek a další funkce.',
         'choose' => 'Vybrat',
         'register_to_buy' => 'Registrovat se',
+        'sign_in_to_buy' => 'Pro zakoupení se přihlaste',
         'men_only' => 'Toto členství je určeno pro muže.',
         'women_only' => 'Toto předplatné je určeno pro ženy.',
     ],

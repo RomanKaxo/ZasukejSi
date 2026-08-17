@@ -28,6 +28,7 @@ return [
         'for_men_subtitle' => 'Unlock profile ratings and more.',
         'choose' => 'Choose',
         'register_to_buy' => 'Sign up',
+        'sign_in_to_buy' => 'Sign in to buy',
         'men_only' => 'This membership is for men.',
         'women_only' => 'This subscription is for women.',
     ],

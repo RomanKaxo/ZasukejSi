@@ -81,14 +81,15 @@ class ProfileViewSeries
     public function buckets(array $profileIds, string $period): array
     {
         $period = self::normalisePeriod($period);
-        $key = $period . ':' . implode(',', $profileIds);
+
+        // Prázdný seznam znamená „všechny profily". Tabulka nemá po ruce
+        // seznam řádků stránky ve chvíli, kdy se počítá stav sloupce, a
+        // jeden dotaz nad všemi profily je pořád jeden dotaz — na rozdíl od
+        // dotazu na každý řádek.
+        $key = $period . ':' . ($profileIds === [] ? 'vse' : implode(',', $profileIds));
 
         if (isset($this->memo[$key])) {
             return $this->memo[$key];
-        }
-
-        if ($profileIds === []) {
-            return $this->memo[$key] = [];
         }
 
         $daily = self::isDaily($period);
@@ -98,7 +99,7 @@ class ProfileViewSeries
         $chartSince = $daily ? now()->subMonth()->startOfDay() : now()->subYear()->startOfMonth();
 
         $rows = ProfileView::query()
-            ->whereIn('profile_id', $profileIds)
+            ->when($profileIds !== [], fn ($q) => $q->whereIn('profile_id', $profileIds))
             ->where('viewed_date', '>=', $chartSince->toDateString())
             ->selectRaw('profile_id, viewed_date, COUNT(*) as total')
             ->groupBy('profile_id', 'viewed_date')

@@ -13,20 +13,28 @@
         }
 
         /* Odrolovaná lišta stojí nad obsahem a bez podkladu se s ním slévala.
-           Lehce zašedlé sklo, ne plná barva — pod ním má být obsah znát. */
-        #navbar.is-scrolled {
-            background: rgba(245, 243, 246, 0.82);
+           Lehce zašedlé sklo, ne plná barva — pod ním má být obsah znát.
+
+           Podklad nese vnitřní obal, ne celá lišta: končí tam, kde končí
+           obsah, ne u okraje okna. */
+        #navbar.is-scrolled .navbar-shell {
+            background: rgba(245, 243, 246, 0.86);
             backdrop-filter: saturate(140%) blur(10px);
             -webkit-backdrop-filter: saturate(140%) blur(10px);
-            box-shadow: 0 1px 0 0 rgba(92, 45, 98, 0.08), 0 6px 20px 0 rgba(92, 45, 98, 0.06);
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px;
+            box-shadow: 0 6px 20px 0 rgba(92, 45, 98, 0.07);
         }
 
-        /* Na mobilu je lišta bílá vždy, takže by přechod jen zašpinil barvu. */
+        /* Na mobilu je lišta bílá přes celou šířku vždy, takže by zaoblení
+           a průhlednost jen zašpinily barvu. */
         @media (max-width: 1023px) {
-            #navbar.is-scrolled {
+            #navbar.is-scrolled .navbar-shell {
                 background: #FFFFFF;
                 backdrop-filter: none;
                 -webkit-backdrop-filter: none;
+                border-radius: 0;
+                box-shadow: 0 1px 6px 0 rgba(92, 45, 98, 0.08);
             }
         }
 

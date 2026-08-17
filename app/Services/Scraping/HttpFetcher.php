@@ -55,20 +55,63 @@ class HttpFetcher
 
         $this->waitForTurn($source, $url);
 
-        $response = Http::withHeaders([
-            'User-Agent' => (string) $source->setting('user_agent'),
-            'Accept' => 'text/html,application/xhtml+xml',
-            'Accept-Language' => 'cs,en;q=0.8',
-        ])
+        $response = Http::withHeaders($this->headers($source))
             ->timeout((int) $source->setting('timeout'))
             ->retry(2, 1500, throw: false)
             ->get($url);
 
         if (! $response->successful()) {
-            throw new RuntimeException("HTTP {$response->status()} pro {$url}");
+            throw new RuntimeException($this->explain($response->status(), $url));
         }
 
         return $response->body();
+    }
+
+    /**
+     * Headers sent with every request.
+     *
+     * The extra `headers` setting exists because a site that starts refusing
+     * us is a configuration problem, not a code one — a Referer or a different
+     * User-Agent has to be settable without a deploy.
+     *
+     * @return array<string, string>
+     */
+    public function headers(ScrapeSource $source): array
+    {
+        $extra = $source->setting('headers');
+
+        // Nastavení zdroje je mapa řetězců, takže hlavičky se zapisují jako
+        // JSON: {"Referer":"https://…"}. Nesmysl v tom poli nesmí shodit běh.
+        if (is_string($extra) && trim($extra) !== '') {
+            $decoded = json_decode($extra, true);
+            $extra = is_array($decoded) ? $decoded : [];
+        }
+
+        return array_merge([
+            'User-Agent' => (string) $source->setting('user_agent'),
+            'Accept' => 'text/html,application/xhtml+xml',
+            'Accept-Language' => 'cs,en;q=0.8',
+        ], is_array($extra) ? array_map('strval', $extra) : []);
+    }
+
+    /**
+     * Say what a failing status actually means.
+     *
+     * „HTTP 403" alone sent people looking for a bug in the selectors. A 403
+     * on a page that opens fine in a browser is the site refusing this server,
+     * and what to do about it is a different job entirely.
+     */
+    private function explain(int $status, string $url): string
+    {
+        $detail = match (true) {
+            $status === 403 => 'Web nás odmítl. Stránka bývá dostupná z prohlížeče i odjinud, takže jde nejspíš o blokaci této IP nebo našeho User-Agentu — zkuste u zdroje nastavit jiný User-Agent, přidat hlavičku Referer, nebo stahovat z jiné adresy.',
+            $status === 429 => 'Web nás odmítl kvůli rychlosti. Zvyšte u zdroje prodlevu mezi dotazy.',
+            $status === 404 => 'Stránka na téhle adrese není. Zkontrolujte odkaz na výpis.',
+            $status >= 500 => 'Chyba na straně webu, ne u nás. Zkuste to později.',
+            default => null,
+        };
+
+        return "HTTP {$status} pro {$url}" . ($detail ? ' — ' . $detail : '');
     }
 
     /** Fetch binary content (images), under the same rate limit. */
@@ -76,13 +119,13 @@ class HttpFetcher
     {
         $this->waitForTurn($source, $url);
 
-        $response = Http::withHeaders(['User-Agent' => (string) $source->setting('user_agent')])
+        $response = Http::withHeaders($this->headers($source))
             ->timeout((int) $source->setting('timeout'))
             ->retry(2, 1500, throw: false)
             ->get($url);
 
         if (! $response->successful()) {
-            throw new RuntimeException("HTTP {$response->status()} pro obrázek {$url}");
+            throw new RuntimeException('Obrázek: ' . $this->explain($response->status(), $url));
         }
 
         return $response->body();
