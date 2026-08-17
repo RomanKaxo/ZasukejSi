@@ -33,6 +33,8 @@ class Transformers
             'compact' => 'Zahodit prázdné hodnoty',
             'unique' => 'Odstranit duplicity',
             'boolean' => 'Ano/ne',
+            'strip_invisible' => 'Odstranit neviditelné znaky',
+            'reject' => 'Vyřadit hodnoty odpovídající vzoru',
         ];
     }
 
@@ -73,6 +75,27 @@ class Transformers
                 : $value;
         }
 
+        // Drops whole entries rather than rewriting them, so it has to run on
+        // the list before the per-value map below.
+        //
+        // The services table on eurogirlsescort.cz shares its markup with the
+        // opening-hours and price tables, so one selector returns services,
+        // weekday names and "12 Hodiny" side by side.
+        if ($name === 'reject') {
+            $pattern = (string) $argument;
+
+            if ($pattern === '') {
+                return $value;
+            }
+
+            $matches = fn ($item) => is_scalar($item)
+                && @preg_match($pattern, (string) $item) === 1;
+
+            return is_array($value)
+                ? array_values(array_filter($value, fn ($item) => ! $matches($item)))
+                : ($matches($value) ? null : $value);
+        }
+
         if (is_array($value)) {
             return array_map(fn ($item) => $this->applyOne($item, $name, $argument, $context), $value);
         }
@@ -87,6 +110,15 @@ class Transformers
             'lower' => Str::lower((string) $value),
             'upper' => Str::upper((string) $value),
             'strip_tags' => trim(strip_tags((string) $value)),
+            // Zero-width space, ZWNJ, ZWJ, word joiner, BOM and soft hyphen.
+            // eurogirlsescort.cz sprinkles runs of these through its profile
+            // texts, so a scraped "about" ends in a tail of invisible junk
+            // that survives trimming and lands in the profile.
+            'strip_invisible' => trim(preg_replace(
+                '/[\x{200B}\x{200C}\x{200D}\x{2060}\x{FEFF}\x{00AD}]+/u',
+                '',
+                (string) $value
+            ) ?? ''),
             'digits' => preg_replace('/\D+/', '', (string) $value),
             'int' => $this->toInt($value),
             'float' => $this->toFloat($value),
