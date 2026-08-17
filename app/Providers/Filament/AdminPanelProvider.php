@@ -91,6 +91,13 @@ class AdminPanelProvider extends PanelProvider
             // Photo thumbnails four to five across instead of stacked one per
             // row, which made the profile form scroll for a screen and a half.
             // Injected here because the panel has no compiled theme of its own.
+            // Legenda k sekci. Jedna registrace místo úpravy sedmadvaceti
+            // tříd stránek — obsah se bere podle adresy, takže nová sekce
+            // dostane legendu přidáním záznamu do App\Support\AdminGuides.
+            ->renderHook(
+                \Filament\View\PanelsRenderHook::CONTENT_START,
+                fn (): string => view('filament.section-guide')->render(),
+            )
             ->renderHook(
                 \Filament\View\PanelsRenderHook::HEAD_END,
                 fn (): string => <<<'HTML'
