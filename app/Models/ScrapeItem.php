@@ -39,6 +39,7 @@ class ScrapeItem extends Model
         'duplicate_item_id',
         'duplicate_reason',
         'duplicate_checked_at',
+        'unknown_values_at',
     ];
 
     protected function casts(): array
@@ -49,7 +50,31 @@ class ScrapeItem extends Model
             'images' => 'array',
             'imported_at' => 'datetime',
             'duplicate_checked_at' => 'datetime',
+            'unknown_values_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Whether this item mentions something our catalogue does not know.
+     *
+     * Such an item is approved only through a second confirmation; the review
+     * screen offers "fill in the missing values" first, because approving it
+     * as it stands means importing a profile with those values thrown away.
+     */
+    public function hasUnknownValues(): bool
+    {
+        return $this->unknown_values_at !== null;
+    }
+
+    /** Same flag, read after the gap has been filled. */
+    public function wasBlockedByUnknownValue(): bool
+    {
+        return $this->unknown_values_at !== null;
+    }
+
+    public function scopeWithUnknownValues($query)
+    {
+        return $query->whereNotNull('unknown_values_at');
     }
 
     /**

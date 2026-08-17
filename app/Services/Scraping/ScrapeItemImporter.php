@@ -115,6 +115,28 @@ class ScrapeItemImporter
     }
 
     /**
+     * Re-attach an imported profile's services against the current catalogue.
+     *
+     * A profile imported while the catalogue knew ten services kept ten, even
+     * after the missing forty-eight were added — the names were dropped at
+     * import time and nothing went back for them.
+     *
+     * @return int How many services the profile has afterwards.
+     */
+    public function resyncServices(ScrapeItem $item): int
+    {
+        $profile = $item->profile;
+
+        if (! $profile) {
+            return 0;
+        }
+
+        $this->attachServices($profile, $item->value('services'));
+
+        return $profile->services()->count();
+    }
+
+    /**
      * Link scraped service names to the services we already offer.
      *
      * Only names that already exist are attached — a scraped list must not be
