@@ -65,7 +65,7 @@
 @endphp
 
 <div class="{{ $isReported ? 'h-[510px] reported-profile-card' : '' }} {{ $showRemoveButton ? '' : 'overflow-hidden' }} bg-white rounded-lg transition-all duration-300 cursor-pointer group relative z-10 home-profile-card"
-     style="width: 210px; {{ !$isReported ? 'height: ' . ($simpleMode ? '340px' : $cardHeight) . ';' : '' }} {{ $isReported ? 'border-top-left-radius:15px;border-bottom-left-radius:15px;border-top-right-radius:0;border-bottom-right-radius:0;' : 'border-radius: 15px;' }} box-shadow: 0 15px 15px 0 rgba(92, 45, 98, 0.1);"
+     style="width: 214px; {{ !$isReported ? 'height: ' . ($simpleMode ? '340px' : $cardHeight) . ';' : '' }} {{ $isReported ? 'border-top-left-radius:15px;border-bottom-left-radius:15px;border-top-right-radius:0;border-bottom-right-radius:0;' : 'border-radius: 15px;' }} box-shadow: 0 15px 15px 0 rgba(92, 45, 98, 0.1);"
      x-cloak x-data="{ removed: false, removeError: false, showBtn: false, currentIndex: 0, imageUrls: [] }" data-image-urls='@json($imageUrls)' x-init="imageUrls = JSON.parse($el.getAttribute('data-image-urls') || '[]')" x-show="!removed" @mouseenter="showBtn = true" @mouseleave="showBtn = false">
     @if($showRemoveButton)
     <!-- Remove Button - Hidden by default, shown on hover -->
@@ -108,7 +108,7 @@
     @endif
 
     <!-- Profile Image -->
-    <div class="relative overflow-hidden home-profile-card-media" style="width: 210px; height: {{ $imageHeight }}; border-radius: 15px;">
+    <div class="relative overflow-hidden home-profile-card-media" style="width: 214px; height: {{ $imageHeight }}; border-radius: 15px;">
 
         @if((!$shouldBlur) && ($isVerified || $isVip || $isOnline || $extraSegments->isNotEmpty()) && !$simpleMode)
         <div class="absolute {{ $isReported ? 'top-1' : 'top-3' }} left-3 z-20 home-profile-card-badge-stack">
@@ -163,7 +163,7 @@
             @if($firstImageUrl)
                 @foreach($imageUrls as $i => $url)
                     <img src="{{ $url }}" alt="{{ $profileName }}"
-                        class="w-[210px] h-[265px] object-cover home-profile-card-image absolute inset-0 transition-all duration-500 ease-in-out {{ $i === 0 ? 'opacity-100 scale-100' : 'opacity-0 scale-105' }}"
+                        class="w-[214px] h-[265px] object-cover home-profile-card-image absolute inset-0 transition-all duration-500 ease-in-out {{ $i === 0 ? 'opacity-100 scale-100' : 'opacity-0 scale-105' }}"
                         x-bind:class="{ 'opacity-100 scale-100': currentIndex === {{ $i }}, 'opacity-0 scale-105': currentIndex !== {{ $i }} }" />
                 @endforeach
             @else

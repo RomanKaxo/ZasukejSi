@@ -10,6 +10,16 @@ return [
         'not_specified' => 'Not specified',
     ],
 
+    'age_gate' => [
+        'numeral' => '18',
+        'heading' => 'Welcome',
+        'brand' => 'ZasukejSi.cz',
+        'body' => ', including all of its web pages, links and images, displays sexually explicit material. Only consenting adults are authorised beyond this page. If you are a minor (under 18, or under 21 where 18 is not the legal age of majority), if sexually explicit material offends you, or if viewing such material is illegal in your community, you MUST leave this site by clicking the "LEAVE" button below. By clicking "ENTER" you agree to the statement at the bottom of this page. ZasukejSi.cz operates a zero-tolerance policy towards child pornography and towards minors advertising on or using our site. I agree to report any illegal service or activity that breaches the terms of use. I also agree to report any suspicion of the abuse of minors and/or human trafficking to the appropriate authorities.',
+        'agreement' => 'You have read this agreement, understood it, and agree to be bound by it.',
+        'enter' => 'Enter',
+        'leave' => 'Leave',
+    ],
+
     // Premium membership for members — what unlocks profile ratings.
     'plans' => [
         'for_women' => 'Subscriptions for women',
@@ -79,6 +89,7 @@ return [
         'login' => 'Login',
         'login_mobile' => 'Log-in',
         'logout_mobile' => 'Log-out',
+        'my_profile' => 'My profile',
         'accountdashboard' => 'Account Dashboard',
         'logout' => 'Logout',
         'czech' => 'Czech',
@@ -130,7 +141,7 @@ return [
             'services' => 'My Services & Prices',
             'subscription' => 'Subscription',
             'statistics' => 'Statistics',
-            'reviews' => 'Reviews - coming soon',
+            'reviews' => 'Reviews',
             'vip_title' => 'Earn More',
             'vip_description' => 'Upgrade to VIP and get more visibility and features.',
             'vip_button' => 'Activate VIP',

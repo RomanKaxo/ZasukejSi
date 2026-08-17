@@ -51,6 +51,23 @@ class Setting extends Model
         return is_numeric($value) ? (int) $value : $default;
     }
 
+    /**
+     * A switch stored as a string.
+     *
+     * Values arrive from a Filament toggle as "1"/"0", but a hand-edited row
+     * can just as easily say "true" or "on", so all of those count.
+     */
+    public static function getBool(string $key, bool $default): bool
+    {
+        $value = self::get($key);
+
+        if ($value === null || $value === '') {
+            return $default;
+        }
+
+        return in_array(strtolower((string) $value), ['1', 'true', 'on', 'yes'], true);
+    }
+
     public static function set(string $key, mixed $value): void
     {
         self::updateOrCreate(['key' => $key], ['value' => (string) $value]);

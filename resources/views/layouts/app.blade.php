@@ -45,6 +45,9 @@
         <livewire:report-profile-modal />
     </div>
 
+    {{-- Věková brána stojí nad vším ostatním a vypíná se v administraci. --}}
+    <x-age-gate />
+
     <!-- Additional Scripts -->
     @livewireScripts
 

@@ -9,7 +9,7 @@
         }
 
         .navbar-shell {
-            width: 1136px;
+            width: 1140px;
             max-width: calc(100% - 32px);
             height: 80px;
             margin: 0 auto;
@@ -363,21 +363,31 @@
                         // logic in routes/web.php.
                         $isMobileMemberAccount = auth()->user()->isMale() && !auth()->user()->hasRole('admin');
 
+                        // Pořadí podle rámce `menu logged-in muž`: Můj profil,
+                        // Moje zprávy, Moje favoritky, Základní nastavení.
+                        //
+                        // Návrh za nimi končí. Zbylé sekce účtu ale nechávám
+                        // pod nimi, protože na mobilu k nim jiná cesta nevede —
+                        // doslovné převzetí čtyř položek by Archiv dívek,
+                        // Dívky měsíce a Nahlášené dívky odřízlo úplně.
                         $mobileTabs = $isMobileMemberAccount ? [
-                            ['route' => 'account.member.dashboard', 'label' => __('front.account.member.settings'), 'icon' => 'Settings'],
+                            ['route' => 'account.member.ratings', 'label' => __('front.nav.my_profile'), 'icon' => 'User'],
                             ['route' => 'messages.index', 'label' => __('front.account.member.messages'), 'icon' => 'mail', 'badge' => $mobileMailBadge],
-                            ['route' => 'notifications.archived', 'label' => __('front.nav.notifications'), 'icon' => 'bell', 'badge' => $mobileNotificationBadge],
                             ['route' => 'account.member.favorites', 'label' => __('front.account.member.favorites'), 'icon' => 'heart'],
-                            ['route' => 'account.member.ratings', 'label' => __('front.account.member.ratings'), 'icon' => 'star'],
+                            ['route' => 'account.member.dashboard', 'label' => __('front.account.member.settings'), 'icon' => 'Settings'],
+                            // Za návrhem:
+                            ['route' => 'notifications.archived', 'label' => __('front.nav.notifications'), 'icon' => 'bell', 'badge' => $mobileNotificationBadge],
                             ['route' => 'account.member.girls-of-month', 'label' => __('front.account.member.girls_of_month'), 'icon' => 'CalendarDays'],
                             ['route' => 'account.member.archive', 'label' => __('front.account.member.archive'), 'icon' => 'History'],
                             ['route' => 'account.member.reported', 'label' => __('front.account.member.reported'), 'icon' => 'OctagonAlert'],
                         ] : [
-                            ['route' => 'account.dashboard', 'label' => __('front.account.sidebar.basic'), 'icon' => 'User'],
+                            ['route' => 'account.dashboard', 'label' => __('front.nav.my_profile'), 'icon' => 'User'],
+                            ['route' => 'messages.index', 'label' => __('front.account.member.messages'), 'icon' => 'mail', 'badge' => $mobileMailBadge],
+                            ['route' => 'account.edit', 'label' => __('front.account.member.settings'), 'icon' => 'Settings'],
+                            // Za návrhem:
                             ['route' => 'account.photos', 'label' => __('front.account.sidebar.photos'), 'icon' => 'Images'],
                             ['route' => 'account.services', 'label' => __('front.account.sidebar.services'), 'icon' => 'List'],
                             ['route' => 'account.statistics', 'label' => __('front.account.sidebar.statistics'), 'icon' => 'BarChart4'],
-                            ['route' => 'messages.index', 'label' => __('front.account.member.messages'), 'icon' => 'mail', 'badge' => $mobileMailBadge],
                             ['route' => 'notifications.archived', 'label' => __('front.nav.notifications'), 'icon' => 'bell', 'badge' => $mobileNotificationBadge],
                         ];
                     @endphp
