@@ -28,9 +28,10 @@
     $isVerified = $isModel ? $profile->isVerified() : ($profile->is_verified ?? false);
     $isVip = $isModel ? $profile->isVip() : ($profile->is_vip ?? false);
 
-    // Only VIP profiles are held back on the detail page's sliders. This used
-    // to blur the whole variant, so every girl in "top rated" was obscured.
-    $shouldBlur = $variant === 'vip-detail' && $isVip;
+    // Who the detail page's sliders are held back from is a setting, not a
+    // decision baked in here — the design and the brief disagreed about it.
+    // Nastavení systému → „Nejlépe hodnocené dívky".
+    $shouldBlur = $variant === 'vip-detail' && \App\Support\TopRatedLock::shouldBlur($isVip);
 
     // The blur is a teaser, not a barrier: the card still leads to the profile,
     // where the visitor decides what to do next. Tying the URL to the blur left
@@ -110,7 +111,11 @@
     <!-- Profile Image -->
     <div class="relative overflow-hidden home-profile-card-media" style="width: 214px; height: {{ $imageHeight }}; border-radius: 15px;">
 
-        @if((!$shouldBlur) && ($isVerified || $isVip || $isOnline || $extraSegments->isNotEmpty()) && !$simpleMode)
+        {{-- Odznaky zůstávají ostré i přes rozostřenou fotku, jak je v návrhu:
+             rozostřuje se fotka a jméno, ne to, čím se profil vyznačuje.
+             Dřív se skrývaly spolu s fotkou, což při přepnutí na Premium bránu
+             znamenalo karty úplně bez odznaků. --}}
+        @if(($isVerified || $isVip || $isOnline || $extraSegments->isNotEmpty()) && !$simpleMode)
         <div class="absolute {{ $isReported ? 'top-1' : 'top-3' }} left-3 z-20 home-profile-card-badge-stack">
             <!-- Verified Badge -->
             @if($isVerified && !$isReported)

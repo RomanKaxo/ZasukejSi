@@ -7,8 +7,10 @@ use App\Models\Page as ContentPage;
 use App\Models\Setting;
 use App\Support\FooterButton;
 use App\Support\RatingScale;
+use App\Support\TopRatedLock;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -67,6 +69,7 @@ class ManageSettings extends Page
             'footer_auth_page_id' => Setting::get(FooterButton::KEY_AUTH_PAGE)
                 ?? ContentPage::published()->where("slug", FooterButton::DEFAULT_AUTH_SLUG)->value("id"),
             'footer_auth_label' => Setting::get(FooterButton::KEY_AUTH_LABEL),
+            'top_rated_lock_mode' => TopRatedLock::mode(),
         ]);
     }
 
@@ -129,6 +132,17 @@ class ManageSettings extends Page
                     ])
                     ->columns(2),
 
+                Section::make('Nejlépe hodnocené dívky')
+                    ->description('Slidery v detailu profilu. Návrh rozostřuje všechny karty a bránou je Premium účet diváka; dosavadní implementace skrývá jen VIP profily. Ostré zůstávají v obou případech odznak, hodnocení, výška, věk, lokalita i tlačítko Detail — rozostřuje se fotka a jméno.')
+                    ->schema([
+                        Radio::make('top_rated_lock_mode')
+                            ->label('Kdo uvidí karty odkryté')
+                            ->options(TopRatedLock::options())
+                            ->required()
+                            // Inzerentky a administrátoři nejsou omezení nikdy.
+                            ->helperText('Dívky a administrátoři vidí karty odkryté vždy, bez ohledu na tuto volbu.'),
+                    ]),
+
                 Section::make('Online stav')
                     ->description('Skutečná aktivita má vždy přednost. Tato hodnota řídí jen podíl ostatních profilů, které se zobrazí jako online. 0 simulaci zcela vypne.')
                     ->schema([
@@ -157,6 +171,12 @@ class ManageSettings extends Page
         Setting::set(FooterButton::KEY_GUEST_LABEL, $data['footer_guest_label'] ?? '');
         Setting::set(FooterButton::KEY_AUTH_PAGE, $data['footer_auth_page_id'] ?? '');
         Setting::set(FooterButton::KEY_AUTH_LABEL, $data['footer_auth_label'] ?? '');
+
+        // Unknown value falls back to the default rather than being stored.
+        $lockMode = (string) ($data['top_rated_lock_mode'] ?? TopRatedLock::DEFAULT);
+        Setting::set(TopRatedLock::KEY, array_key_exists($lockMode, TopRatedLock::options())
+            ? $lockMode
+            : TopRatedLock::DEFAULT);
 
         Notification::make()
             ->title('Nastavení uloženo')
