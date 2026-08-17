@@ -41,6 +41,12 @@ class SubscriptionCheckoutController extends \Illuminate\Routing\Controller
 
         abort_unless($profile, 403, __('front.subscription.no_profile'));
 
+        // No gateway: finish the order without taking money, so the flow can be
+        // walked end to end. Same rule as the membership checkout.
+        if (\App\Support\OfflineCheckout::shouldHandle()) {
+            return $this->completeWithoutPayment($profile, $subscriptionType);
+        }
+
         // Same guard as the membership checkout: missing keys are a deployment
         // problem and must not reach the buyer as a 500.
         $stripe = \App\Services\Payments\StripeGateway::client();
@@ -208,5 +214,33 @@ class SubscriptionCheckoutController extends \Illuminate\Routing\Controller
                 'currency' => $session->currency ?? null,
             ],
         ]);
+    }
+
+    /**
+     * Grant the subscription without a payment, then report it as such.
+     *
+     * Only reached when no gateway is configured — see App\Support\
+     * OfflineCheckout for why that is allowed and how it stays visible.
+     */
+    private function completeWithoutPayment($profile, SubscriptionType $subscriptionType)
+    {
+        Subscription::create([
+            'profile_id' => $profile->id,
+            'subscription_type_id' => $subscriptionType->id,
+            'starts_at' => now(),
+            'ends_at' => now()->addDays($subscriptionType->duration_days),
+            'status' => Subscription::STATUS_ACTIVE,
+            'auto_renew' => false,
+            'metadata' => \App\Support\OfflineCheckout::metadata(),
+        ]);
+
+        \Illuminate\Support\Facades\Log::info('Subscription granted without payment (no gateway configured)', [
+            'profile_id' => $profile->id,
+            'subscription_type_id' => $subscriptionType->id,
+        ]);
+
+        return redirect()
+            ->route('account.subscription.index')
+            ->with('status', __('front.membership.activated_without_payment'));
     }
 }

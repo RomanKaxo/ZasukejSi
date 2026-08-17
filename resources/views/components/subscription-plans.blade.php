@@ -22,6 +22,23 @@
             'plans' => SubscriptionType::query()->where('audience', 'member')->active()->ordered()->get(),
         ],
     ];
+
+    // A signed-in visitor is only shown what they can actually buy. Both sets
+    // used to be listed to everyone, so half the page was plans the reader
+    // could only be told "this one is for men" about.
+    //
+    // A guest still sees both — the page is the general one the footer links
+    // to, and nobody knows yet which side they are on. Admins see both too,
+    // because they are checking the page, not shopping.
+    $planUser = auth()->user();
+
+    if ($planUser && ! $planUser->hasRole('admin')) {
+        $visibleAudience = $planUser->isMale() ? 'member' : 'profile';
+        $groups = array_values(array_filter(
+            $groups,
+            fn (array $group) => $group['audience'] === $visibleAudience
+        ));
+    }
 @endphp
 
 <section class="mx-auto w-full max-w-[1140px] px-4 py-12">
@@ -76,7 +93,6 @@
                                  looking: the two audiences buy in different
                                  places, and a guest has to sign in first. --}}
                             @php
-                                $planUser = auth()->user();
                                 $planIsMemberPlan = $plan->audience === 'member';
                                 $planIsAdmin = $planUser?->hasRole('admin') ?? false;
                                 $planIsMember = $planUser && $planUser->isMale() && ! $planIsAdmin;

@@ -10,7 +10,7 @@ use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\Repeater;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -182,12 +182,21 @@ class SubscriptionTypeResource extends Resource
                     ->columns(2),
 
                 Section::make(__('subscriptions.form.features'))
+                    ->description('Odrážky, které se vypíšou na kartě tarifu na stránce VIP & Premium — v pořadí, v jakém je tu máte.')
                     ->schema([
-                        KeyValue::make('features')
+                        // Byl tu KeyValue, tedy dvojice klíč → hodnota, ačkoli
+                        // karta vypisuje jen hodnotu. Klíč tak nikde nebyl vidět
+                        // a jen mátl. Seznam řádků odpovídá tomu, co se vykreslí.
+                        Repeater::make('features')
                             ->label(__('subscriptions.form.features_list'))
-                            ->keyLabel(__('subscriptions.form.feature_key'))
-                            ->valueLabel(__('subscriptions.form.feature_value'))
                             ->addActionLabel(__('subscriptions.form.add_feature'))
+                            ->simple(
+                                TextInput::make('text')
+                                    ->label(__('subscriptions.form.feature_value'))
+                                    ->required()
+                                    ->maxLength(160)
+                            )
+                            ->reorderable()
                             ->columnSpanFull()
                             ->helperText(__('subscriptions.form.features_helper')),
                     ]),

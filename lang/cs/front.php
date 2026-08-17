@@ -40,10 +40,15 @@ return [
 
     'membership' => [
         'activated' => 'Premium členství je aktivní.',
+        'activated_without_payment' => 'Členství je aktivní. Platba neproběhla — platební brána zatím není nastavená.',
         'activation_pending' => 'Platba proběhla. Členství aktivujeme během okamžiku.',
         'not_verified' => 'Platbu se nepodařilo ověřit. Pokud jste částku uhradili, kontaktujte nás.',
         'checkout_cancelled' => 'Platba byla zrušena.',
         'valid_until' => 'Vaše Premium členství platí do :date',
+        // Podle rámce `phone 360 px-1`: když se konec blíží, banner místo data
+        // odpočítává dny a nabídne prodloužení.
+        'expiring_soon' => 'Máte aktivní členství Premium už jen :days – ',
+        'extend_link' => 'prodloužení členství zde',
         'locked_rating' => 'Hodnocení odemkne Premium členství',
         'page_title' => 'Premium členství',
         'page_description' => 'Odemkne hodnocení dívek, archiv a další funkce.',

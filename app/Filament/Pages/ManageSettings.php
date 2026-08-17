@@ -7,12 +7,14 @@ use App\Models\Page as ContentPage;
 use App\Models\Setting;
 use App\Support\FooterButton;
 use App\Support\RatingScale;
+use App\Support\OfflineCheckout;
 use App\Support\TopRatedLock;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
@@ -70,6 +72,7 @@ class ManageSettings extends Page
                 ?? ContentPage::published()->where("slug", FooterButton::DEFAULT_AUTH_SLUG)->value("id"),
             'footer_auth_label' => Setting::get(FooterButton::KEY_AUTH_LABEL),
             'top_rated_lock_mode' => TopRatedLock::mode(),
+            'offline_checkout' => OfflineCheckout::isEnabled(),
         ]);
     }
 
@@ -143,6 +146,14 @@ class ManageSettings extends Page
                             ->helperText('Dívky a administrátoři vidí karty odkryté vždy, bez ohledu na tuto volbu.'),
                     ]),
 
+                Section::make('Platby')
+                    ->description('Když není nastavená platební brána, objednávku lze dokončit i bez platby — jinak by tarify nešlo koupit vůbec. Takto vzniklé předplatné je označené jako ručně přidělené.')
+                    ->schema([
+                        Toggle::make('offline_checkout')
+                            ->label('Dokončit objednávku i bez platební brány')
+                            ->helperText('Jakmile doplníte klíče Stripe, platby se samy vrátí k bráně a tato volba se přestane uplatňovat.'),
+                    ]),
+
                 Section::make('Online stav')
                     ->description('Skutečná aktivita má vždy přednost. Tato hodnota řídí jen podíl ostatních profilů, které se zobrazí jako online. 0 simulaci zcela vypne.')
                     ->schema([
@@ -171,6 +182,8 @@ class ManageSettings extends Page
         Setting::set(FooterButton::KEY_GUEST_LABEL, $data['footer_guest_label'] ?? '');
         Setting::set(FooterButton::KEY_AUTH_PAGE, $data['footer_auth_page_id'] ?? '');
         Setting::set(FooterButton::KEY_AUTH_LABEL, $data['footer_auth_label'] ?? '');
+
+        Setting::set(OfflineCheckout::KEY, ! empty($data['offline_checkout']) ? '1' : '0');
 
         // Unknown value falls back to the default rather than being stored.
         $lockMode = (string) ($data['top_rated_lock_mode'] ?? TopRatedLock::DEFAULT);

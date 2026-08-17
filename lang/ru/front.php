@@ -30,10 +30,13 @@ return [
         'period_months' => '{1} :count месяц|[2,4] :count месяца|[5,*] :count месяцев',
         'period_years' => '{1} :count год|[2,4] :count года|[5,*] :count лет',
         'activated' => 'Premium-членство активно.',
+        'activated_without_payment' => 'Членство активно. Оплата не производилась — платёжный шлюз пока не настроен.',
         'activation_pending' => 'Платёж получен. Членство активируется в ближайшее время.',
         'not_verified' => 'Не удалось подтвердить платёж. Если деньги были списаны, свяжитесь с нами.',
         'checkout_cancelled' => 'Платёж отменён.',
         'valid_until' => 'Ваше Premium-членство действует до :date',
+        'expiring_soon' => 'Ваше Premium-членство закончится через :days – ',
+        'extend_link' => 'продлить членство',
         'locked_rating' => 'Рейтинг открывается с Premium-членством',
     ],
 
