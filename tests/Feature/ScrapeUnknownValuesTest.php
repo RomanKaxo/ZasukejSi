@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\City;
 use App\Models\Profile;
 use App\Models\ScrapeItem;
 use App\Models\ScrapeSource;
@@ -28,6 +29,11 @@ class ScrapeUnknownValuesTest extends TestCase
         parent::setUp();
 
         $this->seed(CurrencySeeder::class);
+
+        // The queue covers every field we can process, not just services, so a
+        // town nobody has heard of is a gap of its own. These tests are about
+        // service gaps, so the town they use is known.
+        City::create(['name' => 'Brno', 'name_ascii' => 'Brno', 'country_code' => 'CZ']);
     }
 
     private ?ScrapeSource $source = null;

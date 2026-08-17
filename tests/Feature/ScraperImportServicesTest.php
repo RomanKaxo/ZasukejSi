@@ -16,6 +16,15 @@ class ScraperImportServicesTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // The importer only stores a value the catalogue knows; bust size has
+        // a list behind it now.
+        $this->seed(\Database\Seeders\ProfileAttributeOptionSeeder::class);
+    }
+
     private function source(bool $enabled = true): ScrapeSource
     {
         return ScrapeSource::create([

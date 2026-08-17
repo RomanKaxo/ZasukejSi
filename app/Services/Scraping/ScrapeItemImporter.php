@@ -28,13 +28,26 @@ class ScrapeItemImporter
         'country_code',
     ];
 
-    /** Fields stored inside the profile's `content` JSON. */
+    /**
+     * Fields stored inside the profile's `content` JSON.
+     *
+     * The six below the first five were being scraped and then thrown away —
+     * the importer simply had nowhere to put them, so every harvest lost the
+     * eye colour, hair colour and length, bust type, pubic hair and travel
+     * range it had just fetched.
+     */
     public const CONTENT_FIELDS = [
         'card_height_cm',
         'weight_kg',
         'bust_size',
         'nationality',
         'languages',
+        'eye_colour',
+        'hair_colour',
+        'hair_length',
+        'bust_type',
+        'pubic_hair',
+        'travels',
     ];
 
     public function __construct(private readonly ScrapeImageDownloader $images)
@@ -68,7 +81,7 @@ class ScrapeItemImporter
 
             $content = [];
             foreach (self::CONTENT_FIELDS as $field) {
-                if (array_key_exists($field, $values)) {
+                if (array_key_exists($field, $values) && $this->storable($field, $values[$field])) {
                     $content[$field] = $values[$field];
                 }
             }
@@ -115,15 +128,17 @@ class ScrapeItemImporter
     }
 
     /**
-     * Re-attach an imported profile's services against the current catalogue.
+     * Re-apply what we scraped to a profile that is already imported.
      *
      * A profile imported while the catalogue knew ten services kept ten, even
      * after the missing forty-eight were added — the names were dropped at
-     * import time and nothing went back for them.
+     * import time and nothing went back for them. The same held for every
+     * detail field the importer had no home for. This is that second pass: it
+     * only ever adds, never clears a value somebody has since edited by hand.
      *
      * @return int How many services the profile has afterwards.
      */
-    public function resyncServices(ScrapeItem $item): int
+    public function resync(ScrapeItem $item): int
     {
         $profile = $item->profile;
 
@@ -131,9 +146,59 @@ class ScrapeItemImporter
             return 0;
         }
 
-        $this->attachServices($profile, $item->value('services'));
+        $values = (array) ($item->normalized ?? []);
+        $content = (array) ($profile->content ?? []);
+        $changed = false;
+
+        foreach (self::CONTENT_FIELDS as $field) {
+            // An edited profile keeps what the editor put there; only genuinely
+            // empty fields are filled from the scrape.
+            if (! array_key_exists($field, $values) || ($content[$field] ?? null) !== null) {
+                continue;
+            }
+
+            if (! $this->storable($field, $values[$field])) {
+                continue;
+            }
+
+            $content[$field] = $values[$field];
+            $changed = true;
+        }
+
+        if ($changed) {
+            $profile->forceFill(['content' => $content])->save();
+        }
+
+        $this->attachServices($profile, $values['services'] ?? null);
 
         return $profile->services()->count();
+    }
+
+    /** @deprecated Use {@see resync()}, which also fills the detail fields. */
+    public function resyncServices(ScrapeItem $item): int
+    {
+        return $this->resync($item);
+    }
+
+    /**
+     * Whether a scraped value is one we have a place for.
+     *
+     * A field backed by an option list only takes values that list knows —
+     * otherwise the admin's select would show a blank where the profile has a
+     * value, and the next save would quietly wipe it. What is left out goes
+     * into the queue instead and arrives on the next resync, once somebody has
+     * added it. Free-text fields (height, nationality, languages) have no list
+     * and pass straight through.
+     */
+    private function storable(string $field, mixed $value): bool
+    {
+        if (! is_scalar($value) || trim((string) $value) === '') {
+            return true;
+        }
+
+        $catalogue = app(\App\Services\Scraping\Catalogues\CatalogueRegistry::class)->for($field);
+
+        return $catalogue === null || $catalogue->knows((string) $value);
     }
 
     /**

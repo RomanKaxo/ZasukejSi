@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Service;
+use App\Services\Scraping\Catalogues\CatalogueRegistry;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -116,30 +116,33 @@ class ScrapeUnknownValue extends Model
     {
         $name = trim($name ?: $this->value);
 
-        if ($name === '' || $this->field !== self::FIELD_SERVICES) {
+        if ($name === '') {
             return null;
         }
 
-        $existing = Service::all()->first(
-            fn (Service $service) => self::normalize((string) $service->getTranslation('name', 'cs')) === self::normalize($name)
-        );
+        $catalogue = app(CatalogueRegistry::class)->for($this->field);
 
-        $service = $existing ?: Service::create([
-            'name' => ['cs' => $name, 'en' => $name],
-            'description' => ['cs' => '', 'en' => ''],
-            'sort_order' => (int) Service::max('sort_order') + 1,
-            'is_active' => true,
-        ]);
+        // A field whose set is fixed — an ISO country code, a gender — has
+        // nothing to add to; the admin resolves it by correcting the value.
+        if (! $catalogue || ! $catalogue->canCreate()) {
+            return null;
+        }
+
+        $created = $catalogue->create($name);
+
+        if (! $created) {
+            return null;
+        }
 
         $this->forceFill([
             'value' => $name,
             'status' => self::STATUS_APPROVED,
-            'created_type' => Service::class,
-            'created_id' => $service->id,
+            'created_type' => $created::class,
+            'created_id' => $created->id,
             'resolved_at' => now(),
         ])->save();
 
-        return $service;
+        return $created;
     }
 
     public function reject(): void
@@ -163,6 +166,6 @@ class ScrapeUnknownValue extends Model
     /** @return array<string, string> */
     public static function fieldOptions(): array
     {
-        return [self::FIELD_SERVICES => 'Služby'];
+        return app(CatalogueRegistry::class)->options();
     }
 }

@@ -28,6 +28,9 @@ class ProfileFieldsPropagationTest extends TestCase
         parent::setUp();
 
         $this->seed(CurrencySeeder::class);
+        // Bust size and the other attribute lists come from the catalogue now,
+        // and an empty catalogue means an unfillable select.
+        $this->seed(\Database\Seeders\ProfileAttributeOptionSeeder::class);
     }
 
     private function columns(Profile $profile): object

@@ -48,6 +48,10 @@ class DatabaseSeeder extends Seeder
         $this->call(MemberSubscriptionTypeSeeder::class);
         $this->call(SegmentSeeder::class);
 
+        // Option lists the profile form used to carry as hardcoded arrays, and
+        // which the scraper had nowhere to write its eye colours into.
+        $this->call(ProfileAttributeOptionSeeder::class);
+
         // Create admin user
         $admin = User::firstOrCreate([
             'email' => 'test@example.com'

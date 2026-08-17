@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Profile;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Rule;
 
 class ProfileForm extends Component
@@ -113,7 +114,20 @@ class ProfileForm extends Component
 
     public $is_public = false;
 
-    public $bustSizeOptions = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    /**
+     * Bust sizes offered in the form.
+     *
+     * Was a hardcoded `['A'..'H']`, so nobody could add a size and the scraper
+     * had nothing to check against; it now comes from the same list the admin
+     * edits under Vlastnosti profilů.
+     *
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function bustSizeOptions(): array
+    {
+        return array_keys(\App\Models\ProfileAttributeOption::optionsFor('bust_size'));
+    }
     public $currencyOptions = ['Kč'];
     public $globalCurrencyOptions = ['EUR'];
 
@@ -558,7 +572,11 @@ class ProfileForm extends Component
             $validationRules['about'] = 'nullable|string|max:640';
             $validationRules['weight_kg'] = 'nullable|numeric|min:30|max:300';
             $validationRules['height_cm'] = 'nullable|integer|min:100|max:250';
-            $validationRules['bust_size'] = 'nullable|string|in:' . implode(',', $this->bustSizeOptions);
+            // An empty list would turn into a bare `in:` that rejects every
+            // value, so an unpopulated catalogue only relaxes the rule.
+            $validationRules['bust_size'] = $this->bustSizeOptions === []
+                ? 'nullable|string|max:8'
+                : 'nullable|string|in:' . implode(',', $this->bustSizeOptions);
             $validationRules['languages'] = 'nullable|string|max:255';
             $validationRules['availability_hours'] = 'nullable|string';
             $validationRules['local_prices'] = 'nullable|array';

@@ -4,55 +4,91 @@ namespace App\Services\Scraping;
 
 use App\Models\ScrapeItem;
 use App\Models\ScrapeUnknownValue;
-use App\Models\Service;
+use App\Services\Scraping\Catalogues\CatalogueRegistry;
 use Illuminate\Support\Collection;
 
 /**
- * Works out which of an item's values our catalogue does not know.
+ * Works out which of an item's values our system has nowhere to put.
  *
- * The importer attaches only services that already exist — a scraped list must
- * not be able to extend our own taxonomy. That rule was silent: a harvest of
- * Brno brought 58 distinct service names, the catalogue knew 10, and the other
- * 48 vanished without anybody being told.
+ * The importer only ever stores what a catalogue already knows — a scraped
+ * list must not extend our own taxonomy. The rule is right, but it was
+ * silent, and not only for services: eye colour, hair colour and length, bust
+ * type, pubic hair and travel range were scraped and dropped without so much
+ * as a line in the log.
  */
 class UnknownValueCollector
 {
-    /** Memoised for the length of one request; the catalogue is read per item. */
-    private ?array $catalogue = null;
+    public function __construct(private readonly CatalogueRegistry $catalogues)
+    {
+    }
 
     /**
-     * Service names on this item that have no catalogue entry.
+     * Everything on this item that no catalogue knows, per field.
+     *
+     * @return Collection<string, Collection<int, string>>
+     */
+    public function unknownValues(ScrapeItem $item): Collection
+    {
+        $values = (array) ($item->normalized ?? []);
+        $gaps = collect();
+
+        foreach ($this->catalogues->all() as $field => $catalogue) {
+            if (! array_key_exists($field, $values)) {
+                continue;
+            }
+
+            $candidates = $this->catalogues->isListField($field)
+                ? collect($values[$field] ?? [])
+                : collect([$values[$field] ?? null]);
+
+            $missing = $candidates
+                ->map(fn ($value) => is_scalar($value) ? trim((string) $value) : '')
+                ->filter()
+                ->reject(fn (string $value) => $catalogue->knows($value))
+                // Two spellings of one value are one gap, not two.
+                ->unique(fn (string $value) => ScrapeUnknownValue::normalize($value))
+                ->values();
+
+            if ($missing->isNotEmpty()) {
+                $gaps->put($field, $missing);
+            }
+        }
+
+        return $gaps;
+    }
+
+    /**
+     * Service names with no catalogue entry.
+     *
+     * Kept as its own method because services are the field the review screen
+     * talks about most.
      *
      * @return Collection<int, string>
      */
     public function unknownServices(ScrapeItem $item): Collection
     {
-        $names = collect($item->value('services') ?? [])
-            ->map(fn ($name) => trim((string) $name))
-            ->filter();
+        return $this->unknownValues($item)->get('services', collect());
+    }
 
-        if ($names->isEmpty()) {
-            return collect();
-        }
-
-        $known = $this->catalogue();
-
-        return $names
-            ->reject(fn (string $name) => in_array(ScrapeUnknownValue::normalize($name), $known, true))
-            // Two spellings of one name are one gap, not two.
-            ->unique(fn (string $name) => ScrapeUnknownValue::normalize($name))
-            ->values();
+    /** Every gap on the item, flattened for a tooltip or a summary line. */
+    public function unknownSummary(ScrapeItem $item): Collection
+    {
+        return $this->unknownValues($item)->flatMap(
+            fn (Collection $values, string $field) => $values->map(
+                fn (string $value) => $this->catalogues->for($field)?->label() . ': ' . $value
+            )
+        )->values();
     }
 
     /**
      * Whether everything this item mentions is something we can store.
      *
-     * An item with nothing unknown can be approved straight away; one with a
-     * gap is offered "fill in the missing values" first.
+     * A complete item is approved in one click; one with a gap is offered
+     * "fill in the missing values" first.
      */
     public function isComplete(ScrapeItem $item): bool
     {
-        return $this->unknownServices($item)->isEmpty();
+        return $this->unknownValues($item)->isEmpty();
     }
 
     /**
@@ -62,27 +98,27 @@ class UnknownValueCollector
      */
     public function collect(ScrapeItem $item): int
     {
-        $unknown = $this->unknownServices($item);
+        $gaps = $this->unknownValues($item);
+        $noted = 0;
 
-        foreach ($unknown as $name) {
-            ScrapeUnknownValue::note(
-                ScrapeUnknownValue::FIELD_SERVICES,
-                $name,
-                $item->scrape_source_id,
-            );
+        foreach ($gaps as $field => $values) {
+            foreach ($values as $value) {
+                ScrapeUnknownValue::note($field, $value, $item->scrape_source_id);
+                $noted++;
+            }
         }
 
         // The flag stays on once set: it is what tells "held back for a value"
         // apart from "nobody ever blocked it" when the value is finally added.
-        if ($unknown->isNotEmpty() && $item->unknown_values_at === null) {
+        if ($noted > 0 && $item->unknown_values_at === null) {
             $item->forceFill(['unknown_values_at' => now()])->save();
         }
 
-        return $unknown->count();
+        return $noted;
     }
 
     /**
-     * Every scrape item that is still waiting on a value nobody has added.
+     * Every scrape item still waiting on a value nobody has added.
      *
      * @return Collection<int, ScrapeItem>
      */
@@ -98,10 +134,7 @@ class UnknownValueCollector
     }
 
     /**
-     * Items that were held back for a missing value and are not any more.
-     *
-     * Called after a value is approved into the catalogue: the gap that kept
-     * them incomplete may have just been filled.
+     * Items held back for a missing value that are not any more.
      *
      * @return Collection<int, ScrapeItem>
      */
@@ -116,22 +149,9 @@ class UnknownValueCollector
             ->values();
     }
 
-    /** The catalogue changes when a value is approved, so it has to be re-read. */
+    /** The catalogues change when a value is approved, so they are re-read. */
     public function forget(): void
     {
-        $this->catalogue = null;
-    }
-
-    /** @return array<int, string> */
-    private function catalogue(): array
-    {
-        return $this->catalogue ??= Service::all()
-            ->map(fn (Service $service) => ScrapeUnknownValue::normalize(
-                (string) $service->getTranslation('name', 'cs')
-            ))
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
+        $this->catalogues->forget();
     }
 }

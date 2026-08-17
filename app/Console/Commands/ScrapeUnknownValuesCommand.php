@@ -18,6 +18,7 @@ class ScrapeUnknownValuesCommand extends Command
 {
     protected $signature = 'scrape:unknown-values
         {--approve-all : Add every value found straight into the catalogue}
+        {--resync : Re-apply what we scraped to profiles already imported}
         {--list : Only print what is missing, change nothing}';
 
     protected $description = 'Collect values the catalogue does not know from staged items';
@@ -34,6 +35,12 @@ class ScrapeUnknownValuesCommand extends Command
 
         if ($this->option('list')) {
             return $this->listOnly($items, $collector);
+        }
+
+        // Profiles imported before a field had anywhere to go keep whatever the
+        // importer could store at the time; this hands them the rest.
+        if ($this->option('resync')) {
+            return $this->resyncOnly($items);
         }
 
         $noted = 0;
@@ -90,24 +97,49 @@ class ScrapeUnknownValuesCommand extends Command
         $resynced = 0;
 
         foreach (ScrapeItem::query()->where('status', ScrapeItem::STATUS_IMPORTED)->withUnknownValues()->get() as $item) {
-            $importer->resyncServices($item);
+            $importer->resync($item);
             $resynced++;
         }
 
         $this->info("Automaticky schváleno položek: {$approved}");
-        $this->info("Doplněny služby u již vytvořených profilů: {$resynced}");
+        $this->info("Doplněny hodnoty u již vytvořených profilů: {$resynced}");
+    }
+
+    /**
+     * Hand already-imported profiles what the importer could not store before.
+     *
+     * @param  \Illuminate\Support\Collection<int, ScrapeItem>  $items
+     */
+    private function resyncOnly($items): int
+    {
+        $importer = app(\App\Services\Scraping\ScrapeItemImporter::class);
+        $touched = 0;
+
+        foreach ($items->where('status', ScrapeItem::STATUS_IMPORTED) as $item) {
+            if ($item->profile) {
+                $importer->resync($item);
+                $touched++;
+            }
+        }
+
+        $this->info("Doplněno profilů: {$touched}");
+
+        return self::SUCCESS;
     }
 
     /** @param  \Illuminate\Support\Collection<int, ScrapeItem>  $items */
     private function listOnly($items, UnknownValueCollector $collector): int
     {
+        $labels = \App\Models\ScrapeUnknownValue::fieldOptions();
         $counts = [];
 
         foreach ($items as $item) {
-            foreach ($collector->unknownServices($item) as $name) {
-                $key = ScrapeUnknownValue::normalize($name);
-                $counts[$key] ??= ['value' => $name, 'count' => 0];
-                $counts[$key]['count']++;
+            foreach ($collector->unknownValues($item) as $field => $values) {
+                foreach ($values as $value) {
+                    $key = $field . '|' . ScrapeUnknownValue::normalize($value);
+                    $counts[$key] ??= ['field' => $field, 'value' => $value, 'count' => 0];
+                    $counts[$key]['count']++;
+                }
             }
         }
 
@@ -117,11 +149,17 @@ class ScrapeUnknownValuesCommand extends Command
             return self::SUCCESS;
         }
 
-        usort($counts, fn ($a, $b) => $b['count'] <=> $a['count']);
+        // Grouped by field, commonest first inside each — the order an admin
+        // works through the queue in.
+        usort($counts, fn ($a, $b) => [$a['field'], -$a['count']] <=> [$b['field'], -$b['count']]);
 
         $this->table(
-            ['hodnota', 'výskytů'],
-            array_map(fn ($row) => [$row['value'], $row['count']], $counts),
+            ['pole', 'hodnota', 'výskytů'],
+            array_map(fn ($row) => [
+                $labels[$row['field']] ?? $row['field'],
+                $row['value'],
+                $row['count'],
+            ], $counts),
         );
 
         return self::SUCCESS;
