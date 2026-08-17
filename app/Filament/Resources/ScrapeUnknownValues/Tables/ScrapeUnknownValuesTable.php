@@ -13,6 +13,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -66,6 +67,17 @@ class ScrapeUnknownValuesTable
                     ->toggleable(),
             ])
             ->defaultSort('occurrences', 'desc')
+            // The queue covers every field we can process, so it is worked
+            // through one field at a time — all the missing eye colours at
+            // once, not interleaved with services.
+            ->groups([
+                Group::make('field')
+                    ->label('Pole')
+                    ->getTitleFromRecordUsing(
+                        fn (ScrapeUnknownValue $record) => ScrapeUnknownValue::fieldOptions()[$record->field] ?? $record->field
+                    ),
+            ])
+            ->defaultGroup('field')
             ->filters([
                 SelectFilter::make('status')
                     ->label('Stav')
@@ -86,12 +98,15 @@ class ScrapeUnknownValuesTable
                     ->label('Doplnit do systému')
                     ->icon('heroicon-o-plus-circle')
                     ->color('success')
-                    ->visible(fn (ScrapeUnknownValue $record) => $record->status === ScrapeUnknownValue::STATUS_PENDING)
+                    // A field with a fixed set — an ISO country code, a gender —
+                    // has no list to grow, so there is nothing to offer here.
+                    ->visible(fn (ScrapeUnknownValue $record) => $record->status === ScrapeUnknownValue::STATUS_PENDING
+                        && self::canExtend($record))
                     // The admin gets the last word on the wording before it
                     // becomes a permanent catalogue entry.
-                    ->form([
+                    ->form(fn (ScrapeUnknownValue $record) => [
                         TextInput::make('name')
-                            ->label('Název v našem katalogu')
+                            ->label('Název v číselníku „' . (ScrapeUnknownValue::fieldOptions()[$record->field] ?? $record->field) . '"')
                             ->helperText('Můžete ho přepsat. Shodný název se nezaloží podruhé.')
                             ->required()
                             ->maxLength(120),
@@ -169,6 +184,14 @@ class ScrapeUnknownValuesTable
             ->emptyStateDescription('Sem se ukládají hodnoty, které zdroj nabídl a náš katalog je nezná — třeba služba, kterou zatím nevedeme.');
     }
 
+    /** Whether this value's field has a list that can actually grow. */
+    private static function canExtend(ScrapeUnknownValue $record): bool
+    {
+        $catalogue = app(\App\Services\Scraping\Catalogues\CatalogueRegistry::class)->for($record->field);
+
+        return $catalogue?->canCreate() ?? false;
+    }
+
     /**
      * Approve every item whose last missing value has just been added.
      *
@@ -198,7 +221,7 @@ class ScrapeUnknownValuesTable
         // we could store at the time; now that the gap is filled, it gets the
         // rest without anybody re-importing it.
         foreach (ScrapeItem::query()->where('status', ScrapeItem::STATUS_IMPORTED)->withUnknownValues()->get() as $item) {
-            $importer->resyncServices($item);
+            $importer->resync($item);
         }
 
         return $released;

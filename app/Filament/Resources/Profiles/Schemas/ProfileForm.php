@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Profiles\Schemas;
 
+use App\Models\ProfileAttributeOption;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\KeyValue;
@@ -180,13 +181,45 @@ class ProfileForm
                     ->maxValue(300)
                     ->suffix('kg'),
 
+                // These six lists live in Vlastnosti profilů. Bust size used to
+                // be a hardcoded array in two places, and the other five did
+                // not exist at all — which is why the scraper kept fetching an
+                // eye colour and then dropping it.
                 Select::make('content.bust_size')
                     ->label(__('profiles.form.bust_size'))
-                    ->options(array_combine(
-                        ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
-                        ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-                    ))
+                    ->options(fn () => ProfileAttributeOption::optionsFor('bust_size'))
                     ->native(false),
+
+                Select::make('content.bust_type')
+                    ->label('Typ prsou')
+                    ->options(fn () => ProfileAttributeOption::optionsFor('bust_type'))
+                    ->native(false),
+
+                Select::make('content.eye_colour')
+                    ->label('Barva očí')
+                    ->options(fn () => ProfileAttributeOption::optionsFor('eye_colour'))
+                    ->native(false),
+
+                Select::make('content.hair_colour')
+                    ->label('Barva vlasů')
+                    ->options(fn () => ProfileAttributeOption::optionsFor('hair_colour'))
+                    ->native(false),
+
+                Select::make('content.hair_length')
+                    ->label('Délka vlasů')
+                    ->options(fn () => ProfileAttributeOption::optionsFor('hair_length'))
+                    ->native(false),
+
+                Select::make('content.pubic_hair')
+                    ->label('Ochlupení')
+                    ->options(fn () => ProfileAttributeOption::optionsFor('pubic_hair'))
+                    ->native(false),
+
+                Select::make('content.travels')
+                    ->label('Cestování')
+                    ->options(fn () => ProfileAttributeOption::optionsFor('travels'))
+                    ->native(false)
+                    ->helperText('Kam je ochotná vycestovat. Nabídku spravujete ve Vlastnostech profilů.'),
 
                 TextInput::make('content.nationality')
                     ->label(__('profiles.form.nationality'))

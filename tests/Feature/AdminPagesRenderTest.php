@@ -54,6 +54,7 @@ class AdminPagesRenderTest extends TestCase
             'blog' => ['/admin/blogs'],
             'mesta' => ['/admin/cities'],
             'scraper-k-doplneni' => ['/admin/scrape-unknown-values'],
+            'vlastnosti-profilu' => ['/admin/profile-attribute-options'],
             'kontaktni-zpravy' => ['/admin/contact-messages'],
             'menu-paticky' => ['/admin/footer-menu-items'],
             'texty-paticky' => ['/admin/manage-footer'],

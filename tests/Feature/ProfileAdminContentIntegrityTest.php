@@ -28,6 +28,15 @@ class ProfileAdminContentIntegrityTest extends TestCase
      * ProfileForm's admin-only fields are gated by a literal
      * `$user->email === 'test@example.com'` check rather than by role.
      */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Bust size and the other attribute lists come from the catalogue now,
+        // and an empty catalogue means an unfillable select.
+        $this->seed(\Database\Seeders\ProfileAttributeOptionSeeder::class);
+    }
+
     private function admin(): User
     {
         Role::firstOrCreate(['name' => 'admin']);

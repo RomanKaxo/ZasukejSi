@@ -217,7 +217,7 @@
                                 wire:model.live="bust_size"
                                 class="input-control w-full appearance-none pr-[54px] @error('bust_size') border-red-500 @enderror">
                                 <option value="">{{ __('front.profiles.form.selectbust') }}</option>
-                                @foreach($bustSizeOptions as $size)
+                                @foreach($this->bustSizeOptions as $size)
                                     <option value="{{ $size }}">{{ $size }}</option>
                                 @endforeach
                             </select>

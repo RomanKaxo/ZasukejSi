@@ -173,6 +173,39 @@ Položka je jednoznačná dvojicí zdroj + `external_id`. Další běh:
 
 ---
 
+## Fronta „K doplnění"
+
+Scraper nikdy nerozšiřuje náš číselník sám. Když zdroj nabídne hodnotu, kterou nevedeme, uloží se do fronty a rozhodne o ní člověk v administraci pod **Scraper → K doplnění**.
+
+Fronta pokrývá **všechna pole, která umíme zpracovat**, ne jen služby:
+
+| Pole | Kam se hodnota doplní |
+|---|---|
+| `services` | Služby |
+| `city` | Města |
+| `bust_size`, `bust_type`, `eye_colour`, `hair_colour`, `hair_length`, `pubic_hair`, `travels` | Vlastnosti profilů |
+
+Pole s pevnou množinou (ISO kód země, pohlaví) žádný číselník nemají — u nich se tlačítko „Doplnit do systému" nenabízí, protože není co rozšířit.
+
+Jak to běží:
+
+1. Běh scraperu položku zpracuje a chybějící hodnoty zapíše do fronty. Pravopis nedělá druhý záznam — „GFE - společnice" a „gfe spolecnice" jsou jedna položka, jen se zvýší počet výskytů.
+2. **Hodnota, kterou neznáme, se na profil neuloží.** Kdyby se uložila, select v administraci by u ní ukazoval prázdno a další uložení by ji smazalo. Čeká ve frontě.
+3. Položka s mezerou je nekompletní — nabízí se u ní „doplnit chybějící hodnoty" místo jednoklikového schválení.
+4. Jakmile někdo hodnotu doplní, uvolní se položky, které na ni čekaly, a **profily, které už vznikly, hodnotu dostanou** bez opakovaného importu.
+
+Doplnění už vytvořených profilů jde spustit i ručně:
+
+```bash
+php artisan scrape:unknown-values --resync
+```
+
+Další volby: `--list` jen vypíše, co chybí (nic nemění), `--approve-all` doplní všechno najednou — hodí se po prvním velkém sběru, kdy je katalog prázdný.
+
+Hodnoty, které katalog zná, spravuje administrace v **Vlastnosti profilů**. Odtud je bere i formulář profilu — velikost prsou bývala natvrdo psané pole `['A'..'H']` na dvou místech.
+
+---
+
 ## Právní stránka
 
 Scraper stahuje **osobní údaje a cizí fotografie**. Sám o sobě neřeší, jestli je smíte použít — to je rozhodnutí na vás a nesouvisí s tím, že běh technicky projde.
