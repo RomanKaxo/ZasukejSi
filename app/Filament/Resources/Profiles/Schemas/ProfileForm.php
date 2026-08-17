@@ -155,6 +155,16 @@ class ProfileForm
                 //
                 // EditProfile/CreateProfile merge this map over the stored one,
                 // so keys not present in this form are preserved.
+                // Its own column and its own field. It used to exist only as a
+                // row in the contact list below, so there was nowhere to type
+                // a number an admin was holding — and nowhere to search one.
+                // Saving keeps the contact list in step.
+                TextInput::make('phone')
+                    ->label(__('profiles.form.phone'))
+                    ->tel()
+                    ->maxLength(32)
+                    ->helperText(__('profiles.form.phone_helper')),
+
                 TextInput::make('content.card_height_cm')
                     ->label(__('profiles.form.card_height_cm'))
                     ->numeric()
