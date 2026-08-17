@@ -34,17 +34,64 @@ class MembershipCheckoutTest extends TestCase
         return SubscriptionType::forMembers()->active()->firstOrFail();
     }
 
-    public function test_checkout_without_stripe_keys_reports_instead_of_erroring(): void
+    /**
+     * Without a gateway the order still goes through, so the flow can be
+     * walked end to end — but nothing pretends money changed hands.
+     */
+    public function test_checkout_without_stripe_keys_completes_without_payment(): void
     {
         config(['services.stripe.secret' => null]);
 
         $plan = $this->plan();
+        $member = $this->member();
 
-        $response = $this->actingAs($this->member())
+        $response = $this->actingAs($member)
+            ->post(route('account.member.membership.checkout', $plan));
+
+        $response->assertRedirect(route('account.member.dashboard'));
+        $response->assertSessionHas('status', __('front.membership.activated_without_payment'));
+
+        $subscription = \App\Models\MemberSubscription::forUser($member->id)->active()->firstOrFail();
+
+        $this->assertTrue(\App\Support\OfflineCheckout::wasManual($subscription->metadata));
+        $this->assertTrue($member->fresh()->hasActiveMembership());
+    }
+
+    /** Turned off, the buyer is told rather than quietly given a membership. */
+    public function test_the_operator_can_switch_the_no_gateway_path_off(): void
+    {
+        config(['services.stripe.secret' => null]);
+        \App\Models\Setting::set(\App\Support\OfflineCheckout::KEY, '0');
+
+        $plan = $this->plan();
+        $member = $this->member();
+
+        $response = $this->actingAs($member)
             ->post(route('account.member.membership.checkout', $plan));
 
         $response->assertRedirect();
         $response->assertSessionHas('error');
+        $this->assertFalse($member->fresh()->hasActiveMembership());
+    }
+
+    /** A second purchase extends the running membership, it does not stack. */
+    public function test_buying_again_without_a_gateway_extends_the_membership(): void
+    {
+        config(['services.stripe.secret' => null]);
+
+        $plan = $this->plan();
+        $member = $this->member();
+
+        $this->actingAs($member)->post(route('account.member.membership.checkout', $plan));
+        $first = \App\Models\MemberSubscription::forUser($member->id)->active()->firstOrFail();
+
+        $this->actingAs($member)->post(route('account.member.membership.checkout', $plan));
+
+        $this->assertSame(1, \App\Models\MemberSubscription::forUser($member->id)->count());
+        $this->assertTrue(
+            \App\Models\MemberSubscription::forUser($member->id)->active()->firstOrFail()->ends_at
+                ->greaterThan($first->ends_at)
+        );
     }
 
     public function test_a_provider_plan_cannot_be_bought_as_a_membership(): void

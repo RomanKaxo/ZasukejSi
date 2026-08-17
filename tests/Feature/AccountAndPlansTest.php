@@ -156,7 +156,13 @@ class AccountAndPlansTest extends TestCase
         $this->get('/vip-premium')->assertSee(__('front.plans.register_to_buy'));
     }
 
-    public function test_a_member_is_pointed_at_the_plans_he_can_actually_buy(): void
+    /**
+     * A signed-in visitor is shown only what they can buy.
+     *
+     * Both sets used to be listed to everyone, so half the page was plans the
+     * reader could only be told „this one is for women" about.
+     */
+    public function test_a_member_sees_only_the_membership_plans(): void
     {
         $this->seedPlans();
         $this->vipPage();
@@ -164,13 +170,12 @@ class AccountAndPlansTest extends TestCase
         $response = $this->actingAs($this->member())->get('/vip-premium');
 
         $response->assertSuccessful();
-        // His own membership plans are reachable; the provider ones say so
-        // rather than offering a button that cannot work.
         $response->assertSee(route('account.member.membership.index'), false);
-        $response->assertSee(__('front.plans.women_only'));
+        $response->assertSee(__('front.plans.for_men'));
+        $response->assertDontSee(__('front.plans.for_women'));
     }
 
-    public function test_a_provider_is_pointed_at_her_own_subscriptions(): void
+    public function test_a_provider_sees_only_her_own_subscriptions(): void
     {
         $this->seedPlans();
         $this->vipPage();
@@ -179,6 +184,20 @@ class AccountAndPlansTest extends TestCase
 
         $response->assertSuccessful();
         $response->assertSee(route('account.subscription.index'), false);
-        $response->assertSee(__('front.plans.men_only'));
+        $response->assertSee(__('front.plans.for_women'));
+        $response->assertDontSee(__('front.plans.for_men'));
+    }
+
+    /** A guest has not said which side they are on, so both are offered. */
+    public function test_a_guest_sees_both_sets(): void
+    {
+        $this->seedPlans();
+        $this->vipPage();
+
+        $response = $this->get('/vip-premium');
+
+        $response->assertSuccessful();
+        $response->assertSee(__('front.plans.for_women'));
+        $response->assertSee(__('front.plans.for_men'));
     }
 }

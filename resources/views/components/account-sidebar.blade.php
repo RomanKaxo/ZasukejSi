@@ -23,14 +23,18 @@
 
 {{-- Sidebar --}}
 @php
-    // Each page's own heading (above the main divider) is a different
-    // height, so the sidebar's top offset is calibrated by hand per page to
-    // line up with that divider. Recalibrate the matching value below
-    // whenever a heading's markup or text changes height.
-    $sidebarOffsetClass = match(true) {
-        in_array($activeItem, ['photos', 'services', 'statistics', 'subscription']) => 'md:mt-[90px]',
-        $activeItem === 'reviews' => 'md:mt-[89px]',
-        default => 'md:mt-[258px]', // dashboard
+    // The sidebar has to start level with the divider under the page's
+    // heading, and each heading is a different height, so the offset is
+    // calibrated by hand.
+    //
+    // The ordinary heading — a title with a rule under it — is 88px tall, so
+    // that is the default. It used to be the dashboard's 258px, which meant a
+    // page nobody had listed here (archived notifications) sat 170px too low.
+    // The outlier is the exception now, not the rule.
+    $sidebarOffsetClass = match($activeItem) {
+        'dashboard' => 'md:mt-[258px]', // heading carries the stats row
+        'reviews' => 'md:mt-[89px]',
+        default => 'md:mt-[88px]',
     };
 @endphp
 <aside

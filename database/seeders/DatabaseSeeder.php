@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\MemberSubscription;
 use App\Models\Profile;
 use App\Models\Service;
 use App\Models\Subscription;
@@ -123,6 +124,30 @@ class DatabaseSeeder extends Seeder
             ]
         );
         $premiumMale->syncRoles(['user', 'vip']);
+
+        // The account is called „Premium Muz" but carried no membership, so the
+        // green bar above the member pages never had anything to report and the
+        // whole state was untestable. Ends in five days, which is the state the
+        // design draws (`phone 360 px-1`).
+        $membershipType = SubscriptionType::query()
+            ->where('audience', 'member')
+            ->where('is_active', true)
+            ->orderBy('duration_days')
+            ->first();
+
+        if ($membershipType) {
+            MemberSubscription::updateOrCreate(
+                [
+                    'user_id' => $premiumMale->id,
+                    'subscription_type_id' => $membershipType->id,
+                ],
+                [
+                    'status' => MemberSubscription::STATUS_ACTIVE,
+                    'starts_at' => now()->subDays(25),
+                    'ends_at' => now()->addDays(5),
+                ]
+            );
+        }
 
         $premiumFemale = User::updateOrCreate(
             ['email' => 'premium-zena@example.com'],

@@ -34,10 +34,13 @@ return [
 
     'membership' => [
         'activated' => 'Your Premium membership is active.',
+        'activated_without_payment' => 'Membership is active. No payment was taken — the payment gateway is not set up yet.',
         'activation_pending' => 'Payment received. We are activating your membership.',
         'not_verified' => 'We could not verify this payment. If you were charged, please contact us.',
         'checkout_cancelled' => 'Payment was cancelled.',
         'valid_until' => 'Your Premium membership is valid until :date',
+        'expiring_soon' => 'Your Premium membership has only :days left – ',
+        'extend_link' => 'extend it here',
         'locked_rating' => 'Ratings are unlocked by Premium membership',
         'page_title' => 'Premium membership',
         'page_description' => 'Unlocks profile ratings, the archive and more.',

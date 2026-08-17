@@ -7,6 +7,7 @@ use App\Models\MemberSubscription;
 use App\Models\SubscriptionType;
 use App\Services\Payments\StripeGateway;
 use App\Support\Currencies;
+use App\Support\OfflineCheckout;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -58,6 +59,13 @@ class MembershipCheckoutController extends \Illuminate\Routing\Controller
 
         abort_unless($subscriptionType->isForMembers(), 404);
         abort_unless($subscriptionType->is_active, 404);
+
+        // No gateway: finish the order without taking money, so the flow can be
+        // walked end to end. The subscription is marked as manual, and the
+        // buyer is told plainly that nothing was charged.
+        if (OfflineCheckout::shouldHandle()) {
+            return $this->completeWithoutPayment($user, $subscriptionType);
+        }
 
         // Missing keys are a deployment problem, not something the buyer did.
         // Without this the Stripe client threw "$config must be a string or an
@@ -129,6 +137,40 @@ class MembershipCheckoutController extends \Illuminate\Routing\Controller
         }
 
         return redirect($session->url);
+    }
+
+    /**
+     * Grant the membership without a payment, then report it as such.
+     *
+     * Renewing extends the running membership instead of stacking a second
+     * row, exactly as the paid path does.
+     */
+    private function completeWithoutPayment($user, SubscriptionType $subscriptionType)
+    {
+        $existing = MemberSubscription::forUser($user->id)->active()->latest('ends_at')->first();
+
+        if ($existing) {
+            $existing->renew($subscriptionType->duration_days);
+            $existing->update(['metadata' => OfflineCheckout::metadata()]);
+        } else {
+            MemberSubscription::create([
+                'user_id' => $user->id,
+                'subscription_type_id' => $subscriptionType->id,
+                'status' => MemberSubscription::STATUS_ACTIVE,
+                'starts_at' => now(),
+                'ends_at' => now()->addDays($subscriptionType->duration_days),
+                'metadata' => OfflineCheckout::metadata(),
+            ]);
+        }
+
+        Log::info('Membership granted without payment (no gateway configured)', [
+            'user_id' => $user->id,
+            'subscription_type_id' => $subscriptionType->id,
+        ]);
+
+        return redirect()
+            ->route('account.member.dashboard')
+            ->with('status', __('front.membership.activated_without_payment'));
     }
 
     /**
