@@ -106,6 +106,8 @@ class AdminPanelProvider extends PanelProvider
                            zkompilovaný theme — Tailwind utility napsané
                            v Blade šabloně by v jeho stylech nebyly. */
                         .zs-guide {
+                            /* Odsazená od lišty nahoře, ať se s ní neslévá. */
+                            margin-top: 1.5rem;
                             margin-bottom: 1.5rem;
                             border-radius: 0.75rem;
                             background: #FFFFFF;

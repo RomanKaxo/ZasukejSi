@@ -164,6 +164,88 @@ class SubscriptionRevenueTest extends TestCase
         $this->assertSame(2, app(SubscriptionRevenue::class)->expiringWithin(7));
     }
 
+    /** Meziroční srovnání potřebuje okno, ne odečet dvou součtů. */
+    public function test_a_window_counts_only_what_falls_inside_it(): void
+    {
+        $plan = $this->plan(price: 400);
+
+        foreach ([now()->subDays(5), now()->subMonths(14)] as $when) {
+            Subscription::create([
+                'profile_id' => $this->profile()->id,
+                'subscription_type_id' => $plan->id,
+                'status' => Subscription::STATUS_ACTIVE,
+                'starts_at' => $when,
+                'ends_at' => $when->copy()->addMonth(),
+            ]);
+        }
+
+        $revenue = app(SubscriptionRevenue::class);
+
+        $this->assertSame(800.0, $revenue->total());
+        $this->assertSame(400.0, $revenue->between(now()->subYear(), now()->addSecond()));
+        $this->assertSame(400.0, $revenue->between(now()->subYears(2), now()->subYear()));
+    }
+
+    public function test_purchases_are_counted_per_month(): void
+    {
+        $plan = $this->plan(price: 100);
+
+        foreach ([now()->subDays(2), now()->subDays(3), now()->subMonths(2)] as $when) {
+            Subscription::create([
+                'profile_id' => $this->profile()->id,
+                'subscription_type_id' => $plan->id,
+                'status' => Subscription::STATUS_ACTIVE,
+                'starts_at' => $when,
+                'ends_at' => $when->copy()->addMonth(),
+            ]);
+        }
+
+        $purchases = app(SubscriptionRevenue::class)->purchasesByMonth(12);
+
+        $this->assertSame(2, $purchases[now()->format('Y-m')]);
+        $this->assertSame(1, $purchases[now()->subMonths(2)->format('Y-m')]);
+    }
+
+    /** Přidělené bez platby se do tržeb nepočítá, ale koupené to je. */
+    public function test_a_manual_grant_counts_as_a_purchase_but_not_as_revenue(): void
+    {
+        Subscription::create([
+            'profile_id' => $this->profile()->id,
+            'subscription_type_id' => $this->plan(price: 900)->id,
+            'status' => Subscription::STATUS_ACTIVE,
+            'starts_at' => now()->subDay(),
+            'ends_at' => now()->addMonth(),
+            'metadata' => OfflineCheckout::metadata(),
+        ]);
+
+        $revenue = app(SubscriptionRevenue::class);
+
+        $this->assertSame(0.0, $revenue->total());
+        $this->assertSame(1, $revenue->purchasesByMonth(12)[now()->format('Y-m')]);
+    }
+
+    public function test_registrations_are_counted_per_month(): void
+    {
+        User::factory()->create(['created_at' => now()->subDays(2)]);
+        User::factory()->create(['created_at' => now()->subDays(4)]);
+        User::factory()->create(['created_at' => now()->subMonths(3)]);
+
+        $registrations = app(SubscriptionRevenue::class)->registrationsByMonth(12);
+
+        $this->assertSame(2, $registrations[now()->format('Y-m')]);
+        $this->assertSame(1, $registrations[now()->subMonths(3)->format('Y-m')]);
+    }
+
+    public function test_all_three_series_share_the_same_months(): void
+    {
+        $revenue = app(SubscriptionRevenue::class);
+
+        $months = array_keys($revenue->monthly(12));
+
+        $this->assertSame($months, array_keys($revenue->purchasesByMonth(12)));
+        $this->assertSame($months, array_keys($revenue->registrationsByMonth(12)));
+    }
+
     public function test_something_ending_next_month_is_not_expiring_soon(): void
     {
         Subscription::create([

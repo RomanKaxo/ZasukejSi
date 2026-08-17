@@ -60,6 +60,78 @@ class SubscriptionRevenue
         return collect($this->paidRows($since))->sum('amount');
     }
 
+    /**
+     * Earned inside a window, `from` included and `to` excluded.
+     *
+     * Comparisons need this: „letos" and „loni" are two windows, and taking one
+     * from the other by subtracting totals only works while the windows are
+     * neatly nested.
+     */
+    public function between(Carbon $from, Carbon $to): float
+    {
+        return $this->paidRows($from)
+            ->filter(fn (array $row) => $row['at']->lt($to))
+            ->sum('amount');
+    }
+
+    /**
+     * How many subscriptions and memberships were bought in each month.
+     *
+     * @return array<string, int>
+     */
+    public function purchasesByMonth(int $months = 12): array
+    {
+        $buckets = $this->emptyMonths($months);
+
+        foreach ($this->rows(now()->subMonths($months - 1)->startOfMonth()) as $row) {
+            $month = $row['at']->format('Y-m');
+
+            if (array_key_exists($month, $buckets)) {
+                $buckets[$month]++;
+            }
+        }
+
+        return $buckets;
+    }
+
+    /**
+     * How many accounts were created in each month.
+     *
+     * @return array<string, int>
+     */
+    public function registrationsByMonth(int $months = 12): array
+    {
+        $buckets = $this->emptyMonths($months);
+
+        $rows = \App\Models\User::query()
+            ->where('created_at', '>=', now()->subMonths($months - 1)->startOfMonth())
+            ->get(['created_at']);
+
+        foreach ($rows as $row) {
+            $month = $row->created_at?->format('Y-m');
+
+            if ($month !== null && array_key_exists($month, $buckets)) {
+                $buckets[$month]++;
+            }
+        }
+
+        return $buckets;
+    }
+
+    /** @return array<string, int> */
+    private function emptyMonths(int $months): array
+    {
+        $buckets = [];
+        $cursor = now()->subMonths($months - 1)->startOfMonth();
+
+        while ($cursor->lte(now())) {
+            $buckets[$cursor->format('Y-m')] = 0;
+            $cursor->addMonth();
+        }
+
+        return $buckets;
+    }
+
     public function activeProfileSubscriptions(): int
     {
         return Subscription::query()

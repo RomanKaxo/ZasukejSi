@@ -20,12 +20,12 @@ class RevenueChart extends ChartWidget
 
     public function getHeading(): string
     {
-        return 'Tržby za posledních 12 měsíců';
+        return 'Provoz za posledních 12 měsíců';
     }
 
     public function getDescription(): ?string
     {
-        return 'Počítá se, co bylo skutečně zaplaceno. Předplatné přidělené bez platby se sem nezapočítává.';
+        return 'Tržby počítají, co bylo skutečně zaplaceno — předplatné přidělené bez platby se do nich nezapočítává, ale mezi zakoupená ano. Registrace a počty mají vlastní osu vpravo, jinak by se u tržeb ztratily.';
     }
 
     protected function getType(): string
@@ -35,15 +35,44 @@ class RevenueChart extends ChartWidget
 
     protected function getData(): array
     {
-        $monthly = app(SubscriptionRevenue::class)->monthly(12);
+        $revenue = app(SubscriptionRevenue::class);
+
+        $monthly = $revenue->monthly(12);
+        $purchases = $revenue->purchasesByMonth(12);
+        $registrations = $revenue->registrationsByMonth(12);
 
         return [
             'datasets' => [
                 [
+                    'type' => 'bar',
                     'label' => 'Tržby (' . SubscriptionRevenue::CURRENCY . ')',
                     'data' => array_values($monthly),
                     'backgroundColor' => '#DD3888',
                     'borderColor' => '#DD3888',
+                    'yAxisID' => 'y',
+                    'order' => 3,
+                ],
+                [
+                    // Čárou, ne sloupcem: jednotky jsou počty, ne koruny, a
+                    // vedle tržeb by ze sloupečku zbyl proužek.
+                    'type' => 'line',
+                    'label' => 'Zakoupená předplatná',
+                    'data' => array_values($purchases),
+                    'backgroundColor' => '#5C2D62',
+                    'borderColor' => '#5C2D62',
+                    'yAxisID' => 'count',
+                    'tension' => 0.3,
+                    'order' => 1,
+                ],
+                [
+                    'type' => 'line',
+                    'label' => 'Registrace',
+                    'data' => array_values($registrations),
+                    'backgroundColor' => '#00B80F',
+                    'borderColor' => '#00B80F',
+                    'yAxisID' => 'count',
+                    'tension' => 0.3,
+                    'order' => 2,
                 ],
             ],
             'labels' => array_map(
@@ -59,10 +88,20 @@ class RevenueChart extends ChartWidget
             'scales' => [
                 'y' => [
                     'beginAtZero' => true,
+                    'position' => 'left',
+                    'title' => ['display' => true, 'text' => 'Tržby'],
+                ],
+                'count' => [
+                    'beginAtZero' => true,
+                    'position' => 'right',
+                    'title' => ['display' => true, 'text' => 'Počet'],
+                    // Počty jsou celá čísla; půl registrace neexistuje.
+                    'ticks' => ['precision' => 0],
+                    'grid' => ['drawOnChartArea' => false],
                 ],
             ],
             'plugins' => [
-                'legend' => ['display' => false],
+                'legend' => ['display' => true, 'position' => 'bottom'],
             ],
         ];
     }

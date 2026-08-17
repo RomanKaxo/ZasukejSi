@@ -24,13 +24,15 @@ class SubscriptionOverview extends StatsOverviewWidget
     {
         $revenue = app(SubscriptionRevenue::class);
 
-        $thisMonth = $revenue->total(now()->startOfMonth());
-        $lastMonth = $revenue->total(now()->subMonth()->startOfMonth())
-            - $thisMonth;
+        $thisMonth = $revenue->between(now()->startOfMonth(), now()->addSecond());
+        $lastMonth = $revenue->between(now()->subMonth()->startOfMonth(), now()->startOfMonth());
+
+        $thisYear = $revenue->between(now()->subYear(), now()->addSecond());
+        $lastYear = $revenue->between(now()->subYears(2), now()->subYear());
 
         return [
-            $this->money('Tržby tento měsíc', $thisMonth, $this->comparison($thisMonth, $lastMonth)),
-            $this->money('Tržby za rok', $revenue->total(now()->subYear())),
+            $this->money('Tržby tento měsíc', $thisMonth, $this->comparison($thisMonth, $lastMonth, 'měsíc')),
+            $this->money('Tržby za rok', $thisYear, $this->comparison($thisYear, $lastYear, 'rok')),
             $this->activeSubscriptions($revenue),
             $this->activeMemberships($revenue),
             $this->expiring($revenue),
@@ -47,18 +49,28 @@ class SubscriptionOverview extends StatsOverviewWidget
         return $note ? $stat->description($note) : $stat;
     }
 
-    /** Slovní srovnání s minulým měsícem, ať číslo něco znamená. */
-    private function comparison(float $now, float $before): string
+    /**
+     * Slovní srovnání s předchozím obdobím, ať číslo něco znamená.
+     *
+     * @param  string  $period  „měsíc" nebo „rok" — vejde se do věty.
+     */
+    private function comparison(float $now, float $before, string $period): string
     {
+        $previous = $period === 'rok' ? 'předchozí rok' : 'minulý měsíc';
+
         if ($before <= 0.0) {
-            return $now > 0 ? 'první tržby v tomto srovnání' : 'minulý měsíc bez tržeb';
+            return $now > 0
+                ? "první tržby, {$previous} byl bez nich"
+                : "{$previous} byl také bez tržeb";
         }
 
-        $change = round((($now - $before) / $before) * 100);
+        $change = (int) round((($now - $before) / $before) * 100);
 
-        return $change >= 0
-            ? "o {$change} % víc než minulý měsíc"
-            : 'o ' . abs($change) . ' % míň než minulý měsíc';
+        return match (true) {
+            $change === 0 => "stejně jako {$previous}",
+            $change > 0 => "o {$change} % víc než {$previous}",
+            default => 'o ' . abs($change) . " % míň než {$previous}",
+        };
     }
 
     private function activeSubscriptions(SubscriptionRevenue $revenue): Stat

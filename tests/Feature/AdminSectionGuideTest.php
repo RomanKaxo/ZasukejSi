@@ -52,6 +52,20 @@ class AdminSectionGuideTest extends TestCase
             ->assertSee('K čemu je tahle sekce');
     }
 
+    /**
+     * Zavřená, dokud si ji člověk sám neotevře.
+     *
+     * Legendu potřebuje jednou, ne při každém otevření sekce — otevřená by po
+     * pár návštěvách byla jen řádek, který odsouvá tabulku dolů.
+     */
+    public function test_the_guide_starts_closed(): void
+    {
+        $html = $this->actingAs($this->admin())->get('/admin/profiles')->getContent();
+
+        $this->assertStringContainsString('open: false', $html);
+        $this->assertStringContainsString("localStorage.getItem('guide:profiles') === 'open'", $html);
+    }
+
     /** Legenda popisuje sekci, ne obrazovku — platí i na detailu. */
     public function test_a_detail_screen_keeps_its_sections_guide(): void
     {

@@ -17,9 +17,12 @@
 @if($guide)
     <div class="zs-guide"
          x-data="{
-            open: true,
+            open: false,
             init() {
-                try { this.open = localStorage.getItem('guide:{{ $key }}') !== 'closed'; } catch (e) {}
+                // Zavřená napevno: legendu člověk potřebuje jednou, ne při
+                // každém otevření sekce. Otevřenou si pamatuje, dokud ji
+                // sám nezavře.
+                try { this.open = localStorage.getItem('guide:{{ $key }}') === 'open'; } catch (e) {}
             },
             toggle() {
                 this.open = !this.open;
