@@ -62,12 +62,15 @@ class ScrapeItemsTable
                     })
                     ->sortable(),
 
-                TextColumn::make('images')
+                // `state()`, not `formatStateUsing()`: a column whose value is
+                // an array is formatted element by element, so ten photos came
+                // out as "0, 0, 0, 0, 0, 0, 0, 0, 0, 0".
+                TextColumn::make('photo_count')
                     ->label('Fotek')
-                    ->formatStateUsing(fn ($state) => is_array($state) ? count($state) : 0)
+                    ->state(fn (ScrapeItem $record) => count($record->images ?? []))
                     // Nothing to import photos from is worth noticing before
                     // the profile is created, not after.
-                    ->color(fn ($state) => is_array($state) && count($state) > 0 ? null : 'warning')
+                    ->color(fn (ScrapeItem $record) => count($record->images ?? []) > 0 ? null : 'warning')
                     ->alignCenter(),
 
                 // The scraper only ever recognised a repeat of itself. The same
