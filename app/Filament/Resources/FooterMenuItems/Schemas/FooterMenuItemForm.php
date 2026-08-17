@@ -50,6 +50,13 @@ class FooterMenuItemForm
                             ->disabled(fn ($get) => filled($get('page_id')))
                             ->requiredWithout('page_id'),
 
+                        Select::make('audience')
+                            ->label('Komu se zobrazí')
+                            ->helperText('Návrh nabízí VIP pro dívky i Premium pro pány vedle sebe. Přihlášenému má smysl ukázat jen ten jeho; nepřihlášený role nemá, takže mu patří obecná stránka VIP & Premium.')
+                            ->options(fn () => FooterMenuItem::audienceOptions())
+                            ->default(FooterMenuItem::AUDIENCE_ALL)
+                            ->required(),
+
                         Toggle::make('opens_in_new_tab')
                             ->label('Otevřít v novém panelu')
                             ->default(false),

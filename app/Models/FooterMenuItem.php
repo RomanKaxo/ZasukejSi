@@ -26,10 +26,23 @@ class FooterMenuItem extends Model
     /** The design draws three columns. */
     public const COLUMNS = [1, 2, 3];
 
+    /**
+     * Who the link is for.
+     *
+     * The design lists a VIP plan for women and a Premium one for men next to
+     * each other, which only makes sense to somebody who is neither yet. A
+     * signed-in visitor is offered the one that applies to her or him.
+     */
+    public const AUDIENCE_ALL = 'all';
+    public const AUDIENCE_GUESTS = 'guests';
+    public const AUDIENCE_WOMEN = 'women';
+    public const AUDIENCE_MEN = 'men';
+
     protected $fillable = [
         'label',
         'page_id',
         'url',
+        'audience',
         'column',
         'sort_order',
         'opens_in_new_tab',
@@ -56,6 +69,35 @@ class FooterMenuItem extends Model
     public function scopeVisible(Builder $query): Builder
     {
         return $query->where('is_visible', true);
+    }
+
+    /** @return array<string, string> */
+    public static function audienceOptions(): array
+    {
+        return [
+            self::AUDIENCE_ALL => 'Všem',
+            self::AUDIENCE_GUESTS => 'Jen nepřihlášeným',
+            self::AUDIENCE_WOMEN => 'Jen ženám',
+            self::AUDIENCE_MEN => 'Jen mužům',
+        ];
+    }
+
+    /**
+     * Whether this link belongs in the footer the current visitor sees.
+     *
+     * An unknown value shows the link rather than hiding it: a typo in the
+     * column must not make a link silently disappear.
+     */
+    public function isForCurrentVisitor(): bool
+    {
+        $user = auth()->user();
+
+        return match ($this->audience) {
+            self::AUDIENCE_GUESTS => $user === null,
+            self::AUDIENCE_WOMEN => $user !== null && $user->isFemale(),
+            self::AUDIENCE_MEN => $user !== null && $user->isMale(),
+            default => true,
+        };
     }
 
     public function scopeOrdered(Builder $query): Builder
@@ -99,7 +141,12 @@ class FooterMenuItem extends Model
                 return collect();
             }
 
-            $items = static::query()->visible()->ordered()->with('page')->get();
+            $items = static::query()
+                ->visible()
+                ->ordered()
+                ->with('page')
+                ->get()
+                ->filter(fn (self $item) => $item->isForCurrentVisitor());
         } catch (Throwable) {
             return collect();
         }

@@ -24,6 +24,7 @@ return [
         'public' => 'Veřejné',
         'verified' => 'Ověřeno',
         'photos' => 'Fotek',
+        'phone' => 'Telefon',
         'rating' => 'Hodnocení',
         'created_at' => 'Vytvořeno',
         'updated_at' => 'Aktualizováno',

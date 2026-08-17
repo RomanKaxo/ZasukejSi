@@ -37,6 +37,13 @@ class FooterMenuItemsTable
                     ->url(fn (FooterMenuItem $record) => $record->resolvedUrl())
                     ->openUrlInNewTab(),
 
+                TextColumn::make('audience')
+                    ->label('Komu')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state) => FooterMenuItem::audienceOptions()[$state] ?? $state)
+                    ->color(fn (?string $state) => $state === FooterMenuItem::AUDIENCE_ALL ? 'gray' : 'info')
+                    ->sortable(),
+
                 TextColumn::make('column')
                     ->label('Sloupec')
                     ->badge()
@@ -61,6 +68,10 @@ class FooterMenuItemsTable
                 SelectFilter::make('column')
                     ->label('Sloupec')
                     ->options(array_combine(FooterMenuItem::COLUMNS, FooterMenuItem::COLUMNS)),
+
+                SelectFilter::make('audience')
+                    ->label('Komu')
+                    ->options(fn () => FooterMenuItem::audienceOptions()),
 
                 TernaryFilter::make('is_visible')->label('Zobrazeno'),
             ])

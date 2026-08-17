@@ -24,6 +24,7 @@ return [
         'public' => 'Public',
         'verified' => 'Verified',
         'photos' => 'Photos',
+        'phone' => 'Phone',
         'rating' => 'Rating',
         'created_at' => 'Created At',
         'updated_at' => 'Updated At',

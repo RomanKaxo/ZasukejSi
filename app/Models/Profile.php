@@ -37,6 +37,16 @@ class Profile extends Model implements HasMedia
         'city',
         'address',
         'country_code',
+        // Promoted out of the `content` / `contacts` JSON so they can be
+        // searched, filtered and sorted; kept in step by syncStructuredFields().
+        'phone',
+        'height_cm',
+        'weight_kg',
+        'bust_size',
+        'nationality',
+        'languages',
+        'has_whatsapp',
+        'has_telegram',
         'about',
         'incall',
         'outcall',
@@ -119,11 +129,122 @@ class Profile extends Model implements HasMedia
     }
 
     /**
+     * Column => the `content` key it mirrors.
+     *
+     * These values used to live only inside JSON, so nothing could search,
+     * filter, sort or join on them. The JSON is still written by the forms and
+     * the importer; these columns carry the same values in a shape the
+     * database can work with, and are kept in step on every save.
+     */
+    public const STRUCTURED_FIELDS = [
+        'height_cm' => 'card_height_cm',
+        'weight_kg' => 'weight_kg',
+        'bust_size' => 'bust_size',
+        'nationality' => 'nationality',
+        'languages' => 'languages',
+        'has_whatsapp' => 'has_whatsapp',
+        'has_telegram' => 'has_telegram',
+    ];
+
+    /**
+     * Of those, the ones that are a yes/no rather than a value.
+     *
+     * They are `not null default false`: "nobody said" is a no, not a hole,
+     * which is the opposite of how the value fields behave.
+     */
+    private const STRUCTURED_FLAGS = ['has_whatsapp', 'has_telegram'];
+
+    /**
+     * Keeps the columns and the JSON saying the same thing.
+     *
+     * Whichever side was edited wins: a form that still writes `content`
+     * updates the column, and a screen that edits the column writes it back
+     * into `content` so the views reading it stay correct.
+     */
+    public function syncStructuredFields(): void
+    {
+        $content = is_array($this->content) ? $this->content : [];
+
+        foreach (self::STRUCTURED_FIELDS as $column => $key) {
+            $isFlag = in_array($column, self::STRUCTURED_FLAGS, true);
+            $current = $this->attributes[$column] ?? null;
+
+            if ($this->isDirty($column)) {
+                $content[$key] = $isFlag ? (bool) $current : $current;
+
+                continue;
+            }
+
+            if ($this->isDirty('content') || $current === null) {
+                $value = $content[$key] ?? null;
+
+                $this->attributes[$column] = $isFlag
+                    ? (bool) $value
+                    : (($value === '' || $value === null) ? null : $value);
+            }
+        }
+
+        $this->attributes['content'] = json_encode($content, JSON_UNESCAPED_UNICODE);
+
+        // The phone only ever existed inside the `contacts` list, so there is
+        // no column to edit yet — it is derived, not mirrored.
+        if ($this->isDirty('contacts') || ($this->attributes['phone'] ?? null) === null) {
+            $this->attributes['phone'] = self::firstPhoneOf($this->contacts ?? []);
+        }
+    }
+
+    /**
+     * The profile's phone number, out of whatever shape `contacts` is in.
+     *
+     * ProfileForm writes a list of `{type, value}` pairs, but the column has
+     * also been filled by hand and by the importer, so a flat map is just as
+     * likely. The pairs are preferred; anything phone-shaped is the fallback.
+     *
+     * @param  array<mixed>  $contacts
+     */
+    public static function firstPhoneOf(mixed $contacts): ?string
+    {
+        if (! is_array($contacts)) {
+            return null;
+        }
+
+        foreach ($contacts as $contact) {
+            if (! is_array($contact)) {
+                continue;
+            }
+
+            $type = strtolower((string) ($contact['type'] ?? ''));
+            $value = trim((string) ($contact['value'] ?? ''));
+
+            if ($value !== '' && ($type === 'phone' || $type === '')) {
+                return mb_substr($value, 0, 32);
+            }
+        }
+
+        $fallback = null;
+
+        array_walk_recursive($contacts, function ($value, $key) use (&$fallback) {
+            if ($fallback !== null || ! is_scalar($value)) {
+                return;
+            }
+
+            $digits = preg_replace('/\D+/', '', (string) $value) ?? '';
+
+            // Nine digits is the shortest thing that can be a phone number.
+            if (strlen($digits) >= 9) {
+                $fallback = mb_substr(trim((string) $value), 0, 32);
+            }
+        });
+
+        return $fallback;
+    }
+
+    /**
      * Body weight in kilograms.
      */
     public function getWeightAttribute(): ?int
     {
-        $value = $this->contentValue('weight_kg');
+        $value = $this->attributes['weight_kg'] ?? $this->contentValue('weight_kg');
 
         return $value === null ? null : (int) $value;
     }
@@ -133,7 +254,7 @@ class Profile extends Model implements HasMedia
      */
     public function getHeightAttribute(): ?int
     {
-        $value = $this->contentValue('card_height_cm');
+        $value = $this->attributes['height_cm'] ?? $this->contentValue('card_height_cm');
 
         return $value === null ? null : (int) $value;
     }
@@ -143,9 +264,9 @@ class Profile extends Model implements HasMedia
      */
     public function getBustSizeAttribute(): ?string
     {
-        $value = $this->contentValue('bust_size');
+        $value = $this->attributes['bust_size'] ?? $this->contentValue('bust_size');
 
-        return $value === null ? null : (string) $value;
+        return ($value === null || $value === '') ? null : (string) $value;
     }
 
     /**
@@ -153,9 +274,9 @@ class Profile extends Model implements HasMedia
      */
     public function getNationalityAttribute(): ?string
     {
-        $value = $this->contentValue('nationality');
+        $value = $this->attributes['nationality'] ?? $this->contentValue('nationality');
 
-        return $value === null ? null : strtolower((string) $value);
+        return ($value === null || $value === '') ? null : strtolower((string) $value);
     }
 
     /**
@@ -163,9 +284,9 @@ class Profile extends Model implements HasMedia
      */
     public function getLanguagesAttribute(): ?string
     {
-        $value = $this->contentValue('languages');
+        $value = $this->attributes['languages'] ?? $this->contentValue('languages');
 
-        return $value === null ? null : (string) $value;
+        return ($value === null || $value === '') ? null : (string) $value;
     }
 
     /**
@@ -173,7 +294,7 @@ class Profile extends Model implements HasMedia
      */
     public function getHasWhatsappAttribute(): bool
     {
-        return (bool) $this->contentValue('has_whatsapp');
+        return (bool) ($this->attributes['has_whatsapp'] ?? $this->contentValue('has_whatsapp'));
     }
 
     /**
@@ -181,7 +302,7 @@ class Profile extends Model implements HasMedia
      */
     public function getHasTelegramAttribute(): bool
     {
-        return (bool) $this->contentValue('has_telegram');
+        return (bool) ($this->attributes['has_telegram'] ?? $this->contentValue('has_telegram'));
     }
 
     /**
@@ -593,6 +714,10 @@ class Profile extends Model implements HasMedia
      */
     protected static function booted(): void
     {
+        // Every write goes through here, whichever form or importer made it,
+        // so the columns and the JSON can never drift apart.
+        static::saving(fn (Profile $profile) => $profile->syncStructuredFields());
+
         static::updating(function (Profile $profile) {
             $originalStatus = $profile->getOriginal('status');
             $newStatus = $profile->status;

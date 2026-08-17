@@ -204,6 +204,117 @@ class FooterMenuTest extends TestCase
         $response->assertSee('JINÉ');
     }
 
+    /**
+     * The design lists a VIP plan for women and a Premium one for men side by
+     * side, which only makes sense to somebody who is neither yet.
+     */
+    public function test_a_signed_in_visitor_is_offered_only_her_own_plan(): void
+    {
+        $page = $this->page('vip-premium', 'VIP & Premium');
+
+        FooterMenuItem::create([
+            'label' => ['cs' => 'VIP účet pro dívky'],
+            'page_id' => $page->id,
+            'audience' => FooterMenuItem::AUDIENCE_WOMEN,
+            'column' => 1,
+            'sort_order' => 10,
+        ]);
+        FooterMenuItem::create([
+            'label' => ['cs' => 'Prémium účet pro pány'],
+            'page_id' => $page->id,
+            'audience' => FooterMenuItem::AUDIENCE_MEN,
+            'column' => 1,
+            'sort_order' => 20,
+        ]);
+
+        $woman = \App\Models\User::factory()->create(['gender' => 'female']);
+        $man = \App\Models\User::factory()->create(['gender' => 'male']);
+
+        $this->actingAs($woman);
+        $this->assertSame([['VIP účet pro dívky']], $this->renderedColumns());
+
+        $this->actingAs($man);
+        $this->assertSame([['Prémium účet pro pány']], $this->renderedColumns());
+    }
+
+    public function test_a_visitor_who_is_not_signed_in_gets_the_general_page(): void
+    {
+        $page = $this->page('vip-premium', 'VIP & Premium');
+
+        FooterMenuItem::create([
+            'label' => ['cs' => 'VIP a Premium'],
+            'page_id' => $page->id,
+            'audience' => FooterMenuItem::AUDIENCE_GUESTS,
+            'column' => 1,
+            'sort_order' => 10,
+        ]);
+        FooterMenuItem::create([
+            'label' => ['cs' => 'VIP účet pro dívky'],
+            'page_id' => $page->id,
+            'audience' => FooterMenuItem::AUDIENCE_WOMEN,
+            'column' => 1,
+            'sort_order' => 20,
+        ]);
+
+        // No role yet, so asking her or him to pick a side is meaningless.
+        $this->assertSame([['VIP a Premium']], $this->renderedColumns());
+    }
+
+    public function test_an_item_for_everybody_shows_to_everybody(): void
+    {
+        FooterMenuItem::create([
+            'label' => ['cs' => 'Kontakt'],
+            'url' => '/contact',
+            'column' => 1,
+            'sort_order' => 10,
+        ]);
+
+        $this->assertSame([['Kontakt']], $this->renderedColumns());
+
+        $this->actingAs(\App\Models\User::factory()->create(['gender' => 'male']));
+
+        $this->assertSame([['Kontakt']], $this->renderedColumns());
+    }
+
+    /**
+     * Terms of service belong in the footer; they were seeded there and must
+     * stay there.
+     */
+    public function test_the_terms_of_service_link_is_seeded_into_the_footer(): void
+    {
+        $this->page('terms-of-service', 'Obchodní podmínky');
+        $this->page('faq', 'FAQ');
+
+        $this->seed(FooterMenuSeeder::class);
+
+        $this->assertTrue(
+            FooterMenuItem::query()->get()->contains(
+                fn (FooterMenuItem $item) => $item->page?->slug === 'terms-of-service'
+            )
+        );
+    }
+
+    public function test_the_seeder_targets_the_two_plan_links(): void
+    {
+        $this->page('vip-premium', 'VIP & Premium');
+
+        $this->seed(FooterMenuSeeder::class);
+
+        $audiences = FooterMenuItem::query()
+            ->whereHas('page', fn ($q) => $q->where('slug', 'vip-premium'))
+            ->pluck('audience')
+            ->sort()
+            ->values()
+            ->all();
+
+        // The generic one is kept for guests so it does not say the same thing
+        // three times to the same person.
+        $this->assertSame(
+            [FooterMenuItem::AUDIENCE_GUESTS, FooterMenuItem::AUDIENCE_MEN, FooterMenuItem::AUDIENCE_WOMEN],
+            $audiences
+        );
+    }
+
     public function test_the_logo_keeps_its_three_coloured_parts(): void
     {
         $html = $this->get('/')->getContent();
