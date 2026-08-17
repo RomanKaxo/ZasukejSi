@@ -27,7 +27,10 @@
     @endphp
 
     @if($accountProfile && $missingSteps !== [])
-        <div x-data="{ show: true }" x-show="show" class="sticky top-14 md:top-20 z-40 w-full md:w-[1134px] md:mx-auto mb-8">
+        {{-- `max-w-full` chybělo, takže od 768 px do zhruba 1150 px byl pruh
+             širší než obrazovka: začínal na levém okraji, pravá půlka přetékala
+             mimo a jeho vystředěný obsah tím pádem vycházel vedle. --}}
+        <div x-data="{ show: true }" x-show="show" class="sticky top-14 md:top-20 z-40 w-full md:w-[1134px] max-w-full md:mx-auto mb-8">
             <div class="relative mx-auto w-[310px] min-h-[110px] px-4 py-3 md:w-full md:min-h-[50px] md:mx-0 md:px-4 md:py-0 bg-[#FFE0E5] rounded-[8px] md:flex md:items-center md:justify-center">
                 <img src="{{ asset('images/icons/OctagonAlert.svg') }}" class="absolute top-3 left-3 md:static md:mr-3 w-[20px] h-[20px]" alt="">
                 <button
