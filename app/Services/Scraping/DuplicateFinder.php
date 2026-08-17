@@ -71,21 +71,27 @@ class DuplicateFinder
     /** @param  array<int, string>  $phones */
     private function matchProfile(string $name, string $city, array $phones, ScrapeItem $item): ?array
     {
-        $candidates = Profile::query()
-            ->when($item->imported_profile_id, fn ($q) => $q->whereKeyNot($item->imported_profile_id))
-            ->get(['id', 'display_name', 'city', 'contacts']);
+        // The phone is now a column, so the strongest signal is one indexed
+        // query instead of loading every profile and comparing in PHP.
+        if ($phones !== []) {
+            $byPhone = Profile::query()
+                ->when($item->imported_profile_id, fn ($q) => $q->whereKeyNot($item->imported_profile_id))
+                ->whereNotNull('phone')
+                ->get(['id', 'phone'])
+                ->first(fn (Profile $profile) => array_intersect($phones, self::phonesOf([$profile->phone])) !== []);
 
-        $byPhone = $phones === [] ? null : $candidates->first(
-            fn (Profile $profile) => array_intersect($phones, self::phonesOf((array) ($profile->contacts ?? []))) !== []
-        );
-
-        if ($byPhone) {
-            return ['profile' => $byPhone, 'item' => null, 'reason' => self::REASON_PHONE];
+            if ($byPhone) {
+                return ['profile' => $byPhone, 'item' => null, 'reason' => self::REASON_PHONE];
+            }
         }
 
         if ($name === '') {
             return null;
         }
+
+        $candidates = Profile::query()
+            ->when($item->imported_profile_id, fn ($q) => $q->whereKeyNot($item->imported_profile_id))
+            ->get(['id', 'display_name', 'city']);
 
         $sameName = $candidates->filter(
             fn (Profile $profile) => self::normalizeName(self::displayNameOf($profile)) === $name

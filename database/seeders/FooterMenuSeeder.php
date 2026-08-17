@@ -48,6 +48,50 @@ class FooterMenuSeeder extends Seeder
                 ]);
             }
         }
+
+        $this->addPlanLinks();
+    }
+
+    /**
+     * The design's two plan links, each shown to the half it applies to.
+     *
+     * A visitor who is not signed in has no role yet, so she or he gets the
+     * page that describes both instead of being asked to pick.
+     */
+    private function addPlanLinks(): void
+    {
+        $plans = Page::query()->where('slug', 'vip-premium')->first();
+
+        if (! $plans) {
+            return;
+        }
+
+        // The generic link seeded from the page list would otherwise sit
+        // alongside the two targeted ones and say the same thing three times.
+        FooterMenuItem::query()
+            ->where('page_id', $plans->id)
+            ->update(['audience' => FooterMenuItem::AUDIENCE_GUESTS]);
+
+        $targeted = [
+            [
+                'label' => ['cs' => 'VIP účet pro dívky', 'en' => 'VIP account for girls', 'ru' => 'VIP для девушек'],
+                'audience' => FooterMenuItem::AUDIENCE_WOMEN,
+                'sort_order' => 100,
+            ],
+            [
+                'label' => ['cs' => 'Prémium účet pro pány', 'en' => 'Premium account for men', 'ru' => 'Premium для мужчин'],
+                'audience' => FooterMenuItem::AUDIENCE_MEN,
+                'sort_order' => 110,
+            ],
+        ];
+
+        foreach ($targeted as $item) {
+            FooterMenuItem::create($item + [
+                'page_id' => $plans->id,
+                'column' => 3,
+                'is_visible' => true,
+            ]);
+        }
     }
 
     /** @return array<string, string> */

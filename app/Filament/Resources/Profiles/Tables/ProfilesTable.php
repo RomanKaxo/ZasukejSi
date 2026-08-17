@@ -67,6 +67,15 @@ class ProfilesTable
                     ->numeric()
                     ->sortable(),
 
+                // The number lived inside the `contacts` JSON, so an admin
+                // holding a phone number had nowhere to type it.
+                TextColumn::make('phone')
+                    ->label(__('profiles.table.phone'))
+                    ->searchable()
+                    ->copyable()
+                    ->placeholder('—')
+                    ->toggleable(),
+
                 TextColumn::make('status')
                     ->label(__('profiles.table.status'))
                     ->badge()
