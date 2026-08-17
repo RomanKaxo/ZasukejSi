@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources\ScrapeItems\Tables;
 
+use App\Filament\Resources\ScrapeUnknownValues\ScrapeUnknownValueResource;
 use App\Models\ScrapeItem;
 use App\Services\Scraping\DuplicateFinder;
 use App\Services\Scraping\ScrapeItemImporter;
+use App\Services\Scraping\UnknownValueCollector;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
@@ -76,6 +78,22 @@ class ScrapeItemsTable
                 // The scraper only ever recognised a repeat of itself. The same
                 // woman from a second site, or already a profile here, used to
                 // sail through and become a duplicate.
+                // A gap the catalogue cannot store: the reason an item needs a
+                // second confirmation before it becomes a profile.
+                TextColumn::make('unknown_values')
+                    ->label('Chybí v systému')
+                    ->state(function (ScrapeItem $record) {
+                        $missing = app(UnknownValueCollector::class)->unknownServices($record);
+
+                        return $missing->isEmpty() ? '—' : $missing->count() . '×';
+                    })
+                    ->badge()
+                    ->color(fn (ScrapeItem $record) => app(UnknownValueCollector::class)->isComplete($record) ? 'gray' : 'warning')
+                    ->tooltip(fn (ScrapeItem $record) => app(UnknownValueCollector::class)
+                        ->unknownServices($record)
+                        ->implode(', ') ?: null)
+                    ->alignCenter(),
+
                 TextColumn::make('duplicate')
                     ->label('Duplicita')
                     ->state(fn (ScrapeItem $record) => $record->duplicateLabel() ?? '—')
@@ -145,11 +163,33 @@ class ScrapeItemsTable
             ->recordActions([
                 ViewAction::make()->label('Detail'),
 
+                // Primary answer for an item with a gap: fill the catalogue,
+                // don't approve a profile whose values would be thrown away.
+                Action::make('fillValues')
+                    ->label('Doplnit chybějící hodnoty')
+                    ->icon('heroicon-o-plus-circle')
+                    ->color('warning')
+                    ->visible(fn (ScrapeItem $record) => $record->status === ScrapeItem::STATUS_PENDING
+                        && ! app(UnknownValueCollector::class)->isComplete($record))
+                    ->url(fn () => ScrapeUnknownValueResource::getUrl('index')),
+
                 Action::make('approve')
                     ->label('Schválit')
                     ->icon('heroicon-o-check')
                     ->color('success')
                     ->visible(fn (ScrapeItem $record) => $record->status === ScrapeItem::STATUS_PENDING)
+                    // An item whose values we all know is approved in one
+                    // click; one with a gap asks twice, because approving it
+                    // means importing a profile with those values dropped.
+                    ->requiresConfirmation(fn (ScrapeItem $record) => ! app(UnknownValueCollector::class)->isComplete($record))
+                    ->modalHeading('Schválit i s chybějícími hodnotami?')
+                    ->modalDescription(function (ScrapeItem $record) {
+                        $missing = app(UnknownValueCollector::class)->unknownServices($record);
+
+                        return 'Náš katalog nezná: ' . $missing->implode(', ')
+                            . '. Když položku schválíte teď, profil vznikne bez těchto služeb.';
+                    })
+                    ->modalSubmitActionLabel('Schválit i tak')
                     ->action(fn (ScrapeItem $record) => $record->update(['status' => ScrapeItem::STATUS_APPROVED])),
 
                 Action::make('reject')

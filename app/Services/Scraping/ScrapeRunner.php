@@ -22,6 +22,7 @@ class ScrapeRunner
         private readonly FieldExtractor $extractor,
         private readonly AdapterRegistry $adapters,
         private readonly DuplicateFinder $duplicates,
+        private readonly UnknownValueCollector $unknownValues,
     ) {
     }
 
@@ -145,6 +146,27 @@ class ScrapeRunner
 
         if ($item->hasDuplicate()) {
             $notify('možný duplikát: ' . $item->duplicateLabel());
+        }
+    }
+
+    /**
+     * Puts values our catalogue does not know into the review queue.
+     *
+     * Never fatal for the same reason the duplicate check is not: a harvest
+     * must not fail because a comparison did.
+     */
+    private function collectUnknownValues(ScrapeItem $item, Closure $notify): void
+    {
+        try {
+            $noted = $this->unknownValues->collect($item);
+        } catch (Throwable $e) {
+            $notify('sběr neznámých hodnot selhal: ' . $e->getMessage());
+
+            return;
+        }
+
+        if ($noted > 0) {
+            $notify("neznámých hodnot k doplnění: {$noted}");
         }
     }
 
@@ -337,6 +359,7 @@ class ScrapeRunner
 
             $existing->update($attributes);
             $this->flagDuplicate($existing, $notify);
+            $this->collectUnknownValues($existing, $notify);
             $run->increment('items_updated');
             $notify("aktualizováno: {$url}");
 
@@ -349,6 +372,7 @@ class ScrapeRunner
 
         $item = ScrapeItem::create($attributes);
         $this->flagDuplicate($item, $notify);
+        $this->collectUnknownValues($item, $notify);
         $run->increment('items_new');
         $notify("nové: {$url}");
     }
