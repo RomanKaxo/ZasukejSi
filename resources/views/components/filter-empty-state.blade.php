@@ -1,6 +1,6 @@
 <div
     {{ $attributes->merge([
-        'class' => 'mx-auto flex w-full max-w-[1136px] items-center justify-center rounded-[24px] px-6 py-10 text-center md:h-[316px]'
+        'class' => 'mx-auto flex w-full max-w-[1140px] items-center justify-center rounded-[24px] px-6 py-10 text-center md:h-[316px]'
     ]) }}
     style="background: linear-gradient(90deg, #FFF1F8 0%, #FFFFFF 50%, #FFF1F8 100%);"
 >

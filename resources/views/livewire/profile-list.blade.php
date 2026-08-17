@@ -343,19 +343,26 @@
                 }
             }
 
-            /* Desktop grid pinned to the design's measurements: five 210px cards
-               with a 21.5px gutter = 1136px, the same content width as the eco
+            /* Desktop grid pinned to the design's measurements: five 214px cards
+               with a 17.5px gutter = 1140px, the same content width as the eco
                badge. The fluid `xl:grid-cols-5 gap-4` gave 217.6px columns, so
-               cards sat 23.6px apart instead of 21.5px. */
+               cards sat 23.6px apart instead of 17.5px.
+
+               The 231.5px column pitch always matched the design; what did not
+               was how it split. The design gives the card 214 and the gutter
+               17.5, we gave it 210 and 21.5 — same rhythm, four pixels narrower
+               card, and a content block 1140 → 1136 that pulled the header and
+               the footer off the grid with it. */
             /* auto-fill rather than a fixed five: the English homepage puts a
                208px country sidebar beside this grid, leaving ~897px, and five
-               pinned 210px columns came to 1136px — so the row overflowed and
-               the first card sat underneath the sidebar. The card keeps its
-               210px design width; the row simply holds as many as fit. */
+               pinned columns came to the full content width — so the row
+               overflowed and the first card sat underneath the sidebar. The
+               card keeps its design width; the row simply holds as many as
+               fit. */
             @media (min-width: 1280px) {
                 .profile-list-cards-grid {
-                    grid-template-columns: repeat(auto-fill, 210px);
-                    gap: 21.5px;
+                    grid-template-columns: repeat(auto-fill, 214px);
+                    gap: 17.5px;
                     justify-content: center;
                 }
             }

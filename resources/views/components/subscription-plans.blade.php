@@ -24,7 +24,7 @@
     ];
 @endphp
 
-<section class="mx-auto w-full max-w-[1136px] px-4 py-12">
+<section class="mx-auto w-full max-w-[1140px] px-4 py-12">
     @foreach ($groups as $group)
         @if ($group['plans']->isNotEmpty())
             <div class="mb-16 last:mb-0">

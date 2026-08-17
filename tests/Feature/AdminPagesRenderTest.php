@@ -58,6 +58,7 @@ class AdminPagesRenderTest extends TestCase
             'kontaktni-zpravy' => ['/admin/contact-messages'],
             'menu-paticky' => ['/admin/footer-menu-items'],
             'texty-paticky' => ['/admin/manage-footer'],
+            'vekova-brana' => ['/admin/manage-age-gate'],
             'nastaveni' => ['/admin/manage-settings'],
         ];
     }

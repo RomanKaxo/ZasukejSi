@@ -1091,8 +1091,8 @@ body.modal-open {
 
 /* Footer custom layout */
 .footer-main {
-  width: 1136px;
-  max-width: 1136px;
+  width: 1140px;
+  max-width: 1140px;
   height: 85px;
   margin: 0 auto;
   display: flex;
@@ -1101,8 +1101,8 @@ body.modal-open {
 }
 
 .site-footer-container {
-  width: 1136px;
-  max-width: 1136px;
+  width: 1140px;
+  max-width: 1140px;
   height: 275px;
 }
 
@@ -1116,8 +1116,8 @@ body.modal-open {
 .footer-meta-row {
   align-items: center;
   justify-content: space-between;
-  width: 1136px;
-  max-width: 1136px;
+  width: 1140px;
+  max-width: 1140px;
   margin: 0 auto;
   gap: 24px;
 }
@@ -1125,6 +1125,15 @@ body.modal-open {
 @media (min-width: 1024px) {
   .footer-meta-row {
     display: flex;
+  }
+
+  /* The container carries Tailwind's `px-4`, so its 1140px children started
+     16px in and hung 16px past the right edge — the whole footer block sat off
+     the grid the header and the cards share. On desktop the container is the
+     grid, so the padding goes. */
+  .site-footer-container.container {
+    padding-left: 0;
+    padding-right: 0;
   }
 }
 

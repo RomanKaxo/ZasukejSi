@@ -10,6 +10,22 @@ return [
         'not_specified' => 'Neuvedeno',
     ],
 
+    // Věková brána podle návrhu (rámec `phone 360 px-10`). Celý obsah je
+    // editovatelný v administraci pod Obsah → Věková brána, protože je to
+    // právní text a ten se mění bez zásahu do kódu.
+    //
+    // Pozor: návrh v tomto textu mluví za „Euro Girls Escort". To je chyba
+    // návrhu, ne naše jméno — výchozí text tady proto uvádí ZašukejSi.cz.
+    'age_gate' => [
+        'numeral' => '18',
+        'heading' => 'Vítejte',
+        'brand' => 'ZašukejSi.cz',
+        'body' => ', včetně všech webových stránek, odkazů a obrázků, zobrazuje sexuálně explicitní materiál. Mimo tuto stránku jsou oprávněni pouze dospělí se souhlasem. Pokud jste nezletilí (mladší 18 let nebo 21 let v případě, že 18 let není zákonem stanovený věk plnoletosti), pokud vás sexuálně explicitní materiál uráží nebo pokud je prohlížení takového materiálu ve vaší komunitě nezákonné, MUSÍTE opustit tyto stránky kliknutím na tlačítko „ODEJÍT" níže. Kliknutím na tlačítko „VSTOUPIT" vyjadřujete souhlas s prohlášením v dolní části této stránky. ZašukejSi.cz uplatňuje politiku nulové tolerance vůči dětské pornografii nebo nezletilým osobám inzerujícím nebo využívajícím naše stránky. Souhlasím s tím, že nahlásím veškeré nelegální služby nebo činnosti, které porušují podmínky používání. Souhlasím také s tím, že podezření na zneužívání nezletilých a/nebo obchodování s lidmi nahlásím příslušným orgánům.',
+        'agreement' => 'Přečetli jste si tuto smlouvu, porozuměli jste jí a souhlasíte s tím, že se jí budete řídit.',
+        'enter' => 'Vstoupit',
+        'leave' => 'Odejít',
+    ],
+
     // Premium membership for members — what unlocks profile ratings.
     'plans' => [
         'for_women' => 'Předplatné pro ženy',
@@ -79,6 +95,9 @@ return [
         'login' => 'Login',
         'login_mobile' => 'Log-in',
         'logout_mobile' => 'Log-out',
+        // První položka mobilního menu přihlášeného, podle rámce
+        // `menu logged-in muž`.
+        'my_profile' => 'Můj profil',
         'accountdashboard' => 'Účet Dashboard',
         'logout' => 'Odhlásit se',
         'czech' => 'Česky',
@@ -130,7 +149,8 @@ return [
             'services' => 'Moje služby a ceny',
             'subscription' => 'Předplatné',
             'statistics' => 'Statistiky',
-            'reviews' => 'Recenze - již brzy',
+            // Sekce běží, tak už se netváří jako nehotová.
+            'reviews' => 'Recenze',
             'password' => 'Změna hesla',
             'vip_title' => 'Vydělávej víc',
             'vip_description' => 'Upgraduj na VIP a získej větší viditelnost a více funkcí.',
