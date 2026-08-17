@@ -59,6 +59,7 @@ class AdminPagesRenderTest extends TestCase
             'menu-paticky' => ['/admin/footer-menu-items'],
             'texty-paticky' => ['/admin/manage-footer'],
             'vekova-brana' => ['/admin/manage-age-gate'],
+            'zobrazeni-profilu' => ['/admin/profile-views'],
             'nastaveni' => ['/admin/manage-settings'],
         ];
     }
