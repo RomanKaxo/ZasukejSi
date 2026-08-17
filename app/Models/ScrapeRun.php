@@ -60,6 +60,9 @@ class ScrapeRun extends Model
             return null;
         }
 
-        return $this->finished_at->diffInSeconds($this->started_at);
+        // Carbon returns a signed difference, so this way round produced
+        // negative durations — the admin showed a three-minute harvest as
+        // "-171 s".
+        return (int) abs($this->finished_at->diffInSeconds($this->started_at));
     }
 }

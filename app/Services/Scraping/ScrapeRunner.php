@@ -233,20 +233,43 @@ class ScrapeRunner
                 $html = $this->fetcher->get($source, $listingUrl);
             } catch (Throwable $e) {
                 $notify("Výpis {$listingUrl} selhal: " . $e->getMessage());
+
+                // A listing page that errors is not the same as one that is
+                // empty, but the run used to end on both and report success.
+                // A wrong pagination setting then looked like "the source only
+                // has one page" — which is how a harvest of Brno stopped at 23
+                // profiles out of a hundred.
+                if ($page > 1 && $run->error === null) {
+                    $run->error = "Stránkování se zastavilo na {$listingUrl}: " . $e->getMessage()
+                        . ' Zkontrolujte pagination_pattern a pagination_param.';
+                }
+
                 break;
             }
 
             $run->increment('pages_fetched');
 
             $found = $adapter->detailUrls($source, $html);
-            $notify("Stránka {$page}: " . count($found) . ' odkazů');
+            $fresh = array_diff($found, $urls);
+
+            $notify("Stránka {$page}: " . count($found) . ' odkazů, z toho nových ' . count($fresh));
 
             // An empty page means the end of the listing, not an error.
             if ($found === []) {
                 break;
             }
 
-            $urls = array_merge($urls, $found);
+            // A page that repeats what we already have is the end too. Some
+            // listings ignore the pagination parameter entirely and keep
+            // serving page one — eurogirlsescort.cz does exactly that for a
+            // city with a single page, and we were politely re-fetching the
+            // same twenty-three profiles twelve times over.
+            if ($page > 1 && $fresh === []) {
+                $notify("Stránka {$page} nepřinesla nic nového — konec výpisu.");
+                break;
+            }
+
+            $urls = array_merge($urls, $fresh);
         }
 
         return array_values(array_unique($urls));
