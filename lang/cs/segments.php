@@ -16,6 +16,7 @@ return [
         'slug' => 'Slug',
         'color' => 'Barva',
         'active' => 'Aktivní',
+        'profiles' => 'Profilů',
         'sort_order' => 'Pořadí řazení',
         'created' => 'Vytvořeno',
     ],

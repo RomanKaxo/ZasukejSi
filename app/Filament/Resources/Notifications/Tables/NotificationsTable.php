@@ -11,6 +11,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 class NotificationsTable
 {
@@ -21,7 +22,12 @@ class NotificationsTable
                 TextColumn::make('title')
                     ->label('Nadpis')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    // The list showed headlines only, so telling two
+                    // notifications apart meant opening both.
+                    ->description(fn ($record) => Str::limit((string) $record->message, 90))
+                    ->tooltip(fn ($record) => $record->message)
+                    ->wrap(),
 
                 TextColumn::make('type')
                     ->label('Typ')

@@ -14,5 +14,8 @@ return [
         'created_at' => 'Created At',
         'updated_at' => 'Updated At',
         'filter_published' => 'Publication Status',
+        'publish' => 'Publish',
+        'unpublish' => 'Unpublish',
+        'open' => 'Open on site',
     ],
 ];

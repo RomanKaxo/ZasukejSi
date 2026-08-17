@@ -8,12 +8,22 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\DB;
 
 class CitiesTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            // `profiles.city` is free text, not a foreign key, so the count is
+            // a correlated subquery on the name — one query for the page
+            // rather than one per row.
+            ->modifyQueryUsing(fn ($query) => $query->addSelect([
+                'profiles_count' => DB::table('profiles')
+                    ->selectRaw('count(*)')
+                    ->whereColumn('profiles.city', 'cities.name')
+                    ->whereNull('profiles.deleted_at'),
+            ]))
             ->columns([
                 TextColumn::make('name')
                     ->label('Název')
@@ -29,6 +39,15 @@ class CitiesTable
                     ->label('Region/kraj')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
+                // Which towns the site actually serves was not answerable
+                // here; a list of every seeded city says nothing on its own.
+                TextColumn::make('profiles_count')
+                    ->label('Profilů')
+                    ->badge()
+                    ->color(fn ($state) => (int) $state > 0 ? 'success' : 'gray')
+                    ->alignCenter()
+                    ->sortable(),
 
                 TextColumn::make('population')
                     ->label('Obyvatel')

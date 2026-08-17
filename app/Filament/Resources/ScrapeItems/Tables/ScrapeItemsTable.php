@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ScrapeItems\Tables;
 
 use App\Models\ScrapeItem;
+use App\Services\Scraping\DuplicateFinder;
 use App\Services\Scraping\ScrapeItemImporter;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
@@ -69,6 +70,19 @@ class ScrapeItemsTable
                     ->color(fn ($state) => is_array($state) && count($state) > 0 ? null : 'warning')
                     ->alignCenter(),
 
+                // The scraper only ever recognised a repeat of itself. The same
+                // woman from a second site, or already a profile here, used to
+                // sail through and become a duplicate.
+                TextColumn::make('duplicate')
+                    ->label('Duplicita')
+                    ->state(fn (ScrapeItem $record) => $record->duplicateLabel() ?? '—')
+                    ->badge()
+                    ->color(fn (ScrapeItem $record) => $record->hasDuplicate() ? 'danger' : 'gray')
+                    ->url(fn (ScrapeItem $record) => $record->duplicate_profile_id
+                        ? route('filament.admin.resources.profiles.view', $record->duplicate_profile_id)
+                        : null)
+                    ->wrap(),
+
                 TextColumn::make('imported_profile_id')
                     ->label('Profil')
                     ->formatStateUsing(fn ($state) => $state ? '#' . $state : '—')
@@ -114,6 +128,10 @@ class ScrapeItemsTable
                     ->relationship('run', 'id')
                     ->searchable(),
 
+                Filter::make('possible_duplicates')
+                    ->label('Možné duplicity')
+                    ->query(fn ($query) => $query->possibleDuplicates()),
+
                 // A profile without a photo is worth catching before it exists.
                 Filter::make('without_images')
                     ->label('Bez fotografií')
@@ -154,7 +172,12 @@ class ScrapeItemsTable
                             ->helperText('Stahuje se s prodlevou podle nastavení zdroje, takže to chvíli trvá.'),
                     ])
                     ->requiresConfirmation()
-                    ->modalDescription('Vznikne nepublikovaný profil ve stavu ke schválení. Na web se nedostane, dokud ho nepublikujete.')
+                    // The warning belongs where the decision is made, not in a
+                    // column the reviewer may have scrolled past.
+                    ->modalDescription(fn (ScrapeItem $record) => $record->hasDuplicate()
+                        ? 'Pozor: vypadá jako už existující — ' . $record->duplicateLabel()
+                            . '. Import vytvoří druhý profil. Vznikne nepublikovaný profil ve stavu ke schválení.'
+                        : 'Vznikne nepublikovaný profil ve stavu ke schválení. Na web se nedostane, dokud ho nepublikujete.')
                     ->action(function (ScrapeItem $record, array $data) {
                         try {
                             $profile = app(ScrapeItemImporter::class)
@@ -235,6 +258,31 @@ class ScrapeItemsTable
                                     . ($skipped > 0 ? "Přeskočeno neschválených: {$skipped}." : '')
                                 ) ?: 'Vše proběhlo bez chyby.')
                                 ->color($failed > 0 ? 'warning' : 'success')
+                                ->send();
+                        }),
+
+                    // The stored verdict is a snapshot from when the item was
+                    // staged; a profile created since then would not be in it.
+                    BulkAction::make('recheckDuplicates')
+                        ->label('Znovu zkontrolovat duplicity')
+                        ->icon('heroicon-o-magnifying-glass')
+                        ->color('gray')
+                        ->action(function (Collection $records) {
+                            $finder = app(DuplicateFinder::class);
+                            $found = 0;
+
+                            foreach ($records as $record) {
+                                $finder->check($record);
+
+                                if ($record->hasDuplicate()) {
+                                    $found++;
+                                }
+                            }
+
+                            Notification::make()
+                                ->title("Zkontrolováno: {$records->count()}")
+                                ->body($found > 0 ? "Možných duplicit: {$found}." : 'Žádná duplicita nenalezena.')
+                                ->color($found > 0 ? 'warning' : 'success')
                                 ->send();
                         }),
 
