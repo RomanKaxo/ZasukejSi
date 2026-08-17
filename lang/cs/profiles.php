@@ -89,6 +89,8 @@ return [
         'incall' => 'InCall',
         'outcall' => 'OutCall',
         'is_porn_actress' => 'Porno herečka',
+        'phone' => 'Telefon',
+        'phone_helper' => 'Uloží se i do kontaktů níže, takže se obojí nerozejde.',
         'card_height_cm' => 'Výška',
         'card_height_cm_helper' => 'Zobrazí se na kartě profilu. Není-li vyplněno, dlaždice zůstane, ale místo hodnoty se zobrazí pomlčka — nikdy se nedoplňuje odhad.',
         'weight_kg' => 'Váha',

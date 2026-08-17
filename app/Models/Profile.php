@@ -186,8 +186,18 @@ class Profile extends Model implements HasMedia
 
         $this->attributes['content'] = json_encode($content, JSON_UNESCAPED_UNICODE);
 
-        // The phone only ever existed inside the `contacts` list, so there is
-        // no column to edit yet — it is derived, not mirrored.
+        // The phone works the same way round: typing it into the field writes
+        // it back into the contact list the public profile is built from, and
+        // editing the list updates the field.
+        if ($this->isDirty('phone') && ! $this->isDirty('contacts')) {
+            $this->attributes['contacts'] = json_encode(
+                self::withPhone($this->contacts ?? [], $this->attributes['phone'] ?? null),
+                JSON_UNESCAPED_UNICODE
+            );
+
+            return;
+        }
+
         if ($this->isDirty('contacts') || ($this->attributes['phone'] ?? null) === null) {
             $this->attributes['phone'] = self::firstPhoneOf($this->contacts ?? []);
         }
@@ -237,6 +247,49 @@ class Profile extends Model implements HasMedia
         });
 
         return $fallback;
+    }
+
+    /**
+     * The contact list with the phone number set to the given value.
+     *
+     * The existing phone entry is edited in place so its position among the
+     * other contacts survives; a profile that had none gains one.
+     *
+     * @param  array<mixed>  $contacts
+     * @return array<int, mixed>
+     */
+    public static function withPhone(mixed $contacts, ?string $phone): array
+    {
+        $contacts = is_array($contacts) ? array_values($contacts) : [];
+
+        foreach ($contacts as $index => $contact) {
+            if (! is_array($contact)) {
+                continue;
+            }
+
+            $type = strtolower((string) ($contact['type'] ?? ''));
+
+            if ($type === 'phone' || $type === '') {
+                if (blank($phone)) {
+                    unset($contacts[$index]);
+
+                    return array_values($contacts);
+                }
+
+                $contacts[$index]['type'] = 'phone';
+                $contacts[$index]['value'] = $phone;
+
+                return array_values($contacts);
+            }
+        }
+
+        if (blank($phone)) {
+            return $contacts;
+        }
+
+        $contacts[] = ['type' => 'phone', 'value' => $phone];
+
+        return $contacts;
     }
 
     /**

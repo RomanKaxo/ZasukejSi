@@ -90,6 +90,8 @@ return [
         'incall' => 'InCall',
         'outcall' => 'OutCall',
         'is_porn_actress' => 'Porn actress',
+        'phone' => 'Phone',
+        'phone_helper' => 'Also written into the contacts below, so the two cannot drift apart.',
         'card_height_cm' => 'Height',
         'card_height_cm_helper' => 'Shown on the profile card. When empty the tile stays but displays a dash instead of a value — an estimate is never filled in.',
         'weight_kg' => 'Weight',
