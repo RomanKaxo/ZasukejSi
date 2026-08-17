@@ -27,7 +27,12 @@ class RatingsTable
                 TextColumn::make('user.email')
                     ->label('Hodnotil')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    // A rating is only worth judging next to the account that
+                    // left it; that account was a string of text.
+                    ->url(fn ($record) => $record->user
+                        ? route('filament.admin.resources.users.edit', $record->user)
+                        : null),
 
                 // The percentage is what the member chose and what averages
                 // are computed from; the stars below are its projection.

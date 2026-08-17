@@ -26,6 +26,29 @@ class ScrapeItemForm
         return $schema
             ->columns(2)
             ->components([
+                // Shown first and only when there is something to say: the one
+                // thing that should stop an import before anything else is
+                // considered.
+                Section::make('Možná duplicita')
+                    ->columnSpanFull()
+                    ->visible(fn (?ScrapeItem $record) => (bool) $record?->hasDuplicate())
+                    ->description('Import vytvoří druhý profil. Zkontrolujte, jestli nejde o tutéž osobu.')
+                    ->components([
+                        Placeholder::make('duplicate_note')
+                            ->hiddenLabel()
+                            ->columnSpanFull()
+                            ->content(fn (?ScrapeItem $record) => new HtmlString(
+                                $record?->duplicate_profile_id
+                                    ? '<a href="' . route('filament.admin.resources.profiles.view', $record->duplicate_profile_id)
+                                        . '" class="text-primary-600 underline">' . e((string) $record->duplicateLabel()) . '</a>'
+                                    : e((string) $record?->duplicateLabel())
+                            )),
+
+                        Placeholder::make('duplicate_checked')
+                            ->label('Kontrolováno')
+                            ->content(fn (?ScrapeItem $record) => $record?->duplicate_checked_at?->format('d.m.Y H:i') ?? '—'),
+                    ]),
+
                 Section::make('Fotografie')
                     ->columnSpanFull()
                     ->description(fn (?ScrapeItem $record) => $record && $record->images

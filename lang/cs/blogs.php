@@ -14,5 +14,8 @@ return [
         'created_at' => 'Vytvořeno',
         'updated_at' => 'Aktualizováno',
         'filter_published' => 'Stav publikace',
+        'publish' => 'Publikovat',
+        'unpublish' => 'Skrýt',
+        'open' => 'Otevřít na webu',
     ],
 ];

@@ -16,6 +16,7 @@ return [
         'slug' => 'Slug',
         'color' => 'Color',
         'active' => 'Active',
+        'profiles' => 'Profiles',
         'sort_order' => 'Sort Order',
         'created' => 'Created',
     ],

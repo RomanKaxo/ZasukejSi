@@ -36,6 +36,26 @@ Každý běh si zapisuje, co dělal — které stránky výpisu přečetl, kolik
 
 ---
 
+## Duplicity
+
+Scraper dřív poznal jen opakování sebe sama — tutéž `external_id` z téhož zdroje. Tatáž žena inzerovaná na druhém webu, nebo už existující jako profil u nás, prošla bez povšimnutí a import z ní udělal druhý profil.
+
+Při stažení se u položky vyhodnotí, jestli nejde o někoho, koho už máme. Porovnává se v tomto pořadí:
+
+| Signál | Síla | Jak |
+|---|---|---|
+| Telefon | silný | posledních devět číslic, takže `+420 777 123 456` a `777123456` je totéž |
+| Jméno i město | střední | bez diakritiky, velikosti písmen a mezer — `Anička` = `ANICKA` |
+| Jen jméno | slabý | pracovní jméno sdílí spousta dívek, takže je to nápověda, ne tvrzení |
+
+Existující profil má přednost před jinou položkou ve frontě: profil už na webu je, takže druhý import je ta skutečná chyba. Zamítnutá položka se jako duplicita nenabízí — zamítnutí bylo rozhodnutí a tohle by ho vracelo zpět.
+
+Nález se ukládá k položce, aby šel filtrovat bez dotazu na každý řádek. Je to snímek z okamžiku stažení; profil vzniklý později v něm není, proto je ve frontě hromadná akce **Znovu zkontrolovat duplicity**. Před importem se nález připomene v potvrzovacím okně.
+
+Nic se neblokuje automaticky. Kontrola hlásí kandidáty s důvodem, rozhoduje pořád člověk.
+
+---
+
 ## Automatické spouštění
 
 Zdroj se sám nespouští, dokud mu nenastavíte interval (**Zdroj → Automatické spouštění**). Bez něj se chová jako dosud, tedy jen ručně.

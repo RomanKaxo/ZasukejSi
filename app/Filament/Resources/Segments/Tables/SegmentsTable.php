@@ -29,6 +29,16 @@ class SegmentsTable
                 ColorColumn::make('color')
                     ->label(__('segments.table.color')),
 
+                // A segment nobody is in behaves like a segment that does not
+                // exist; that was only discoverable by filtering the profiles.
+                TextColumn::make('profiles_count')
+                    ->label(__('segments.table.profiles'))
+                    ->counts('profiles')
+                    ->badge()
+                    ->color(fn ($state) => (int) $state > 0 ? 'success' : 'gray')
+                    ->alignCenter()
+                    ->sortable(),
+
                 TextColumn::make('sort_order')
                     ->label(__('segments.table.sort_order'))
                     ->sortable(),

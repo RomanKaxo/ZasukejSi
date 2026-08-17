@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Blogs\Tables;
 
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -54,6 +55,24 @@ class BlogsTable
                     ->label(__('blogs.table.filter_published')),
             ])
             ->recordActions([
+                // Publishing meant opening the post, finding a toggle and
+                // saving — three steps for a yes/no decision.
+                Action::make('togglePublished')
+                    ->label(fn ($record) => $record->is_published
+                        ? __('blogs.table.unpublish')
+                        : __('blogs.table.publish'))
+                    ->icon(fn ($record) => $record->is_published ? 'heroicon-o-eye-slash' : 'heroicon-o-globe-alt')
+                    ->color(fn ($record) => $record->is_published ? 'gray' : 'success')
+                    ->requiresConfirmation()
+                    ->action(fn ($record) => $record->update(['is_published' => ! $record->is_published])),
+
+                Action::make('open')
+                    ->label(__('blogs.table.open'))
+                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->url(fn ($record) => $record->slug ? url('/' . ltrim($record->slug, '/')) : null)
+                    ->openUrlInNewTab()
+                    ->visible(fn ($record) => $record->is_published && filled($record->slug)),
+
                 EditAction::make(),
             ])
             ->toolbarActions([

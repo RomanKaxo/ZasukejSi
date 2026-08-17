@@ -21,6 +21,7 @@ class ScrapeRunner
         private readonly HttpFetcher $fetcher,
         private readonly FieldExtractor $extractor,
         private readonly AdapterRegistry $adapters,
+        private readonly DuplicateFinder $duplicates,
     ) {
     }
 
@@ -123,6 +124,28 @@ class ScrapeRunner
         $run->save();
 
         return $run;
+    }
+
+    /**
+     * Marks the item if it looks like somebody we already have.
+     *
+     * Never fatal: a harvest must not fail because the comparison did. The
+     * reviewer sees an unchecked item, which is the state everything was in
+     * before this existed.
+     */
+    private function flagDuplicate(ScrapeItem $item, Closure $notify): void
+    {
+        try {
+            $this->duplicates->check($item);
+        } catch (Throwable $e) {
+            $notify('kontrola duplicity selhala: ' . $e->getMessage());
+
+            return;
+        }
+
+        if ($item->hasDuplicate()) {
+            $notify('možný duplikát: ' . $item->duplicateLabel());
+        }
     }
 
     /** Keeps one row from growing without bound on a large harvest. */
@@ -290,6 +313,7 @@ class ScrapeRunner
             }
 
             $existing->update($attributes);
+            $this->flagDuplicate($existing, $notify);
             $run->increment('items_updated');
             $notify("aktualizováno: {$url}");
 
@@ -300,7 +324,8 @@ class ScrapeRunner
             ? ScrapeItem::STATUS_PENDING
             : ScrapeItem::STATUS_FAILED;
 
-        ScrapeItem::create($attributes);
+        $item = ScrapeItem::create($attributes);
+        $this->flagDuplicate($item, $notify);
         $run->increment('items_new');
         $notify("nové: {$url}");
     }

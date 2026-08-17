@@ -35,6 +35,10 @@ class ScrapeItem extends Model
         'imported_profile_id',
         'imported_at',
         'error',
+        'duplicate_profile_id',
+        'duplicate_item_id',
+        'duplicate_reason',
+        'duplicate_checked_at',
     ];
 
     protected function casts(): array
@@ -44,7 +48,49 @@ class ScrapeItem extends Model
             'normalized' => 'array',
             'images' => 'array',
             'imported_at' => 'datetime',
+            'duplicate_checked_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Somebody we already have, found by the duplicate check.
+     *
+     * A snapshot from when the check last ran — the queue carries an action to
+     * take it again.
+     */
+    public function duplicateProfile(): BelongsTo
+    {
+        return $this->belongsTo(Profile::class, 'duplicate_profile_id');
+    }
+
+    public function duplicateItem(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'duplicate_item_id');
+    }
+
+    public function hasDuplicate(): bool
+    {
+        return $this->duplicate_profile_id !== null || $this->duplicate_item_id !== null;
+    }
+
+    public function duplicateLabel(): ?string
+    {
+        if (! $this->hasDuplicate()) {
+            return null;
+        }
+
+        $reason = \App\Services\Scraping\DuplicateFinder::reasonLabels()[$this->duplicate_reason] ?? $this->duplicate_reason;
+
+        return $this->duplicate_profile_id
+            ? 'profil #' . $this->duplicate_profile_id . ' — ' . $reason
+            : 'položka #' . $this->duplicate_item_id . ' — ' . $reason;
+    }
+
+    public function scopePossibleDuplicates($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereNotNull('duplicate_profile_id')->orWhereNotNull('duplicate_item_id');
+        });
     }
 
     public static function statusOptions(): array
