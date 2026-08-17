@@ -69,37 +69,6 @@
     </script>
     @endguest
     <script>
-        // Small visual debug badge to show Livewire client presence
-        (function(){
-            try {
-                var d = document.createElement('div');
-                d.id = 'lw-debug-badge';
-                d.style.position = 'fixed';
-                d.style.right = '12px';
-                d.style.bottom = '12px';
-                d.style.zIndex = 99999;
-                d.style.background = 'rgba(255,255,255,0.95)';
-                d.style.border = '1px solid #eee';
-                d.style.padding = '6px 10px';
-                d.style.fontSize = '12px';
-                d.style.color = '#222';
-                d.style.borderRadius = '6px';
-                d.style.boxShadow = '0 6px 18px rgba(0,0,0,0.06)';
-                d.innerText = 'Livewire: checking...';
-                document.body.appendChild(d);
-
-                function update() {
-                    var present = typeof Livewire !== 'undefined' ? 'loaded' : 'missing';
-                    d.innerText = 'Livewire: ' + present;
-                }
-
-                // Update on load and when Livewire fires its load event
-                update();
-                document.addEventListener('livewire:load', update);
-            } catch (err) {}
-        })();
-    </script>
-    <script>
         // Global fallback for opening the English fullscreen country picker on mobile
         (function () {
             function openPicker() {
