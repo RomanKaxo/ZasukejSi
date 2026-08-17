@@ -226,10 +226,32 @@ class ProfileForm
                     ->maxLength(2)
                     ->helperText(__('profiles.form.nationality_helper')),
 
-                TextInput::make('content.languages')
+                // Psalo se volným textem, takže „Angličtina", „anglicky" a „EN"
+                // byly tři různé hodnoty a nešlo podle nich filtrovat. Ukládá
+                // se dál čárkami oddělený řetězec, aby na to nemusel sahat
+                // zbytek webu — mění se jen způsob zadání.
+                Select::make('content.languages')
                     ->label(__('profiles.form.languages'))
-                    ->maxLength(255)
-                    ->helperText(__('profiles.form.languages_helper'))
+                    ->multiple()
+                    ->searchable()
+                    ->preload()
+                    // K nabídce se přidá i to, co profil má uložené dnes.
+                    // Jazyky se dřív psaly ručně, a přísný výběr by takovou
+                    // hodnotu při prvním uložení potichu zahodil.
+                    ->options(function (callable $get) {
+                        $stored = $get('content.languages');
+                        $stored = is_array($stored)
+                            ? $stored
+                            : array_filter(array_map('trim', explode(',', (string) $stored)));
+
+                        return ProfileAttributeOption::optionsFor('languages')
+                            + array_combine($stored, $stored);
+                    })
+                    ->formatStateUsing(fn ($state) => is_array($state)
+                        ? $state
+                        : array_values(array_filter(array_map('trim', explode(',', (string) $state)))))
+                    ->dehydrateStateUsing(fn ($state) => is_array($state) ? implode(', ', $state) : $state)
+                    ->helperText('Nabídku spravujete ve Vlastnostech profilů. ' . __('profiles.form.languages_helper'))
                     ->columnSpanFull(),
 
                 TextInput::make('content.card_location')
@@ -265,9 +287,31 @@ class ProfileForm
                     ->minValue(18)
                     ->maxValue(99),
 
-                TextInput::make('city')
+                // Město se psalo ručně, takže „Praha", „praha" a „Praha 1" byly
+                // tři lokality. Vybírá se z tabulky měst, zúžené na zvolenou
+                // zemi; hledá se na serveru, protože měst je přes 48 tisíc.
+                Select::make('city')
                     ->label(__('profiles.form.city'))
-                    ->maxLength(255),
+                    ->searchable()
+                    ->allowHtml(false)
+                    ->getSearchResultsUsing(function (string $search, callable $get) {
+                        $country = strtoupper((string) $get('country_code'));
+
+                        return \App\Models\City::query()
+                            ->when($country !== '', fn ($q) => $q->where('country_code', $country))
+                            ->where(function ($q) use ($search) {
+                                $q->where('name', 'like', $search . '%')
+                                    ->orWhere('name_ascii', 'like', $search . '%');
+                            })
+                            ->orderBy('name')
+                            ->limit(50)
+                            ->pluck('name', 'name')
+                            ->all();
+                    })
+                    // Hodnota uložená dřív ručně nezmizí jen proto, že ji
+                    // seznam měst nezná.
+                    ->getOptionLabelUsing(fn ($value) => $value)
+                    ->helperText('Vyberte ze seznamu měst. Nabídka se řídí zvolenou zemí.'),
 
                 Select::make('country_code')
                     ->label(__('profiles.form.country'))

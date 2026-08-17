@@ -113,7 +113,9 @@ class RoleResource extends Resource
                 TextColumn::make('name')
                     ->weight(FontWeight::Medium)
                     ->label(__('filament-shield::filament-shield.column.name'))
-                    ->formatStateUsing(fn (string $state): string => Str::headline($state))
+                    // Str::headline dělalo „Super Admin"; česky se druhé slovo
+                    // velkým písmenem nepíše.
+                    ->formatStateUsing(fn (string $state): string => \App\Support\RoleLabels::for($state))
                     ->searchable(),
                 TextColumn::make('guard_name')
                     ->badge()

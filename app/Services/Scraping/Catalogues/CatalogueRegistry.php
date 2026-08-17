@@ -17,8 +17,14 @@ class CatalogueRegistry
     /** @var array<string, FieldCatalogue>|null */
     private ?array $catalogues = null;
 
-    /** Fields that carry a list of values rather than a single one. */
-    public const LIST_FIELDS = ['services'];
+    /**
+     * Fields that carry a list of values rather than a single one.
+     *
+     * Services arrive as an array; languages arrive as one string with commas
+     * in it („Čeština, Angličtina"), which has to be split or the queue would
+     * ask about the whole sentence instead of the two languages in it.
+     */
+    public const LIST_FIELDS = ['services', 'languages'];
 
     /** @return array<string, FieldCatalogue> */
     public function all(): array

@@ -4,7 +4,7 @@ namespace App\Filament\Resources\ProfileViews;
 
 use App\Filament\Resources\ProfileViews\Pages\ListProfileViews;
 use App\Filament\Resources\ProfileViews\Tables\ProfileViewsTable;
-use App\Models\ProfileView;
+use App\Models\Profile;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
@@ -12,7 +12,9 @@ use Filament\Tables\Table;
 
 class ProfileViewResource extends Resource
 {
-    protected static ?string $model = ProfileView::class;
+    // Model je Profil, ne jednotlivé zobrazení: sekce odpovídá na otázku
+    // „kdo je nejvíc vidět", ne „kdo kdy klikl".
+    protected static ?string $model = Profile::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
 
@@ -30,7 +32,7 @@ class ProfileViewResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return 'zobrazení';
+        return 'profil';
     }
 
     public static function getPluralModelLabel(): string

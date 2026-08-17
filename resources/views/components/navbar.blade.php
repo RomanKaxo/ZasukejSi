@@ -1,4 +1,8 @@
-<nav class="fixed top-0 left-0 right-0 z-100 bg-transparent rounded-b-3xl transition-all duration-300" id="navbar" x-data="{ mobileMenuOpen: false }" @click.outside="mobileMenuOpen = false">
+<nav class="fixed top-0 left-0 right-0 z-100 bg-transparent rounded-b-3xl transition-all duration-300" id="navbar"
+     x-data="{ mobileMenuOpen: false, scrolled: false }"
+     x-init="scrolled = window.scrollY > 8; window.addEventListener('scroll', () => scrolled = window.scrollY > 8, { passive: true })"
+     :class="scrolled ? 'is-scrolled' : ''"
+     @click.outside="mobileMenuOpen = false">
     <style>
         body.modal-open #navbar { display: none !important; }
 
@@ -6,6 +10,24 @@
             width: 100%;
             max-width: 100vw;
             overflow-x: clip;
+        }
+
+        /* Odrolovaná lišta stojí nad obsahem a bez podkladu se s ním slévala.
+           Lehce zašedlé sklo, ne plná barva — pod ním má být obsah znát. */
+        #navbar.is-scrolled {
+            background: rgba(245, 243, 246, 0.82);
+            backdrop-filter: saturate(140%) blur(10px);
+            -webkit-backdrop-filter: saturate(140%) blur(10px);
+            box-shadow: 0 1px 0 0 rgba(92, 45, 98, 0.08), 0 6px 20px 0 rgba(92, 45, 98, 0.06);
+        }
+
+        /* Na mobilu je lišta bílá vždy, takže by přechod jen zašpinil barvu. */
+        @media (max-width: 1023px) {
+            #navbar.is-scrolled {
+                background: #FFFFFF;
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+            }
         }
 
         .navbar-shell {

@@ -82,7 +82,7 @@ class ScrapeItemImporter
             $content = [];
             foreach (self::CONTENT_FIELDS as $field) {
                 if (array_key_exists($field, $values) && $this->storable($field, $values[$field])) {
-                    $content[$field] = $values[$field];
+                    $content[$field] = $this->storableValue($field, $values[$field]);
                 }
             }
 
@@ -161,7 +161,7 @@ class ScrapeItemImporter
                 continue;
             }
 
-            $content[$field] = $values[$field];
+            $content[$field] = $this->storableValue($field, $values[$field]);
             $changed = true;
         }
 
@@ -196,9 +196,56 @@ class ScrapeItemImporter
             return true;
         }
 
+        $registry = app(\App\Services\Scraping\Catalogues\CatalogueRegistry::class);
+        $catalogue = $registry->for($field);
+
+        if ($catalogue === null) {
+            return true;
+        }
+
+        // A list field carries several values in one string („Čeština,
+        // Angličtina"). Judging the whole string would drop the lot because of
+        // one language we do not know yet, so it is enough that something in it
+        // is recognised — `keepKnown()` then trims away the rest.
+        if ($registry->isListField($field)) {
+            return $this->keepKnown($field, (string) $value) !== '';
+        }
+
+        return $catalogue->knows((string) $value);
+    }
+
+    /** What actually gets written: a list field keeps only its known part. */
+    private function storableValue(string $field, mixed $value): mixed
+    {
+        $registry = app(\App\Services\Scraping\Catalogues\CatalogueRegistry::class);
+
+        if (! is_scalar($value) || ! $registry->isListField($field) || ! $registry->has($field)) {
+            return $value;
+        }
+
+        return $this->keepKnown($field, (string) $value);
+    }
+
+    /**
+     * The recognised part of a list field, in the order it arrived.
+     *
+     * What is left out is already in the „K doplnění" queue, so it comes back
+     * on the next resync once somebody adds it.
+     */
+    private function keepKnown(string $field, string $value): string
+    {
         $catalogue = app(\App\Services\Scraping\Catalogues\CatalogueRegistry::class)->for($field);
 
-        return $catalogue === null || $catalogue->knows((string) $value);
+        if (! $catalogue) {
+            return $value;
+        }
+
+        $kept = collect(preg_split('/\s*[,;\/|]\s*/u', $value) ?: [])
+            ->map(fn ($part) => trim((string) $part))
+            ->filter()
+            ->filter(fn (string $part) => $catalogue->knows($part));
+
+        return $kept->implode(', ');
     }
 
     /**

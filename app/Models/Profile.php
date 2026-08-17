@@ -558,6 +558,12 @@ class Profile extends Model implements HasMedia
     /**
      * Get all subscriptions for this profile.
      */
+    /** Kdo a kdy profil upravil — zapisuje ProfileEditLogger. */
+    public function editLogs()
+    {
+        return $this->hasMany(ProfileEditLog::class)->latest('created_at');
+    }
+
     public function subscriptions()
     {
         return $this->hasMany(Subscription::class);

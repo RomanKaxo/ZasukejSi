@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Page;
+use App\Models\Profile;
 use App\Models\User;
 use App\Services\DatabaseTranslationLoader;
 use App\Support\Locales;
@@ -37,6 +38,10 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('production', 'staging')) {
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
+
+        // An admin editing somebody else's advertisement used to leave no
+        // trace, so „kdo mi to přepsal" had no answer.
+        Profile::observe(\App\Observers\ProfileEditLogger::class);
 
         // Configure language switch — driven by config/locales.php so adding a
         // language does not need a change here.

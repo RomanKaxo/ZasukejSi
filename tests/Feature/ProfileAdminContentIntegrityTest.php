@@ -81,7 +81,14 @@ class ProfileAdminContentIntegrityTest extends TestCase
         $this->assertSame(172, $content['card_height_cm'] ?? null, 'Admin save wiped card_height_cm.');
         $this->assertSame(58, $content['weight_kg'] ?? null, 'Admin save wiped weight_kg.');
         $this->assertSame('C', $content['bust_size'] ?? null, 'Admin save wiped bust_size.');
-        $this->assertSame('cs,en', $content['languages'] ?? null, 'Admin save wiped languages.');
+        // Languages are picked from a list now and stored back joined with
+        // ", ", so the separator is normalised. What matters is that nothing
+        // the profile had is dropped.
+        $this->assertSame(
+            ['cs', 'en'],
+            array_map('trim', explode(',', (string) ($content['languages'] ?? ''))),
+            'Admin save wiped languages.',
+        );
         $this->assertTrue($content['is_showcase'] ?? false, 'Admin save wiped is_showcase.');
         $this->assertSame(29, $profile->fresh()->age);
     }

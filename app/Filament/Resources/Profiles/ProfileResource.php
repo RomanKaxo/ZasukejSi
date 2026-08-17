@@ -71,6 +71,7 @@ class ProfileResource extends Resource
     {
         return [
             \App\Filament\Resources\Profiles\RelationManagers\SubscriptionsRelationManager::class,
+            \App\Filament\Resources\Profiles\RelationManagers\EditLogRelationManager::class,
         ];
     }
 
