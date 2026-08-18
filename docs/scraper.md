@@ -4,6 +4,8 @@ Konfigurovatelný scraper pro sekundární projekty. Nový web se přidává jak
 
 ---
 
+Postup, jak scraper celý projet a ověřit — krok za krokem, s tím, podle čeho se pozná, že to je dobře — je v [scraper-test-plan.md](scraper-test-plan.md).
+
 ## Jak to funguje
 
 ```
