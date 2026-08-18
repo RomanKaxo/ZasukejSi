@@ -105,6 +105,18 @@ Vyžaduje cron `* * * * * php artisan schedule:run`, stejně jako životní cykl
 
 ---
 
+## Věková pojistka
+
+**Nic pod osmnáct. Nikdy.**
+
+Všechno ostatní, co scraper dělá, je otázka kvality — špatná cena je trapná, zastaralý profil otravný. Tohle do té kategorie nepatří, a proto je to pojistka, ne další řádek ve frontě ke kontrole: reviewer proklikávající padesát profilů v jedenáct večer je přesně ten mechanismus, který tu nesmí být poslední obranou.
+
+Kontroluje se na dvou místech, kde data překračují hranici: když se ze stažené stránky stává položka ve frontě, a když se z položky stává profil. Položka s uvedeným věkem pod hranicí se rovnou zamítne a nedá se schválit ani importovat — ani po ruční úpravě, ani připojením k existujícímu profilu.
+
+- `minimum_age` smí hranici **zvýšit** (web, který inzeruje jen ženy nad 21, to může říct), **snížit ji nemůže nikdo**. Pojistka bere `max(18, nastavení)`.
+- **Neuvedený věk se neblokuje** — to není důkaz ničeho a patří do revize. Blokuje se uvedený věk pod hranicí.
+- Věk se čte i z věty: „17 let" je sedmnáct. Nesmyslná hodnota se čte jako neuvedeno, ne jako „v pořádku".
+
 ## Ohleduplnost k cílovému webu
 
 Zabudované, ne volitelné:
@@ -115,6 +127,8 @@ Zabudované, ne volitelné:
 - Prodleva se počítá **zvlášť pro každý host**, aby stahování fotek z CDN nebrzdilo čtení stránek a naopak.
 - Každý požadavek jde přes `HttpFetcher`, takže na tohle nelze zapomenout na volajícím místě.
 - **Kódování se převádí na UTF-8.** Podle hlavičky odpovědi, jinak podle `<meta charset>`, jinak jako Windows-1250 — což staré české, slovenské a polské weby většinou jsou. Bez toho se stránka nerozbila, jen tiše zapsala do profilu „Krist??na".
+- **Zdroj se na dobu běhu zamkne.** Cron a kliknutí v administraci se snadno potkají a dva běhy naráz zátěž zdvojnásobí — prodleva mezi dotazy se totiž počítá zvlášť v každém procesu, takže sama proti souběhu nepomůže.
+- **`max_requests` je strop na celý běh.** Chybné stránkování dokáže vyrobit nekonečný seznam adres; bez stropu by scraper poslušně ťukal, dokud ho někdo nezastaví. Zbytek se stáhne příště.
 - **Nestahuje se, co se nezměnilo.** Detail se stahuje podmíněně (`If-None-Match`, `If-Modified-Since`); když web odpoví `304`, běh jde dál a nesahá se ani na fotky. Weby, které tyhle hlavičky neposílají, odchytí porovnání otisku obsahu.
 - **`Retry-After` se respektuje.** Když web u `429` nebo `503` řekne, za jak dlouho to zkusit znovu, odsune se další dotaz na ten host o tu dobu — a hláška to řekne i obsluze.
 - **Opakuje se jen to, co má smysl opakovat.** Výpadek spojení, `429` a chyby 5xx ano; `403` a `404` ne. Ptát se podruhé webu, který nás právě odmítl, je jistý způsob, jak si blokaci prodloužit.
@@ -156,6 +170,8 @@ Nic z toho se neukládá a nevzniká z toho běh.
    | `existence_confirmations`, `existence_interval_hours`, `existence_batch` | kontrola, že importované profily na zdroji pořád jsou |
    | `redesign_guard`, `redesign_min_items`, `redesign_ratio` | zastavení běhu, když web přestal jít přečíst |
    | `keep_snapshot` | uchovat staženou stránku pro Dílnu |
+   | `minimum_age` | věková hranice; zvýšit lze, snížit pod 18 ne |
+   | `max_requests` | strop požadavků na jeden běh, 0 = bez omezení |
 
    Klíče z tabulky mají ve formuláři vlastní pole; syrový editor `Nastavení` je pro to ostatní.
 

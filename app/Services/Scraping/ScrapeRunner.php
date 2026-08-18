@@ -6,6 +6,7 @@ use App\Models\ScrapeItem;
 use App\Models\ScrapeRun;
 use App\Models\ScrapeSource;
 use Closure;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use Throwable;
@@ -27,6 +28,7 @@ class ScrapeRunner
         private readonly SitemapReader $sitemap,
         private readonly RevisionRecorder $revisions,
         private readonly PageSnapshots $snapshots,
+        private readonly AgeGuard $ageGuard,
     ) {
     }
 
@@ -90,8 +92,28 @@ class ScrapeRunner
             return $run;
         }
 
+        // Cron a kliknutí v administraci se snadno potkají a dva běhy téhož
+        // zdroje zdvojnásobí zátěž cizího webu — přesně to, čemu se prodleva
+        // mezi dotazy snaží zabránit, protože prodleva se počítá zvlášť v
+        // každém procesu.
+        $lock = Cache::lock('scrape:source:' . $source->id, self::LOCK_SECONDS);
+
+        if (! $lock->get()) {
+            $run->forceFill([
+                'status' => ScrapeRun::STATUS_FAILED,
+                'error' => 'Tenhle zdroj právě běží. Počkejte, až doběhne — dva běhy naráz by web zatížily dvakrát.',
+                'finished_at' => now(),
+            ])->save();
+
+            $notify('Zdroj právě běží, tenhle běh se nespouští.');
+
+            return $run;
+        }
+
         try {
             $this->rememberRobots($source, $notify);
+
+            $this->requests = 0;
 
             $urls = isset($options['url'])
                 ? [$options['url']]
@@ -115,7 +137,22 @@ class ScrapeRunner
             $this->emptyExtractions = 0;
             $this->detailsProcessed = 0;
 
+            $maxRequests = (int) $source->setting('max_requests', 0);
+
             foreach ($urls as $url) {
+                // Strop na celý běh. Chybné stránkování dokáže vyrobit
+                // nekonečný seznam adres a bez tohohle by scraper poslušně
+                // ťukal na cizí server, dokud ho někdo nezastaví.
+                if ($maxRequests > 0 && $this->requests >= $maxRequests) {
+                    $notify("Dosažen strop {$maxRequests} požadavků na běh, zbytek se nechává na příště.");
+
+                    if ($run->error === null) {
+                        $run->error = "Běh se zastavil na stropu {$maxRequests} požadavků. Zbývající adresy se stáhnou při dalším běhu.";
+                    }
+
+                    break;
+                }
+
                 $this->processDetail($source, $run, $url, (bool) ($options['dry_run'] ?? false), $notify);
                 $this->guardAgainstRedesign($source, $notify);
             }
@@ -139,6 +176,8 @@ class ScrapeRunner
         if (! ($options['dry_run'] ?? false)) {
             $this->recordHealth($source, $run, $notify);
         }
+
+        $lock->release();
 
         $run->finished_at = now();
         $run->log = $log === [] ? null : implode("\n", $log);
@@ -360,10 +399,22 @@ class ScrapeRunner
      */
     private const RETRY_BATCH = 50;
 
+    /**
+     * How long the source stays locked.
+     *
+     * Long enough for a real harvest — a crawl delay of five seconds over five
+     * hundred profiles is the best part of an hour — and short enough that a
+     * process killed mid-run does not lock the source out for a day.
+     */
+    private const LOCK_SECONDS = 7200;
+
     /** Kolik detailů v tomhle běhu nevrátilo povinná pole. */
     private int $emptyExtractions = 0;
 
     private int $detailsProcessed = 0;
+
+    /** Kolik stránek si tenhle běh vyžádal — kvůli stropu. */
+    private int $requests = 0;
 
     /**
      * The extra data a notification carries, flattened to one readable line.
@@ -459,6 +510,7 @@ class ScrapeRunner
                 : $adapter->listingUrl($source, $page);
 
             try {
+                $this->requests++;
                 $html = $this->fetcher->get($source, $listingUrl);
             } catch (Throwable $e) {
                 $notify("Výpis {$listingUrl} selhal: " . $e->getMessage());
@@ -559,6 +611,11 @@ class ScrapeRunner
         $adapter = $this->adapters->make($source->adapter);
         $externalId = $adapter->externalId($source, $url);
 
+        // Rozhodnutí, které se nedělá v revizi. Reviewer proklikávající
+        // padesát profilů v jedenáct večer je přesně ten mechanismus, který
+        // tady nesmí být poslední obranou.
+        $minimumAge = $this->ageGuard->minimumFor((int) $source->setting('minimum_age', AgeGuard::MINIMUM));
+
         $existing = $dryRun
             ? null
             : ScrapeItem::where('scrape_source_id', $source->id)
@@ -569,6 +626,8 @@ class ScrapeRunner
             // Ask conditionally only where we already hold a copy. A page we
             // have never seen has to arrive in full, otherwise a 304 against a
             // stale cache row would silently lose the profile.
+            $this->requests++;
+
             $html = $existing
                 ? $this->fetcher->getIfChanged($source, $url)
                 : $this->fetcher->get($source, $url);
@@ -620,6 +679,8 @@ class ScrapeRunner
             return;
         }
 
+        $blocked = $this->ageGuard->isBlocked($normalized, $minimumAge);
+
         $attributes = [
             'scrape_source_id' => $source->id,
             'scrape_run_id' => $run->id,
@@ -663,7 +724,13 @@ class ScrapeRunner
 
             // A rejected item stays rejected; a re-scrape must not quietly put
             // it back in the review queue.
-            if (! in_array($existing->status, [ScrapeItem::STATUS_REJECTED, ScrapeItem::STATUS_IMPORTED], true)) {
+            if ($blocked) {
+                // Nikdy se nedostane do fronty ke schválení, ani kdyby tam
+                // předtím byla.
+                $attributes['status'] = ScrapeItem::STATUS_REJECTED;
+                $attributes['error'] = $this->ageGuard->reason($normalized, $minimumAge);
+                $notify('ZABLOKOVÁNO (věk): ' . $url);
+            } elseif (! in_array($existing->status, [ScrapeItem::STATUS_REJECTED, ScrapeItem::STATUS_IMPORTED], true)) {
                 $attributes['status'] = $result['missing'] === []
                     ? ScrapeItem::STATUS_PENDING
                     : ScrapeItem::STATUS_FAILED;
@@ -681,9 +748,15 @@ class ScrapeRunner
             return;
         }
 
-        $attributes['status'] = $result['missing'] === []
-            ? ScrapeItem::STATUS_PENDING
-            : ScrapeItem::STATUS_FAILED;
+        if ($blocked) {
+            $attributes['status'] = ScrapeItem::STATUS_REJECTED;
+            $attributes['error'] = $this->ageGuard->reason($normalized, $minimumAge);
+            $notify('ZABLOKOVÁNO (věk): ' . $url);
+        } else {
+            $attributes['status'] = $result['missing'] === []
+                ? ScrapeItem::STATUS_PENDING
+                : ScrapeItem::STATUS_FAILED;
+        }
 
         $item = ScrapeItem::create($attributes);
         $this->snapshots->put($item, $html);

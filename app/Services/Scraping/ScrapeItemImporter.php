@@ -66,6 +66,8 @@ class ScrapeItemImporter
 
         $values = $item->normalized ?? [];
 
+        $this->refuseIfUnderAge($item, $values);
+
         if (($values['display_name'] ?? null) === null) {
             throw new RuntimeException('Chybí jméno profilu.');
         }
@@ -128,6 +130,32 @@ class ScrapeItemImporter
     }
 
     /**
+     * The second of the two age checks.
+     *
+     * The runner already refuses to queue such an item, so reaching here means
+     * the values were edited by hand afterwards — which is precisely why the
+     * check is repeated at the boundary where a profile is actually created.
+     *
+     * @param  array<string, mixed>  $values
+     */
+    private function refuseIfUnderAge(ScrapeItem $item, array $values): void
+    {
+        $guard = new AgeGuard();
+        $minimum = $guard->minimumFor((int) $item->source?->setting('minimum_age', AgeGuard::MINIMUM));
+
+        if (! $guard->isBlocked($values, $minimum)) {
+            return;
+        }
+
+        $item->forceFill([
+            'status' => ScrapeItem::STATUS_REJECTED,
+            'error' => $guard->reason($values, $minimum),
+        ])->save();
+
+        throw new RuntimeException($guard->reason($values, $minimum));
+    }
+
+    /**
      * Point this scraped item at a profile that already exists.
      *
      * The same woman advertises on three catalogues. Importing each of them
@@ -148,6 +176,8 @@ class ScrapeItemImporter
         if ($item->imported_profile_id !== null && $item->imported_profile_id !== $profile->id) {
             throw new RuntimeException('Položka už patří k jinému profilu. Nejdřív ji od něj odpojte.');
         }
+
+        $this->refuseIfUnderAge($item, (array) ($item->normalized ?? []));
 
         $item->forceFill([
             'status' => ScrapeItem::STATUS_IMPORTED,

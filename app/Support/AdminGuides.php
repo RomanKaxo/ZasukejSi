@@ -183,6 +183,8 @@ class AdminGuides
                 ],
                 'cannot' => [
                     'Obejít robots.txt ani nastavenou prodlevu mezi dotazy.',
+                    'Stáhnout profil s uvedeným věkem pod 18 let. Ten se zablokuje při stahování i při importu a nastavením se to obejít nedá.',
+                    'Spustit dva běhy téhož zdroje najednou — druhý se odmítne, dokud první nedoběhne.',
                     'Ztratit adresu, která se nepodařila stáhnout — zařadí se k dalšímu pokusu, s rostoucím odstupem.',
                     'Dojet běh, ve kterém najednou většina stránek nevrací povinná pole — to je předělaný web a běh se zastaví dřív, než přepíše profily prázdnem.',
                     'Držet v plánu zdroj, který opakovaně selhává — ten se sám pozastaví, aby web nedostával bota, kterého stejně odmítá.',

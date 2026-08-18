@@ -296,6 +296,13 @@ class ScrapeSource extends Model
         // Kolikrát se zkusí stránka, která se nepodařila stáhnout.
         'max_attempts' => 5,
 
+        // Strop požadavků na jeden běh. 0 = bez omezení.
+        'max_requests' => 0,
+
+        // Věková hranice. Zvýšit lze, snížit pod 18 ne — pojistka to
+        // vynucuje bez ohledu na to, co je tady napsané.
+        'minimum_age' => 18,
+
         // Uchovat staženou stránku, aby šlo zkoušet selektory bez dalšího
         // dotazu na cizí web.
         'keep_snapshot' => true,
