@@ -141,11 +141,61 @@ class ScrapeSourcesTable
                         } catch (Throwable $e) {
                             Notification::make()
                                 ->title('Spojení selhalo')
-                                ->body($e->getMessage())
+                                ->body($e->getMessage() . ' Podrobnosti zjistí „Diagnostika spojení".')
                                 ->danger()
                                 ->persistent()
                                 ->send();
                         }
+                    }),
+
+                // „HTTP 403 — web nás odmítl" je pravda a k ničemu. Neřekne,
+                // jestli web odmítá adresu tohohle serveru, jméno našeho bota,
+                // nebo všechno, co nevypadá jako prohlížeč — a každá z těch
+                // tří věcí se řeší jinak. Tohle projde krátký žebřík pokusů a
+                // řekne, na kterém příčku to prošlo.
+                Action::make('diagnoseConnection')
+                    ->label('Diagnostika spojení')
+                    ->icon('heroicon-o-wrench-screwdriver')
+                    ->color('warning')
+                    ->form([
+                        TextInput::make('url')
+                            ->label('Adresa k prozkoumání')
+                            ->url()
+                            ->helperText('Prázdné = domovská adresa zdroje.'),
+                    ])
+                    ->modalSubmitActionLabel('Prozkoumat')
+                    ->action(function (ScrapeSource $record, array $data) {
+                        $report = app(\App\Services\Scraping\ConnectionDoctor::class)
+                            ->diagnose($record, $data['url'] ?: null);
+
+                        $lines = [];
+
+                        foreach ($report['attempts'] as $attempt) {
+                            $lines[] = sprintf(
+                                '%s %s — %s%s',
+                                $attempt['ok'] ? '✓' : '✕',
+                                $attempt['label'],
+                                $attempt['error'] ?? ('HTTP ' . $attempt['status']),
+                                $attempt['protection'] ? ' [' . $attempt['protection'] . ']' : '',
+                            );
+                        }
+
+                        $lines[] = '';
+                        $lines[] = $report['verdict'];
+
+                        if ($report['suggestion'] !== []) {
+                            $lines[] = '';
+                            $lines[] = 'Do nastavení zdroje uložte:';
+                            $lines[] = 'user_agent = ' . $report['suggestion']['user_agent'];
+                            $lines[] = 'headers = ' . $report['suggestion']['headers'];
+                        }
+
+                        Notification::make()
+                            ->title('Diagnostika spojení')
+                            ->body(implode("\n", $lines))
+                            ->color($report['suggestion'] !== [] ? 'success' : 'warning')
+                            ->persistent()
+                            ->send();
                     }),
 
                 // A one-off run from the admin, deliberately capped: this is

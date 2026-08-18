@@ -24,10 +24,9 @@ Bez migrací nefunguje nic z posledních kol (zdraví zdrojů, historie změn, o
 **Scraper → Zdroje → řádek zdroje → Otestovat spojení.**
 
 - **Dobře:** „Web odpověděl, staženo N znaků."
-- **Špatně: HTTP 403.** Znamená to, že web odmítá adresu serveru, ne že je něco rozbité v kódu. Z mého stroje ta samá adresa odpovídá 200 se všemi kombinacemi hlaviček, které jsem zkusil — proto to musí být otestované odsud.
-  - Zkusit u zdroje jiný `user_agent`.
-  - Zkusit přidat `headers` jako JSON: `{"Referer":"https://www.eurogirlsescort.cz/"}`.
-  - Když ani to, nastavit `proxy` u zdroje.
+- **Špatně: HTTP 403.** Pak rovnou **Diagnostika spojení** — projde žebřík pokusů a řekne, na které příčce to prošlo a co uložit do nastavení. Detaily v [scraper.md](scraper.md#když-web-vrací-403).
+
+  Není to chyba v kódu: z mého stroje ta samá adresa odpovídá 200 se všemi kombinacemi hlaviček, které jsem zkusil, takže rozhoduje to, odkud se ptáte — a diagnostika se ptá odsud.
 
 **Dokud tenhle krok nefunguje, další kroky nemají co testovat.**
 

@@ -119,6 +119,37 @@ Vyžaduje cron `* * * * * php artisan schedule:run`, stejně jako životní cykl
 
 ---
 
+## Když web vrací 403
+
+„HTTP 403 — web nás odmítl" je pravda a k ničemu. Neřekne, jestli web odmítá **adresu tohohle serveru**, **jméno našeho bota**, nebo **všechno, co nevypadá jako prohlížeč** — a každá z těch tří věcí se řeší jinak. Navíc odpověď závisí na tom, odkud se ptáte: tatáž adresa vrací 200 z vývojářského stroje a 403 ze serveru, takže hádat to lokálně je hádání.
+
+U zdroje je proto **Diagnostika spojení**. Projde krátký žebřík pokusů odtamtud, kde na tom záleží, a řekne, na které příčce to prošlo:
+
+1. současné nastavení zdroje,
+2. hlavičky skutečného prohlížeče,
+3. prohlížeč + `Referer` z téhož webu,
+4. robots.txt se současným nastavením — *pustí nás web vůbec?*,
+5. domovská stránka — *je to o cestě, nebo o adrese?*
+
+U každého pokusu je stav, hlavička `Server`, kousek textu z odpovědi a rozpoznaná ochranná služba. **Tělo odpovědi je to podstatné:** stránka Cloudflaru se pozná na první pohled a bez ní se hádá, kdo vlastně odmítl.
+
+Když něco projde, diagnostika rovnou vypíše `user_agent` a `headers` k uložení do nastavení zdroje.
+
+### Co který výsledek znamená
+
+| Výsledek | Co s tím |
+|---|---|
+| Projde až **hlavičky jako prohlížeč** | Web odmítá cokoli, co nevypadá jako prohlížeč. Uložte navržené nastavení. |
+| Neprojde nic, **ani robots.txt** | Blokovaná je adresa serveru. Pomůže `proxy` u zdroje, nebo stahovat odjinud. |
+| **robots.txt projde**, stránka ne | Blokace je na té cestě. Zkuste jiný vstupní bod, nebo ověřte, že stránka existuje. |
+| **Kontrola prohlížeče** (Cloudflare „Just a moment") | Vyžaduje JavaScript a žádná kombinace hlaviček to neobejde. Zbývá `render_endpoint`, nebo proxy s adresou, které web důvěřuje. |
+
+### Poznámka k User-Agentu
+
+Výchozí `ZasukejSiBot/1.0 (+https://zasukejsi.cz/bot)` se hlásí pravdivě, a to je záměr. Řada plošných pravidel ale odmítá všechno, co není prohlížeč — včetně slušně ohlášených robotů, které **robots.txt téhož webu povoluje**. U eurogirlsescort.cz robots.txt nezakazuje žádnou cestu a předepisuje `Crawl-delay: 5`, který dodržujeme.
+
+Přepnout se na hlavičky prohlížeče je proto obhajitelné, ale je to rozhodnutí, ne technikálie — a proto ho diagnostika **nabídne, neudělá sama**.
+
 ## Věková pojistka
 
 **Nic pod osmnáct. Nikdy.**
