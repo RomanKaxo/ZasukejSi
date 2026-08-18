@@ -277,6 +277,29 @@ class ScrapeSourceForm
                 ])
                 ->columns(2),
 
+            Section::make('Když nás web odmítá')
+                ->description('Tohle se hodí, až „Diagnostika spojení" ukáže, že přímé stahování neprojde. Nic z toho není zapnuté samo.')
+                ->schema([
+                    TextInput::make('render_endpoint')
+                        ->label('Vykreslovací služba (renderer)')
+                        ->placeholder('https://sluzba.example.com/html?token=abc&url={url}')
+                        ->helperText('Adresa se pošle přes službu, která umí spustit JavaScript. „{url}" se nahradí zakódovanou adresou; bez něj se připojí jako ?url=. Po uložení ověřte tlačítkem „Otestovat renderer" v seznamu zdrojů.')
+                        ->columnSpanFull(),
+
+                    Textarea::make('cookies')
+                        ->label('Cookies')
+                        ->rows(2)
+                        ->placeholder('jmeno=hodnota; druhe=hodnota')
+                        ->helperText('Pro katalogy za přihlášením. U kontroly prohlížeče typu Cloudflare nepomůže — ta váže cookie na adresu a User-Agent, kterým ji vydala, takže zkopírovaná odjinud neplatí.')
+                        ->columnSpanFull(),
+
+                    Toggle::make('keep_snapshot')
+                        ->label('Uchovat staženou stránku')
+                        ->default(true)
+                        ->helperText('Umožní zkoušet selektory v Dílně zpětně, bez dalšího dotazu na cizí web.')
+                        ->columnSpanFull(),
+                ]),
+
             Section::make('Chování při stahování')
                 ->description('Prodleva se nikdy nesníží pod hodnotu, kterou požaduje robots.txt daného webu.')
                 ->schema([

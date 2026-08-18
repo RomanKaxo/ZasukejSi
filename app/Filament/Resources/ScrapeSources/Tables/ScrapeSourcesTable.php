@@ -258,7 +258,10 @@ class ScrapeSourcesTable
                     ->label('Otestovat renderer')
                     ->icon('heroicon-o-globe-alt')
                     ->color('gray')
-                    ->visible(fn (?ScrapeSource $record) => filled($record?->setting('render_endpoint')))
+                    // Viditelné vždycky. Schovávat ho, dokud není renderer
+                    // nastavený, znamenalo, že ho nenajde právě ten, kdo ho
+                    // hledá — tedy člověk, kterého web odmítá a chce vědět,
+                    // jestli je tahle cesta vůbec k dispozici.
                     ->form([
                         TextInput::make('url')
                             ->label('Adresa k vykreslení')
@@ -266,6 +269,17 @@ class ScrapeSourcesTable
                             ->helperText('Prázdné = domovská adresa zdroje.'),
                     ])
                     ->action(function (ScrapeSource $record, array $data) {
+                        if (blank($record->setting('render_endpoint'))) {
+                            Notification::make()
+                                ->title('Renderer není nastavený')
+                                ->body('Doplňte ho v úpravě zdroje, sekce „Když nás web odmítá" → Vykreslovací služba. Je to adresa externí služby, která stránku otevře v prohlížeči a vrátí hotové HTML.')
+                                ->warning()
+                                ->persistent()
+                                ->send();
+
+                            return;
+                        }
+
                         $url = $data['url'] ?: $record->base_url;
 
                         try {

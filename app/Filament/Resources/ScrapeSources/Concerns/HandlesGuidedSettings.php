@@ -35,6 +35,9 @@ trait HandlesGuidedSettings
         'minimum_age',
         'max_requests',
         'content_rules',
+        'render_endpoint',
+        'cookies',
+        'keep_snapshot',
     ];
 
     /** @param array<string, mixed> $data */
