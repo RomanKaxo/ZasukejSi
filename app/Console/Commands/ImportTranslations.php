@@ -138,6 +138,20 @@ class ImportTranslations extends Command
 
         $refreshed = false;
 
+        // Zjištěno dřív, než se `default_value` přepíše.
+        //
+        // Tohle byla ta chyba. Pořadí bylo obrácené: nejdřív se `default_value`
+        // nastavil na novou hodnotu ze souboru, a teprve pak se ptalo, jestli
+        // je řádek „přepsaný administrátorem" — jenže ta otázka porovnává
+        // `value` právě proti `default_value`. Po opravě překlepu v souboru
+        // tedy vyšlo, že se liší, a nedotčená hodnota se od té chvíle tvářila
+        // jako něčí vědomá úprava. Navždy.
+        //
+        // Přesně to potkalo „číst článek": soubor to tak měl v červenci,
+        // import to uložil, v srpnu se soubor opravil na „Číst článek" — a
+        // web dál psal malé č, protože import měl za to, že to tak někdo chce.
+        $wasOverridden = $existing->isOverridden();
+
         // The file is the default, so it always wins for `default_value`.
         if ($existing->default_value !== $fileValue) {
             $existing->default_value = $fileValue;
@@ -145,7 +159,7 @@ class ImportTranslations extends Command
         }
 
         // An admin edit is only discarded on --force.
-        if ($force || ! $existing->isOverridden()) {
+        if ($force || ! $wasOverridden) {
             $existing->value = $fileValue;
         }
 
