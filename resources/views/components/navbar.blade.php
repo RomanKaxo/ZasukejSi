@@ -39,8 +39,15 @@
         }
 
         .navbar-shell {
-            width: 1140px;
+            /* Obsah zůstává v 1140 px jako hlavička i patička; navíc jsou
+               postranní odsazení, aby odrolovaný šedý podklad nezačínal
+               přesně u loga, ale kousek před ním. Proto je pole širší
+               přesně o ta odsazení. */
+            --navbar-gutter: 24px;
+            width: calc(1140px + 2 * var(--navbar-gutter));
             max-width: calc(100% - 32px);
+            padding-left: var(--navbar-gutter);
+            padding-right: var(--navbar-gutter);
             height: 80px;
             margin: 0 auto;
             box-sizing: border-box;

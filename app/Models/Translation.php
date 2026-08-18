@@ -75,15 +75,31 @@ class Translation extends Model
         if ($locale !== null && $group !== null) {
             Cache::forget(self::cacheKey($locale, $group));
         } else {
-            // A broader change (import, bulk edit) — clear every combination we know.
-            foreach (\App\Support\Locales::codes() as $code) {
-                foreach (static::query()->forLocale($code)->distinct()->pluck('group') as $groupName) {
-                    Cache::forget(self::cacheKey($code, $groupName));
-                }
-            }
+            // A broad change invalidates everything by moving the version the
+            // keys are built from.
+            //
+            // This used to walk the groups still present in the table and
+            // forget those — which does nothing at all for the case that
+            // matters, namely rows that have just been *removed*. An override
+            // deleted outside a model event (a truncate, a seed, a bulk query)
+            // therefore stayed cached forever, and the site went on showing a
+            // text that existed nowhere: in the file, in the database, or in
+            // anybody's memory of having typed it.
+            Cache::forever(self::VERSION_KEY, (string) now()->getTimestampMs());
         }
 
         self::flushInMemory($locale, $group);
+    }
+
+    /**
+     * Drop every cached override, whatever the table says.
+     *
+     * The escape hatch for exactly the situation above: an old value stuck in
+     * the cache with nothing behind it.
+     */
+    public static function flushAll(): void
+    {
+        self::flushCache();
     }
 
     /**
@@ -109,9 +125,23 @@ class Translation extends Model
         }
     }
 
+    /** Bumped on any broad change; part of every cache key. */
+    private const VERSION_KEY = 'translations:version';
+
     public static function cacheKey(string $locale, string $group): string
     {
-        return "translations:{$locale}:{$group}";
+        return 'translations:' . self::cacheVersion() . ":{$locale}:{$group}";
+    }
+
+    private static function cacheVersion(): string
+    {
+        try {
+            return (string) Cache::rememberForever(self::VERSION_KEY, fn () => '1');
+        } catch (\Throwable) {
+            // Bez funkční cache se prostě nekešuje; překlady se načtou ze
+            // souborů a z databáze pokaždé znovu.
+            return '1';
+        }
     }
 
     protected static function booted(): void

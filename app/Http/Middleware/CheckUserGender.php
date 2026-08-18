@@ -22,12 +22,13 @@ class CheckUserGender
             return redirect()->route('login');
         }
 
-        // Admins can access everything
-        if ($user->hasRole('admin')) {
-            return $next($request);
-        }
-
-        // Check if user has the required gender
+        // Administrátor tudy výjimku nemá.
+        //
+        // Míval ji, a znamenala to, že administrátor-muž měl ve svém účtu
+        // ženské stránky: fotky inzerátu, služby, ceny, statistiky. Vypadalo
+        // to jako chyba, protože to chyba byla — účet je jeho vlastní, ne
+        // nástroj správy. Cizí profily se spravují v administraci, kde je na
+        // to editace i log úprav.
         if ($user->gender !== $requiredGender) {
             // Only confirmed male users are sent to the member dashboard — that
             // route is itself guarded by `gender:male`, so redirecting a female

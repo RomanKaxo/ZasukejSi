@@ -19,21 +19,37 @@
         <nav class="w-full px-5">
             <ul class="space-y-2">
                 @php
-                    $links = auth()->user()->gender === 'male'
+                    // Podle pohlaví, ne podle „není muž".
+                    //
+                    // Účet bez vyplněného pohlaví padal do ženské větve a
+                    // dostal odkazy na stránky inzerátu, které pro něj jsou
+                    // hlídané — takže menu nabízelo cesty končící
+                    // přesměrováním.
+                    $accountUser = auth()->user();
+                    $accountGender = $accountUser->gender;
+
+                    $links = $accountGender === 'male'
                         ? [
                             ['url' => route('account.member.ratings'), 'label' => __('front.account.member.ratings'), 'icon' => 'BarChart4.svg'],
                             ['url' => route('account.member.favorites'), 'label' => __('front.account.member.favorites'), 'icon' => 'heart.svg'],
                             ['url' => route('account.member.girls-of-month'), 'label' => __('front.account.member.girls_of_month'), 'icon' => 'calendar.svg'],
                             ['url' => route('account.member.archive'), 'label' => __('front.account.member.archive'), 'icon' => 'History.svg'],
                             ['url' => route('account.member.reported'), 'label' => __('front.account.member.reported'), 'icon' => 'TriangleAlert.svg'],
+                            ['url' => route('account.member.membership.index'), 'label' => __('front.account.member.membership'), 'icon' => 'BadgeCheck.svg'],
                             ['url' => route('account.member.dashboard'), 'label' => __('front.account.member.settings'), 'icon' => 'Settings.svg'],
                         ]
-                        : [
-                            ['url' => route('account.dashboard'), 'label' => __('front.account.sidebar.basic'), 'icon' => 'User.svg'],
-                            ['url' => route('account.photos'), 'label' => __('front.account.sidebar.photos'), 'icon' => 'Images.svg'],
-                            ['url' => route('account.services'), 'label' => __('front.account.sidebar.services'), 'icon' => 'List.svg'],
-                            ['url' => route('account.statistics'), 'label' => __('front.account.sidebar.statistics'), 'icon' => 'BarChart4.svg'],
-                        ];
+                        : ($accountGender === 'female'
+                            ? [
+                                ['url' => route('account.dashboard'), 'label' => __('front.account.sidebar.basic'), 'icon' => 'User.svg'],
+                                ['url' => route('account.photos'), 'label' => __('front.account.sidebar.photos'), 'icon' => 'Images.svg'],
+                                ['url' => route('account.services'), 'label' => __('front.account.sidebar.services'), 'icon' => 'List.svg'],
+                                ['url' => route('account.statistics'), 'label' => __('front.account.sidebar.statistics'), 'icon' => 'BarChart4.svg'],
+                            ]
+                            : [
+                                // Pohlaví nevyplněné: nabídnout jde jedině to,
+                                // co platí pro každého.
+                                ['url' => route('account.edit'), 'label' => __('front.account.sidebar.basic'), 'icon' => 'User.svg'],
+                            ]);
                 @endphp
 
                 @foreach($links as $link)

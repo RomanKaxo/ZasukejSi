@@ -82,6 +82,20 @@
                 </a>
             </li>
 
+            {{-- Předplatné patří do menu, ne jen do zeleného tlačítka dole:
+                 tlačítko je reklama, kterou si člověk odbaví jednou, a pak
+                 hledá v seznamu položku, která tam nebyla. Odsud se dostane
+                 i k tomu, co už má koupené. --}}
+            <li>
+                <a href="{{ route('account.member.membership.index') }}"
+                   class="nav-button !w-[210px] !h-[50px] !p-0 !px-4 !rounded-[8px] !border !border-[#E6E6E6] {{ request()->routeIs('account.member.membership.*') ? 'active' : '' }}">
+                    <svg class="w-[20px] h-[20px] mr-3" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1.66602 6.66675H18.3327M4.16602 3.33341H15.8327C16.7532 3.33341 17.4993 4.07961 17.4993 5.00008V15.0001C17.4993 15.9206 16.7532 16.6667 15.8327 16.6667H4.16602C3.24554 16.6667 2.49935 15.9206 2.49935 15.0001V5.00008C2.49935 4.07961 3.24554 3.33341 4.16602 3.33341Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    {{ __('front.account.member.membership') }}
+                </a>
+            </li>
+
             {{-- User Settings Section --}}
             <li>
                 <a href="{{ route('account.member.dashboard') }}"

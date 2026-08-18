@@ -101,6 +101,42 @@ class SubscriptionPlansVisibilityTest extends TestCase
         $response->assertDontSee(__('front.plans.for_women'));
     }
 
+    /**
+     * Administrátor je taky kupující.
+     *
+     * Skupiny se filtrovaly podle pohlaví, ale uvnitř byl administrátor z
+     * nákupu vyňatý — takže u členství pro muže viděl místo tlačítka hlášku
+     * „toto členství je určeno pro muže". O svém vlastním členství.
+     */
+    public function test_an_admin_gets_a_buy_button_not_a_notice(): void
+    {
+        $admin = User::factory()->create(['gender' => 'male', 'email_verified_at' => now()]);
+        $admin->syncRoles(['admin']);
+
+        $response = $this->actingAs($admin->fresh())->get('/vip-premium');
+
+        $response->assertSee(__('front.plans.choose'));
+        $response->assertDontSee(__('front.plans.men_only'));
+    }
+
+    /** Tarif se dá ze stránky sundat, aniž by se přestal prodávat z účtu. */
+    public function test_a_plan_can_be_hidden_from_the_page(): void
+    {
+        $user = User::factory()->create(['gender' => 'male', 'email_verified_at' => now()]);
+
+        SubscriptionType::where('audience', 'member')->update(['show_on_plans_page' => false]);
+
+        $response = $this->actingAs($user)->get('/vip-premium');
+
+        // Ani „Vybrat", ani „Premium" se tvrdit nedá: obojí je na stránce
+        // i mimo karty tarifů (nadpis stránky je „VIP & Premium"). To, co
+        // schování tarifu opravdu znamená, je prázdná nabídka.
+        $response->assertSee(__('front.membership.no_plans'));
+
+        // Ale pořád je aktivní, takže se dá koupit odjinud.
+        $this->assertTrue(SubscriptionType::where('audience', 'member')->first()->is_active);
+    }
+
     /** Host má být pozvaný k přihlášení, ne k registraci — účet už mít může. */
     public function test_the_guest_button_opens_the_login_window(): void
     {

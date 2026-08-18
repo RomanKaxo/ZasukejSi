@@ -57,3 +57,15 @@ Schedule::command('scrape:verify')
     ->dailyAt('04:20')
     ->withoutOverlapping(180)
     ->onOneServer();
+
+/**
+ * Oznámení, na která už nikdo nezareaguje.
+ *
+ * Archivace byla jenom tlačítko, takže zvonek držel všechno, co komu kdy
+ * přišlo. Po pár měsících to není přehled, ale skládka. Nepřečtená se
+ * nearchivují nikdy — smyslem nepřečteného je, že se na to nikdo nepodíval.
+ */
+Schedule::command('notifications:archive')
+    ->dailyAt('04:50')
+    ->withoutOverlapping()
+    ->onOneServer();

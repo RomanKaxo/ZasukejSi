@@ -35,6 +35,7 @@ class SubscriptionType extends Model
         'icon',
         'sort_order',
         'is_active',
+        'show_on_plans_page',
     ];
 
     public array $translatable = ['name', 'description'];
@@ -50,6 +51,7 @@ class SubscriptionType extends Model
             'duration_days' => 'integer',
             'sort_order' => 'integer',
             'is_active' => 'boolean',
+            'show_on_plans_page' => 'boolean',
         ];
     }
 
@@ -109,6 +111,18 @@ class SubscriptionType extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    /**
+     * Plans advertised on the public VIP & Premium page.
+     *
+     * Different question from `is_active`: an inactive plan cannot be bought
+     * at all, this one is merely not on the shop window. A tier being phased
+     * out is still renewed from inside an account.
+     */
+    public function scopeOnPlansPage($query)
+    {
+        return $query->where('show_on_plans_page', true);
     }
 
     public function scopeOrdered($query)

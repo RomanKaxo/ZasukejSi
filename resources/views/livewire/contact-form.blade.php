@@ -7,8 +7,9 @@
         }
 
         .contact-form-panel {
+            /* Přes celou šířku obsahu. Užší panel vypadal na stránce, kde
+               kolem něj nic není, jako by se nedonačetl. */
             width: 100%;
-            max-width: 720px;
             border-radius: 15px;
             background: #F2F2F2;
             box-sizing: border-box;
@@ -31,6 +32,8 @@
             font-size: 14px;
             color: #505050;
             margin-bottom: 20px;
+            /* Text zůstává v čitelné šířce, i když je panel přes celou
+               stránku — řádek přes 1140 px se špatně čte. */
             max-width: 720px;
         }
 

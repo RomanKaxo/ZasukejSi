@@ -13,13 +13,13 @@
             'audience' => SubscriptionType::AUDIENCE_PROFILE ?? 'profile',
             'title' => __('front.plans.for_women'),
             'subtitle' => __('front.plans.for_women_subtitle'),
-            'plans' => SubscriptionType::query()->where('audience', 'profile')->active()->ordered()->get(),
+            'plans' => SubscriptionType::query()->where('audience', 'profile')->active()->onPlansPage()->ordered()->get(),
         ],
         [
             'audience' => 'member',
             'title' => __('front.plans.for_men'),
             'subtitle' => __('front.plans.for_men_subtitle'),
-            'plans' => SubscriptionType::query()->where('audience', 'member')->active()->ordered()->get(),
+            'plans' => SubscriptionType::query()->where('audience', 'member')->active()->onPlansPage()->ordered()->get(),
         ],
     ];
 
@@ -95,8 +95,13 @@
                                  places, and a guest has to sign in first. --}}
                             @php
                                 $planIsMemberPlan = $plan->audience === 'member';
-                                $planIsAdmin = $planUser?->hasRole('admin') ?? false;
-                                $planIsMember = $planUser && $planUser->isMale() && ! $planIsAdmin;
+
+                                // Rozhoduje pohlaví, administrátor nebo ne —
+                                // přesně jak to říká komentář nahoře. Výjimka
+                                // pro administrátory znamenala, že místo
+                                // tlačítka viděli hlášku „toto členství je
+                                // určeno pro muže" u členství pro muže.
+                                $planIsMember = $planUser && $planUser->isMale();
                                 $planIsProvider = $planUser && ! $planUser->isMale();
 
                                 $planCanBuy = $planUser && (
@@ -128,12 +133,14 @@
                                     {{ __('front.plans.sign_in_to_buy') }}
                                 </button>
                             @else
-                                {{-- Signed in, but this plan is for the other
-                                     audience — say so rather than offering a
-                                     button that cannot work. --}}
-                                <p class="text-center text-sm" style="color:#8C8C8C;">
-                                    {{ $planIsMemberPlan ? __('front.plans.men_only') : __('front.plans.women_only') }}
-                                </p>
+                                {{-- Sem se dá dostat jedině s účtem, který
+                                     nemá vyplněné pohlaví: skupiny jsou podle
+                                     pohlaví filtrované už nahoře. Nabídnout
+                                     tlačítko, které skončí přesměrováním, by
+                                     bylo horší než říct, co chybí. --}}
+                                <a href="{{ route('account.edit') }}" class="text-center text-sm underline" style="color:#8C8C8C;">
+                                    {{ __('front.plans.set_gender_first') }}
+                                </a>
                             @endif
                         </div>
                     @endforeach

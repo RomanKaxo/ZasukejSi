@@ -37,6 +37,7 @@ return [
         'sign_in_to_buy' => 'Pro zakoupení se přihlaste',
         'men_only' => 'Toto členství je určeno pro muže.',
         'women_only' => 'Toto předplatné je určeno pro ženy.',
+        'set_gender_first' => 'Nejdřív si v účtu doplňte pohlaví',
     ],
 
     'membership' => [
@@ -166,6 +167,7 @@ return [
             'premium_button' => 'Začít PRÉMIUM',
         ],
         'member' => [
+            'membership' => 'Předplatné',
             'profile' => 'Můj profil',
             'messages' => 'Moje zprávy',
             'settings' => 'Základní nastavení',

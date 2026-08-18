@@ -177,7 +177,16 @@ class SubscriptionTypeResource extends Resource
 
                         Toggle::make('is_active')
                             ->label(__('subscriptions.form.is_active'))
-                            ->default(true),
+                            ->default(true)
+                            ->helperText('Vypnutý tarif se nedá koupit nikde — ani z účtu při obnově.'),
+
+                        // Jiná otázka než „je aktivní": tarif, který se
+                        // dosluhuje nebo se domlouvá individuálně, se pořád
+                        // prodlužuje z účtu, jen nemá být ve výloze.
+                        Toggle::make('show_on_plans_page')
+                            ->label('Zobrazovat na stránce VIP & Premium')
+                            ->default(true)
+                            ->helperText('Vypnuté: tarif ze stránky zmizí, ale koupit a prodloužit ho jde dál z účtu.'),
                     ])
                     ->columns(2),
 
@@ -249,6 +258,11 @@ class SubscriptionTypeResource extends Resource
                     ->label(__('subscriptions.table.active'))
                     ->boolean(),
 
+                IconColumn::make('show_on_plans_page')
+                    ->label('Na stránce VIP & Premium')
+                    ->boolean()
+                    ->toggleable(),
+
                 TextColumn::make('sort_order')
                     ->label(__('subscriptions.table.order'))
                     ->sortable()
@@ -263,6 +277,9 @@ class SubscriptionTypeResource extends Resource
             ->filters([
                 TernaryFilter::make('is_active')
                     ->label(__('subscriptions.filter.active')),
+
+                TernaryFilter::make('show_on_plans_page')
+                    ->label('Na stránce VIP & Premium'),
             ])
             ->recordActions([
                 EditAction::make(),

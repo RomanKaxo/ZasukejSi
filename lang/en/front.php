@@ -31,6 +31,7 @@ return [
         'sign_in_to_buy' => 'Sign in to buy',
         'men_only' => 'This membership is for men.',
         'women_only' => 'This subscription is for women.',
+        'set_gender_first' => 'Set your gender in the account first',
     ],
 
     'membership' => [
@@ -154,6 +155,7 @@ return [
             'premium_button' => 'Start PREMIUM',
         ],
         'member' => [
+            'membership' => 'Membership',
             'profile' => 'My Profile',
             'messages' => 'My Messages',
             'settings' => 'Basic Settings',

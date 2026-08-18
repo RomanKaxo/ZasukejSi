@@ -27,6 +27,7 @@ return [
 
     'plans' => [
         'sign_in_to_buy' => 'Войдите, чтобы купить',
+        'set_gender_first' => 'Сначала укажите пол в аккаунте',
     ],
 
     'membership' => [
@@ -205,6 +206,7 @@ return [
         ],
 
         'member' => [
+            'membership' => 'Подписка',
             'messages' => 'Мои сообщения',
             'favorites' => 'Избранное',
             'ratings' => 'Оценки девушек',

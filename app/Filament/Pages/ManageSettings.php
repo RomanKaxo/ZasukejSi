@@ -73,6 +73,10 @@ class ManageSettings extends Page
             'footer_auth_label' => Setting::get(FooterButton::KEY_AUTH_LABEL),
             'top_rated_lock_mode' => TopRatedLock::mode(),
             'offline_checkout' => OfflineCheckout::isEnabled(),
+            'notifications_archive_days' => Setting::getInt(
+                'notifications_archive_days',
+                \App\Console\Commands\ArchiveNotificationsCommand::DEFAULT_DAYS,
+            ),
         ]);
     }
 
@@ -154,6 +158,18 @@ class ManageSettings extends Page
                             ->helperText('Jakmile doplníte klíče Stripe, platby se samy vrátí k bráně a tato volba se přestane uplatňovat.'),
                     ]),
 
+                Section::make('Oznámení')
+                    ->description('Archivace byla jenom tlačítko, takže zvonek držel všechno, co komu kdy přišlo. Nepřečtená oznámení se nearchivují nikdy — smyslem nepřečteného je, že se na to nikdo nepodíval.')
+                    ->schema([
+                        TextInput::make('notifications_archive_days')
+                            ->label('Archivovat přečtená po (dnech)')
+                            ->numeric()
+                            ->required()
+                            ->minValue(1)
+                            ->maxValue(365)
+                            ->helperText('Sdílená oznámení pro všechny se archivují po dvojnásobku téhle lhůty — u nich nikdo za všechny nerozhodne, že jsou přečtená.'),
+                    ]),
+
                 Section::make('Online stav')
                     ->description('Skutečná aktivita má vždy přednost. Tato hodnota řídí jen podíl ostatních profilů, které se zobrazí jako online. 0 simulaci zcela vypne.')
                     ->schema([
@@ -184,6 +200,8 @@ class ManageSettings extends Page
         Setting::set(FooterButton::KEY_AUTH_LABEL, $data['footer_auth_label'] ?? '');
 
         Setting::set(OfflineCheckout::KEY, ! empty($data['offline_checkout']) ? '1' : '0');
+
+        Setting::set('notifications_archive_days', max(1, min(365, (int) $data['notifications_archive_days'])));
 
         // Unknown value falls back to the default rather than being stored.
         $lockMode = (string) ($data['top_rated_lock_mode'] ?? TopRatedLock::DEFAULT);
