@@ -48,10 +48,10 @@ class MembershipCheckoutTest extends TestCase
         $response = $this->actingAs($member)
             ->post(route('account.member.membership.checkout', $plan));
 
-        // Na stránku předplatného, ne do nastavení účtu: kdo si právě
-        // koupil členství, nemá skončit v nastavení hesla.
-        $response->assertRedirect(route('account.member.membership.index'));
-        $response->assertSessionHas('status', __('front.membership.activated_without_payment'));
+        // Na informativní stránku, ne do nastavení účtu: kdo si právě koupil
+        // nebo prodloužil členství, nemá skončit v nastavení hesla — a má se
+        // dočíst, že se neplatilo.
+        $response->assertRedirect(route('account.member.membership.success', ['granted' => 1]));
 
         $subscription = \App\Models\MemberSubscription::forUser($member->id)->active()->firstOrFail();
 
@@ -149,7 +149,8 @@ class MembershipCheckoutTest extends TestCase
         // URL grants nothing.
         $this->actingAs($member)
             ->get(route('account.member.membership.success'))
-            ->assertRedirect();
+            ->assertSuccessful()
+            ->assertSee(__('front.membership.unverified_title'));
 
         $this->assertFalse($member->fresh()->hasActiveMembership());
         $this->assertSame(0, \App\Models\MemberSubscription::count());

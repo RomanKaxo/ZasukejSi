@@ -35,6 +35,11 @@ return [
     ],
 
     'membership' => [
+        'success_title' => 'Membership is active',
+        'granted_title' => 'Membership is active',
+        'pending_title' => 'Payment received',
+        'unverified_title' => 'Payment could not be verified',
+        'back_to_membership' => 'Back to membership',
         'activated' => 'Your Premium membership is active.',
         'activated_without_payment' => 'Membership is active. No payment was taken — the payment gateway is not set up yet.',
         'activation_pending' => 'Payment received. We are activating your membership.',

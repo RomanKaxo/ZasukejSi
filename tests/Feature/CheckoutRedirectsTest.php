@@ -70,20 +70,22 @@ class CheckoutRedirectsTest extends TestCase
         return $user->fresh();
     }
 
-    /** To hlavní: po koupi členství se jde na členství, ne do nastavení. */
-    public function test_buying_membership_lands_on_the_membership_page(): void
+    /** To hlavní: po koupi členství se jde na potvrzení, ne do nastavení. */
+    public function test_buying_membership_lands_on_the_success_page(): void
     {
         $response = $this->actingAs($this->member())
             ->post(route('account.member.membership.checkout', $this->plan('member')));
 
-        $response->assertRedirect(route('account.member.membership.index'));
-        $response->assertSessionHas('status');
+        $response->assertRedirect(route('account.member.membership.success', ['granted' => 1]));
 
         $this->assertSame(1, MemberSubscription::count());
     }
 
-    /** A ta zpráva se tam opravdu ukáže, ne jen uloží do session. */
-    public function test_the_confirmation_is_visible_there(): void
+    /**
+     * A na té stránce se dočte, co se stalo — včetně toho, že se neplatilo.
+     * Bliknutí, které zmizí při prvním kliknutí, na tohle nestačí.
+     */
+    public function test_the_success_page_says_what_happened(): void
     {
         $user = $this->member();
 
@@ -91,7 +93,33 @@ class CheckoutRedirectsTest extends TestCase
             ->followingRedirects()
             ->post(route('account.member.membership.checkout', $this->plan('member')))
             ->assertSuccessful()
-            ->assertSee(__('front.membership.activated_without_payment'));
+            ->assertSee(__('front.membership.granted_title'))
+            ->assertSee(__('front.membership.activated_without_payment'))
+            ->assertSee(__('front.membership.back_to_membership'));
+    }
+
+    /** Prodloužení je tatáž cesta a musí skončit stejně. */
+    public function test_extending_membership_lands_on_the_success_page(): void
+    {
+        $user = $this->member();
+        $plan = $this->plan('member');
+
+        // První nákup.
+        $this->actingAs($user)->post(route('account.member.membership.checkout', $plan));
+
+        // Prodloužení.
+        $this->actingAs($user)
+            ->post(route('account.member.membership.checkout', $plan))
+            ->assertRedirect(route('account.member.membership.success', ['granted' => 1]));
+    }
+
+    /** Platba, kterou se nepodařilo ověřit, se nesmí tvářit jako úspěch. */
+    public function test_an_unverified_return_says_so(): void
+    {
+        $this->actingAs($this->member())
+            ->get(route('account.member.membership.success'))
+            ->assertSuccessful()
+            ->assertSee(__('front.membership.unverified_title'));
     }
 
     public function test_cancelling_membership_returns_to_the_membership_page(): void
@@ -101,16 +129,24 @@ class CheckoutRedirectsTest extends TestCase
             ->assertRedirect(route('account.member.membership.index'));
     }
 
-    /** U inzerátu to bylo správně a musí to tak zůstat. */
-    public function test_buying_vip_lands_on_the_subscription_page(): void
+    /** U inzerátu totéž: dvě cesty ke stejnému výsledku končí stejně. */
+    public function test_buying_vip_lands_on_the_success_page(): void
     {
         $response = $this->actingAs($this->provider())
             ->post(route('account.subscription.checkout', $this->plan('profile')));
 
-        $response->assertRedirect(route('account.subscription.index'));
-        $response->assertSessionHas('status');
+        $response->assertRedirect(route('account.subscription.success', ['granted' => 1]));
 
         $this->assertSame(1, Subscription::count());
+    }
+
+    public function test_the_vip_success_page_says_what_happened(): void
+    {
+        $this->actingAs($this->provider())
+            ->followingRedirects()
+            ->post(route('account.subscription.checkout', $this->plan('profile')))
+            ->assertSuccessful()
+            ->assertSee(__('front.subscription.success_title'));
     }
 
     /**

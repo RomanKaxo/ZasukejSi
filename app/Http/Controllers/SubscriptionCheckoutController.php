@@ -198,6 +198,15 @@ class SubscriptionCheckoutController extends \Illuminate\Routing\Controller
                 ->first();
         }
 
+        // Aktivace bez platby se sem dostane přímo, bez relace Stripe.
+        if ($sessionId === '' && $request->boolean('granted')) {
+            $paid = true;
+            $subscription = $profile?->subscriptions()
+                ->where('status', Subscription::STATUS_ACTIVE)
+                ->latest('ends_at')
+                ->first();
+        }
+
         return view('account.subscription-success', [
             'sessionId' => $sessionId,
             'paid' => $paid,
@@ -307,8 +316,9 @@ class SubscriptionCheckoutController extends \Illuminate\Routing\Controller
             'subscription_type_id' => $subscriptionType->id,
         ]);
 
-        return redirect()
-            ->route('account.subscription.index')
-            ->with('status', __('front.membership.activated_without_payment'));
+        // Na tutéž informativní stránku jako návrat z brány. Dvě cesty ke
+        // stejnému výsledku končily různě: jedna stránkou, druhá hláškou,
+        // která zmizí při prvním kliknutí.
+        return redirect()->route('account.subscription.success', ['granted' => 1]);
     }
 }

@@ -41,6 +41,11 @@ return [
     ],
 
     'membership' => [
+        'success_title' => 'Členství je aktivní',
+        'granted_title' => 'Členství je aktivní',
+        'pending_title' => 'Platba přijata',
+        'unverified_title' => 'Platbu se nepodařilo ověřit',
+        'back_to_membership' => 'Zpět na předplatné',
         'activated' => 'Premium členství je aktivní.',
         'activated_without_payment' => 'Členství je aktivní. Platba neproběhla — platební brána zatím není nastavená.',
         'activation_pending' => 'Platba proběhla. Členství aktivujeme během okamžiku.',

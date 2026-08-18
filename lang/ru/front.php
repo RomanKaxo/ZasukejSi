@@ -31,6 +31,11 @@ return [
     ],
 
     'membership' => [
+        'success_title' => 'Подписка активна',
+        'granted_title' => 'Подписка активна',
+        'pending_title' => 'Платёж получен',
+        'unverified_title' => 'Платёж не удалось подтвердить',
+        'back_to_membership' => 'Назад к подписке',
         'period_days' => '{1} :count день|[2,4] :count дня|[5,*] :count дней',
         'period_months' => '{1} :count месяц|[2,4] :count месяца|[5,*] :count месяцев',
         'period_years' => '{1} :count год|[2,4] :count года|[5,*] :count лет',

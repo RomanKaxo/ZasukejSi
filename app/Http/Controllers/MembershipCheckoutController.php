@@ -226,16 +226,18 @@ class MembershipCheckoutController extends \Illuminate\Routing\Controller
             'subscription_type_id' => $subscriptionType->id,
         ]);
 
-        // Na stránku předplatného, ne do nastavení účtu.
+        // Na informativní stránku, ne jen na bleskovou hlášku.
         //
         // Všechny tři cesty tudy končily na nástěnce člena, která se v menu
-        // jmenuje „Základní nastavení" — takže kdo si právě koupil členství,
-        // se ocitl v nastavení hesla. A zpráva se navíc nezobrazila vůbec:
-        // nástěnka vypisuje jen „nastavení uloženo" a „heslo změněno", takže
-        // všechno ostatní zmizelo. Člověk zaplatil a nedostal ani potvrzení.
-        return redirect()
-            ->route('account.member.membership.index')
-            ->with('status', __('front.membership.activated_without_payment'));
+        // jmenuje „Základní nastavení" — takže kdo si právě koupil nebo
+        // prodloužil členství, se ocitl v nastavení hesla. A zpráva se navíc
+        // nezobrazila vůbec: nástěnka vypisovala jen „nastavení uloženo" a
+        // „heslo změněno". Člověk zaplatil a nedostal ani potvrzení.
+        //
+        // Členství tady navíc vzniklo *bez zaplacení*, protože brána není
+        // nastavená. To je věc, kterou má člověk vidět napsanou a mít čas si
+        // ji přečíst, ne hlášku, která zmizí při prvním kliknutí.
+        return redirect()->route('account.member.membership.success', ['granted' => 1]);
     }
 
     /**
@@ -265,20 +267,33 @@ class MembershipCheckoutController extends \Illuminate\Routing\Controller
             }
         }
 
-        $activated = $paid && MemberSubscription::query()
-            ->where('user_id', $user->id)
-            ->where('metadata->stripe_session_id', $sessionId)
-            ->exists();
+        $membership = $paid
+            ? MemberSubscription::query()
+                ->where('user_id', $user->id)
+                ->where('metadata->stripe_session_id', $sessionId)
+                ->first()
+            : null;
 
-        $status = match (true) {
-            $activated => __('front.membership.activated'),
-            $paid => __('front.membership.activation_pending'),
-            default => __('front.membership.not_verified'),
-        };
+        // Aktivace bez platby se sem dostane přímo, bez relace Stripe: brána
+        // není nastavená a členství vzniklo hned.
+        if ($sessionId === '' && $request->boolean('granted')) {
+            return view('member.membership-success', [
+                'state' => 'granted',
+                'membership' => MemberSubscription::forUser($user->id)->active()->latest('ends_at')->first(),
+            ]);
+        }
 
-        return redirect()
-            ->route('account.member.membership.index')
-            ->with($paid ? 'status' : 'error', $status);
+        // Čtyři různé konce, ne jeden. „Zaplaceno a běží" a „zaplaceno,
+        // aktivujeme" nejsou totéž a tvrdit to první, když platí to druhé, je
+        // lež — členství vytváří webhook, ne tahle stránka.
+        return view('member.membership-success', [
+            'state' => match (true) {
+                $membership !== null => 'active',
+                $paid => 'pending',
+                default => 'unverified',
+            },
+            'membership' => $membership,
+        ]);
     }
 
     public function cancel()
