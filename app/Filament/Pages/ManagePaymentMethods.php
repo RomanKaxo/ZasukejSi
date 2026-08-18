@@ -53,9 +53,30 @@ class ManagePaymentMethods extends Page
         return 'Platební metody';
     }
 
+    /** Chybí tabulka — kód je nasazený, migrace ještě neproběhly. */
+    public bool $pendingMigration = false;
+
     public function mount(): void
     {
         PaymentMethods::sync();
+
+        // Mezi nasazením kódu a spuštěním migrací tabulka neexistuje. Je to
+        // normálních pár minut života každého vydání a stránka na to nesmí
+        // umřít — má říct, co udělat.
+        $this->pendingMigration = ! PaymentMethods::ready();
+
+        if ($this->pendingMigration) {
+            Notification::make()
+                ->title('Chybí databázová tabulka platebních metod')
+                ->body('Na serveru ještě neproběhly migrace. Spusťte `php artisan migrate` a stránku načtěte znovu.')
+                ->warning()
+                ->persistent()
+                ->send();
+
+            $this->form->fill();
+
+            return;
+        }
 
         $stripe = PaymentMethods::find(PaymentMethod::CODE_STRIPE);
         $bank = PaymentMethods::find(PaymentMethod::CODE_BANK_TRANSFER);
@@ -148,6 +169,16 @@ class ManagePaymentMethods extends Page
 
     public function save(): void
     {
+        if (! PaymentMethods::ready()) {
+            Notification::make()
+                ->title('Uložit zatím nejde')
+                ->body('Chybí databázová tabulka. Spusťte na serveru `php artisan migrate`.')
+                ->danger()
+                ->send();
+
+            return;
+        }
+
         $data = $this->form->getState();
 
         PaymentMethods::sync();

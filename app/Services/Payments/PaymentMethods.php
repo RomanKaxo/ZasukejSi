@@ -48,6 +48,10 @@ class PaymentMethods
      */
     public static function available(): Collection
     {
+        if (! self::ready()) {
+            return collect();
+        }
+
         return PaymentMethod::query()
             ->enabled()
             ->ordered()
@@ -59,7 +63,38 @@ class PaymentMethods
 
     public static function find(string $code): ?PaymentMethod
     {
+        if (! self::ready()) {
+            return null;
+        }
+
         return PaymentMethod::query()->where('code', $code)->first();
+    }
+
+    /**
+     * Whether the configuration is readable at all.
+     *
+     * Between deploying the code and running the migrations the table does not
+     * exist yet, and that is a normal few minutes in the life of every
+     * release. Letting the query through turned it into a 500 — not only on
+     * the admin page, which would be bad enough, but on the page where a
+     * customer buys a subscription, which is worse and had nothing to do with
+     * payment methods before that morning.
+     *
+     * Without the table there are simply no configured methods, and the
+     * checkout falls back to what it did before this feature existed.
+     */
+    public static function ready(): bool
+    {
+        try {
+            // Bez zapamatování. Původně se kladná odpověď držela ve statické
+            // proměnné s odůvodněním, že tabulka může vzniknout, ale ne
+            // zmizet — což je pravda v provozu a nepravda v testech, kde ji
+            // jeden test zahodí a další v témže procesu si pak myslí, že tam
+            // pořád je. Dotaz navíc je levnější než tahle třída chyb.
+            return \Illuminate\Support\Facades\Schema::hasTable('payment_methods');
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     public static function isAvailable(string $code): bool
@@ -81,6 +116,10 @@ class PaymentMethods
     /** Ensure every known method has a row, so the admin has something to edit. */
     public static function sync(): void
     {
+        if (! self::ready()) {
+            return;
+        }
+
         foreach (array_keys(self::known()) as $index => $code) {
             PaymentMethod::firstOrCreate(
                 ['code' => $code],
