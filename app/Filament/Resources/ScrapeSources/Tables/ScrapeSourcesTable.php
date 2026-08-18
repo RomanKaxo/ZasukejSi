@@ -198,6 +198,87 @@ class ScrapeSourcesTable
                             ->send();
                     }),
 
+                // Ruční cesta v množném čísle. Jedna stránka po druhé je na
+                // deset profilů únosné a na sto ne — a zrovna sto profilů je
+                // důvod, proč tuhle cestu někdo vůbec potřebuje.
+                Action::make('ingestArchive')
+                    ->label('Nahrát ZIP se stránkami')
+                    ->icon('heroicon-o-archive-box-arrow-down')
+                    ->color('gray')
+                    ->modalHeading('Zpracovat archiv uložených stránek')
+                    ->modalDescription('V prohlížeči uložte profily přes „Uložit jako" a zabalte je do ZIPu. Adresu si stránka uložená z Chrome nebo Edge nese v sobě — psát ji nikam nemusíte.')
+                    ->modalSubmitActionLabel('Zpracovat')
+                    ->form([
+                        \Filament\Forms\Components\FileUpload::make('archive')
+                            ->label('ZIP s uloženými stránkami')
+                            ->required()
+                            ->acceptedFileTypes(['application/zip', 'application/x-zip-compressed', 'multipart/x-zip'])
+                            ->maxSize(102400)
+                            ->storeFiles(false)
+                            ->helperText('Nejvýš 100 MB a 500 stránek. Když adresa ve stránce není (jiný prohlížeč), přiložte do archivu manifest.csv s řádky „soubor.html;https://adresa".'),
+                    ])
+                    ->action(function (ScrapeSource $record, array $data) {
+                        $upload = $data['archive'] ?? null;
+
+                        if (is_array($upload)) {
+                            $upload = reset($upload);
+                        }
+
+                        if (! $upload instanceof \Illuminate\Http\UploadedFile) {
+                            Notification::make()->title('Soubor se nenahrál')->danger()->send();
+
+                            return;
+                        }
+
+                        try {
+                            $archive = app(\App\Services\Scraping\HtmlArchive::class)->read($upload->getRealPath());
+                        } catch (Throwable $e) {
+                            Notification::make()
+                                ->title('Archiv se nepodařilo otevřít')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->persistent()
+                                ->send();
+
+                            return;
+                        }
+
+                        if ($archive['pages'] === []) {
+                            Notification::make()
+                                ->title('V archivu nejsou použitelné stránky')
+                                ->body(implode(' ', array_slice($archive['problems'], 0, 5))
+                                    ?: 'Nenašel jsem žádný soubor .html.')
+                                ->warning()
+                                ->persistent()
+                                ->send();
+
+                            return;
+                        }
+
+                        $run = app(ScrapeRunner::class)->ingestMany($record, $archive['pages']);
+
+                        // Soubory, u kterých se nepodařilo zjistit adresu, se
+                        // vypisují jménem. Tichý přeskok by znamenal, že se
+                        // někdo diví, proč jich přibylo míň.
+                        $body = "Stránek {$run->items_found}, nových {$run->items_new}, "
+                            . "změněných {$run->items_updated}, chyb {$run->items_failed}.";
+
+                        if ($archive['problems'] !== []) {
+                            $body .= ' Nezpracováno: ' . implode(' ', array_slice($archive['problems'], 0, 5));
+
+                            if (count($archive['problems']) > 5) {
+                                $body .= ' … a dalších ' . (count($archive['problems']) - 5) . '.';
+                            }
+                        }
+
+                        Notification::make()
+                            ->title('Archiv zpracován')
+                            ->body($body)
+                            ->color($archive['problems'] === [] ? 'success' : 'warning')
+                            ->persistent()
+                            ->send();
+                    }),
+
                 // Poslední cesta, která funguje vždycky: web může odmítat
                 // tenhle server a přitom se k němu člověk u obyčejného
                 // prohlížeče dostane bez potíží. Tohle mu umožní stránku
@@ -214,8 +295,7 @@ class ScrapeSourcesTable
                         TextInput::make('url')
                             ->label('Adresa profilu')
                             ->url()
-                            ->required()
-                            ->helperText('Ta, ze které stránka pochází. Podle ní se pozná, jestli už profil máme.'),
+                            ->helperText('Ta, ze které stránka pochází. Podle ní se pozná, jestli už profil máme. Prázdné = zkusí se vyčíst z vloženého kódu (stránka uložená z Chrome nebo Edge si ji nese v sobě).'),
 
                         \Filament\Forms\Components\Textarea::make('html')
                             ->label('Zdrojový kód stránky')
@@ -224,12 +304,22 @@ class ScrapeSourcesTable
                             ->helperText('Celé HTML. Fotky se stáhnou až při importu profilu, ty tedy web pouštět musí — pokud ne, profil vznikne bez nich.'),
                     ])
                     ->action(function (ScrapeSource $record, array $data) {
+                        $html = (string) $data['html'];
+                        $url = trim((string) ($data['url'] ?? ''))
+                            ?: (string) app(\App\Services\Scraping\HtmlArchive::class)->urlFrom($html);
+
+                        if ($url === '') {
+                            Notification::make()
+                                ->title('Chybí adresa profilu')
+                                ->body('Ve vloženém kódu jsem ji nenašel, takže ji vyplňte. Bez ní se nedá poznat, jestli profil už máme.')
+                                ->warning()
+                                ->send();
+
+                            return;
+                        }
+
                         try {
-                            $run = app(ScrapeRunner::class)->ingestHtml(
-                                $record,
-                                (string) $data['url'],
-                                (string) $data['html'],
-                            );
+                            $run = app(ScrapeRunner::class)->ingestHtml($record, $url, $html);
                         } catch (Throwable $e) {
                             Notification::make()->title('Zpracování selhalo')->body($e->getMessage())->danger()->send();
 

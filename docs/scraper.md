@@ -152,7 +152,23 @@ Seřazeno podle toho, jak dlouho vydrží — ne podle toho, jak rychle se zprov
 
 **2. Přímé stahování.** Funguje všude, kde není ochrana proti robotům. Nastavení viz níž.
 
-**3. Vložení uložené stránky.** U zdroje tlačítko **Vložit staženou stránku**: v prohlížeči otevřete profil, zkopírujte zdrojový kód a vložte ho. **Nepotřebuje to vůbec žádný požadavek** — takže to funguje i tam, kde web server odmítá. Selektory, věková pojistka, vlastní pravidla, kontrola duplicit i fronta ke kontrole jsou úplně stejné; liší se jen to, odkud HTML přišlo. Na desítky profilů je to práce, na deset ne.
+**3. Vložení uložených stránek.** Dvě tlačítka u zdroje, obě **bez jediného požadavku na cizí web** — takže fungují i tam, kde web server odmítá. Selektory, věková pojistka, vlastní pravidla, kontrola duplicit i fronta ke kontrole jsou úplně stejné; liší se jen to, odkud HTML přišlo.
+
+- **Vložit staženou stránku** — jeden profil, zkopírovaný zdrojový kód.
+- **Nahrát ZIP se stránkami** — celá dávka najednou, až 500 stránek.
+
+U ZIPu je těžká část adresa, ne archiv: uložená stránka neví, odkud je, protože prohlížeč ji pojmenuje podle titulku. Hledá se proto ve čtyřech místech, od nejdůvěryhodnějšího:
+
+1. **manifest v archivu** (`manifest.csv`, `urls.csv`, `adresy.txt` — řádky `soubor.html;https://adresa`), protože ho někdo psal záměrně,
+2. **komentář `saved from url=(…)`**, který Chrome a Edge píšou na začátek každé stránky uložené přes „Uložit jako" — díky tomu není potřeba psát nic,
+3. **`<link rel="canonical">`**, tedy adresa, kterou uvádí sám web,
+4. **`<meta property="og:url">`**.
+
+Soubor, u kterého adresa není ani v jednom, se **nahlásí jménem a přeskočí**. Import pod špatnou adresou by tiše přepsal jiný profil, a to je horší než jeden řádek „tuhle jsem nepoznal".
+
+Jeden archiv je jedna sklizeň: v historii běhů z toho vznikne **jeden běh**, ne padesát. Jedna rozbitá stránka nezastaví zbytek dávky.
+
+Fotky se stahují až při importu profilu, takže ty už web pouštět musí — pokud ne, profil vznikne bez nich.
 
 **4. Externí renderer** (`render_endpoint`). Adresa se pošle přes vykreslovací službu, která umí spustit JavaScript. Tlačítko **Otestovat renderer** ověří, jestli daná služba stránku opravdu vykreslí, nebo vrátí tutéž prázdnou skořápku.
 

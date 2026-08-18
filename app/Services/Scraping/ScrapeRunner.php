@@ -731,10 +731,28 @@ class ScrapeRunner
      */
     public function ingestHtml(ScrapeSource $source, string $url, string $html, ?Closure $progress = null): ScrapeRun
     {
+        return $this->ingestMany($source, [['url' => $url, 'html' => $html]], $progress);
+    }
+
+    /**
+     * Several pages at once, as one run.
+     *
+     * A ZIP of fifty saved pages is one act of harvesting, not fifty — and
+     * fifty runs in the history would bury everything else that happened that
+     * day. One page that cannot be read must not stop the other forty-nine
+     * either: it is recorded and the batch carries on.
+     *
+     * @param  iterable<int, array{url: string, html: string}>  $pages
+     * @param  Closure(string, array): void|null  $progress
+     */
+    public function ingestMany(ScrapeSource $source, iterable $pages, ?Closure $progress = null): ScrapeRun
+    {
         $log = [];
 
         $notify = function (string $message, array $data = []) use ($progress, &$log): void {
-            $log[] = $data === [] ? $message : $message . ' — ' . self::describe($data);
+            if (count($log) < self::LOG_LINE_LIMIT) {
+                $log[] = $data === [] ? $message : $message . ' — ' . self::describe($data);
+            }
 
             if ($progress !== null) {
                 $progress($message, $data);
@@ -745,29 +763,53 @@ class ScrapeRunner
             'scrape_source_id' => $source->id,
             'status' => ScrapeRun::STATUS_RUNNING,
             'started_at' => now(),
-            'options' => ['ingest' => $url],
+            // Doplní se po zpracování: adresy jsou to jediné, podle čeho se
+            // zpětně pozná, co v té dávce vlastně bylo.
+            'options' => ['ingest' => []],
             'pages_fetched' => 0,
-            'items_found' => 1,
+            'items_found' => 0,
             'items_new' => 0,
             'items_updated' => 0,
             'items_failed' => 0,
         ]);
 
-        $notify('Zpracovává se vložená stránka: ' . $url);
+        $encoding = new PageEncoding();
+        $found = 0;
+        $addresses = [];
 
-        try {
-            // Vložené HTML může být uložené z prohlížeče v jiném kódování,
-            // stejně jako by přišlo po drátě.
-            $html = (new PageEncoding())->toUtf8($html);
+        foreach ($pages as $page) {
+            $url = trim((string) ($page['url'] ?? ''));
+            $html = (string) ($page['html'] ?? '');
 
-            $this->storeDetail($source, $run, $url, $html, false, $notify);
-            $run->status = ScrapeRun::STATUS_COMPLETED;
-        } catch (Throwable $e) {
-            $run->status = ScrapeRun::STATUS_FAILED;
-            $run->error = $e->getMessage();
-            $notify('CHYBA: ' . $e->getMessage());
+            if ($url === '' || $html === '') {
+                $run->increment('items_failed');
+                $notify('Přeskočeno: chybí adresa nebo obsah stránky.');
+
+                continue;
+            }
+
+            $found++;
+
+            if (count($addresses) < 50) {
+                $addresses[] = $url;
+            }
+
+            $notify('Zpracovává se vložená stránka: ' . $url);
+
+            try {
+                // Vložené HTML může být uložené z prohlížeče v jiném kódování,
+                // stejně jako by přišlo po drátě.
+                $this->storeDetail($source, $run, $url, $encoding->toUtf8($html), false, $notify);
+            } catch (Throwable $e) {
+                // Jedna rozbitá stránka nesmí shodit celou dávku.
+                $run->increment('items_failed');
+                $notify('CHYBA u ' . $url . ': ' . $e->getMessage());
+            }
         }
 
+        $run->items_found = $found;
+        $run->options = ['ingest' => $addresses];
+        $run->status = ScrapeRun::STATUS_COMPLETED;
         $run->finished_at = now();
         $run->log = $log === [] ? null : implode("\n", $log);
         $run->save();

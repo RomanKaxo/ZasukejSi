@@ -172,7 +172,8 @@ class ScrapeIngestHtmlTest extends TestCase
             $this->page(),
         );
 
-        $this->assertSame('https://example.test/p/1', $run->options['ingest']);
+        // Adresy jsou to jediné, podle čeho se zpětně pozná, co v dávce bylo.
+        $this->assertSame(['https://example.test/p/1'], $run->options['ingest']);
         $this->assertStringContainsString('vložená stránka', (string) $run->log);
     }
 }
