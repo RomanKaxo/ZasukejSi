@@ -102,6 +102,28 @@ class AdminPagesRenderTest extends TestCase
     }
 
     /**
+     * Formulář zdroje scraperu se vykresluje jen ručně, a přitom je ze všech
+     * v administraci nejsložitější — půlka polí se zjevuje podle jiných polí
+     * a část z nich se do JSONu překlápí až při uložení.
+     */
+    public function test_the_scrape_source_form_renders_in_both_modes(): void
+    {
+        $admin = $this->admin();
+
+        $source = \App\Models\ScrapeSource::create([
+            'name' => 'Příklad',
+            'slug' => 'priklad',
+            'base_url' => 'https://example.test',
+            'adapter' => 'generic',
+            'is_enabled' => false,
+            'settings' => ['discovery' => 'sitemap', 'auto_pause' => true],
+        ]);
+
+        $this->actingAs($admin)->get('/admin/scrape-sources/create')->assertSuccessful();
+        $this->actingAs($admin)->get("/admin/scrape-sources/{$source->id}/edit")->assertSuccessful();
+    }
+
+    /**
      * availability_hours has had several shapes written to it over time. The
      * admin field has to render every one of them — a nested value used to
      * raise "Array to string conversion" and take the edit screen down.

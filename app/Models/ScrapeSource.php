@@ -30,6 +30,10 @@ class ScrapeSource extends Model
         'notes',
         'robots_checked_at',
         'robots_rules',
+        'consecutive_failures',
+        'paused_at',
+        'paused_reason',
+        'last_success_at',
     ];
 
     protected function casts(): array
@@ -43,6 +47,9 @@ class ScrapeSource extends Model
             'schedule_pages' => 'integer',
             'schedule_limit' => 'integer',
             'next_run_at' => 'datetime',
+            'consecutive_failures' => 'integer',
+            'paused_at' => 'datetime',
+            'last_success_at' => 'datetime',
         ];
     }
 
@@ -54,7 +61,69 @@ class ScrapeSource extends Model
      */
     public function isScheduled(): bool
     {
-        return $this->is_enabled && $this->schedule_hours !== null && $this->schedule_hours > 0;
+        return $this->is_enabled
+            && ! $this->isPaused()
+            && $this->schedule_hours !== null
+            && $this->schedule_hours > 0;
+    }
+
+    /**
+     * Whether the scheduler has taken this source out of rotation.
+     *
+     * A site that has started refusing us does not get better by being asked
+     * every hour for a week — it gets us blocked harder. The pause is a flag,
+     * not a switch off: the source keeps its settings, the operator sees why,
+     * and a manual run clears it the moment it works again.
+     */
+    public function isPaused(): bool
+    {
+        return $this->paused_at !== null;
+    }
+
+    /** How many failures in a row take a source out of rotation. */
+    public function failureThreshold(): int
+    {
+        return max(1, (int) $this->setting('failure_threshold', 3));
+    }
+
+    /** A run finished without an error: the source is healthy again. */
+    public function recordSuccess(): void
+    {
+        $this->forceFill([
+            'consecutive_failures' => 0,
+            'paused_at' => null,
+            'paused_reason' => null,
+            'last_success_at' => now(),
+        ])->save();
+    }
+
+    /**
+     * A run failed. Returns true when this was the failure that paused it.
+     */
+    public function recordFailure(string $reason): bool
+    {
+        $failures = (int) $this->consecutive_failures + 1;
+        $pause = $this->setting('auto_pause', true) && $failures >= $this->failureThreshold();
+
+        $this->forceFill([
+            'consecutive_failures' => $failures,
+            'paused_at' => $pause ? now() : $this->paused_at,
+            // Trimmed: this is shown in a table cell, and a stack-trace-length
+            // message there makes the whole row unreadable.
+            'paused_reason' => $pause ? mb_substr($reason, 0, 500) : $this->paused_reason,
+        ])->save();
+
+        return $pause && $this->wasChanged('paused_at');
+    }
+
+    /** Put a paused source back in rotation. */
+    public function resume(): void
+    {
+        $this->forceFill([
+            'paused_at' => null,
+            'paused_reason' => null,
+            'consecutive_failures' => 0,
+        ])->save();
     }
 
     public function isDue(): bool
@@ -85,6 +154,7 @@ class ScrapeSource extends Model
     {
         return $query
             ->where('is_enabled', true)
+            ->whereNull('paused_at')
             ->whereNotNull('schedule_hours')
             ->where('schedule_hours', '>', 0)
             ->where(function ($q) {
@@ -110,6 +180,21 @@ class ScrapeSource extends Model
         'image_attribute' => 'href',
         'image_limit' => 10,
         'respect_robots' => true,
+
+        // Jak se hledají adresy detailů: procházením výpisu, nebo ze sitemapy.
+        'discovery' => 'listing',
+        'sitemap_url' => null,
+        'sitemap_changed_only' => true,
+
+        // „paged" počítá adresu z čísla stránky, „next_link" ji čte z odkazu
+        // na další stránku — sites with opaque cursors have no page numbers.
+        'pagination_mode' => 'paged',
+        'next_link_selector' => null,
+
+        'conditional_requests' => true,
+        'proxy' => null,
+        'auto_pause' => true,
+        'failure_threshold' => 3,
     ];
 
     public function fieldMaps(): HasMany

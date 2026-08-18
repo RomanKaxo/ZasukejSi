@@ -10,6 +10,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Placeholder;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
@@ -82,6 +83,104 @@ class ScrapeSourceForm
                 ])
                 ->columns(2),
 
+            Section::make('Jak se hledají profily')
+                ->description('Odkud scraper bere adresy jednotlivých profilů. Sitemapa je nejspolehlivější — web v ní sám vypisuje všechno, co chce mít nalezené, včetně data poslední změny.')
+                ->schema([
+                    Select::make('discovery')
+                        ->label('Zdroj adres')
+                        ->options([
+                            'listing' => 'Procházet výpis (odkazy na stránce)',
+                            'sitemap' => 'Sitemapa webu',
+                        ])
+                        ->default('listing')
+                        ->live()
+                        ->helperText('Výpis se prochází podle selektoru odkazů. Sitemapa žádný selektor nepotřebuje.'),
+
+                    TextInput::make('sitemap_url')
+                        ->label('Adresa sitemapy')
+                        ->url()
+                        ->visible(fn ($get) => $get('discovery') === 'sitemap')
+                        ->helperText('Prázdné = zkusí se robots.txt a pak /sitemap.xml a /sitemap_index.xml.'),
+
+                    Toggle::make('sitemap_changed_only')
+                        ->label('Jen to, co se změnilo')
+                        ->default(true)
+                        ->visible(fn ($get) => $get('discovery') === 'sitemap')
+                        ->helperText('Používá datum poslední změny ze sitemapy. Z nočního běhu se tím stane pár profilů místo celého webu.'),
+
+                    Select::make('pagination_mode')
+                        ->label('Stránkování výpisu')
+                        ->options([
+                            'paged' => 'Podle čísla stránky (?page=2)',
+                            'next_link' => 'Podle odkazu „další stránka"',
+                        ])
+                        ->default('paged')
+                        ->live()
+                        ->visible(fn ($get) => $get('discovery') !== 'sitemap')
+                        ->helperText('Odkaz na další stránku se hodí tam, kde adresy nejdou spočítat.'),
+
+                    TextInput::make('next_link_selector')
+                        ->label('Selektor odkazu na další stránku')
+                        ->visible(fn ($get) => $get('discovery') !== 'sitemap' && $get('pagination_mode') === 'next_link')
+                        ->helperText('Prázdné = zkusí se a[rel=next] a link[rel=next], což pokrývá většinu webů.'),
+                ])
+                ->columns(2),
+
+            Section::make('Spolehlivost a šetrnost')
+                ->description('Nastavení, kvůli kterým scraper zbytečně nezatěžuje cizí web ani nás.')
+                ->schema([
+                    Toggle::make('conditional_requests')
+                        ->label('Stahovat jen změněné stránky')
+                        ->default(true)
+                        ->helperText('Ptáme se webu „změnilo se to od minule?". Když odpoví, že ne, nestahuje se nic — ani fotky.'),
+
+                    Toggle::make('auto_pause')
+                        ->label('Pozastavit zdroj po opakovaném selhání')
+                        ->default(true)
+                        ->live()
+                        ->helperText('Web, který nás odmítá, se ptaním každou hodinu nespraví. Ruční spuštění pauzu zase zruší.'),
+
+                    TextInput::make('failure_threshold')
+                        ->label('Kolik selhání v řadě')
+                        ->numeric()
+                        ->minValue(1)
+                        ->maxValue(50)
+                        ->default(3)
+                        ->visible(fn ($get) => (bool) $get('auto_pause')),
+
+                    TextInput::make('proxy')
+                        ->label('Proxy')
+                        ->placeholder('http://uzivatel:heslo@proxy.example.com:8080')
+                        ->helperText('Jen pro weby, které blokují adresu našeho serveru. Nastavuje se u zdroje, ne globálně.'),
+
+                    Placeholder::make('health')
+                        ->label('Stav zdroje')
+                        ->content(function ($record) {
+                            if (! $record) {
+                                return 'Zatím neběželo.';
+                            }
+
+                            $lines = [];
+
+                            $lines[] = $record->last_success_at
+                                ? 'Naposledy úspěšně: ' . $record->last_success_at->format('j. n. Y H:i')
+                                : 'Zatím ani jeden úspěšný běh.';
+
+                            if ($record->consecutive_failures > 0) {
+                                $lines[] = 'Selhání v řadě: ' . $record->consecutive_failures;
+                            }
+
+                            if ($record->isPaused()) {
+                                $lines[] = 'POZASTAVENO ' . $record->paused_at->format('j. n. Y H:i')
+                                    . ' — ' . ($record->paused_reason ?: 'bez uvedeného důvodu');
+                            }
+
+                            return implode(' · ', $lines);
+                        })
+                        ->columnSpanFull(),
+                ])
+                ->columns(2),
+
             Section::make('Chování při stahování')
                 ->description('Prodleva se nikdy nesníží pod hodnotu, kterou požaduje robots.txt daného webu.')
                 ->schema([
@@ -96,7 +195,8 @@ class ScrapeSourceForm
                             . 'detail_link_selector, detail_url_pattern, external_id_pattern, '
                             . 'image_selector, image_attribute, image_prefer_pattern, image_limit, respect_robots, '
                             . 'user_agent, headers. — Když web začne vracet 403, mění se user_agent nebo se přidá '
-                            . 'headers jako JSON, třeba {"Referer":"https://www.example.com/"}.'
+                            . 'headers jako JSON, třeba {"Referer":"https://www.example.com/"}. Klíče, které mají '
+                            . 'vlastní pole v sekcích výše, se tu nezobrazují — nastavují se tam.'
                         )
                         ->columnSpanFull(),
                 ]),

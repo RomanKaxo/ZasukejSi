@@ -6,6 +6,7 @@ use App\Filament\Resources\ScrapeRuns\ScrapeRunResource;
 use App\Models\ScrapeRun;
 use App\Models\ScrapeSource;
 use App\Services\Scraping\ScrapeRunner;
+use App\Services\Scraping\SourceConfig;
 use Filament\Actions\Action;
 // Filament 4 dropped `Filament\Notifications\Actions\Action`; notifications
 // take the ordinary action class. Ten import shodil zkušební běh scraperu
@@ -80,6 +81,26 @@ class ScrapeSourcesTable
                         : null)
                     ->badge()
                     ->color(fn (ScrapeSource $record) => $record->isScheduled() ? 'success' : 'gray'),
+
+                // Whether the source is still trusted to run on its own. A
+                // site that had quietly started refusing us used to look
+                // identical to one that was working.
+                TextColumn::make('health')
+                    ->label('Stav')
+                    ->state(fn (ScrapeSource $record) => match (true) {
+                        $record->isPaused() => 'pozastaveno',
+                        $record->consecutive_failures > 0 => $record->consecutive_failures . '× selhalo',
+                        $record->last_success_at !== null => 'v pořádku',
+                        default => 'neběželo',
+                    })
+                    ->badge()
+                    ->color(fn (ScrapeSource $record) => match (true) {
+                        $record->isPaused() => 'danger',
+                        $record->consecutive_failures > 0 => 'warning',
+                        $record->last_success_at !== null => 'success',
+                        default => 'gray',
+                    })
+                    ->tooltip(fn (ScrapeSource $record) => $record->paused_reason),
 
                 TextColumn::make('robots_checked_at')
                     ->label('robots.txt')
@@ -243,6 +264,39 @@ class ScrapeSourcesTable
                         } catch (Throwable $e) {
                             Notification::make()->title('Běh selhal')->body($e->getMessage())->danger()->send();
                         }
+                    }),
+
+                // Back in the plan without hunting through the form for it.
+                Action::make('resume')
+                    ->label('Zrušit pauzu')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('warning')
+                    ->visible(fn (ScrapeSource $record) => $record->isPaused())
+                    ->requiresConfirmation()
+                    ->modalDescription(fn (ScrapeSource $record) => 'Zdroj byl pozastaven: ' . ($record->paused_reason ?: 'bez uvedeného důvodu'))
+                    ->action(function (ScrapeSource $record) {
+                        $record->resume();
+
+                        Notification::make()
+                            ->title('Zdroj je zase v plánu')
+                            ->success()
+                            ->send();
+                    }),
+
+                // Half a day of finding selectors, in a file you can carry to
+                // the staging server or hand to somebody else.
+                Action::make('exportConfig')
+                    ->label('Stáhnout nastavení')
+                    ->icon('heroicon-o-arrow-down-on-square')
+                    ->color('gray')
+                    ->action(function (ScrapeSource $record) {
+                        $config = app(SourceConfig::class);
+
+                        return response()->streamDownload(
+                            fn () => print $config->toJson($record),
+                            $config->filename($record),
+                            ['Content-Type' => 'application/json'],
+                        );
                     }),
 
                 EditAction::make()->label('Upravit'),

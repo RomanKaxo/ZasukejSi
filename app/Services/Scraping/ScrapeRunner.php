@@ -23,6 +23,7 @@ class ScrapeRunner
         private readonly AdapterRegistry $adapters,
         private readonly DuplicateFinder $duplicates,
         private readonly UnknownValueCollector $unknownValues,
+        private readonly SitemapReader $sitemap,
     ) {
     }
 
@@ -120,11 +121,42 @@ class ScrapeRunner
             $notify('CHYBA: ' . $e->getMessage());
         }
 
+        // A trial run is somebody trying something out; it must not pause a
+        // working source, and it must not clear the record of a broken one.
+        if (! ($options['dry_run'] ?? false)) {
+            $this->recordHealth($source, $run, $notify);
+        }
+
         $run->finished_at = now();
         $run->log = $log === [] ? null : implode("\n", $log);
         $run->save();
 
         return $run;
+    }
+
+    /**
+     * Keep the source's health up to date, and take it out of rotation when
+     * it has failed often enough that asking again is doing harm.
+     */
+    private function recordHealth(ScrapeSource $source, ScrapeRun $run, Closure $notify): void
+    {
+        if ($run->status === ScrapeRun::STATUS_COMPLETED) {
+            $wasPaused = $source->isPaused();
+            $source->recordSuccess();
+
+            if ($wasPaused) {
+                $notify('Zdroj zase funguje, pauza zrušena.');
+            }
+
+            return;
+        }
+
+        if ($source->recordFailure((string) $run->error)) {
+            $notify(sprintf(
+                'Zdroj pozastaven po %d neúspěších v řadě. Až chybu vyřešíte, spusťte běh ručně — tím se pauza zruší.',
+                $source->consecutive_failures,
+            ));
+        }
     }
 
     /**
@@ -244,17 +276,40 @@ class ScrapeRunner
     /** @return array<int, string> */
     private function collectDetailUrls(ScrapeSource $source, ScrapeRun $run, array $options, Closure $notify): array
     {
+        // A sitemap is the site itself listing every address it wants found,
+        // so there is nothing left to guess — no link selector, no page
+        // numbering, no wondering where the listing ends. Where a source has
+        // one, walking the listing is the slower way to learn less.
+        if ($source->setting('discovery') === 'sitemap') {
+            return $this->collectFromSitemap($source, $run, $options, $notify);
+        }
+
         $adapter = $this->adapters->make($source->adapter);
         $maxPages = (int) ($options['pages'] ?? $source->setting('max_pages'));
+        $followLinks = $source->setting('pagination_mode') === 'next_link';
         $urls = [];
+        $listingUrl = null;
 
         for ($page = 1; $page <= max(1, $maxPages); $page++) {
-            $listingUrl = $adapter->listingUrl($source, $page);
+            // Numbered paging computes the address. Link-following reads it
+            // off the previous page and only needs a starting point, which is
+            // what sites with infinite scroll or opaque cursors give us.
+            $listingUrl = ($followLinks && $listingUrl !== null && $page > 1)
+                ? $listingUrl
+                : $adapter->listingUrl($source, $page);
 
             try {
                 $html = $this->fetcher->get($source, $listingUrl);
             } catch (Throwable $e) {
                 $notify("Výpis {$listingUrl} selhal: " . $e->getMessage());
+
+                // Nothing was reachable at all. That is a failed run, not a
+                // source with nothing on it — reporting success here is how a
+                // site that had started refusing us went on looking healthy
+                // for weeks while it harvested nothing.
+                if ($page === 1) {
+                    throw $e;
+                }
 
                 // A listing page that errors is not the same as one that is
                 // empty, but the run used to end on both and report success.
@@ -292,9 +347,51 @@ class ScrapeRunner
             }
 
             $urls = array_merge($urls, $fresh);
+
+            if ($followLinks) {
+                $next = $adapter->nextListingUrl($source, $html, $listingUrl);
+
+                if ($next === null) {
+                    $notify('Web už další stránku nenabízí, končím výpis.');
+
+                    break;
+                }
+
+                $listingUrl = $next;
+            }
         }
 
         return array_values(array_unique($urls));
+    }
+
+    /**
+     * Detail addresses read out of the site's sitemap.
+     *
+     * `lastmod` is what turns a nightly run from „stáhni celý web znovu" into
+     * „stáhni ty tři profily, které se hnuly".
+     *
+     * @param  array{limit?: int, pages?: int, url?: string, dry_run?: bool}  $options
+     * @return array<int, string>
+     */
+    private function collectFromSitemap(ScrapeSource $source, ScrapeRun $run, array $options, Closure $notify): array
+    {
+        $since = null;
+
+        if ($source->setting('sitemap_changed_only', true) && $source->last_success_at) {
+            $since = $source->last_success_at;
+            $notify('Ze sitemapy beru jen to, co se změnilo od ' . $since->format('j. n. Y H:i'));
+        }
+
+        $urls = $this->sitemap->detailUrls($source, $since);
+
+        $run->increment('pages_fetched');
+        $notify('Sitemapa nabídla adres: ' . count($urls));
+
+        if ($urls === [] && $since !== null) {
+            $notify('Od posledního úspěšného běhu se nezměnilo nic.');
+        }
+
+        return $urls;
     }
 
     private function processDetail(ScrapeSource $source, ScrapeRun $run, string $url, bool $dryRun, Closure $notify): void
@@ -302,11 +399,31 @@ class ScrapeRunner
         $adapter = $this->adapters->make($source->adapter);
         $externalId = $adapter->externalId($source, $url);
 
+        $existing = $dryRun
+            ? null
+            : ScrapeItem::where('scrape_source_id', $source->id)
+                ->where('external_id', $externalId)
+                ->first();
+
         try {
-            $html = $this->fetcher->get($source, $url);
+            // Ask conditionally only where we already hold a copy. A page we
+            // have never seen has to arrive in full, otherwise a 304 against a
+            // stale cache row would silently lose the profile.
+            $html = $existing
+                ? $this->fetcher->getIfChanged($source, $url)
+                : $this->fetcher->get($source, $url);
         } catch (Throwable $e) {
             $run->increment('items_failed');
             $notify("Detail {$url} selhal: " . $e->getMessage());
+
+            return;
+        }
+
+        // The site itself said nothing moved: no parsing, no writes, and above
+        // all no re-downloading photographs we already have on disk.
+        if ($html === null) {
+            $existing->update(['scrape_run_id' => $run->id]);
+            $notify("beze změny (hlásí web): {$url}");
 
             return;
         }
@@ -322,10 +439,6 @@ class ScrapeRunner
 
             return;
         }
-
-        $existing = ScrapeItem::where('scrape_source_id', $source->id)
-            ->where('external_id', $externalId)
-            ->first();
 
         // Unchanged pages still get their run stamped so it is visible the
         // profile was seen, but they are not counted as updated.

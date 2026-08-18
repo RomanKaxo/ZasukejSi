@@ -71,7 +71,15 @@ class ScrapeDueCommand extends Command
                 $failed++;
             }
 
-            $source->scheduleNextRun();
+            // The runner may have taken the source out of rotation. Said here
+            // as well as stored, because cron mails the output and that is
+            // where somebody will actually see it.
+            if ($source->fresh()?->isPaused()) {
+                $this->error('  ZDROJ POZASTAVEN — ' . ($source->fresh()->paused_reason ?: 'bez uvedeného důvodu'));
+                $this->line('  Automatické běhy se zastavily. Zrušte pauzu v administraci, až bude chyba vyřešená.');
+            }
+
+            $source->refresh()->scheduleNextRun();
 
             $this->line('  další běh: ' . ($source->next_run_at?->format('d.m.Y H:i') ?? '—'));
         }

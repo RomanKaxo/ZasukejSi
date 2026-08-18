@@ -114,6 +114,9 @@ Zabudované, ne volitelné:
 - Zakázané cesty se nestahují; požadavek na ně skončí chybou, ne tichým přeskočením.
 - Prodleva se počítá **zvlášť pro každý host**, aby stahování fotek z CDN nebrzdilo čtení stránek a naopak.
 - Každý požadavek jde přes `HttpFetcher`, takže na tohle nelze zapomenout na volajícím místě.
+- **Nestahuje se, co se nezměnilo.** Detail se stahuje podmíněně (`If-None-Match`, `If-Modified-Since`); když web odpoví `304`, běh jde dál a nesahá se ani na fotky. Weby, které tyhle hlavičky neposílají, odchytí porovnání otisku obsahu.
+- **`Retry-After` se respektuje.** Když web u `429` nebo `503` řekne, za jak dlouho to zkusit znovu, odsune se další dotaz na ten host o tu dobu — a hláška to řekne i obsluze.
+- **Opakuje se jen to, co má smysl opakovat.** Výpadek spojení, `429` a chyby 5xx ano; `403` a `404` ne. Ptát se podruhé webu, který nás právě odmítl, je jistý způsob, jak si blokaci prodloužit.
 
 U `eurogirlsescort.cz` robots.txt nezakazuje žádnou cestu a předepisuje `Crawl-delay: 5`. Zdroj má proto výchozí prodlevu 5 s.
 
@@ -134,6 +137,14 @@ U `eurogirlsescort.cz` robots.txt nezakazuje žádnou cestu a předepisuje `Craw
    | `image_selector`, `image_attribute` | kde jsou fotky |
    | `image_prefer_pattern` | která velikost, když web nabízí víc variant |
    | `crawl_delay`, `timeout`, `max_pages`, `image_limit` | limity |
+   | `discovery` | `listing` (procházet výpis) nebo `sitemap` |
+   | `sitemap_url`, `sitemap_changed_only` | odkud číst sitemapu a jestli brát jen změněné |
+   | `pagination_mode`, `next_link_selector` | `paged` (číslo stránky) nebo `next_link` (odkaz „další") |
+   | `conditional_requests` | stahovat jen změněné stránky (výchozí zapnuto) |
+   | `proxy` | jen pro weby blokující adresu serveru |
+   | `auto_pause`, `failure_threshold` | po kolika selháních v řadě se zdroj sám pozastaví |
+
+   Klíče z tabulky mají ve formuláři vlastní pole; syrový editor `Nastavení` je pro to ostatní.
 
 2. **Mapování polí** — u zdroje záložka *Mapování polí*. Jeden řádek = jeden selektor a naše pole.
 
@@ -142,6 +153,12 @@ U `eurogirlsescort.cz` robots.txt nezakazuje žádnou cestu a předepisuje `Craw
 4. Teprve pak zdroj **zapněte**.
 
 Web s neobvyklým výpisem dostane vlastní adaptér: implementujte `SourceAdapter` a zaregistrujte ho v `AdapterRegistry`.
+
+**Zkratka:** má-li web sitemapu, přepněte `discovery` na `sitemap` a `detail_link_selector`, `pagination_param` ani `pagination_pattern` řešit nemusíte. Stačí `detail_url_pattern`, aby se z celého webu vybraly jen profily.
+
+### Přenesení nastavení jinam
+
+U zdroje **Stáhnout nastavení** uloží JSON s nastavením i všemi mapováními polí. Na jiném prostředí ho **Načíst nastavení ze souboru** (tlačítko nad seznamem zdrojů) vrátí zpátky. Nic staženého se nepřenáší — je to recept, ne úroda. Načtený zdroj je vždy vypnutý a bez plánu, aby špatný selektor nezačal sám bušit do cizího webu.
 
 ---
 
@@ -170,6 +187,14 @@ Položka je jednoznačná dvojicí zdroj + `external_id`. Další běh:
 - **beze změny** (shodný hash obsahu) — jen se poznamená, že profil byl viděn
 - **změněný** — přepíše se a vrátí ke kontrole
 - **zamítnutý nebo importovaný** — zůstává, další běh ho do fronty nevrátí
+
+U sitemapy se navíc dá nechat jen to, co web sám označil jako změněné od posledního úspěšného běhu (`sitemap_changed_only`). Z nočního běhu se tím stane pár profilů místo celého webu.
+
+### Když zdroj přestane fungovat
+
+Po několika selháních v řadě (výchozí 3, `failure_threshold`) se zdroj **sám pozastaví**: vypadne z plánu, v seznamu má červený stav a důvod. Ruční běh funguje dál, takže se dá zkoušet oprava; první úspěšný běh pauzu zruší. Chování se vypíná přepínačem `auto_pause`.
+
+Důvod je i ve výpisu `scrape:due`, protože právě to cron pošle e-mailem.
 
 ---
 

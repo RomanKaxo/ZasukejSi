@@ -24,6 +24,8 @@ class RobotsTxt
         public readonly array $allow = [],
         public readonly ?float $crawlDelay = null,
         public readonly bool $fetched = false,
+        /** @var array<int, string> */
+        public readonly array $sitemaps = [],
     ) {
     }
 
@@ -52,6 +54,7 @@ class RobotsTxt
     {
         $groups = [];
         $current = [];
+        $sitemaps = [];
 
         foreach (preg_split('/\R/', $body) as $line) {
             $line = trim(Str::before($line, '#'));
@@ -63,6 +66,16 @@ class RobotsTxt
             [$field, $value] = array_pad(explode(':', $line, 2), 2, '');
             $field = strtolower(trim($field));
             $value = trim($value);
+
+            // Sitemap je globální direktiva, ne součást skupiny agenta —
+            // sbírá se proto dřív, než se řeší, do jaké skupiny řádek patří.
+            if ($field === 'sitemap') {
+                if ($value !== '') {
+                    $sitemaps[] = $value;
+                }
+
+                continue;
+            }
 
             if ($field === 'user-agent') {
                 // A second agent line straight after another starts a shared
@@ -116,6 +129,7 @@ class RobotsTxt
             allow: $chosen['allow'] ?? [],
             crawlDelay: $chosen['crawl_delay'] ?? null,
             fetched: true,
+            sitemaps: array_values(array_unique($sitemaps)),
         );
     }
 
@@ -157,7 +171,17 @@ class RobotsTxt
         return (bool) preg_match('#^' . $pattern . '#', $path);
     }
 
-    /** @return array{disallow: array, allow: array, crawl_delay: ?float, fetched: bool} */
+    /**
+     * Sitemapy, které web sám ohlásil.
+     *
+     * @return array<int, string>
+     */
+    public function sitemaps(): array
+    {
+        return $this->sitemaps;
+    }
+
+    /** @return array{disallow: array, allow: array, crawl_delay: ?float, fetched: bool, sitemaps: array} */
     public function toArray(): array
     {
         return [
@@ -165,6 +189,7 @@ class RobotsTxt
             'allow' => $this->allow,
             'crawl_delay' => $this->crawlDelay,
             'fetched' => $this->fetched,
+            'sitemaps' => $this->sitemaps,
         ];
     }
 }

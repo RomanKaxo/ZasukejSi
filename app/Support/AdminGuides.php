@@ -176,9 +176,13 @@ class AdminGuides
                     'Spustit zkušební běh na jednom profilu a podívat se, co selektory vrátily.',
                     'Stáhnout celý výpis. Vše skončí ve frontě ke kontrole, nic se nepublikuje samo.',
                     'Nastavit pravidelné spouštění.',
+                    'Vybrat, odkud se berou adresy: procházením výpisu, nebo ze sitemapy webu. Sitemapa umí i „jen to, co se od minule změnilo".',
+                    'Stáhnout nastavení zdroje do souboru a jinde ho zase načíst — i s mapováním polí.',
+                    'Zrušit pauzu u zdroje, který se sám pozastavil po opakovaných selháních.',
                 ],
                 'cannot' => [
                     'Obejít robots.txt ani nastavenou prodlevu mezi dotazy.',
+                    'Držet v plánu zdroj, který opakovaně selhává — ten se sám pozastaví, aby web nedostával bota, kterého stejně odmítá.',
                 ],
                 'links' => [
                     'Stažené položky' => 'scrape-items',

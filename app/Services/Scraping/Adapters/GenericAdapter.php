@@ -60,6 +60,40 @@ class GenericAdapter implements SourceAdapter
         return array_values(array_unique($urls));
     }
 
+    /**
+     * The next listing page, read off the page rather than guessed.
+     *
+     * Used when `pagination_mode` is `next_link`. Two places to look, in
+     * order: whatever `next_link_selector` points at, then a `rel="next"`
+     * link — the standard, which plenty of sites emit without being asked.
+     *
+     * Numbered pagination has to guess the address. Sites whose paging is a
+     * cursor, a token, or simply irregular give nothing to guess from, and
+     * following the link they render is the only thing that works.
+     */
+    public function nextListingUrl(ScrapeSource $source, string $listingHtml, string $currentUrl): ?string
+    {
+        $selector = $source->setting('next_link_selector');
+
+        $candidates = array_filter([
+            is_string($selector) ? $selector : null,
+            'a[rel=next]',
+            'link[rel=next]',
+        ]);
+
+        foreach ($candidates as $candidate) {
+            foreach ($this->attributes($listingHtml, (string) $candidate, 'href', $source->base_url) as $url) {
+                // A "next" pointing at the page we are on is how some
+                // templates render the last page; following it would loop.
+                if ($url !== '' && $url !== $currentUrl) {
+                    return $url;
+                }
+            }
+        }
+
+        return null;
+    }
+
     public function externalId(ScrapeSource $source, string $detailUrl): ?string
     {
         $pattern = (string) $source->setting('external_id_pattern');

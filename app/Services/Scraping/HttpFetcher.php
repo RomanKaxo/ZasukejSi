@@ -3,8 +3,14 @@
 namespace App\Services\Scraping;
 
 use App\Models\ScrapeSource;
+use App\Models\ScrapeUrlCache;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
+use Throwable;
 
 /**
  * Every outbound request the scraper makes goes through here, so the rate
@@ -55,16 +61,156 @@ class HttpFetcher
 
         $this->waitForTurn($source, $url);
 
-        $response = Http::withHeaders($this->headers($source))
-            ->timeout((int) $source->setting('timeout'))
-            ->retry(2, 1500, throw: false)
-            ->get($url);
+        $response = $this->request($source)->get($url);
 
-        if (! $response->successful()) {
-            throw new RuntimeException($this->explain($response->status(), $url));
-        }
+        $this->guard($source, $response, $url);
 
         return $response->body();
+    }
+
+    /**
+     * Fetch only if the page changed since we last saw it.
+     *
+     * Returns null when the site says it has not. Every scheduled run used to
+     * re-download every detail page in full even when not a byte had moved,
+     * which on a few hundred profiles is a few hundred pointless megabytes a
+     * day — ours to pay for and theirs to serve.
+     *
+     * Falls back to comparing a hash of the body, because plenty of sites send
+     * neither ETag nor Last-Modified.
+     */
+    public function getIfChanged(ScrapeSource $source, string $url): ?string
+    {
+        if (! $source->setting('conditional_requests', true)) {
+            return $this->get($source, $url);
+        }
+
+        $this->waitForTurn($source, $url);
+
+        $cached = ScrapeUrlCache::for($source->id, $url);
+
+        $response = $this->request($source)
+            ->withHeaders($cached?->conditionalHeaders() ?? [])
+            ->get($url);
+
+        if ($response->status() === 304) {
+            return null;
+        }
+
+        $this->guard($source, $response, $url);
+
+        $body = $response->body();
+        $hash = sha1($body);
+
+        // The site answered 200 but sent us exactly what we already had.
+        $unchanged = $cached && $cached->content_hash === $hash;
+
+        ScrapeUrlCache::updateOrCreate(
+            [
+                'scrape_source_id' => $source->id,
+                'url_hash' => ScrapeUrlCache::hashFor($url),
+            ],
+            [
+                'url' => $url,
+                'etag' => $response->header('ETag') ?: null,
+                'last_modified' => $response->header('Last-Modified') ?: null,
+                'content_hash' => $hash,
+                'fetched_at' => now(),
+            ],
+        );
+
+        return $unchanged ? null : $body;
+    }
+
+    /** The request builder every call shares: headers, timeout, proxy. */
+    private function request(ScrapeSource $source): PendingRequest
+    {
+        $request = Http::withHeaders($this->headers($source))
+            ->timeout((int) $source->setting('timeout'))
+            ->retry(2, 1500, $this->worthRetrying(...), throw: false);
+
+        // A site that blocks the server's address is not a code problem, and
+        // waiting for a new server is not a fix. Set per source, so one
+        // blocked site does not route everything else through a third party.
+        $proxy = $source->setting('proxy');
+
+        if (is_string($proxy) && trim($proxy) !== '') {
+            $request = $request->withOptions(['proxy' => trim($proxy)]);
+        }
+
+        return $request;
+    }
+
+    /**
+     * Whether a failed attempt deserves a second one.
+     *
+     * Everything used to be retried, which meant a site that had blocked us
+     * got asked twice for every page — the one behaviour guaranteed to make a
+     * block permanent. A refusal is an answer; only a connection that never
+     * arrived, a rate limit, or a server-side wobble is worth repeating.
+     */
+    private function worthRetrying(?Throwable $exception): bool
+    {
+        // A 304 is not an error, so the client has no exception to hand us —
+        // and there is certainly nothing to retry about it.
+        if ($exception === null) {
+            return false;
+        }
+
+        if ($exception instanceof ConnectionException) {
+            return true;
+        }
+
+        if (! $exception instanceof RequestException) {
+            return false;
+        }
+
+        $status = $exception->response->status();
+
+        return $status === 429 || $status >= 500;
+    }
+
+    /**
+     * Turn a failing response into an exception that says what happened.
+     *
+     * A 429 or a 503 usually carries `Retry-After`; honouring it is the
+     * difference between backing off and being banned.
+     */
+    private function guard(ScrapeSource $source, Response $response, string $url): void
+    {
+        if ($response->successful()) {
+            return;
+        }
+
+        $retryAfter = $this->retryAfterSeconds($response);
+
+        if ($retryAfter !== null) {
+            $host = parse_url($url, PHP_URL_HOST) ?: $url;
+
+            // Push this host's next turn out, so whatever the run does next
+            // does not walk straight into the same wall.
+            $this->lastRequestAt[$host] = microtime(true) + $retryAfter;
+        }
+
+        throw new RuntimeException($this->explain($response->status(), $url, $retryAfter));
+    }
+
+    /** `Retry-After` as seconds, whether it arrived as seconds or as a date. */
+    private function retryAfterSeconds(Response $response): ?int
+    {
+        $header = $response->header('Retry-After');
+
+        if ($header === null || $header === '') {
+            return null;
+        }
+
+        if (is_numeric($header)) {
+            return max(0, (int) $header);
+        }
+
+        $timestamp = strtotime($header);
+
+        return $timestamp === false ? null : max(0, $timestamp - time());
     }
 
     /**
@@ -101,7 +247,7 @@ class HttpFetcher
      * on a page that opens fine in a browser is the site refusing this server,
      * and what to do about it is a different job entirely.
      */
-    private function explain(int $status, string $url): string
+    private function explain(int $status, string $url, ?int $retryAfter = null): string
     {
         $detail = match (true) {
             $status === 403 => 'Web nás odmítl. Stránka bývá dostupná z prohlížeče i odjinud, takže jde nejspíš o blokaci této IP nebo našeho User-Agentu — zkuste u zdroje nastavit jiný User-Agent, přidat hlavičku Referer, nebo stahovat z jiné adresy.',
@@ -111,7 +257,13 @@ class HttpFetcher
             default => null,
         };
 
-        return "HTTP {$status} pro {$url}" . ($detail ? ' — ' . $detail : '');
+        // Když web sám řekne, za jak dlouho to zkusit znovu, je to ta
+        // nejužitečnější věc v celé hlášce.
+        $wait = $retryAfter !== null
+            ? " Web žádá počkat {$retryAfter} s."
+            : '';
+
+        return "HTTP {$status} pro {$url}" . ($detail ? ' — ' . $detail : '') . $wait;
     }
 
     /** Fetch binary content (images), under the same rate limit. */
@@ -119,13 +271,10 @@ class HttpFetcher
     {
         $this->waitForTurn($source, $url);
 
-        $response = Http::withHeaders($this->headers($source))
-            ->timeout((int) $source->setting('timeout'))
-            ->retry(2, 1500, throw: false)
-            ->get($url);
+        $response = $this->request($source)->get($url);
 
         if (! $response->successful()) {
-            throw new RuntimeException('Obrázek: ' . $this->explain($response->status(), $url));
+            throw new RuntimeException('Obrázek: ' . $this->explain($response->status(), $url, $this->retryAfterSeconds($response)));
         }
 
         return $response->body();
