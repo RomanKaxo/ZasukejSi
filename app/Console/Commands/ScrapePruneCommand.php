@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\ScrapeRun;
 use App\Models\ScrapeUrlCache;
+use App\Services\Scraping\PageSnapshots;
 use Illuminate\Console\Command;
 
 /**
@@ -23,11 +24,12 @@ class ScrapePruneCommand extends Command
     protected $signature = 'scrape:prune
         {--cache-days=60 : Drop cached addresses not seen for this many days}
         {--run-days=90 : Drop finished runs older than this}
+        {--snapshot-days=30 : Drop stored pages of items untouched for this long}
         {--dry-run : Report what would go, delete nothing}';
 
     protected $description = 'Prune the scraper URL cache and old run history';
 
-    public function handle(): int
+    public function handle(PageSnapshots $snapshots): int
     {
         $cacheDays = max(1, (int) $this->option('cache-days'));
         $runDays = max(1, (int) $this->option('run-days'));
@@ -51,10 +53,11 @@ class ScrapePruneCommand extends Command
             return self::SUCCESS;
         }
 
+        $deletedSnapshots = $snapshots->prune(max(1, (int) $this->option('snapshot-days')));
         $deletedCache = $this->deleteInChunks($staleCache);
         $deletedRuns = $this->deleteInChunks($oldRuns);
 
-        $this->info("Smazáno: {$deletedCache} adres z mezipaměti, {$deletedRuns} běhů.");
+        $this->info("Smazáno: {$deletedCache} adres z mezipaměti, {$deletedRuns} běhů, {$deletedSnapshots} uložených stránek.");
 
         return self::SUCCESS;
     }

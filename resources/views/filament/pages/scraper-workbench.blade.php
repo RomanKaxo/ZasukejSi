@@ -190,6 +190,10 @@
             <div class="zs-wb__card">
                 <p class="zs-wb__title">Co selektory na téhle stránce vrátily</p>
 
+                @if($lastSourceLabel)
+                    <p class="zs-wb__note">Zdroj HTML: {{ $lastSourceLabel }}</p>
+                @endif
+
                 @if($selectors === [])
                     <p class="zs-wb__note zs-wb__empty">Zdroj nemá žádná mapování polí.</p>
                 @else

@@ -103,7 +103,35 @@ class ScrapeItem extends Model
     {
         return $this->missing_since !== null
             && $this->missing_resolution === null
-            && $this->imported_profile_id !== null;
+            && $this->imported_profile_id !== null
+            // Ta samá dívka inzeruje na třech webech. Že ji jeden z nich
+            // stáhl, není důvod ptát se na odstranění profilu — zmizet musí
+            // ze všech, jinak by administrátor odklikával rozhodnutí, které
+            // je zjevně „ponechat".
+            && ! $this->profileHasLivingSource();
+    }
+
+    /** Vede na tenhle profil ještě jiná položka, kterou zdroj pořád má? */
+    public function profileHasLivingSource(): bool
+    {
+        if ($this->imported_profile_id === null) {
+            return false;
+        }
+
+        return self::query()
+            ->where('imported_profile_id', $this->imported_profile_id)
+            ->where('id', '!=', $this->id)
+            ->whereNull('missing_since')
+            ->exists();
+    }
+
+    /** Všechny stažené položky, které vedou na týž profil — i z jiných webů. */
+    public function siblings()
+    {
+        return self::query()
+            ->where('imported_profile_id', $this->imported_profile_id)
+            ->whereNotNull('imported_profile_id')
+            ->where('id', '!=', $this->id);
     }
 
     /** Profiles the source no longer has, still waiting for a decision. */
@@ -112,7 +140,15 @@ class ScrapeItem extends Model
         return $query
             ->whereNotNull('missing_since')
             ->whereNull('missing_resolution')
-            ->whereNotNull('imported_profile_id');
+            ->whereNotNull('imported_profile_id')
+            // Profil, který někde pořád visí, se odstraňovat nenabízí.
+            ->whereNotExists(function ($sub) {
+                $sub->selectRaw('1')
+                    ->from('scrape_items as jine')
+                    ->whereColumn('jine.imported_profile_id', 'scrape_items.imported_profile_id')
+                    ->whereColumn('jine.id', '!=', 'scrape_items.id')
+                    ->whereNull('jine.missing_since');
+            });
     }
 
     /** Failed pages whose next attempt has come due. */

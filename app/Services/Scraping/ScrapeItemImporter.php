@@ -128,6 +128,55 @@ class ScrapeItemImporter
     }
 
     /**
+     * Point this scraped item at a profile that already exists.
+     *
+     * The same woman advertises on three catalogues. Importing each of them
+     * made three profiles, and the only cure was somebody deleting two by hand
+     * — after which the next run made them again, because nothing recorded
+     * that the question had been settled.
+     *
+     * Attaching says „this page and that profile are the same person". The
+     * profile then has several sources: it keeps its own edits, gains whatever
+     * the new source fills in that was empty, and — the point of the whole
+     * thing — is only reported as vanished once every source has lost it.
+     *
+     * Never overwrites. A value already on the profile is somebody's decision,
+     * and a second catalogue's opinion does not outrank it.
+     */
+    public function attachTo(ScrapeItem $item, Profile $profile, bool $withImages = true): Profile
+    {
+        if ($item->imported_profile_id !== null && $item->imported_profile_id !== $profile->id) {
+            throw new RuntimeException('Položka už patří k jinému profilu. Nejdřív ji od něj odpojte.');
+        }
+
+        $item->forceFill([
+            'status' => ScrapeItem::STATUS_IMPORTED,
+            'imported_profile_id' => $profile->id,
+            'imported_at' => now(),
+            'error' => null,
+            // Otázka „není to duplicita?" je tímhle zodpovězená.
+            'duplicate_profile_id' => null,
+            'duplicate_item_id' => null,
+            'duplicate_reason' => null,
+            'duplicate_checked_at' => now(),
+        ])->save();
+
+        $this->resync($item->refresh());
+
+        if ($withImages && $item->images) {
+            try {
+                // Stahování samo pozná fotky, které profil už má — ať přišly
+                // odkudkoli.
+                $this->images->download($item, $profile);
+            } catch (Throwable $e) {
+                $item->forceFill(['error' => 'Fotky: ' . $e->getMessage()])->save();
+            }
+        }
+
+        return $profile->refresh();
+    }
+
+    /**
      * Re-apply what we scraped to a profile that is already imported.
      *
      * A profile imported while the catalogue knew ten services kept ten, even

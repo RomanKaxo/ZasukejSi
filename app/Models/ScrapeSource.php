@@ -296,6 +296,16 @@ class ScrapeSource extends Model
         // Kolikrát se zkusí stránka, která se nepodařila stáhnout.
         'max_attempts' => 5,
 
+        // Uchovat staženou stránku, aby šlo zkoušet selektory bez dalšího
+        // dotazu na cizí web.
+        'keep_snapshot' => true,
+
+        // Zastavení běhu, když najednou většina stránek nevrací nic —
+        // předělaný web rozbije všechny selektory naráz.
+        'redesign_guard' => true,
+        'redesign_min_items' => 5,
+        'redesign_ratio' => 0.8,
+
         // Kontrola, že importované profily na zdroji pořád jsou.
         'existence_confirmations' => 2,
         'existence_interval_hours' => 24,

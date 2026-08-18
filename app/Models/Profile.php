@@ -701,6 +701,17 @@ class Profile extends Model implements HasMedia
     }
 
     /**
+     * Katalogy, ze kterých je tenhle profil poskládaný.
+     *
+     * Víc než jeden je běžný případ: tatáž dívka inzeruje na několika webech
+     * a připojením místo importu z toho vznikne jeden profil s více zdroji.
+     */
+    public function scrapeItems()
+    {
+        return $this->hasMany(\App\Models\ScrapeItem::class, 'imported_profile_id');
+    }
+
+    /**
      * Scope a query to only include archived profiles.
      */
     public function scopeArchived($query)

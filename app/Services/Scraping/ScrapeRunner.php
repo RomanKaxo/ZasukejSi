@@ -7,6 +7,7 @@ use App\Models\ScrapeRun;
 use App\Models\ScrapeSource;
 use Closure;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -25,6 +26,7 @@ class ScrapeRunner
         private readonly UnknownValueCollector $unknownValues,
         private readonly SitemapReader $sitemap,
         private readonly RevisionRecorder $revisions,
+        private readonly PageSnapshots $snapshots,
     ) {
     }
 
@@ -110,8 +112,12 @@ class ScrapeRunner
             $run->items_found = count($urls);
             $notify('Nalezeno profilů: ' . count($urls));
 
+            $this->emptyExtractions = 0;
+            $this->detailsProcessed = 0;
+
             foreach ($urls as $url) {
                 $this->processDetail($source, $run, $url, (bool) ($options['dry_run'] ?? false), $notify);
+                $this->guardAgainstRedesign($source, $notify);
             }
 
             $run->status = ScrapeRun::STATUS_COMPLETED;
@@ -139,6 +145,70 @@ class ScrapeRunner
         $run->save();
 
         return $run;
+    }
+
+    /**
+     * Whether writing this extraction would throw away everything we had.
+     *
+     * @param  array<string, mixed>  $values
+     * @param  array<int, string>  $missing
+     */
+    private function wouldEraseEverything(ScrapeItem $existing, array $values, array $missing): bool
+    {
+        // Nothing to lose, or nothing required to lose it by.
+        if ($missing === [] || ! is_array($existing->normalized) || $existing->normalized === []) {
+            return false;
+        }
+
+        // The new read produced nothing usable at all.
+        return array_filter($values, fn ($value) => $value !== null && $value !== '' && $value !== []) === [];
+    }
+
+    /**
+     * Stop a run that has started reading nothing.
+     *
+     * When a site is redesigned every selector breaks at once, and the run
+     * that follows is not a harvest — it is a hundred profiles being marked
+     * broken, one after another, by a scraper that cannot read the page any
+     * more. The first few are enough to know; the remaining ninety-five are
+     * pointless requests to somebody else's server.
+     *
+     * Deliberately a share rather than a count: a site with a handful of
+     * genuinely incomplete profiles is normal, a site where four in five come
+     * back empty is not.
+     */
+    private function guardAgainstRedesign(ScrapeSource $source, Closure $notify): void
+    {
+        if (! $source->setting('redesign_guard', true)) {
+            return;
+        }
+
+        $minimum = max(3, (int) $source->setting('redesign_min_items', 5));
+
+        if ($this->detailsProcessed < $minimum) {
+            return;
+        }
+
+        $ratio = $this->emptyExtractions / max(1, $this->detailsProcessed);
+        $threshold = (float) $source->setting('redesign_ratio', 0.8);
+
+        if ($ratio < $threshold) {
+            return;
+        }
+
+        $notify(sprintf(
+            'Z %d stránek jich %d nevrátilo povinná pole. Běh se zastavuje.',
+            $this->detailsProcessed,
+            $this->emptyExtractions,
+        ));
+
+        throw new RuntimeException(sprintf(
+            'Vypadá to, že se web předělal: %d z %d stránek nevrátilo povinná pole. '
+            . 'Běh se zastavil, aby nepřepsal zbytek profilů prázdnem. '
+            . 'Zkontrolujte selektory v Dílně — data zůstala, jak byla.',
+            $this->emptyExtractions,
+            $this->detailsProcessed,
+        ));
     }
 
     /**
@@ -289,6 +359,11 @@ class ScrapeRunner
      * still be unwell.
      */
     private const RETRY_BATCH = 50;
+
+    /** Kolik detailů v tomhle běhu nevrátilo povinná pole. */
+    private int $emptyExtractions = 0;
+
+    private int $detailsProcessed = 0;
 
     /**
      * The extra data a notification carries, flattened to one readable line.
@@ -521,6 +596,12 @@ class ScrapeRunner
         $result = $this->extractor->extract($html, $source->fieldMaps, $source);
         $images = $adapter->imageUrls($source, $html);
 
+        $this->detailsProcessed++;
+
+        if ($result['missing'] !== []) {
+            $this->emptyExtractions++;
+        }
+
         $normalized = $result['values'];
         $hash = hash('sha256', json_encode([$normalized, $images], JSON_THROW_ON_ERROR));
 
@@ -556,6 +637,25 @@ class ScrapeRunner
         ];
 
         if ($existing) {
+            // A page that suddenly yields nothing is a broken selector far
+            // more often than a woman who deleted her whole advert and left
+            // the page up. Overwriting good values with emptiness is the one
+            // outcome that cannot be undone, so it does not happen: the item
+            // keeps what it had and the failure is recorded instead.
+            if ($this->wouldEraseEverything($existing, $normalized, $result['missing'])) {
+                $run->increment('items_failed');
+                $this->recordFailedDetail(
+                    $source,
+                    $run,
+                    $url,
+                    $externalId,
+                    'Stránka nevrátila žádné z povinných polí, přestože dřív vracela. Data zůstala beze změny.',
+                    $notify,
+                );
+
+                return;
+            }
+
             // Recorded before the row is overwritten — afterwards the previous
             // values are gone and „aktualizováno" is the whole story anybody
             // ever gets.
@@ -570,6 +670,9 @@ class ScrapeRunner
             }
 
             $existing->update($attributes);
+            // Uloženo až po zápisu: dokud položka nemá výsledná data, nemá
+            // smysl si k nim schovávat stránku.
+            $this->snapshots->put($existing, $html);
             $this->flagDuplicate($existing, $notify);
             $this->collectUnknownValues($existing, $notify);
             $run->increment('items_updated');
@@ -583,6 +686,7 @@ class ScrapeRunner
             : ScrapeItem::STATUS_FAILED;
 
         $item = ScrapeItem::create($attributes);
+        $this->snapshots->put($item, $html);
         $this->flagDuplicate($item, $notify);
         $this->collectUnknownValues($item, $notify);
         $run->increment('items_new');

@@ -2,14 +2,17 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\ScrapeItem;
 use App\Models\ScrapeSource;
 use App\Services\Scraping\FieldExtractor;
 use App\Services\Scraping\HttpFetcher;
+use App\Services\Scraping\PageSnapshots;
 use App\Services\Scraping\SiteProbe;
 use App\Services\Scraping\StructuredData;
 use BackedEnum;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
@@ -48,6 +51,9 @@ class ScraperWorkbench extends Page
     public ?array $selectors = null;
 
     public ?string $error = null;
+
+    /** Odkud se vzalo HTML posledního pokusu — kvůli popisku ve výsledku. */
+    public ?string $lastSourceLabel = null;
 
     public static function getNavigationGroup(): ?string
     {
@@ -92,6 +98,12 @@ class ScraperWorkbench extends Page
                             ->label('Adresa stránky')
                             ->url()
                             ->helperText('Prázdné = výpis podle nastavení zdroje. Pro zkoušení selektorů zadejte adresu jednoho profilu.'),
+
+                        Toggle::make('use_snapshot')
+                            ->label('Použít uloženou stránku')
+                            ->default(true)
+                            ->helperText('Zkouší selektory na stránce, kterou scraper naposledy stáhl. Žádný dotaz na cizí web — a funguje to i na webu, který nás zrovna odmítá.')
+                            ->columnSpanFull(),
                     ]),
             ]);
     }
@@ -126,13 +138,19 @@ class ScraperWorkbench extends Page
         }
 
         $url = $this->url() ?: $source->base_url;
+        $useSnapshot = (bool) ($this->form->getState()['use_snapshot'] ?? true);
 
-        try {
-            $html = app(HttpFetcher::class)->get($source, $url);
-        } catch (Throwable $e) {
-            $this->fail($e);
+        $html = $useSnapshot ? $this->snapshotFor($source, $url) : null;
 
-            return;
+        if ($html === null) {
+            try {
+                $html = app(HttpFetcher::class)->get($source, $url);
+                $this->lastSourceLabel = 'staženo právě teď z ' . $url;
+            } catch (Throwable $e) {
+                $this->fail($e);
+
+                return;
+            }
         }
 
         $extractor = app(FieldExtractor::class);
@@ -182,6 +200,34 @@ class ScraperWorkbench extends Page
                 ->warning()
                 ->send();
         }
+    }
+
+    /**
+     * Stránka, kterou scraper u téhle adresy naposledy uložil.
+     *
+     * Je to přesně to, co viděl extraktor — už převedené do UTF-8 — takže
+     * zkouška nad ní je tentýž pokus jako naživo, jen bez požadavku.
+     */
+    private function snapshotFor(ScrapeSource $source, string $url): ?string
+    {
+        $item = ScrapeItem::query()
+            ->where('scrape_source_id', $source->id)
+            ->where('source_url', $url)
+            ->latest('updated_at')
+            ->first();
+
+        if ($item === null) {
+            return null;
+        }
+
+        $html = app(PageSnapshots::class)->get($item);
+
+        if ($html !== null) {
+            $this->lastSourceLabel = 'z uložené stránky (položka #' . $item->id
+                . ', staženo ' . $item->updated_at->format('j. n. Y H:i') . ')';
+        }
+
+        return $html;
     }
 
     private function source(): ?ScrapeSource

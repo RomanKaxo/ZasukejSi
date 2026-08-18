@@ -154,6 +154,8 @@ Nic z toho se neukládá a nevzniká z toho běh.
    | `max_attempts` | kolikrát se zkusí stránka, která se nepodařila stáhnout |
    | `run_window_from`, `run_window_to`, `run_days` | kdy se smí spouštět plánovaný běh |
    | `existence_confirmations`, `existence_interval_hours`, `existence_batch` | kontrola, že importované profily na zdroji pořád jsou |
+   | `redesign_guard`, `redesign_min_items`, `redesign_ratio` | zastavení běhu, když web přestal jít přečíst |
+   | `keep_snapshot` | uchovat staženou stránku pro Dílnu |
 
    Klíče z tabulky mají ve formuláři vlastní pole; syrový editor `Nastavení` je pro to ostatní.
 
@@ -242,6 +244,34 @@ Opakovaný import přidával celou galerii znovu, takže profil po třetím impo
 - **shodný otisk obsahu** — chytne tutéž fotku na nové adrese po redesignu i dvakrát pod jiným jménem v jedné galerii.
 
 Fotky nahrané ručně se do porovnání zapojí taky: otisk se u nich dopočítá při prvním setkání a uloží.
+
+### Jedna dívka, víc webů
+
+Tatáž dívka inzeruje na třech katalozích. Import každého z nich udělal další profil a jediným lékem bylo dva ručně smazat — načež je další běh vyrobil znovu, protože nic nezaznamenalo, že je otázka vyřešená.
+
+U položky je proto akce **Připojit k existujícímu profilu** (u položky označené jako duplicita je profil rovnou předvyplněný). Profil pak má víc zdrojů:
+
+- doplní se jen prázdná pole a chybějící služby, **nic vyplněného se nepřepíše** — druhý katalog nepřebíjí něčí rozhodnutí,
+- fotky, které profil už má, se nestahují znovu ani z jiného webu,
+- **za zmizelý se profil ohlásí, až ho ztratí všechny zdroje.** Že ji jeden web stáhl, neznamená, že skončila.
+
+V detailu profilu je záložka **Zdroje profilu**: odkud pochází, jestli tam inzerát pořád je, a tlačítko odpojit, když se ukáže, že to přece jen není tatáž osoba. Odpojení nic nemaže — položka se vrátí do fronty ke kontrole.
+
+### Když se web předělá
+
+Předělaný web rozbije všechny selektory naráz. Běh, který na to naběhne, není sklizeň — je to sto profilů označených za rozbité jedním po druhém scraperem, který stránku prostě neumí přečíst.
+
+Dvě pojistky:
+
+**Existující data se nepřepíšou prázdnem.** Stránka, která najednou nevrátí žádné z povinných polí, přestože dřív vracela, je mnohem častěji rozbitý selektor než dívka, co smazala celý inzerát a nechala stránku stát. Položka si podrží, co měla, a zapíše se to jako neúspěšný pokus (takže se to samo zkusí znovu).
+
+**Běh se zastaví.** Když z prvních několika stránek většina nevrátí povinná pole (`redesign_min_items`, `redesign_ratio` — výchozí 5 stránek a 80 %), běh skončí chybou „vypadá to, že se web předělal". Prvních pár stačí k rozpoznání; zbývajících pětadevadesát jsou zbytečné dotazy na cizí server. Vypíná se `redesign_guard`.
+
+### Uložená stránka
+
+Oprava selektoru znamenala stáhnout stránku znovu — jednou, aby bylo vidět, co je špatně, a pak při každém pokusu. Každý takový dotaz jde na cizí server pro stránku, kterou jsme už jednou stáhli a zahodili, a na webu, který nás zrovna odmítá, to nejde vůbec.
+
+Scraper si proto poslední staženou stránku nechává (gzipovanou na disku, `keep_snapshot`). V **Dílně** je přepínač **Použít uloženou stránku**: zkouška nad ní je tentýž pokus jako naživo, jen bez požadavku — je to přesně to, co viděl extraktor, včetně převodu kódování. Úklid je maže spolu se zbytkem účetnictví (`--snapshot-days`, výchozí 30 dní bez doteku).
 
 ### Historie změn
 

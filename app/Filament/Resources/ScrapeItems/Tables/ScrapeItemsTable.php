@@ -12,6 +12,8 @@ use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
+use App\Models\Profile;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\ImageColumn;
@@ -349,6 +351,68 @@ class ScrapeItemsTable
                                 ->body($e->getMessage())
                                 ->danger()
                                 ->send();
+                        }
+                    }),
+
+                // Tatáž dívka inzeruje na třech katalozích. Import každého z
+                // nich udělal tři profily a jediným lékem bylo dva ručně
+                // smazat — načež je další běh vyrobil znovu, protože nic
+                // nezaznamenalo, že je otázka vyřešená.
+                Action::make('attachToProfile')
+                    ->label('Připojit k existujícímu profilu')
+                    ->icon('heroicon-o-link')
+                    ->color('warning')
+                    ->visible(fn (?ScrapeItem $record) => $record !== null
+                        && $record->imported_profile_id === null
+                        && in_array($record->status, [ScrapeItem::STATUS_PENDING, ScrapeItem::STATUS_APPROVED], true))
+                    ->form(fn (ScrapeItem $record) => [
+                        Select::make('profile_id')
+                            ->label('Profil')
+                            ->required()
+                            ->searchable()
+                            ->default($record->duplicate_profile_id)
+                            ->options(fn () => Profile::query()
+                                ->orderBy('display_name')
+                                ->limit(200)
+                                ->pluck('display_name', 'id')
+                                ->all())
+                            ->getSearchResultsUsing(fn (string $search) => Profile::query()
+                                ->where('display_name', 'like', "%{$search}%")
+                                ->limit(50)
+                                ->pluck('display_name', 'id')
+                                ->all())
+                            ->helperText($record->duplicate_profile_id
+                                ? 'Předvyplněn profil, který kontrola duplicit označila jako shodu.'
+                                : 'Vyhledejte profil, který je tatáž osoba.'),
+
+                        Toggle::make('with_images')
+                            ->label('Stáhnout i fotografie')
+                            ->default(true)
+                            ->helperText('Fotky, které profil už má, se nestahují znovu — ani z jiného webu.'),
+                    ])
+                    ->modalHeading('Připojit k existujícímu profilu')
+                    ->modalDescription('Profil bude mít víc zdrojů. Doplní se jen prázdná pole a chybějící služby; nic, co je v profilu vyplněné, se nepřepíše. Za zmizelý se profil ohlásí, až ho ztratí všechny zdroje.')
+                    ->modalSubmitActionLabel('Připojit')
+                    ->action(function (ScrapeItem $record, array $data) {
+                        $profile = Profile::find($data['profile_id'] ?? null);
+
+                        if (! $profile) {
+                            Notification::make()->title('Profil nenalezen')->danger()->send();
+
+                            return;
+                        }
+
+                        try {
+                            app(ScrapeItemImporter::class)
+                                ->attachTo($record, $profile, (bool) ($data['with_images'] ?? true));
+
+                            Notification::make()
+                                ->title('Připojeno k profilu #' . $profile->id)
+                                ->body('Nový profil nevznikl. Prázdná pole se doplnila, ostatní zůstala.')
+                                ->success()
+                                ->send();
+                        } catch (Throwable $e) {
+                            Notification::make()->title('Připojení selhalo')->body($e->getMessage())->danger()->send();
                         }
                     }),
 

@@ -179,10 +179,12 @@ class AdminGuides
                     'Vybrat, odkud se berou adresy: procházením výpisu, nebo ze sitemapy webu. Sitemapa umí i „jen to, co se od minule změnilo".',
                     'Stáhnout nastavení zdroje do souboru a jinde ho zase načíst — i s mapováním polí.',
                     'Zrušit pauzu u zdroje, který se sám pozastavil po opakovaných selháních.',
+                    'Zkoušet selektory na naposledy uložené stránce — bez dalšího dotazu na cizí web (viz Dílna).',
                 ],
                 'cannot' => [
                     'Obejít robots.txt ani nastavenou prodlevu mezi dotazy.',
                     'Ztratit adresu, která se nepodařila stáhnout — zařadí se k dalšímu pokusu, s rostoucím odstupem.',
+                    'Dojet běh, ve kterém najednou většina stránek nevrací povinná pole — to je předělaný web a běh se zastaví dřív, než přepíše profily prázdnem.',
                     'Držet v plánu zdroj, který opakovaně selhává — ten se sám pozastaví, aby web nedostával bota, kterého stejně odmítá.',
                 ],
                 'links' => [
@@ -215,6 +217,7 @@ class AdminGuides
                     'Rozhodnout o profilu, který ze zdroje zmizel: ponechat, nebo skrýt. Skrytí profil archivuje, nemaže ho.',
                     'V detailu položky vidět historii: co se na zdroji mezi běhy změnilo, z čeho na co a které fotky přibyly či zmizely.',
                     'Najít profily, u kterých se zdroj po importu změnil, a doplnit z aktuálních dat prázdná pole.',
+                    'Připojit položku k existujícímu profilu místo zakládání druhého — tatáž dívka na třech webech je jeden profil se třemi zdroji.',
                     'Prohlédnout si, co scraper našel, a schválit nebo zamítnout.',
                     'Importovat schválené položky hromadně i s fotkami.',
                 ],
