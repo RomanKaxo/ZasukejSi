@@ -68,7 +68,7 @@ class ScrapeDueCommand extends Command
                 $run = $runner->run($source, array_filter([
                     'pages' => $source->schedule_pages,
                     'limit' => $source->schedule_limit,
-                ]));
+                ]) + ['scheduled' => true]);
 
                 $this->line(sprintf(
                     '  %s — nalezeno %d, nových %d, změněných %d, chyb %d',

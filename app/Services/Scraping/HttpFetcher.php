@@ -64,11 +64,41 @@ class HttpFetcher
 
         $this->waitForTurn($source, $url);
 
-        $response = $this->request($source)->get($url);
+        $response = $this->request($source)->get($this->fetchUrl($source, $url));
 
         $this->guard($source, $response, $url);
 
         return $this->text($response);
+    }
+
+    /**
+     * The address actually requested.
+     *
+     * A page assembled in the browser leaves nothing in the HTML for a
+     * selector to find, and running a browser here would mean shipping Chrome,
+     * a queue and a lot of memory for a handful of sites. What this does
+     * instead is let an operator point at a rendering service they already
+     * have: the address goes through it, the rendered HTML comes back, and the
+     * rest of the scraper neither knows nor cares.
+     *
+     * `{url}` in the endpoint is replaced by the encoded address; without it
+     * the address is appended as `?url=`.
+     */
+    private function fetchUrl(ScrapeSource $source, string $url): string
+    {
+        $endpoint = $source->setting('render_endpoint');
+
+        if (! is_string($endpoint) || trim($endpoint) === '') {
+            return $url;
+        }
+
+        $endpoint = trim($endpoint);
+
+        if (str_contains($endpoint, '{url}')) {
+            return str_replace('{url}', urlencode($url), $endpoint);
+        }
+
+        return $endpoint . (str_contains($endpoint, '?') ? '&' : '?') . 'url=' . urlencode($url);
     }
 
     /**
@@ -94,7 +124,7 @@ class HttpFetcher
 
         $response = $this->request($source)
             ->withHeaders($cached?->conditionalHeaders() ?? [])
-            ->get($url);
+            ->get($this->fetchUrl($source, $url));
 
         if ($response->status() === 304) {
             return null;

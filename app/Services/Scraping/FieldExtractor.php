@@ -24,12 +24,16 @@ class FieldExtractor
 
     private readonly StructuredData $structured;
 
+    private readonly EmbeddedJson $embedded;
+
     public function __construct(
         private readonly Transformers $transformers = new Transformers(),
         ?StructuredData $structured = null,
+        ?EmbeddedJson $embedded = null,
     ) {
         $this->css = new CssSelectorConverter();
         $this->structured = $structured ?? new StructuredData();
+        $this->embedded = $embedded ?? new EmbeddedJson();
     }
 
     /**
@@ -47,9 +51,13 @@ class FieldExtractor
         foreach ($fieldMaps as $map) {
             // A `jsonld:` or `meta:` selector reads what the site publishes
             // about itself rather than guessing at its markup.
-            $raw = StructuredData::handles($map->selector)
-                ? $this->selectStructured($html, $map)
-                : $this->select($xpath, $map);
+            $raw = match (true) {
+                StructuredData::handles($map->selector) => $this->selectStructured($html, $map),
+                // Stránka postavená v prohlížeči nemá co selektorem chytit,
+                // ale data v sobě veze — jinak by je musela stahovat dvakrát.
+                EmbeddedJson::handles($map->selector) => $this->selectEmbedded($html, $map),
+                default => $this->select($xpath, $map),
+            };
 
             $value = $this->transformers->apply($raw, $map->transforms ?? [], $context);
 
@@ -89,6 +97,33 @@ class FieldExtractor
         }
 
         return is_array($value) ? ($value[0] ?? null) : $value;
+    }
+
+    /** One value out of the JSON a client-rendered page embeds. */
+    public function selectEmbedded(string $html, ScrapeFieldMap $map): mixed
+    {
+        $value = $this->embedded->value($html, $map->selector);
+
+        if ($map->extract === ScrapeFieldMap::EXTRACT_COUNT) {
+            return is_array($value) ? count($value) : ($value === null ? 0 : 1);
+        }
+
+        if ($map->multiple) {
+            return $value === null ? [] : (array) $value;
+        }
+
+        return is_array($value) ? ($value[0] ?? null) : $value;
+    }
+
+    /** Klíče z vloženého JSONu, pro výběr v administraci. */
+    public function embeddedKeys(string $html): array
+    {
+        return $this->embedded->availableKeys($html);
+    }
+
+    public function looksClientRendered(string $html): bool
+    {
+        return $this->embedded->looksClientRendered($html);
     }
 
     /** Which structured-data keys a page offers, for the admin to pick from. */

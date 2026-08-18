@@ -11,6 +11,7 @@ class Notification extends Model
         'title',
         'message',
         'type',
+        'audience',
         'is_global',
         'read_at',
         'archived_at',
@@ -21,6 +22,41 @@ class Notification extends Model
         'read_at' => 'datetime',
         'archived_at' => 'datetime',
     ];
+
+    /** Komu je zpráva určená. */
+    public const AUDIENCE_PUBLIC = 'public';
+    public const AUDIENCE_ADMIN = 'admin';
+
+    /**
+     * A notice for whoever runs the site, not for its visitors.
+     *
+     * Provozní věci — scraper narazil na blokaci, profily zmizely ze zdroje —
+     * chodily jako globální notifikace, tedy každé dívce a každému členovi.
+     * O údržbě, se kterou nemůžou nic dělat.
+     */
+    public static function forAdmins(string $title, string $message, string $type = 'warning'): self
+    {
+        return self::create([
+            'user_id' => null,
+            'is_global' => false,
+            'audience' => self::AUDIENCE_ADMIN,
+            'type' => $type,
+            'title' => $title,
+            'message' => $message,
+        ]);
+    }
+
+    /** Zprávy pro administraci, od nejnovější. */
+    public function scopeForAdmins($query)
+    {
+        return $query->where('audience', self::AUDIENCE_ADMIN);
+    }
+
+    /** Všechno, co smí vidět návštěvník. */
+    public function scopePublicAudience($query)
+    {
+        return $query->where('audience', '!=', self::AUDIENCE_ADMIN);
+    }
 
     public function user()
     {
@@ -85,10 +121,14 @@ class Notification extends Model
 
     public function scopeForUser($query, $userId)
     {
-        return $query->where(function($q) use ($userId) {
-            $q->where('user_id', $userId)
-              ->orWhere('is_global', true);
-        });
+        // Provozní zprávy se do uživatelského zvonku nedostanou, ať je
+        // založí kdokoli — filtr je tady, ne na volajícím místě.
+        return $query
+            ->publicAudience()
+            ->where(function ($q) use ($userId) {
+                $q->where('user_id', $userId)
+                  ->orWhere('is_global', true);
+            });
     }
 
     /**

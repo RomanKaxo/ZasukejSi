@@ -296,6 +296,13 @@ class ScrapeSource extends Model
         // Kolikrát se zkusí stránka, která se nepodařila stáhnout.
         'max_attempts' => 5,
 
+        // Externí služba, která stránku vykreslí v prohlížeči. Prázdné =
+        // stahuje se přímo. {url} se nahradí zakódovanou adresou.
+        'render_endpoint' => null,
+
+        // Vlastní pravidla, čím se položka odmítne. Jedno na řádek.
+        'content_rules' => null,
+
         // Strop požadavků na jeden běh. 0 = bez omezení.
         'max_requests' => 0,
 

@@ -2,6 +2,7 @@
 
 namespace App\Services\Scraping;
 
+use App\Models\Notification;
 use App\Models\ScrapeItem;
 use App\Models\ScrapeRun;
 use App\Models\ScrapeSource;
@@ -29,6 +30,7 @@ class ScrapeRunner
         private readonly RevisionRecorder $revisions,
         private readonly PageSnapshots $snapshots,
         private readonly AgeGuard $ageGuard,
+        private readonly ContentRules $rules,
     ) {
     }
 
@@ -175,6 +177,7 @@ class ScrapeRunner
         // working source, and it must not clear the record of a broken one.
         if (! ($options['dry_run'] ?? false)) {
             $this->recordHealth($source, $run, $notify);
+            $this->announce($source, $run, $options);
         }
 
         $lock->release();
@@ -320,6 +323,58 @@ class ScrapeRunner
     }
 
     /**
+     * One line in the admin about how the run went.
+     *
+     * The narration lives on the run and nobody reads it: a night's harvest
+     * ends in a row on a screen somebody would have to think to open. What an
+     * operator wants the next morning is one sentence — and only when there is
+     * something in it.
+     *
+     * Deliberately quiet about the ordinary case. A scheduled run that found
+     * nothing new is the system working, and a notification every night for
+     * that is how notifications stop being read.
+     *
+     * @param  array{limit?: int, pages?: int, url?: string, dry_run?: bool}  $options
+     */
+    private function announce(ScrapeSource $source, ScrapeRun $run, array $options): void
+    {
+        // Ruční běh: obsluha u toho seděla a výsledek už viděla.
+        if (! $source->isScheduled() && ! ($options['scheduled'] ?? false)) {
+            return;
+        }
+
+        if ($run->status === ScrapeRun::STATUS_FAILED) {
+            Notification::forAdmins(
+                'Scraper selhal: ' . $source->name,
+                ($run->error ?: 'Bez bližšího důvodu.')
+                    . ' Podrobnosti jsou v běhu #' . $run->id . '.',
+                'error',
+            );
+
+            return;
+        }
+
+        $worthSaying = $run->items_new > 0 || $run->items_failed > 0;
+
+        if (! $worthSaying) {
+            return;
+        }
+
+        Notification::forAdmins(
+            'Scraper: ' . $source->name,
+            sprintf(
+                'Nalezeno %d, nových %d, změněných %d, chyb %d.%s',
+                $run->items_found,
+                $run->items_new,
+                $run->items_updated,
+                $run->items_failed,
+                $run->items_new > 0 ? ' Nové čekají ve frontě ke kontrole.' : '',
+            ),
+            $run->items_failed > 0 ? 'warning' : 'info',
+        );
+    }
+
+    /**
      * Keep the source's health up to date, and take it out of rotation when
      * it has failed often enough that asking again is doing harm.
      */
@@ -337,10 +392,18 @@ class ScrapeRunner
         }
 
         if ($source->recordFailure((string) $run->error)) {
-            $notify(sprintf(
+            $message = sprintf(
                 'Zdroj pozastaven po %d neúspěších v řadě. Až chybu vyřešíte, spusťte běh ručně — tím se pauza zruší.',
                 $source->consecutive_failures,
-            ));
+            );
+
+            $notify($message);
+
+            Notification::forAdmins(
+                'Scraper pozastavil zdroj: ' . $source->name,
+                $message . ' Poslední chyba: ' . ($run->error ?: 'neuvedena'),
+                'error',
+            );
         }
     }
 
@@ -680,6 +743,19 @@ class ScrapeRunner
         }
 
         $blocked = $this->ageGuard->isBlocked($normalized, $minimumAge);
+        $blockReason = $blocked ? $this->ageGuard->reason($normalized, $minimumAge) : null;
+
+        // Pravidla zdroje. Věková pojistka je v kódu, protože se o ní
+        // nediskutuje; tohle je všechno ostatní, co se u konkrétního webu
+        // ukáže jako potřeba a co má měnit ten, kdo si toho všimne.
+        if (! $blocked) {
+            $violated = $this->rules->violation($source, $normalized);
+
+            if ($violated !== null) {
+                $blocked = true;
+                $blockReason = 'Odmítnuto pravidlem zdroje: ' . $violated;
+            }
+        }
 
         $attributes = [
             'scrape_source_id' => $source->id,
@@ -728,8 +804,8 @@ class ScrapeRunner
                 // Nikdy se nedostane do fronty ke schválení, ani kdyby tam
                 // předtím byla.
                 $attributes['status'] = ScrapeItem::STATUS_REJECTED;
-                $attributes['error'] = $this->ageGuard->reason($normalized, $minimumAge);
-                $notify('ZABLOKOVÁNO (věk): ' . $url);
+                $attributes['error'] = $blockReason;
+                $notify('ZABLOKOVÁNO: ' . $url . ' — ' . $blockReason);
             } elseif (! in_array($existing->status, [ScrapeItem::STATUS_REJECTED, ScrapeItem::STATUS_IMPORTED], true)) {
                 $attributes['status'] = $result['missing'] === []
                     ? ScrapeItem::STATUS_PENDING
@@ -750,8 +826,8 @@ class ScrapeRunner
 
         if ($blocked) {
             $attributes['status'] = ScrapeItem::STATUS_REJECTED;
-            $attributes['error'] = $this->ageGuard->reason($normalized, $minimumAge);
-            $notify('ZABLOKOVÁNO (věk): ' . $url);
+            $attributes['error'] = $blockReason;
+            $notify('ZABLOKOVÁNO: ' . $url . ' — ' . $blockReason);
         } else {
             $attributes['status'] = $result['missing'] === []
                 ? ScrapeItem::STATUS_PENDING

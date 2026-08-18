@@ -32,6 +32,9 @@ trait HandlesGuidedSettings
         'run_window_from',
         'run_window_to',
         'run_days',
+        'minimum_age',
+        'max_requests',
+        'content_rules',
     ];
 
     /** @param array<string, mixed> $data */

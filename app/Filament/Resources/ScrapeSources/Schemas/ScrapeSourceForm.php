@@ -226,6 +226,57 @@ class ScrapeSourceForm
                 ])
                 ->columns(2),
 
+            Section::make('Co se nesmí dostat do fronty')
+                ->description('Věková hranice platí vždycky a je v kódu. Tohle je všechno ostatní, co se u konkrétního webu ukáže jako potřeba.')
+                ->schema([
+                    TextInput::make('minimum_age')
+                        ->label('Nejnižší věk')
+                        ->numeric()
+                        ->minValue(18)
+                        ->maxValue(99)
+                        ->default(18)
+                        ->helperText('Zvýšit lze, snížit pod 18 ne — pojistka to vynucuje bez ohledu na tohle pole. Neuvedený věk se neblokuje, ten patří do revize.'),
+
+                    TextInput::make('max_requests')
+                        ->label('Strop požadavků na běh')
+                        ->numeric()
+                        ->minValue(0)
+                        ->helperText('0 = bez omezení. Chrání před chybným stránkováním, které umí vyrobit nekonečný seznam adres.'),
+
+                    Textarea::make('content_rules')
+                        ->label('Vlastní pravidla')
+                        ->rows(6)
+                        ->columnSpanFull()
+                        ->helperText(
+                            'Jedno pravidlo na řádek, „pole operátor hodnota". Položka, která pravidlu vyhoví, se rovnou zamítne. '
+                            . 'Operátory: ~ (odpovídá výrazu), !~ (neodpovídá), = , != , empty, not_empty. '
+                            . 'Například: about_me ~ /whatsapp\s*\+\d{6,}/i — nebo city != Brno — nebo phone empty. '
+                            . 'Řádek začínající # je poznámka. Nesrozumitelný řádek se přeskočí a řekne se to při uložení.'
+                        )
+                        ->rules([
+                            fn () => function (string $attribute, $value, \Closure $fail) {
+                                foreach (preg_split('/\r\n|\r|\n/', (string) $value) as $number => $line) {
+                                    $line = trim($line);
+
+                                    if ($line === '' || str_starts_with($line, '#')) {
+                                        continue;
+                                    }
+
+                                    if (! preg_match('/^([a-z_][a-z0-9_]*)\s+(!~|~|!=|=|empty|not_empty)\s*(.*)$/i', $line, $m)) {
+                                        $fail('Řádek ' . ($number + 1) . ' nedává smysl: „' . $line . '".');
+
+                                        continue;
+                                    }
+
+                                    if (in_array($m[2], ['~', '!~'], true) && @preg_match(trim($m[3]), '') === false) {
+                                        $fail('Řádek ' . ($number + 1) . ': „' . trim($m[3]) . '" není platný regulární výraz.');
+                                    }
+                                }
+                            },
+                        ]),
+                ])
+                ->columns(2),
+
             Section::make('Chování při stahování')
                 ->description('Prodleva se nikdy nesníží pod hodnotu, kterou požaduje robots.txt daného webu.')
                 ->schema([

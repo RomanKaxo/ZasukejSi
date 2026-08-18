@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\ContactMessage;
 use App\Models\MemberSubscription;
+use App\Models\Notification;
 use App\Models\Profile;
 use App\Models\ProfileReport;
 use App\Models\ProfileView;
@@ -34,6 +35,7 @@ class OperationsOverview extends StatsOverviewWidget
             $this->unreadMessages(),
             $this->scrapeQueue(),
             $this->vanishedProfiles(),
+            $this->operationalNotices(),
             $this->expiringSubscriptions(),
             $this->trafficLast30Days(),
         ];
@@ -92,6 +94,38 @@ class OperationsOverview extends StatsOverviewWidget
             ->color($count > 0 ? 'danger' : 'success')
             ->url(route('filament.admin.resources.scrape-items.index', [
                 'tableFilters' => ['missing_at_source' => ['isActive' => true]],
+            ]));
+    }
+
+    /**
+     * Provozní zprávy scraperu za posledních čtyřiadvacet hodin.
+     *
+     * Noční běh skončil řádkem v tabulce, kterou by někdo musel otevřít. Tohle
+     * je ta jedna věta, kterou ráno chce vidět — a jen tehdy, když v ní něco je.
+     */
+    private function operationalNotices(): Stat
+    {
+        $recent = Notification::query()
+            ->forAdmins()
+            ->where('created_at', '>=', now()->subDay())
+            ->latest()
+            ->get();
+
+        $problems = $recent->whereIn('type', ['error', 'warning'])->count();
+
+        return Stat::make('Zprávy z provozu', $recent->count())
+            ->description($recent->isEmpty()
+                ? 'Za posledních 24 hodin nic.'
+                : ($problems > 0
+                    ? $problems . ' z toho vyžaduje pozornost: ' . (string) $recent->first()?->title
+                    : (string) $recent->first()?->title))
+            ->color(match (true) {
+                $problems > 0 => 'danger',
+                $recent->isNotEmpty() => 'info',
+                default => 'success',
+            })
+            ->url(route('filament.admin.resources.notifications.index', [
+                'tableFilters' => ['audience' => ['value' => Notification::AUDIENCE_ADMIN]],
             ]));
     }
 

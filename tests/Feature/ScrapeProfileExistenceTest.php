@@ -119,10 +119,13 @@ class ScrapeProfileExistenceTest extends TestCase
 
         app(ProfileExistenceChecker::class)->check($source);
 
-        $notification = Notification::where('is_global', true)->first();
+        // Do administrace, ne do zvonku na webu: o údržbě, se kterou
+        // návštěvník nemůže nic dělat, se mu nepíše.
+        $notification = Notification::query()->forAdmins()->first();
 
         $this->assertNotNull($notification, 'Fronta, o které nikdo neví, je fronta, kterou nikdo nevyprázdní.');
         $this->assertStringContainsString('Příklad', $notification->message);
+        $this->assertSame(0, Notification::query()->where('is_global', true)->count());
     }
 
     /** 403 znamená, že nás web odmítá — o existenci profilu neříká nic. */

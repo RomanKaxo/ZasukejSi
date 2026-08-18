@@ -160,17 +160,14 @@ class ProfileExistenceChecker
      */
     private function announce(ScrapeSource $source, int $count): void
     {
-        Notification::create([
-            'user_id' => null,
-            'is_global' => true,
-            'type' => 'warning',
-            'title' => 'Profily zmizely ze zdroje',
-            'message' => sprintf(
+        Notification::forAdmins(
+            'Profily zmizely ze zdroje',
+            sprintf(
                 'Na webu %s už není %d profilů, které u nás pořád jsou. Rozhodněte v administraci, co s nimi — samo se nic nesmaže.',
                 $source->name,
                 $count,
             ),
-        ]);
+        );
     }
 
     private function confirmations(ScrapeSource $source): int

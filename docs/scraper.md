@@ -77,6 +77,18 @@ Nic se neblokuje automaticky. Kontrola hlásí kandidáty s důvodem, rozhoduje 
 
 ---
 
+## Co se hlásí do administrace
+
+Provozní zprávy chodí **jen do administrace**, nikdy do zvonku na webu. Kanál byl původně jeden a „profily zmizely ze zdroje" tak mířilo každé dívce a každému členovi — o údržbě, se kterou nemůžou nic dělat. Oddělené je to sloupcem `audience`, ne konvencí, aby se zpráva pro obsluhu nemohla dostat na frontend tím, že někdo zapomene scope.
+
+Hlásí se:
+
+- **souhrn plánovaného běhu** — ale jen když je co říct. Běh, který nenašel nic nového, je systém fungující podle plánu, a notifikace o tom každou noc je způsob, jak přestat notifikace číst,
+- **selhaný běh** a **pozastavený zdroj**,
+- **profily, které zmizely ze zdroje**.
+
+Ruční běh nehlásí nic: obsluha u toho seděla a výsledek viděla. Na nástěnce je dlaždice **Zprávy z provozu** za posledních 24 hodin.
+
 ## Automatické spouštění
 
 Zdroj se sám nespouští, dokud mu nenastavíte interval (**Zdroj → Automatické spouštění**). Bez něj se chová jako dosud, tedy jen ručně.
@@ -116,6 +128,33 @@ Kontroluje se na dvou místech, kde data překračují hranici: když se ze sta�
 - `minimum_age` smí hranici **zvýšit** (web, který inzeruje jen ženy nad 21, to může říct), **snížit ji nemůže nikdo**. Pojistka bere `max(18, nastavení)`.
 - **Neuvedený věk se neblokuje** — to není důkaz ničeho a patří do revize. Blokuje se uvedený věk pod hranicí.
 - Věk se čte i z věty: „17 let" je sedmnáct. Nesmyslná hodnota se čte jako neuvedeno, ne jako „v pořádku".
+
+## Vlastní pravidla
+
+Věková pojistka je v kódu, protože se o ní nediskutuje. Všechno ostatní, co má zůstat venku — agenturní spam vlepený do každého popisu, město, které nechceme, inzerát bez telefonu — je úsudek o tomhle katalogu v tuhle chvíli a mění se. V kódu by to znamenalo deploy při každé změně, takže to patří do nastavení zdroje.
+
+Jedno pravidlo na řádek, `pole operátor hodnota`. Položka, která pravidlu vyhoví, se rovnou zamítne:
+
+```
+# telefon vlepený do popisu = agentura
+about_me ~ /whatsapp\s*\+\d{6,}/i
+city != Brno
+phone empty
+```
+
+Operátory: `~` (odpovídá výrazu) · `!~` (neodpovídá) · `=` · `!=` · `empty` · `not_empty`. Seznamy se posuzují jako text, takže pravidlo o službách funguje, i když jich je osm. Řádek začínající `#` je poznámka.
+
+Pravidlo umí jedinou věc: **odmítnout položku**. Nepřepíše hodnotu, nic nepublikuje a nemění význam pole — což drží následek překlepu na jednom místě, a viditelném. Nesrozumitelný řádek se přeskočí a formulář to řekne při uložení; pravidlo, kterému nikdo nerozumí, nesmí potichu začít odmítat profily.
+
+## Weby, které se skládají až v prohlížeči
+
+Stránka postavená v Reactu nebo Vue přijde jako prázdná skořápka: selektory nenajdou nic. Spouštět kvůli tomu prohlížeč by znamenalo Chrome, frontu a hodně paměti kvůli hrstce webů.
+
+Jenže skořápka prázdná není. Aby data nemusela stahovat dvakrát, veze si je s sebou — `__NEXT_DATA__`, `window.__NUXT__`, bloky `application/json`. Ta kopie je navíc **lepší než cokoli, co by vydoloval selektor**: je to vlastní datová struktura webu, s pořádnými typy, a s designem se nehýbe.
+
+Selektor se zapíše jako `json:props.pageProps.profile.name`. **Dílna** takovou stránku pozná, řekne to a vypíše všechny dostupné klíče.
+
+Zbývá případ, kdy stránka opravdu nic neveze a obsah si dotahuje až po načtení. Tam scraper nepomůže — a Dílna to napíše místo aby to předstírala. Pro ten případ je `render_endpoint`: adresa se pošle přes vykreslovací službu, kterou má provozovatel po ruce, a zbytek scraperu o tom neví. `{url}` v adrese se nahradí zakódovanou adresou, jinak se připojí jako `?url=`.
 
 ## Ohleduplnost k cílovému webu
 
@@ -172,6 +211,8 @@ Nic z toho se neukládá a nevzniká z toho běh.
    | `keep_snapshot` | uchovat staženou stránku pro Dílnu |
    | `minimum_age` | věková hranice; zvýšit lze, snížit pod 18 ne |
    | `max_requests` | strop požadavků na jeden běh, 0 = bez omezení |
+   | `content_rules` | vlastní pravidla, čím se položka odmítne |
+   | `render_endpoint` | externí služba, která stránku vykreslí v prohlížeči |
 
    Klíče z tabulky mají ve formuláři vlastní pole; syrový editor `Nastavení` je pro to ostatní.
 
@@ -184,6 +225,7 @@ Nic z toho se neukládá a nevzniká z toho běh.
    | `jsonld:name` | JSON-LD, které web publikuje pro vyhledávače |
    | `jsonld:address.addressLocality` | vnořená hodnota; do hloubky se jde tečkou |
    | `meta:og:title` | OpenGraph a ostatní meta značky |
+   | `json:props.pageProps.profile.name` | data vložená do stránky u webů skládaných v prohlížeči |
 
    Tohle je **jediný zápis, který nezávisí na vzhledu stránky**: web ta data udržuje záměrně a přežijí i redesign, na rozdíl od selektoru. Weby, které publikují dost, jdou nastavit bez jediného selektoru — včetně galerie, protože `image_selector` přijímá stejný zápis (`jsonld:image`). Co konkrétní stránka nabízí, vypíše Dílna.
 

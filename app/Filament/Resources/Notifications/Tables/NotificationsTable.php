@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Notifications\Tables;
 
+use App\Models\Notification;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -36,6 +37,16 @@ class NotificationsTable
                     ->color(fn ($record) => $record->typeBadgeColor())
                     ->sortable(),
 
+                // Provozní zprávy scraperu a zprávy pro návštěvníky vypadaly
+                // v seznamu stejně, takže „globální" znamenalo dvě různé věci.
+                TextColumn::make('audience')
+                    ->label('Komu')
+                    ->badge()
+                    ->formatStateUsing(fn ($state) => $state === Notification::AUDIENCE_ADMIN
+                        ? 'Administrace'
+                        : 'Návštěvníkům')
+                    ->color(fn ($state) => $state === Notification::AUDIENCE_ADMIN ? 'warning' : 'gray'),
+
                 TextColumn::make('user.email')
                     ->label('Příjemce')
                     ->default('Všichni')
@@ -58,6 +69,13 @@ class NotificationsTable
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
+                SelectFilter::make('audience')
+                    ->label('Komu')
+                    ->options([
+                        Notification::AUDIENCE_ADMIN => 'Administrace',
+                        Notification::AUDIENCE_PUBLIC => 'Návštěvníkům',
+                    ]),
+
                 SelectFilter::make('type')
                     ->label('Typ')
                     ->options([

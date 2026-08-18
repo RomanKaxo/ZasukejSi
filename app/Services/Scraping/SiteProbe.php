@@ -40,6 +40,8 @@ class SiteProbe
      *     sitemap: array<string, mixed>,
      *     links: array<int, array<string, mixed>>,
      *     structured: array<int, string>,
+     *     embedded: array<int, string>,
+     *     client_rendered: bool,
      *     encoding: array<string, mixed>,
      *     notes: array<int, string>,
      * }
@@ -54,6 +56,8 @@ class SiteProbe
             'sitemap' => $this->sitemap($source),
             'links' => [],
             'structured' => [],
+            'embedded' => [],
+            'client_rendered' => false,
             'encoding' => [],
             'notes' => [],
         ];
@@ -69,10 +73,20 @@ class SiteProbe
         $report['encoding'] = $this->encoding($html);
         $report['links'] = $this->linkCandidates($html, $source);
         $report['structured'] = $this->extractor->structuredKeys($html);
+        $report['embedded'] = $this->extractor->embeddedKeys($html);
+        $report['client_rendered'] = $this->extractor->looksClientRendered($html);
 
         if ($report['links'] === []) {
             $report['notes'][] = 'Na stránce se nenašla žádná skupina podobných odkazů. '
-                . 'Buď to není výpis, nebo se obsah dotahuje až JavaScriptem — ten scraper nespouští.';
+                . 'Buď to není výpis, nebo se obsah skládá až v prohlížeči.';
+        }
+
+        if ($report['client_rendered']) {
+            $report['notes'][] = $report['embedded'] === []
+                ? 'Stránka se skládá až v prohlížeči a nemá v sobě vložená data. Selektory tu nenajdou nic '
+                    . 'a scraper JavaScript nespouští — pomůže jedině stahování přes externí renderer.'
+                : 'Stránka se skládá až v prohlížeči, ale data v sobě veze. Použijte selektory „json:…" '
+                    . 'z výpisu níž — jsou to hodnoty z vlastní datové struktury webu, takže přežijí i redesign.';
         }
 
         if ($report['structured'] === []) {

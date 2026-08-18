@@ -180,6 +180,8 @@ class AdminGuides
                     'Stáhnout nastavení zdroje do souboru a jinde ho zase načíst — i s mapováním polí.',
                     'Zrušit pauzu u zdroje, který se sám pozastavil po opakovaných selháních.',
                     'Zkoušet selektory na naposledy uložené stránce — bez dalšího dotazu na cizí web (viz Dílna).',
+                    'Napsat vlastní pravidla, čím se položka rovnou odmítne (spam v popisu, cizí město, chybějící telefon).',
+                    'Číst data z webů, které se skládají až v prohlížeči — selektorem „json:…" z dat, která stránka veze s sebou.',
                 ],
                 'cannot' => [
                     'Obejít robots.txt ani nastavenou prodlevu mezi dotazy.',

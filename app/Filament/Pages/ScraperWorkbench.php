@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Models\ScrapeItem;
 use App\Models\ScrapeSource;
+use App\Services\Scraping\EmbeddedJson;
 use App\Services\Scraping\FieldExtractor;
 use App\Services\Scraping\HttpFetcher;
 use App\Services\Scraping\PageSnapshots;
@@ -159,9 +160,11 @@ class ScraperWorkbench extends Page
 
         foreach ($source->fieldMaps as $map) {
             try {
-                $raw = StructuredData::handles($map->selector)
-                    ? $extractor->selectStructured($html, $map)
-                    : $extractor->select($xpath, $map);
+                $raw = match (true) {
+                    StructuredData::handles($map->selector) => $extractor->selectStructured($html, $map),
+                    EmbeddedJson::handles($map->selector) => $extractor->selectEmbedded($html, $map),
+                    default => $extractor->select($xpath, $map),
+                };
             } catch (Throwable $e) {
                 $rows[] = [
                     'field' => $map->target_field,

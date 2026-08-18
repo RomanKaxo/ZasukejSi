@@ -157,6 +157,35 @@
                     @endif
                 </div>
 
+                @if($probe['client_rendered'] ?? false)
+                    <div class="zs-wb__card">
+                        <p class="zs-wb__title">Stránka se skládá až v prohlížeči</p>
+                        <p class="zs-wb__note">
+                            Text, který by návštěvník viděl, v HTML skoro není — obsah dosazuje JavaScript.
+                            Scraper ho nespouští, takže obyčejné selektory tu nenajdou nic.
+                        </p>
+
+                        @if(empty($probe['embedded']))
+                            <p class="zs-wb__note">
+                                A data v sobě stránka nemá. Zbývá stahovat přes externí renderer, nebo tenhle web vynechat.
+                            </p>
+                        @else
+                            <p class="zs-wb__note">
+                                Data ale veze s sebou — jinak by je musela stahovat dvakrát. Tyhle klíče jdou použít
+                                jako selektor a jsou to hodnoty z vlastní datové struktury webu, takže přežijí i redesign.
+                            </p>
+                            <ul class="zs-wb__keys">
+                                @foreach(array_slice($probe['embedded'], 0, 120) as $key)
+                                    <li>{{ $key }}</li>
+                                @endforeach
+                            </ul>
+                            @if(count($probe['embedded']) > 120)
+                                <p class="zs-wb__note zs-wb__empty">… a dalších {{ count($probe['embedded']) - 120 }}.</p>
+                            @endif
+                        @endif
+                    </div>
+                @endif
+
                 <div class="zs-wb__card">
                     <p class="zs-wb__title">Co web zveřejňuje sám o sobě</p>
 
