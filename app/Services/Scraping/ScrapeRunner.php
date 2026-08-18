@@ -24,6 +24,7 @@ class ScrapeRunner
         private readonly DuplicateFinder $duplicates,
         private readonly UnknownValueCollector $unknownValues,
         private readonly SitemapReader $sitemap,
+        private readonly RevisionRecorder $revisions,
     ) {
     }
 
@@ -555,6 +556,11 @@ class ScrapeRunner
         ];
 
         if ($existing) {
+            // Recorded before the row is overwritten — afterwards the previous
+            // values are gone and „aktualizováno" is the whole story anybody
+            // ever gets.
+            $revision = $this->revisions->record($existing, $run, $normalized, $images);
+
             // A rejected item stays rejected; a re-scrape must not quietly put
             // it back in the review queue.
             if (! in_array($existing->status, [ScrapeItem::STATUS_REJECTED, ScrapeItem::STATUS_IMPORTED], true)) {
@@ -567,7 +573,7 @@ class ScrapeRunner
             $this->flagDuplicate($existing, $notify);
             $this->collectUnknownValues($existing, $notify);
             $run->increment('items_updated');
-            $notify("aktualizováno: {$url}");
+            $notify("aktualizováno: {$url}" . ($revision ? ' — ' . $revision->summary() : ''));
 
             return;
         }

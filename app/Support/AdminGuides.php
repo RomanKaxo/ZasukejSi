@@ -213,11 +213,14 @@ class AdminGuides
                 'intro' => 'Fronta stažených profilů. Nic odsud neodejde na web bez vašeho schválení a i po importu je profil neveřejný.',
                 'can' => [
                     'Rozhodnout o profilu, který ze zdroje zmizel: ponechat, nebo skrýt. Skrytí profil archivuje, nemaže ho.',
+                    'V detailu položky vidět historii: co se na zdroji mezi běhy změnilo, z čeho na co a které fotky přibyly či zmizely.',
+                    'Najít profily, u kterých se zdroj po importu změnil, a doplnit z aktuálních dat prázdná pole.',
                     'Prohlédnout si, co scraper našel, a schválit nebo zamítnout.',
                     'Importovat schválené položky hromadně i s fotkami.',
                 ],
                 'cannot' => [
                     'Smazat profil za vás. Zmizení ze zdroje se jen označí a nahlásí — rozhodnutí je vždycky vaše.',
+                    'Přepsat v profilu hodnotu, kterou jste upravili ručně. Doplnění plní jen prázdná pole.',
                     'Importovat položku, která zmiňuje hodnotu, kterou náš číselník nezná — nejdřív ji doplňte ve frontě hodnot.',
                 ],
                 'links' => [

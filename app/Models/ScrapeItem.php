@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * One scraped entity, staged for review.
@@ -197,6 +198,41 @@ class ScrapeItem extends Model
             self::STATUS_IMPORTED => 'Importováno',
             self::STATUS_FAILED => 'Chyba',
         ];
+    }
+
+    /** Co se na zdroji mezi běhy změnilo, od nejnovějšího. */
+    public function revisions(): HasMany
+    {
+        return $this->hasMany(ScrapeItemRevision::class)->latest();
+    }
+
+    /**
+     * Whether the source has moved since we made a profile out of this.
+     *
+     * The profile is then a snapshot of a page that no longer says the same
+     * thing — which is not wrong, exactly, but is worth knowing before anybody
+     * relies on the price.
+     */
+    public function hasChangedSinceImport(): bool
+    {
+        if ($this->imported_at === null) {
+            return false;
+        }
+
+        return $this->revisions()->where('created_at', '>', $this->imported_at)->exists();
+    }
+
+    /** Importované položky, u kterých se zdroj od importu změnil. */
+    public function scopeChangedSinceImport($query)
+    {
+        return $query
+            ->whereNotNull('imported_profile_id')
+            ->whereNotNull('imported_at')
+            ->whereHas('revisions', fn ($q) => $q->whereColumn(
+                'scrape_item_revisions.created_at',
+                '>',
+                'scrape_items.imported_at',
+            ));
     }
 
     public function source(): BelongsTo

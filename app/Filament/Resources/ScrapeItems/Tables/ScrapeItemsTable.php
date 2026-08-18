@@ -142,6 +142,22 @@ class ScrapeItemsTable
                     })
                     ->toggleable(),
 
+                // Profil je momentka stránky, která už neříká totéž. Není to
+                // úplně chyba, ale je dobré to vědět dřív, než se někdo na tu
+                // cenu spolehne.
+                TextColumn::make('revisions_count')
+                    ->label('Změn na zdroji')
+                    ->counts('revisions')
+                    ->alignCenter()
+                    ->badge()
+                    ->color(fn (ScrapeItem $record) => $record->hasChangedSinceImport() ? 'warning' : 'gray')
+                    ->formatStateUsing(fn ($state) => $state > 0 ? (string) $state : '—')
+                    ->description(fn (ScrapeItem $record) => $record->hasChangedSinceImport()
+                        ? 'po importu'
+                        : null)
+                    ->url(fn (ScrapeItem $record) => route('filament.admin.resources.scrape-items.view', $record))
+                    ->toggleable(),
+
                 // Profil, který ze zdroje zmizel. Bez tohohle sloupce se to
                 // pozná jedině tak, že si někdo otevře inzerát a uvidí 404.
                 TextColumn::make('missing_since')
@@ -183,6 +199,10 @@ class ScrapeItemsTable
                 Filter::make('possible_duplicates')
                     ->label('Možné duplicity')
                     ->query(fn ($query) => $query->possibleDuplicates()),
+
+                Filter::make('changed_since_import')
+                    ->label('Zdroj se změnil po importu')
+                    ->query(fn ($query) => $query->changedSinceImport()),
 
                 Filter::make('missing_at_source')
                     ->label('Zmizely ze zdroje')
@@ -299,6 +319,37 @@ class ScrapeItemsTable
                             ->body('Zůstává v administraci, na webu není.')
                             ->success()
                             ->send();
+                    }),
+
+                // Doplnění, ne přepis. Co administrátor v profilu upravil
+                // rukou, zůstává — proto se plní jen prázdná pole a přidávají
+                // chybějící služby. Co se skutečně změnilo, ukáže historie a
+                // opravit to je vědomé rozhodnutí.
+                Action::make('resyncProfile')
+                    ->label('Doplnit z aktuálních dat')
+                    ->icon('heroicon-o-arrow-path-rounded-square')
+                    ->color('gray')
+                    ->visible(fn (?ScrapeItem $record) => (bool) $record?->imported_profile_id)
+                    ->requiresConfirmation()
+                    ->modalHeading('Doplnit profil z posledního stažení?')
+                    ->modalDescription('Vyplní se jen pole, která jsou v profilu prázdná, a doplní chybějící služby. Nic, co jste v profilu upravili, se nepřepíše.')
+                    ->modalSubmitActionLabel('Doplnit')
+                    ->action(function (ScrapeItem $record) {
+                        try {
+                            $services = app(ScrapeItemImporter::class)->resync($record);
+
+                            Notification::make()
+                                ->title('Profil doplněn')
+                                ->body("Služeb po doplnění: {$services}. Ručně upravené hodnoty zůstaly.")
+                                ->success()
+                                ->send();
+                        } catch (Throwable $e) {
+                            Notification::make()
+                                ->title('Doplnění selhalo')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
                     }),
 
                 Action::make('import')

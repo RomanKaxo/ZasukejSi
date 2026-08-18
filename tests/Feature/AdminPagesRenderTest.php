@@ -103,6 +103,44 @@ class AdminPagesRenderTest extends TestCase
     }
 
     /**
+     * Detail stažené položky i s historií změn.
+     *
+     * Historie je vlastní relation manager, který se vykreslí jenom tady —
+     * seznam položek by chybu v něm nikdy neukázal.
+     */
+    public function test_the_scrape_item_detail_renders_with_its_history(): void
+    {
+        $admin = $this->admin();
+
+        $source = \App\Models\ScrapeSource::create([
+            'name' => 'Příklad',
+            'slug' => 'priklad',
+            'base_url' => 'https://example.test',
+            'adapter' => 'generic',
+            'is_enabled' => true,
+        ]);
+
+        $item = \App\Models\ScrapeItem::create([
+            'scrape_source_id' => $source->id,
+            'source_url' => 'https://example.test/p/1',
+            'external_id' => '1',
+            'status' => \App\Models\ScrapeItem::STATUS_PENDING,
+            'normalized' => ['display_name' => 'Kristýna'],
+        ]);
+
+        \App\Models\ScrapeItemRevision::create([
+            'scrape_item_id' => $item->id,
+            'changes' => ['price_hour' => ['from' => '3000', 'to' => '6000']],
+            'images_added' => ['https://example.test/2.jpg'],
+            'is_notable' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->get("/admin/scrape-items/{$item->id}")
+            ->assertSuccessful();
+    }
+
+    /**
      * Formulář zdroje scraperu se vykresluje jen ručně, a přitom je ze všech
      * v administraci nejsložitější — půlka polí se zjevuje podle jiných polí
      * a část z nich se do JSONu překlápí až při uložení.

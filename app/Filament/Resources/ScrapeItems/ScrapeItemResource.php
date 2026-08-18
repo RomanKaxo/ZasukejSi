@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ScrapeItems;
 use App\Filament\Resources\ScrapeItems\Pages\EditScrapeItem;
 use App\Filament\Resources\ScrapeItems\Pages\ListScrapeItems;
 use App\Filament\Resources\ScrapeItems\Pages\ViewScrapeItem;
+use App\Filament\Resources\ScrapeItems\RelationManagers\RevisionsRelationManager;
 use App\Filament\Resources\ScrapeItems\Schemas\ScrapeItemForm;
 use App\Filament\Resources\ScrapeItems\Tables\ScrapeItemsTable;
 use App\Models\ScrapeItem;
@@ -70,6 +71,13 @@ class ScrapeItemResource extends Resource
     public static function table(Table $table): Table
     {
         return ScrapeItemsTable::configure($table);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            RevisionsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

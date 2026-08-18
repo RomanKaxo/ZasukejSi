@@ -243,6 +243,23 @@ Opakovaný import přidával celou galerii znovu, takže profil po třetím impo
 
 Fotky nahrané ručně se do porovnání zapojí taky: otisk se u nich dopočítá při prvním setkání a uloží.
 
+### Historie změn
+
+Opakovaný scrape přepsal položku na místě. Počitadlo řeklo „aktualizováno" a tím to skončilo — které pole se hnulo, z čeho na co, jestli přibyla nebo zmizela fotka, všechno pryč v okamžiku zápisu. To je rozdíl mezi katalogem a momentkou.
+
+Každá skutečná změna teď zakládá řádek v historii, kterou najdete v **detailu položky**: pole, předchozí a nová hodnota, přidané i odebrané fotky. Beze změny se nezakládá nic, takže noční běh nad nehybným webem historii nenafoukne — je to seznam událostí, ne návštěv.
+
+Dvě rozhodnutí, na kterých to stojí:
+
+- **Přehozené pořadí seznamu není změna.** Web, který mezi dvěma načteními prohodí služby, nezměnil nic; hlásit to každou noc by pohřbilo změny, na kterých záleží.
+- **Některé změny stojí za pozornost.** Cena, telefon, jméno, věk a město dostanou v historii vykřičník: přepsaný popis je běžný, zdvojnásobená cena nebo nový telefon je buď novinka, nebo jiná dívka za týmž inzerátem.
+
+### Profil zastaralý oproti zdroji
+
+Když se položka po importu na zdroji změní, profil u nás je momentka stránky, která už neříká totéž. Ve stažených položkách je proto sloupec **Změn na zdroji** s poznámkou „po importu" a filtr **Zdroj se změnil po importu**.
+
+Akce **Doplnit z aktuálních dat** vyplní jen pole, která jsou v profilu prázdná, a doplní chybějící služby. **Nic, co jste v profilu upravili rukou, nepřepíše** — co se skutečně změnilo, ukáže historie, a opravit to je vědomé rozhodnutí, ne vedlejší účinek běhu.
+
 ### Profily, které ze zdroje zmizely
 
 Scrapování jenom přidává. Dívka, která přestala inzerovat, ze zdroje zmizí — a u nás zůstávala navěky, veřejně a jako by byla aktuální. Z toho, co může scrapovaný katalog udělat špatně, je tohle jediné, co stojí návštěvníka něco skutečného: inzerát, který nikam nevede.
