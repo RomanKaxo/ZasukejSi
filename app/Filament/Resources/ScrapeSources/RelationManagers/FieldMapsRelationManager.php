@@ -41,9 +41,15 @@ class FieldMapsRelationManager extends RelationManager
                 ->helperText('Pole mimo tento seznam se uloží, ale import je do profilu nepřenese.'),
 
             TextInput::make('selector')
-                ->label('CSS selektor')
+                ->label('Selektor')
                 ->required()
-                ->helperText('Přijímá i XPath, pokud selektor není platné CSS.'),
+                ->helperText(
+                    'CSS, nebo XPath, když selektor není platné CSS. Navíc '
+                    . '„jsonld:název" a „meta:og:title" čtou data, která web sám '
+                    . 'zveřejňuje pro vyhledávače a sociální sítě — ta přežijí i '
+                    . 'redesign, na rozdíl od selektoru. Co konkrétní stránka '
+                    . 'nabízí, ukáže akce „Prozkoumat web" u zdroje.'
+                ),
 
             Select::make('extract')
                 ->label('Co z prvku vzít')

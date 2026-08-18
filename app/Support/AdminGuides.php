@@ -191,6 +191,23 @@ class AdminGuides
                 ],
             ],
 
+            'scraper-workbench' => [
+                'intro' => 'Zkoušení bez stahování. Stáhne se jedna stránka a odpoví na otázky, které se jinak zjišťují opakovanými zkušebními běhy.',
+                'can' => [
+                    'Prozkoumat web: robots.txt, sitemapa, skupiny odkazů vypadající jako profily a hotové návrhy selektoru i filtru adres.',
+                    'Zjistit, co web zveřejňuje sám o sobě (JSON-LD, meta značky) — takové klíče jdou použít jako selektor a přežijí redesign.',
+                    'Vyzkoušet všechna mapování polí na jedné adrese a vidět vedle sebe, co selektor našel a co z toho zbylo po transformacích.',
+                ],
+                'cannot' => [
+                    'Nic uložit. Nevzniká tu položka ve frontě ani běh.',
+                    'Spustit JavaScript — co se na stránce dotahuje až v prohlížeči, scraper nevidí.',
+                ],
+                'links' => [
+                    'Zdroje' => 'scrape-sources',
+                    'Stažené položky' => 'scrape-items',
+                ],
+            ],
+
             'scrape-items' => [
                 'intro' => 'Fronta stažených profilů. Nic odsud neodejde na web bez vašeho schválení a i po importu je profil neveřejný.',
                 'can' => [

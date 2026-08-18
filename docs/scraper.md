@@ -114,6 +114,7 @@ Zabudované, ne volitelné:
 - Zakázané cesty se nestahují; požadavek na ně skončí chybou, ne tichým přeskočením.
 - Prodleva se počítá **zvlášť pro každý host**, aby stahování fotek z CDN nebrzdilo čtení stránek a naopak.
 - Každý požadavek jde přes `HttpFetcher`, takže na tohle nelze zapomenout na volajícím místě.
+- **Kódování se převádí na UTF-8.** Podle hlavičky odpovědi, jinak podle `<meta charset>`, jinak jako Windows-1250 — což staré české, slovenské a polské weby většinou jsou. Bez toho se stránka nerozbila, jen tiše zapsala do profilu „Krist??na".
 - **Nestahuje se, co se nezměnilo.** Detail se stahuje podmíněně (`If-None-Match`, `If-Modified-Since`); když web odpoví `304`, běh jde dál a nesahá se ani na fotky. Weby, které tyhle hlavičky neposílají, odchytí porovnání otisku obsahu.
 - **`Retry-After` se respektuje.** Když web u `429` nebo `503` řekne, za jak dlouho to zkusit znovu, odsune se další dotaz na ten host o tu dobu — a hláška to řekne i obsluze.
 - **Opakuje se jen to, co má smysl opakovat.** Výpadek spojení, `429` a chyby 5xx ano; `403` a `404` ne. Ptát se podruhé webu, který nás právě odmítl, je jistý způsob, jak si blokaci prodloužit.
@@ -123,6 +124,13 @@ U `eurogirlsescort.cz` robots.txt nezakazuje žádnou cestu a předepisuje `Craw
 ---
 
 ## Přidání dalšího webu
+
+**Začněte v Dílně** (Administrace → Scraper → Dílna). Stáhne jednu stránku a odpoví na to, co se jinak zjišťuje opakovanými zkušebními běhy:
+
+- **Prozkoumat web** — je robots.txt čitelný, existuje sitemapa, jaké skupiny podobných odkazů na stránce jsou (s hotovým návrhem `detail_link_selector` i `detail_url_pattern`) a co web zveřejňuje sám o sobě.
+- **Vyzkoušet selektory** — projde všechna mapování polí na zadané adrese a ukáže vedle sebe, **co selektor našel** a **co z toho zbylo po transformacích**. Selektor, který nenašel nic, vypadá jinak než selektor, který našel správně a hodnotu pak zahodila transformace — dřív to obojí vypadalo jako prázdné pole.
+
+Nic z toho se neukládá a nevzniká z toho běh.
 
 1. **Administrace → Scraper → Zdroje → Nový.** Vyplňte adresu a nastavení:
 
@@ -147,6 +155,16 @@ U `eurogirlsescort.cz` robots.txt nezakazuje žádnou cestu a předepisuje `Craw
    Klíče z tabulky mají ve formuláři vlastní pole; syrový editor `Nastavení` je pro to ostatní.
 
 2. **Mapování polí** — u zdroje záložka *Mapování polí*. Jeden řádek = jeden selektor a naše pole.
+
+   Selektor je CSS, nebo XPath — a navíc:
+
+   | Zápis | Co čte |
+   |---|---|
+   | `jsonld:name` | JSON-LD, které web publikuje pro vyhledávače |
+   | `jsonld:address.addressLocality` | vnořená hodnota; do hloubky se jde tečkou |
+   | `meta:og:title` | OpenGraph a ostatní meta značky |
+
+   Tohle je **jediný zápis, který nezávisí na vzhledu stránky**: web ta data udržuje záměrně a přežijí i redesign, na rozdíl od selektoru. Weby, které publikují dost, jdou nastavit bez jediného selektoru — včetně galerie, protože `image_selector` přijímá stejný zápis (`jsonld:image`). Co konkrétní stránka nabízí, vypíše Dílna.
 
 3. **Vyzkoušejte** `--dry-run --url=…` a selektory dolaďte.
 

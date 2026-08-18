@@ -145,15 +145,18 @@ class GenericAdapter implements SourceAdapter
     /** @return array<int, string> */
     protected function attributes(string $html, string $selector, string $attribute, string $baseUrl): array
     {
-        $xpath = $this->extractor->xpathFor($html);
-
         $map = new \App\Models\ScrapeFieldMap([
             'selector' => $selector,
             'extract' => 'attr:' . $attribute,
             'multiple' => true,
         ]);
 
-        $values = $this->extractor->select($xpath, $map);
+        // `image_selector` accepts the same notation as a field map, so a site
+        // that publishes its gallery as JSON-LD needs no selector at all:
+        // `jsonld:image` is the whole configuration.
+        $values = \App\Services\Scraping\StructuredData::handles($selector)
+            ? $this->extractor->selectStructured($html, $map)
+            : $this->extractor->select($this->extractor->xpathFor($html), $map);
 
         if (! is_array($values)) {
             return [];

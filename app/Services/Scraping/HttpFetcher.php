@@ -27,8 +27,11 @@ class HttpFetcher
 
     private array $robots = [];
 
-    public function __construct(private readonly bool $sleep = true)
+    private readonly PageEncoding $encoding;
+
+    public function __construct(private readonly bool $sleep = true, ?PageEncoding $encoding = null)
     {
+        $this->encoding = $encoding ?? new PageEncoding();
     }
 
     public function robotsFor(ScrapeSource $source): RobotsTxt
@@ -65,7 +68,7 @@ class HttpFetcher
 
         $this->guard($source, $response, $url);
 
-        return $response->body();
+        return $this->text($response);
     }
 
     /**
@@ -99,7 +102,7 @@ class HttpFetcher
 
         $this->guard($source, $response, $url);
 
-        $body = $response->body();
+        $body = $this->text($response);
         $hash = sha1($body);
 
         // The site answered 200 but sent us exactly what we already had.
@@ -120,6 +123,19 @@ class HttpFetcher
         );
 
         return $unchanged ? null : $body;
+    }
+
+    /**
+     * A response's body as UTF-8 text.
+     *
+     * Everything downstream assumes UTF-8 — the DOM parser is even told so
+     * outright — so a page in windows-1250 did not fail, it quietly wrote
+     * mangled diacritics into a profile. Converting here means no caller can
+     * forget, exactly as with the rate limit.
+     */
+    private function text(Response $response): string
+    {
+        return $this->encoding->toUtf8($response->body(), $response->header('Content-Type') ?: null);
     }
 
     /** The request builder every call shares: headers, timeout, proxy. */

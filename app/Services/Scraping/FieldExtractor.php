@@ -22,9 +22,14 @@ class FieldExtractor
 {
     private CssSelectorConverter $css;
 
-    public function __construct(private readonly Transformers $transformers = new Transformers())
-    {
+    private readonly StructuredData $structured;
+
+    public function __construct(
+        private readonly Transformers $transformers = new Transformers(),
+        ?StructuredData $structured = null,
+    ) {
         $this->css = new CssSelectorConverter();
+        $this->structured = $structured ?? new StructuredData();
     }
 
     /**
@@ -40,7 +45,11 @@ class FieldExtractor
         $missing = [];
 
         foreach ($fieldMaps as $map) {
-            $raw = $this->select($xpath, $map);
+            // A `jsonld:` or `meta:` selector reads what the site publishes
+            // about itself rather than guessing at its markup.
+            $raw = StructuredData::handles($map->selector)
+                ? $this->selectStructured($html, $map)
+                : $this->select($xpath, $map);
 
             $value = $this->transformers->apply($raw, $map->transforms ?? [], $context);
 
@@ -58,6 +67,34 @@ class FieldExtractor
         }
 
         return ['values' => $values, 'missing' => $missing];
+    }
+
+    /**
+     * One value from the page's structured data.
+     *
+     * The `multiple` flag means the same thing here as for a CSS selector, so
+     * a site that lists one language and a site that lists five both land in
+     * the shape the field expects.
+     */
+    public function selectStructured(string $html, ScrapeFieldMap $map): mixed
+    {
+        $value = $this->structured->value($html, $map->selector);
+
+        if ($map->extract === ScrapeFieldMap::EXTRACT_COUNT) {
+            return is_array($value) ? count($value) : ($value === null ? 0 : 1);
+        }
+
+        if ($map->multiple) {
+            return $value === null ? [] : (array) $value;
+        }
+
+        return is_array($value) ? ($value[0] ?? null) : $value;
+    }
+
+    /** Which structured-data keys a page offers, for the admin to pick from. */
+    public function structuredKeys(string $html): array
+    {
+        return $this->structured->availableKeys($html);
     }
 
     /** Run one selector and return text, html, an attribute or a count. */
