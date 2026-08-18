@@ -16,13 +16,13 @@ class StripeGateway
 {
     public static function isConfigured(): bool
     {
-        return filled(config('services.stripe.secret'));
+        return filled(self::secret());
     }
 
     /** Whether an incoming webhook can be verified. */
     public static function canVerifyWebhooks(): bool
     {
-        return filled(config('services.stripe.webhook_secret'));
+        return filled(self::webhookSecret());
     }
 
     public static function client(): ?StripeClient
@@ -31,7 +31,39 @@ class StripeGateway
             return null;
         }
 
-        return new StripeClient((string) config('services.stripe.secret'));
+        return new StripeClient((string) self::secret());
+    }
+
+    /**
+     * The secret key, from the admin if it is set there.
+     *
+     * The environment file stays the fallback and the deployment default; what
+     * changed is that correcting a key no longer needs shell access. The
+     * person who notices that payments stopped is rarely the person who can
+     * edit `.env`.
+     */
+    public static function secret(): ?string
+    {
+        return self::fromAdmin('secret_key') ?? config('services.stripe.secret');
+    }
+
+    public static function webhookSecret(): ?string
+    {
+        return self::fromAdmin('webhook_secret') ?? config('services.stripe.webhook_secret');
+    }
+
+    private static function fromAdmin(string $key): ?string
+    {
+        try {
+            $method = \App\Services\Payments\PaymentMethods::find(\App\Models\PaymentMethod::CODE_STRIPE);
+        } catch (\Throwable) {
+            // Před migracemi tabulka neexistuje; konfigurace ze souboru platí.
+            return null;
+        }
+
+        $value = $method?->setting($key);
+
+        return is_string($value) && trim($value) !== '' ? trim($value) : null;
     }
 
     /**

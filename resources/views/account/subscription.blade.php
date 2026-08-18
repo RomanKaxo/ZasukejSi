@@ -47,6 +47,39 @@
         @endif
     </div>
 
+    {{-- Objednávka čekající na peníze. Dokud nedorazí, je jediné, co
+         kupující potřebuje, číslo účtu a variabilní symbol. --}}
+    @if (!empty($awaitingPayment) && !empty($transferInstructions))
+        <div class="mb-8 rounded-xl border-2 p-5" style="border-color:#F0C36D;background:#FFF9EC;font-family:'Poppins',sans-serif;">
+            <h2 class="mb-2 text-lg font-semibold" style="color:#8A6100;">{{ __('front.payments.awaiting_transfer') }}</h2>
+
+            <p class="mb-4 text-[15px] text-[#5C5C5C]">{{ __('front.payments.awaiting_transfer_hint') }}</p>
+
+            <dl class="grid gap-2 text-[15px] sm:grid-cols-2">
+                @foreach ([
+                    'holder' => __('front.payments.account_holder'),
+                    'account_number' => __('front.payments.account_number'),
+                    'iban' => 'IBAN',
+                    'swift' => 'SWIFT / BIC',
+                    'bank' => __('front.payments.bank'),
+                    'amount' => __('front.payments.amount'),
+                    'reference' => __('front.payments.reference'),
+                ] as $key => $label)
+                    @if (!empty($transferInstructions[$key]))
+                        <div class="flex justify-between gap-3 border-b border-[#F0E2C0] py-1">
+                            <dt class="text-[#7A6A45]">{{ $label }}</dt>
+                            <dd class="font-semibold" style="color:#5C2D62;">{{ $transferInstructions[$key] }}</dd>
+                        </div>
+                    @endif
+                @endforeach
+            </dl>
+
+            @if (!empty($transferInstructions['note']))
+                <p class="mt-4 text-sm text-[#5C5C5C]">{{ $transferInstructions['note'] }}</p>
+            @endif
+        </div>
+    @endif
+
     <!-- Plans -->
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         @forelse ($types as $type)
@@ -76,8 +109,27 @@
                     <div class="mb-6 flex-1"></div>
                 @endif
 
-                <form method="POST" action="{{ route('account.subscription.checkout', $type) }}">
+                <form method="POST" action="{{ route('account.subscription.checkout', $type) }}" class="space-y-3">
                     @csrf
+
+                    {{-- Výběr se ukáže, jen když je z čeho vybírat. Jedna
+                         metoda znamená žádné rozhodování a rozbalovátko s
+                         jedinou položkou je jen práce navíc. --}}
+                    @if (!empty($paymentMethods) && count($paymentMethods) > 1)
+                        <label class="block text-left text-sm text-[#505050]">
+                            {{ __('front.payments.choose_method') }}
+                            <select name="payment_method" class="mt-1 w-full rounded-lg border-2 border-gray-200 px-3 py-2 text-sm">
+                                @foreach ($paymentMethods as $method)
+                                    <option value="{{ $method->code }}">
+                                        {{ \App\Services\Payments\PaymentMethods::label($method->code) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </label>
+                    @elseif (!empty($paymentMethods) && count($paymentMethods) === 1)
+                        <input type="hidden" name="payment_method" value="{{ $paymentMethods->first()->code }}">
+                    @endif
+
                     <button type="submit" class="btn-gold w-full text-center">
                         {{ __('front.subscription.buy_button') }}
                     </button>

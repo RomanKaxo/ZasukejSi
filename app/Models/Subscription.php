@@ -22,6 +22,10 @@ class Subscription extends Model
         'expiring_notified_at',
         'notes',
         'metadata',
+        'payment_method',
+        'payment_reference',
+        'paid_at',
+        'payment_confirmed_by',
     ];
 
     protected function casts(): array
@@ -30,6 +34,7 @@ class Subscription extends Model
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'cancelled_at' => 'datetime',
+            'paid_at' => 'datetime',
             'expiring_notified_at' => 'datetime',
             'auto_renew' => 'boolean',
             'metadata' => 'array',
@@ -200,12 +205,14 @@ class Subscription extends Model
         static::created(function (Subscription $subscription) {
             $subscription->logAction('created', [
                 'subscription_type' => $subscription->subscriptionType->name,
-                'starts_at' => $subscription->starts_at->toDateTimeString(),
-                'ends_at' => $subscription->ends_at->toDateTimeString(),
+                'starts_at' => $subscription->starts_at?->toDateTimeString(),
+                'ends_at' => $subscription->ends_at?->toDateTimeString(),
             ]);
 
-            // Notify profile owner about new subscription
-            if ($subscription->profile) {
+            // Objednávka zaplacená převodem ještě neběží a data nemá. Zpráva
+            // „vaše předplatné platí do —" by byla nepravdivá; ta správná
+            // přijde, až se platba potvrdí.
+            if ($subscription->profile && $subscription->ends_at !== null) {
                 Notification::createForUser(
                     $subscription->profile->user_id,
                     __('notifications.subscription.created_title'),

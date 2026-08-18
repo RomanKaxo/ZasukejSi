@@ -853,4 +853,16 @@ return [
         'notification_archived' => 'Oznámení archivováno',
         'notification_deleted' => 'Oznámení smazáno',
     ],
+    'payments' => [
+        'choose_method' => 'Způsob platby',
+        'awaiting_transfer' => 'Čekáme na vaši platbu',
+        'awaiting_transfer_hint' => 'Objednávka je založená. Jakmile peníze dorazí, předplatné aktivujeme a platnost začne v ten okamžik — ne dnem objednávky.',
+        'transfer_created' => 'Objednávka je založená. Níže najdete údaje k platbě.',
+        'account_holder' => 'Majitel účtu',
+        'account_number' => 'Číslo účtu',
+        'bank' => 'Banka',
+        'amount' => 'Částka',
+        'reference' => 'Variabilní symbol',
+    ],
+
 ];

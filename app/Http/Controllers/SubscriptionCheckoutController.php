@@ -31,7 +31,35 @@ class SubscriptionCheckoutController extends \Illuminate\Routing\Controller
                 ->first()
             : null;
 
-        return view('account.subscription', compact('types', 'activeSubscription'));
+        $paymentMethods = \App\Services\Payments\PaymentMethods::available();
+
+        // Objednávka, která čeká na peníze. Do doby, než dorazí, je jediné,
+        // co kupující chce vidět, číslo účtu a variabilní symbol — ne další
+        // nabídka tarifů.
+        $awaitingPayment = $profile
+            ? $profile->subscriptions()
+                ->where('status', Subscription::STATUS_PENDING)
+                ->where('payment_method', \App\Models\PaymentMethod::CODE_BANK_TRANSFER)
+                ->whereNull('paid_at')
+                ->latest()
+                ->first()
+            : null;
+
+        $transferInstructions = $awaitingPayment
+            ? app(\App\Services\Payments\BankTransfer::class)->instructions(
+                $awaitingPayment,
+                (float) ($awaitingPayment->type->price ?? 0),
+                'CZK',
+            )
+            : null;
+
+        return view('account.subscription', compact(
+            'types',
+            'activeSubscription',
+            'paymentMethods',
+            'awaitingPayment',
+            'transferInstructions',
+        ));
     }
 
     public function checkout(Request $request, SubscriptionType $subscriptionType)
@@ -40,6 +68,16 @@ class SubscriptionCheckoutController extends \Illuminate\Routing\Controller
         $profile = $user->profile;
 
         abort_unless($profile, 403, __('front.subscription.no_profile'));
+
+        // Bankovní převod: objednávka vznikne, peníze dorazí za pár dní.
+        // Aktivace až po potvrzení v administraci — jinak by web vydával
+        // placený produkt na to, že někdo klikl na tlačítko.
+        $chosen = (string) $request->input('payment_method', '');
+
+        if ($chosen === \App\Models\PaymentMethod::CODE_BANK_TRANSFER
+            && \App\Services\Payments\PaymentMethods::isAvailable($chosen)) {
+            return $this->awaitBankTransfer($profile, $subscriptionType);
+        }
 
         // No gateway: finish the order without taking money, so the flow can be
         // walked end to end. Same rule as the membership checkout.
@@ -83,6 +121,35 @@ class SubscriptionCheckoutController extends \Illuminate\Routing\Controller
         ]);
 
         return redirect($session->url);
+    }
+
+    /**
+     * Create the order and hand over the payment details.
+     *
+     * Nothing is activated: the subscription is `pending` until somebody
+     * confirms the money arrived. The variable symbol is what turns an
+     * anonymous amount on a bank statement back into this order.
+     */
+    private function awaitBankTransfer($profile, SubscriptionType $subscriptionType)
+    {
+        $transfer = app(\App\Services\Payments\BankTransfer::class);
+
+        $subscription = Subscription::create([
+            'profile_id' => $profile->id,
+            'subscription_type_id' => $subscriptionType->id,
+            'status' => Subscription::STATUS_PENDING,
+            'payment_method' => \App\Models\PaymentMethod::CODE_BANK_TRANSFER,
+            'starts_at' => null,
+            'ends_at' => null,
+        ]);
+
+        $subscription->forceFill([
+            'payment_reference' => $transfer->reference($subscription),
+        ])->save();
+
+        return redirect()
+            ->route('account.subscription.index')
+            ->with('success', __('front.payments.transfer_created'));
     }
 
     /**
@@ -149,7 +216,7 @@ class SubscriptionCheckoutController extends \Illuminate\Routing\Controller
     {
         $payload = $request->getContent();
         $signature = $request->header('Stripe-Signature');
-        $webhookSecret = config('services.stripe.webhook_secret');
+        $webhookSecret = \App\Services\Payments\StripeGateway::webhookSecret();
 
         try {
             $event = Webhook::constructEvent($payload, $signature, $webhookSecret);

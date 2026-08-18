@@ -839,4 +839,16 @@ return [
         'notification_archived' => 'Notification archived',
         'notification_deleted' => 'Notification deleted',
     ],
+    'payments' => [
+        'choose_method' => 'Payment method',
+        'awaiting_transfer' => 'Waiting for your payment',
+        'awaiting_transfer_hint' => 'The order exists. Once the money arrives we activate the subscription, and it starts from that moment — not from the day you ordered.',
+        'transfer_created' => 'The order is created. Payment details are below.',
+        'account_holder' => 'Account holder',
+        'account_number' => 'Account number',
+        'bank' => 'Bank',
+        'amount' => 'Amount',
+        'reference' => 'Reference',
+    ],
+
 ];

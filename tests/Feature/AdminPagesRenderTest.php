@@ -61,6 +61,7 @@ class AdminPagesRenderTest extends TestCase
             'vekova-brana' => ['/admin/manage-age-gate'],
             'zobrazeni-profilu' => ['/admin/profile-views'],
             'nastaveni' => ['/admin/manage-settings'],
+            'platebni-metody' => ['/admin/manage-payment-methods'],
             'scraper-dilna' => ['/admin/scraper-workbench'],
         ];
     }

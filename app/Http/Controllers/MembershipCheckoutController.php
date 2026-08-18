@@ -36,10 +36,29 @@ class MembershipCheckoutController extends \Illuminate\Routing\Controller
     {
         $userId = $userId ?? Auth::id();
 
+        $awaiting = $userId
+            ? MemberSubscription::query()
+                ->where('user_id', $userId)
+                ->where('status', MemberSubscription::STATUS_PENDING)
+                ->where('payment_method', \App\Models\PaymentMethod::CODE_BANK_TRANSFER)
+                ->whereNull('paid_at')
+                ->latest()
+                ->first()
+            : null;
+
         return [
             'types' => SubscriptionType::active()->forMembers()->ordered()->get(),
             'active' => $userId
                 ? MemberSubscription::forUser($userId)->active()->latest('ends_at')->first()
+                : null,
+            'paymentMethods' => \App\Services\Payments\PaymentMethods::available(),
+            'awaitingPayment' => $awaiting,
+            'transferInstructions' => $awaiting
+                ? app(\App\Services\Payments\BankTransfer::class)->instructions(
+                    $awaiting,
+                    (float) ($awaiting->type->price ?? 0),
+                    'CZK',
+                )
                 : null,
         ];
     }
@@ -53,12 +72,49 @@ class MembershipCheckoutController extends \Illuminate\Routing\Controller
         return view('member.membership', self::membershipOptions());
     }
 
+    /**
+     * Create the order and hand over the payment details.
+     *
+     * Nothing is activated: the membership is `pending` until somebody
+     * confirms the money arrived.
+     */
+    private function awaitBankTransfer($user, SubscriptionType $subscriptionType)
+    {
+        $transfer = app(\App\Services\Payments\BankTransfer::class);
+
+        $membership = MemberSubscription::create([
+            'user_id' => $user->id,
+            'subscription_type_id' => $subscriptionType->id,
+            'status' => MemberSubscription::STATUS_PENDING,
+            'payment_method' => \App\Models\PaymentMethod::CODE_BANK_TRANSFER,
+            'starts_at' => null,
+            'ends_at' => null,
+        ]);
+
+        $membership->forceFill([
+            'payment_reference' => $transfer->reference($membership),
+        ])->save();
+
+        return redirect()
+            ->route('account.member.membership.index')
+            ->with('success', __('front.payments.transfer_created'));
+    }
+
     public function checkout(Request $request, SubscriptionType $subscriptionType)
     {
         $user = Auth::user();
 
         abort_unless($subscriptionType->isForMembers(), 404);
         abort_unless($subscriptionType->is_active, 404);
+
+        // Bankovní převod: objednávka vznikne teď, peníze dorazí za pár dní.
+        // Aktivuje se až po potvrzení v administraci.
+        $chosen = (string) $request->input('payment_method', '');
+
+        if ($chosen === \App\Models\PaymentMethod::CODE_BANK_TRANSFER
+            && \App\Services\Payments\PaymentMethods::isAvailable($chosen)) {
+            return $this->awaitBankTransfer($user, $subscriptionType);
+        }
 
         // No gateway: finish the order without taking money, so the flow can be
         // walked end to end. The subscription is marked as manual, and the

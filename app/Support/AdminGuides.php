@@ -381,6 +381,23 @@ class AdminGuides
                 'intro' => 'Měny a jejich formátování. Základní měna se používá tam, kde tarif nemá cenu ve zvolené měně.',
             ],
 
+            'manage-payment-methods' => [
+                'intro' => 'Čím se dá u nás zaplatit. Všechno tohle bylo dřív v souboru na serveru, takže zapnout platbu nebo opravit klíč znamenalo nasazení a člověka s přístupem do konzole.',
+                'can' => [
+                    'Zapnout nebo vypnout platbu kartou i převodem.',
+                    'Zadat klíče Stripe — mají přednost před tím, co je v souboru na serveru.',
+                    'Vyplnit bankovní údaje a doplňující pokyny, které kupující uvidí u platby.',
+                ],
+                'cannot' => [
+                    'Nabídnout metodu bez údajů. Zapnutá metoda bez čísla účtu je cesta, která nikam nevede — stránka to po uložení řekne.',
+                    'Aktivovat předplatné placené převodem. To potvrzuje člověk u konkrétní objednávky, až peníze dorazí.',
+                ],
+                'links' => [
+                    'Členská předplatná' => 'member-subscriptions',
+                    'Typy předplatného' => 'subscription-types',
+                ],
+            ],
+
             'manage-settings' => [
                 'intro' => 'Nastavení, která se mění bez nasazení: škála hodnocení, tlačítko v patičce, zámek u „Nejlépe hodnocených dívek", platby a simulovaný online stav.',
                 'cannot' => [

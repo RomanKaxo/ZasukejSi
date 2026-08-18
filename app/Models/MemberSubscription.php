@@ -29,6 +29,10 @@ class MemberSubscription extends Model
         'expiring_notified_at',
         'notes',
         'metadata',
+        'payment_method',
+        'payment_reference',
+        'paid_at',
+        'payment_confirmed_by',
     ];
 
     protected function casts(): array
@@ -37,6 +41,7 @@ class MemberSubscription extends Model
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'cancelled_at' => 'datetime',
+            'paid_at' => 'datetime',
             'expiring_notified_at' => 'datetime',
             'auto_renew' => 'boolean',
             'metadata' => 'array',
@@ -164,6 +169,13 @@ class MemberSubscription extends Model
     protected static function booted(): void
     {
         static::created(function (MemberSubscription $subscription) {
+            // Objednávka zaplacená převodem ještě neběží a datum konce nemá.
+            // Zpráva „členství platí do —" by byla nepravdivá; ta správná
+            // přijde, až se platba potvrdí.
+            if ($subscription->ends_at === null) {
+                return;
+            }
+
             Notification::createForUser(
                 $subscription->user_id,
                 __('notifications.membership.created_title'),

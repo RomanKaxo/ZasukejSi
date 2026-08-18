@@ -80,6 +80,28 @@ class MemberSubscriptionsTable
                     ->query(fn ($query) => $query->expiring(7)),
             ])
             ->recordActions([
+                // Bankovní převod dorazí za pár dní a do té doby nikdo neví,
+                // jestli přišel. Tohle je ten okamžik, kdy to člověk ověřil.
+                // Platnost se počítá od potvrzení, ne od objednávky: kdo
+                // zaplatil o tři dny později, má dostat celý měsíc.
+                Action::make('confirmPayment')
+                    ->label('Potvrdit platbu')
+                    ->icon('heroicon-o-banknotes')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Peníze dorazily?')
+                    ->modalDescription(fn ($record) => 'Variabilní symbol: ' . ($record->payment_reference ?: 'neuveden')
+                        . '. Předplatné se aktivuje teď a poběží od tohoto okamžiku.')
+                    ->modalSubmitActionLabel('Potvrdit')
+                    ->visible(fn ($record) => app(\App\Services\Payments\BankTransfer::class)->isAwaitingPayment($record))
+                    ->action(function ($record) {
+                        app(\App\Services\Payments\BankTransfer::class)->confirm($record, auth()->id());
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Platba potvrzena, předplatné běží')
+                            ->success()
+                            ->send();
+                    }),
                 EditAction::make(),
 
                 // Same verbs the MemberSubscription model exposes, so the admin
