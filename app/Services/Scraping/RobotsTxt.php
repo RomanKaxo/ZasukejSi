@@ -34,9 +34,7 @@ class RobotsTxt
         $url = rtrim($baseUrl, '/') . '/robots.txt';
 
         try {
-            $response = Http::withHeaders(['User-Agent' => $userAgent])
-                ->timeout($timeout)
-                ->get($url);
+            $response = self::request($userAgent, $timeout)->get($url);
         } catch (Throwable) {
             // A robots.txt we cannot reach is not permission to ignore it, but
             // it is also not a reason to fail the run; treat it as empty.
@@ -48,6 +46,34 @@ class RobotsTxt
         }
 
         return self::parse($response->body(), $userAgent);
+    }
+
+    /**
+     * How robots.txt is fetched.
+     *
+     * Callable so the fetcher can hand in a request that already carries the
+     * source's settings. Without that, robots.txt was the one request in the
+     * whole scraper that ignored the proxy — which matters exactly when the
+     * proxy is the only reason anything works at all, and would have failed
+     * silently: an unreachable robots.txt reads as „no rules".
+     *
+     * @var null|\Closure(string, int): \Illuminate\Http\Client\PendingRequest
+     */
+    private static ?\Closure $requestFactory = null;
+
+    /** @param \Closure(string, int): \Illuminate\Http\Client\PendingRequest $factory */
+    public static function using(\Closure $factory): void
+    {
+        self::$requestFactory = $factory;
+    }
+
+    private static function request(string $userAgent, int $timeout): \Illuminate\Http\Client\PendingRequest
+    {
+        if (self::$requestFactory !== null) {
+            return (self::$requestFactory)($userAgent, $timeout);
+        }
+
+        return Http::withHeaders(['User-Agent' => $userAgent])->timeout($timeout);
     }
 
     public static function parse(string $body, string $userAgent): self

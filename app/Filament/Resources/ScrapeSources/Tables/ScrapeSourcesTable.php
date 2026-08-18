@@ -198,6 +198,59 @@ class ScrapeSourcesTable
                             ->send();
                     }),
 
+                // Když web stojí za kontrolou prohlížeče, je renderer jediná
+                // cesta, která nevyžaduje domluvu s provozovatelem. Ověřit ho
+                // musí jít jedním klikem — ne spuštěním celé sklizně, u které
+                // se pak hádá, jestli selhal renderer, nebo selektory.
+                Action::make('testRenderer')
+                    ->label('Otestovat renderer')
+                    ->icon('heroicon-o-globe-alt')
+                    ->color('gray')
+                    ->visible(fn (?ScrapeSource $record) => filled($record?->setting('render_endpoint')))
+                    ->form([
+                        TextInput::make('url')
+                            ->label('Adresa k vykreslení')
+                            ->url()
+                            ->helperText('Prázdné = domovská adresa zdroje.'),
+                    ])
+                    ->action(function (ScrapeSource $record, array $data) {
+                        $url = $data['url'] ?: $record->base_url;
+
+                        try {
+                            $html = app(\App\Services\Scraping\HttpFetcher::class)->get($record, $url);
+                        } catch (Throwable $e) {
+                            Notification::make()
+                                ->title('Renderer neuspěl')
+                                ->body($e->getMessage() . ' Zkontrolujte adresu služby v nastavení `render_endpoint`.')
+                                ->danger()
+                                ->persistent()
+                                ->send();
+
+                            return;
+                        }
+
+                        $embedded = new \App\Services\Scraping\EmbeddedJson();
+                        $text = mb_strlen(trim(strip_tags($html)));
+
+                        // Renderer, který vrátí tutéž prázdnou skořápku, je
+                        // horší než žádný: tváří se, že funguje.
+                        $stillEmpty = $embedded->looksClientRendered($html);
+
+                        Notification::make()
+                            ->title($stillEmpty ? 'Renderer odpověděl, ale stránka je pořád prázdná' : 'Renderer funguje')
+                            ->body(sprintf(
+                                'Staženo %s znaků, z toho %s znaků textu.%s',
+                                number_format(mb_strlen($html), 0, ',', ' '),
+                                number_format($text, 0, ',', ' '),
+                                $stillEmpty
+                                    ? ' Vypadá to, že služba JavaScript nespustila — obsah v HTML není. Zkuste u ní zapnout čekání na vykreslení.'
+                                    : ' Teď má smysl vyzkoušet selektory v Dílně.',
+                            ))
+                            ->color($stillEmpty ? 'warning' : 'success')
+                            ->persistent()
+                            ->send();
+                    }),
+
                 // A one-off run from the admin, deliberately capped: this is
                 // for checking the selectors, not for harvesting a whole site.
                 Action::make('testRun')

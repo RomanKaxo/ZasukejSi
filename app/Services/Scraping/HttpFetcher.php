@@ -38,6 +38,14 @@ class HttpFetcher
     {
         $host = parse_url($source->base_url, PHP_URL_HOST) ?: $source->base_url;
 
+        // robots.txt se stahuje stejnou cestou jako všechno ostatní, tedy
+        // včetně hlaviček a proxy zdroje. Dřív si dělal vlastní dotaz jen s
+        // User-Agentem — jediný požadavek v celém scraperu, který proxy
+        // ignoroval, a to zrovna v situaci, kdy je proxy jediný důvod, proč
+        // vůbec něco funguje. Selhalo by to navíc potichu: nedostupný
+        // robots.txt se čte jako „žádná pravidla".
+        RobotsTxt::using(fn (string $agent, int $timeout) => $this->request($source)->timeout($timeout));
+
         return $this->robots[$host] ??= RobotsTxt::fetch(
             $source->base_url,
             (string) $source->setting('user_agent'),
