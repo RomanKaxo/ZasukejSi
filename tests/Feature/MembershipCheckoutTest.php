@@ -48,7 +48,9 @@ class MembershipCheckoutTest extends TestCase
         $response = $this->actingAs($member)
             ->post(route('account.member.membership.checkout', $plan));
 
-        $response->assertRedirect(route('account.member.dashboard'));
+        // Na stránku předplatného, ne do nastavení účtu: kdo si právě
+        // koupil členství, nemá skončit v nastavení hesla.
+        $response->assertRedirect(route('account.member.membership.index'));
         $response->assertSessionHas('status', __('front.membership.activated_without_payment'));
 
         $subscription = \App\Models\MemberSubscription::forUser($member->id)->active()->firstOrFail();

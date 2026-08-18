@@ -97,7 +97,9 @@ class MembershipCheckoutController extends \Illuminate\Routing\Controller
 
         return redirect()
             ->route('account.member.membership.index')
-            ->with('success', __('front.payments.transfer_created'));
+            // Klíč `status`, protože ten stránka vypisuje. S `success` se
+            // zpráva ztratila a objednávka vypadala, že se nestala.
+            ->with('status', __('front.payments.transfer_created'));
     }
 
     public function checkout(Request $request, SubscriptionType $subscriptionType)
@@ -224,8 +226,15 @@ class MembershipCheckoutController extends \Illuminate\Routing\Controller
             'subscription_type_id' => $subscriptionType->id,
         ]);
 
+        // Na stránku předplatného, ne do nastavení účtu.
+        //
+        // Všechny tři cesty tudy končily na nástěnce člena, která se v menu
+        // jmenuje „Základní nastavení" — takže kdo si právě koupil členství,
+        // se ocitl v nastavení hesla. A zpráva se navíc nezobrazila vůbec:
+        // nástěnka vypisuje jen „nastavení uloženo" a „heslo změněno", takže
+        // všechno ostatní zmizelo. Člověk zaplatil a nedostal ani potvrzení.
         return redirect()
-            ->route('account.member.dashboard')
+            ->route('account.member.membership.index')
             ->with('status', __('front.membership.activated_without_payment'));
     }
 
@@ -268,14 +277,14 @@ class MembershipCheckoutController extends \Illuminate\Routing\Controller
         };
 
         return redirect()
-            ->route('account.member.dashboard')
+            ->route('account.member.membership.index')
             ->with($paid ? 'status' : 'error', $status);
     }
 
     public function cancel()
     {
         return redirect()
-            ->route('account.member.dashboard')
+            ->route('account.member.membership.index')
             ->with('status', __('front.membership.checkout_cancelled'));
     }
 

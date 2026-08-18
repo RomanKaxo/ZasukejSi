@@ -36,6 +36,31 @@
         </div>
     @endif
 
+    {{-- Cokoli dalšího, co sem někdo pošle.
+         Vypisovaly se jen dvě konkrétní hlášky a všechno ostatní se tiše
+         zahodilo — takže zpráva o zaplaceném členství sem dorazila a nikdo ji
+         nikdy neviděl. Stránka, které se pošle zpráva, ji má ukázat. --}}
+    @if (session('status') && ! in_array(session('status'), ['settings-updated', 'password-updated'], true))
+        <div class="alert alert-success flex items-center justify-between mb-4 md:mb-6">
+            <div class="flex items-center font-semibold">
+                <x-icons name="bell" class="w-5 h-5 mr-2.5" />
+                <span>{{ session('status') }}</span>
+            </div>
+            <button type="button" class="flex items-center ml-2 text-gray-400 hover:text-gray-600"
+                onclick="this.parentElement.remove()">
+                <x-icons name="cross" class="text-green-800 w-3 h-3" />
+            </button>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger flex items-center justify-between mb-4 md:mb-6">
+            <div class="flex items-center font-semibold">
+                <span>{{ session('error') }}</span>
+            </div>
+        </div>
+    @endif
+
     <!-- Moje udaje Section -->
     <div class="profile-form-narrow max-w-[400px] mx-auto">
         <h2 class="mb-4 text-left" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">

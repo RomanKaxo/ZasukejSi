@@ -149,7 +149,8 @@ class SubscriptionCheckoutController extends \Illuminate\Routing\Controller
 
         return redirect()
             ->route('account.subscription.index')
-            ->with('success', __('front.payments.transfer_created'));
+            // Klíč `status`, protože ten stránka vypisuje.
+            ->with('status', __('front.payments.transfer_created'));
     }
 
     /**
