@@ -151,6 +151,7 @@ Nic z toho se neukládá a nevzniká z toho běh.
    | `conditional_requests` | stahovat jen změněné stránky (výchozí zapnuto) |
    | `proxy` | jen pro weby blokující adresu serveru |
    | `auto_pause`, `failure_threshold` | po kolika selháních v řadě se zdroj sám pozastaví |
+   | `max_attempts` | kolikrát se zkusí stránka, která se nepodařila stáhnout |
 
    Klíče z tabulky mají ve formuláři vlastní pole; syrový editor `Nastavení` je pro to ostatní.
 
@@ -207,6 +208,35 @@ Položka je jednoznačná dvojicí zdroj + `external_id`. Další běh:
 - **zamítnutý nebo importovaný** — zůstává, další běh ho do fronty nevrátí
 
 U sitemapy se navíc dá nechat jen to, co web sám označil jako změněné od posledního úspěšného běhu (`sitemap_changed_only`). Z nočního běhu se tím stane pár profilů místo celého webu.
+
+### Když se stránka nepodaří stáhnout
+
+Selhání detailu se **ukládá jako položka ve stavu Chyba**, ne jako číslo v počitadle. Dřív byla adresa pryč a profil se vrátil, až když někdo prošel celý výpis znovu — u běhů, které se ptají jen na to, co se změnilo, klidně nikdy.
+
+Další pokus je vždycky s odstupem, který roste: **15 minut → 1 hodina → 6 hodin → 24 hodin**. Cokoli rozbilo první pokus je málokdy spravené o vteřinu později a ptát se hned znovu je způsob, jak už tak nemocný web dorazit. Po vyčerpání pokusů (`max_attempts`, výchozí 5) se zdroj sám ptát přestane; položka zůstane ve frontě s poznámkou.
+
+Jeden běh si vezme nejvýš 50 takových adres, aby se z běhu po týdenním výpadku nestala tisícistránková dohánička.
+
+V administraci u stažených položek je sloupec **Pokusy** (a kdy je další), filtry *Čeká na další pokus* a *Scraper to vzdal* a hromadná akce **Zkusit stáhnout hned**, když se ví, že web zase funguje. „Vrátit ke kontrole" počitadlo pokusů nuluje.
+
+Zkušebního běhu se to netýká: nic nezaznamenává a frontu s sebou netahá.
+
+### Fotky se neukládají dvakrát
+
+Opakovaný import přidával celou galerii znovu, takže profil po třetím importu nesl tři kopie každé fotky. Dvě pojistky, každá chytá něco jiného:
+
+- **shodná adresa** — nestojí ani jeden požadavek,
+- **shodný otisk obsahu** — chytne tutéž fotku na nové adrese po redesignu i dvakrát pod jiným jménem v jedné galerii.
+
+Fotky nahrané ručně se do porovnání zapojí taky: otisk se u nich dopočítá při prvním setkání a uloží.
+
+### Úklid
+
+```
+php artisan scrape:prune --dry-run
+```
+
+Maže mezipaměť adres, kterou nikdo nevyužije (výchozí starší než 60 dní), a dokončené běhy starší než 90 dní. **Stažené položky ani profily nemaže nikdy** — to je sklizeň, ne účetnictví. Plánováno na pondělní noc.
 
 ### Když zdroj přestane fungovat
 

@@ -92,7 +92,13 @@ class ScrapeRunner
 
             $urls = isset($options['url'])
                 ? [$options['url']]
-                : $this->collectDetailUrls($source, $run, $options, $notify);
+                : array_values(array_unique(array_merge(
+                    // Failures first: a page that timed out is the one thing
+                    // we already know is missing, and a change-aware run will
+                    // not offer it again on its own.
+                    $this->retryUrls($source, $options, $notify),
+                    $this->collectDetailUrls($source, $run, $options, $notify),
+                )));
 
             $limit = (int) ($options['limit'] ?? 0);
 
@@ -132,6 +138,75 @@ class ScrapeRunner
         $run->save();
 
         return $run;
+    }
+
+    /**
+     * Addresses of pages that failed and are due for another attempt.
+     *
+     * @param  array{limit?: int, pages?: int, url?: string, dry_run?: bool}  $options
+     * @return array<int, string>
+     */
+    private function retryUrls(ScrapeSource $source, array $options, Closure $notify): array
+    {
+        // A trial run is somebody checking one thing; it must not quietly drag
+        // the whole backlog along and spend the limit on it.
+        if ($options['dry_run'] ?? false) {
+            return [];
+        }
+
+        $items = ScrapeItem::query()
+            ->dueForRetry($source->id)
+            ->orderBy('retry_after')
+            ->limit(self::RETRY_BATCH)
+            ->get();
+
+        if ($items->isEmpty()) {
+            return [];
+        }
+
+        $notify('Znovu se zkusí dřív neúspěšných adres: ' . $items->count());
+
+        return $items->pluck('source_url')->all();
+    }
+
+    /**
+     * Record that a detail page could not be read, and when to try again.
+     *
+     * A failure used to leave nothing behind but a number in the counter, so
+     * the address was lost until somebody walked the whole listing again.
+     */
+    private function recordFailedDetail(ScrapeSource $source, ScrapeRun $run, string $url, string $externalId, string $error, Closure $notify): void
+    {
+        $item = ScrapeItem::firstOrNew([
+            'scrape_source_id' => $source->id,
+            'external_id' => $externalId,
+        ]);
+
+        $attempts = (int) $item->attempts + 1;
+        $maxAttempts = max(1, (int) $source->setting('max_attempts', 5));
+
+        $retryAt = $attempts >= $maxAttempts ? null : ScrapeItem::nextRetryAt($attempts);
+
+        $item->fill([
+            'scrape_run_id' => $run->id,
+            'source_url' => $url,
+            'attempts' => $attempts,
+            'last_attempt_at' => now(),
+            'retry_after' => $retryAt,
+            'error' => $error,
+        ]);
+
+        // An item somebody has already dealt with keeps its verdict: a page
+        // that stops responding must not undo an import or a rejection.
+        if (! in_array($item->status, [ScrapeItem::STATUS_IMPORTED, ScrapeItem::STATUS_REJECTED, ScrapeItem::STATUS_APPROVED], true)) {
+            $item->status = ScrapeItem::STATUS_FAILED;
+        }
+
+        $item->save();
+
+        $notify($retryAt === null
+            ? "Detail {$url} selhal už {$attempts}×, automaticky se zkoušet nebude. Zbývá ruční pokus."
+            : "Detail {$url} selhal ({$attempts}. pokus), znovu " . $retryAt->format('j. n. H:i') . '.');
     }
 
     /**
@@ -204,6 +279,15 @@ class ScrapeRunner
 
     /** Keeps one row from growing without bound on a large harvest. */
     private const LOG_LINE_LIMIT = 500;
+
+    /**
+     * How many failed pages one run picks up.
+     *
+     * Bounded so a source that broke for a week does not turn the next
+     * scheduled run into a thousand-page catch-up against a site that may
+     * still be unwell.
+     */
+    private const RETRY_BATCH = 50;
 
     /**
      * The extra data a notification carries, flattened to one readable line.
@@ -414,7 +498,12 @@ class ScrapeRunner
                 : $this->fetcher->get($source, $url);
         } catch (Throwable $e) {
             $run->increment('items_failed');
-            $notify("Detail {$url} selhal: " . $e->getMessage());
+
+            if ($dryRun) {
+                $notify("Detail {$url} selhal: " . $e->getMessage());
+            } else {
+                $this->recordFailedDetail($source, $run, $url, $externalId, $e->getMessage(), $notify);
+            }
 
             return;
         }
@@ -459,6 +548,10 @@ class ScrapeRunner
             'normalized' => $normalized,
             'images' => $images,
             'error' => $result['missing'] === [] ? null : 'Chybí povinná pole: ' . implode(', ', $result['missing']),
+            // The page answered, so whatever went wrong before is over.
+            'attempts' => 0,
+            'last_attempt_at' => now(),
+            'retry_after' => null,
         ];
 
         if ($existing) {

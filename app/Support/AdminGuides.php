@@ -182,6 +182,7 @@ class AdminGuides
                 ],
                 'cannot' => [
                     'Obejít robots.txt ani nastavenou prodlevu mezi dotazy.',
+                    'Ztratit adresu, která se nepodařila stáhnout — zařadí se k dalšímu pokusu, s rostoucím odstupem.',
                     'Držet v plánu zdroj, který opakovaně selhává — ten se sám pozastaví, aby web nedostával bota, kterého stejně odmítá.',
                 ],
                 'links' => [

@@ -195,6 +195,9 @@ class ScrapeSource extends Model
         'proxy' => null,
         'auto_pause' => true,
         'failure_threshold' => 3,
+
+        // Kolikrát se zkusí stránka, která se nepodařila stáhnout.
+        'max_attempts' => 5,
     ];
 
     public function fieldMaps(): HasMany

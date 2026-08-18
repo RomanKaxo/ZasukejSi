@@ -40,6 +40,9 @@ class ScrapeItem extends Model
         'duplicate_reason',
         'duplicate_checked_at',
         'unknown_values_at',
+        'attempts',
+        'last_attempt_at',
+        'retry_after',
     ];
 
     protected function casts(): array
@@ -51,7 +54,39 @@ class ScrapeItem extends Model
             'imported_at' => 'datetime',
             'duplicate_checked_at' => 'datetime',
             'unknown_values_at' => 'datetime',
+            'attempts' => 'integer',
+            'last_attempt_at' => 'datetime',
+            'retry_after' => 'datetime',
         ];
+    }
+
+    /**
+     * How long to wait before trying a failed page again.
+     *
+     * Growing, because whatever broke the first time — a timeout, a hiccup on
+     * their side, a rate limit — is rarely fixed a second later, and asking
+     * again straight away is how a struggling site gets pushed over.
+     *
+     * @var array<int, int> attempt number => minutes
+     */
+    public const RETRY_BACKOFF = [1 => 15, 2 => 60, 3 => 360, 4 => 1440];
+
+    /** When the next attempt is due, or null once we have stopped trying. */
+    public static function nextRetryAt(int $attempts): ?\Illuminate\Support\Carbon
+    {
+        $minutes = self::RETRY_BACKOFF[$attempts] ?? null;
+
+        return $minutes === null ? null : now()->addMinutes($minutes);
+    }
+
+    /** Failed pages whose next attempt has come due. */
+    public function scopeDueForRetry($query, int $sourceId)
+    {
+        return $query
+            ->where('scrape_source_id', $sourceId)
+            ->where('status', self::STATUS_FAILED)
+            ->whereNotNull('retry_after')
+            ->where('retry_after', '<=', now());
     }
 
     /**

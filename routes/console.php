@@ -33,3 +33,15 @@ Schedule::command('scrape:due')
     ->hourly()
     ->withoutOverlapping(120)
     ->onOneServer();
+
+/**
+ * Scraper bookkeeping nobody will read again.
+ *
+ * The URL cache keeps one row per address ever fetched and the runs keep a log
+ * of up to five hundred lines each; both grow forever and neither is anybody's
+ * data. Weekly is often enough — this is housekeeping, not a deadline.
+ */
+Schedule::command('scrape:prune')
+    ->weeklyOn(1, '03:40')
+    ->withoutOverlapping()
+    ->onOneServer();

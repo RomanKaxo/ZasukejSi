@@ -126,6 +126,22 @@ class ScrapeItemsTable
                     ->placeholder('—')
                     ->toggleable(),
 
+                // Kolikrát se stránka nepodařila stáhnout a kdy se zkusí zas.
+                // Bez toho vypadala položka, která čeká na další pokus, stejně
+                // jako ta, kterou scraper vzdal.
+                TextColumn::make('attempts')
+                    ->label('Pokusy')
+                    ->alignCenter()
+                    ->badge()
+                    ->color(fn (ScrapeItem $record) => $record->attempts > 0 ? 'warning' : 'gray')
+                    ->formatStateUsing(fn (ScrapeItem $record) => $record->attempts > 0 ? (string) $record->attempts : '—')
+                    ->description(fn (ScrapeItem $record) => match (true) {
+                        $record->attempts === 0 => null,
+                        $record->retry_after !== null => 'znovu ' . $record->retry_after->format('j. n. H:i'),
+                        default => 'automaticky už ne',
+                    })
+                    ->toggleable(),
+
                 TextColumn::make('updated_at')
                     ->label('Aktualizováno')
                     ->since()
@@ -152,6 +168,19 @@ class ScrapeItemsTable
                 Filter::make('possible_duplicates')
                     ->label('Možné duplicity')
                     ->query(fn ($query) => $query->possibleDuplicates()),
+
+                Filter::make('awaiting_retry')
+                    ->label('Čeká na další pokus')
+                    ->query(fn ($query) => $query
+                        ->where('status', ScrapeItem::STATUS_FAILED)
+                        ->whereNotNull('retry_after')),
+
+                Filter::make('given_up')
+                    ->label('Scraper to vzdal')
+                    ->query(fn ($query) => $query
+                        ->where('status', ScrapeItem::STATUS_FAILED)
+                        ->where('attempts', '>', 0)
+                        ->whereNull('retry_after')),
 
                 // A profile without a photo is worth catching before it exists.
                 Filter::make('without_images')
@@ -347,11 +376,38 @@ class ScrapeItemsTable
                                 $record->forceFill([
                                     'status' => ScrapeItem::STATUS_PENDING,
                                     'error' => null,
+                                    // Ruční zásah je nový začátek i pro
+                                    // automatické opakování: co scraper vzdal,
+                                    // dostane znovu plný počet pokusů.
+                                    'attempts' => 0,
+                                    'retry_after' => null,
                                 ])->save();
                             }
 
                             Notification::make()
                                 ->title('Vráceno ke kontrole: ' . $reset->count())
+                                ->success()
+                                ->send();
+                        }),
+
+                    // Nečekat na naplánovaný čas. Když se ví, že web zase
+                    // funguje, nemá smysl sedět do zítřka.
+                    BulkAction::make('retryNow')
+                        ->label('Zkusit stáhnout hned')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('gray')
+                        ->requiresConfirmation()
+                        ->modalDescription('Adresy se zařadí do nejbližšího běhu. Samotné stahování tím nezačne.')
+                        ->action(function (Collection $records) {
+                            $queued = $records->where('status', ScrapeItem::STATUS_FAILED);
+
+                            foreach ($queued as $record) {
+                                $record->forceFill(['retry_after' => now()->subMinute()])->save();
+                            }
+
+                            Notification::make()
+                                ->title('Zařazeno k dalšímu běhu: ' . $queued->count())
+                                ->body('Spusťte běh zdroje, nebo počkejte na naplánovaný.')
                                 ->success()
                                 ->send();
                         }),
