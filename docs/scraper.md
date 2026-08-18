@@ -144,9 +144,33 @@ Když něco projde, diagnostika rovnou vypíše `user_agent` a `headers` k ulož
 | **robots.txt projde**, stránka ne | Blokace je na té cestě. Zkuste jiný vstupní bod, nebo ověřte, že stránka existuje. |
 | **Kontrola prohlížeče** (Cloudflare „Just a moment") | Vyžaduje JavaScript a žádná kombinace hlaviček to neobejde. Zbývá `render_endpoint`, nebo proxy s adresou, které web důvěřuje. |
 
+### Pět cest, jak z webu dostat profily
+
+Seřazeno podle toho, jak dlouho vydrží — ne podle toho, jak rychle se zprovozní.
+
+**1. Domluva s provozovatelem.** Export, feed nebo povolení pro adresu serveru. Jediné, co nepřestane fungovat, až ochrana přitvrdí, a u katalogu obvykle levnější než scrapování.
+
+**2. Přímé stahování.** Funguje všude, kde není ochrana proti robotům. Nastavení viz níž.
+
+**3. Vložení uložené stránky.** U zdroje tlačítko **Vložit staženou stránku**: v prohlížeči otevřete profil, zkopírujte zdrojový kód a vložte ho. **Nepotřebuje to vůbec žádný požadavek** — takže to funguje i tam, kde web server odmítá. Selektory, věková pojistka, vlastní pravidla, kontrola duplicit i fronta ke kontrole jsou úplně stejné; liší se jen to, odkud HTML přišlo. Na desítky profilů je to práce, na deset ne.
+
+**4. Externí renderer** (`render_endpoint`). Adresa se pošle přes vykreslovací službu, která umí spustit JavaScript. Tlačítko **Otestovat renderer** ověří, jestli daná služba stránku opravdu vykreslí, nebo vrátí tutéž prázdnou skořápku.
+
+**5. Proxy** (`proxy` u zdroje). Stahuje se z jiné adresy.
+
+U posledních dvou stojí za to být přesný: pokud web zapnul kontrolu prohlížeče, je to přístupová kontrola, kterou tam někdo dal záměrně. Nastavit jiný User-Agent je jedna věc, obejít kontrolu je věc jiná — a rozhodnutí, jestli po té cestě jít, je na provozovateli, ne na scraperu. Proto ani jedno není zapnuté samo.
+
+Co scraper **neumí a umět nebude**: řešit CAPTCHA, měnit otisk TLS ani jinak předstírat, že je prohlížeč, kterým není.
+
+### Cookies
+
+`cookies` u zdroje pošle hlavičku `Cookie` — formát `jmeno=hodnota; druhe=hodnota`. Hodí se u katalogů za přihlášením.
+
+U kontroly prohlížeče typu Cloudflare **nepomůže**: ta váže své cookie na adresu a User-Agent, kterým ji vydala, takže zkopírovaná z jiného počítače neplatí. Lepší to říct rovnou než nechat někoho hodinu zkoušet.
+
 ### Poznámka k User-Agentu
 
-Výchozí `ZasukejSiBot/1.0 (+https://zasukejsi.cz/bot)` se hlásí pravdivě, a to je záměr. Řada plošných pravidel ale odmítá všechno, co není prohlížeč — včetně slušně ohlášených robotů, které **robots.txt téhož webu povoluje**. U eurogirlsescort.cz robots.txt nezakazuje žádnou cestu a předepisuje `Crawl-delay: 5`, který dodržujeme.
+Výchozí je `ZasukejSi/1.0 (+https://zasukejsi.cz/kontakt)`. Bez slova „bot", protože řada plošných pravidel odmítá cokoli, co ho v sobě má — včetně slušně ohlášených čtenářů, které robots.txt téhož webu povoluje. Adresa v něm zůstává: kdo se chce ozvat, ví kam. Řada plošných pravidel ale odmítá všechno, co není prohlížeč — včetně slušně ohlášených robotů, které **robots.txt téhož webu povoluje**. U eurogirlsescort.cz robots.txt nezakazuje žádnou cestu a předepisuje `Crawl-delay: 5`, který dodržujeme.
 
 Přepnout se na hlavičky prohlížeče je proto obhajitelné, ale je to rozhodnutí, ne technikálie — a proto ho diagnostika **nabídne, neudělá sama**.
 

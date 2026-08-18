@@ -715,6 +715,86 @@ class ScrapeRunner
             return;
         }
 
+        $this->storeDetail($source, $run, $url, $html, $dryRun, $notify);
+    }
+
+    /**
+     * Take a page somebody else downloaded and put it through the mill.
+     *
+     * The one route that needs no request at all. A site can refuse this
+     * server while a person sitting at an ordinary browser reaches it without
+     * trouble; this lets them save that page and hand it in. The selectors,
+     * the age guard, the rules, the duplicate check and the review queue are
+     * exactly the same — the only difference is where the HTML came from.
+     *
+     * @param  Closure(string, array): void|null  $progress
+     */
+    public function ingestHtml(ScrapeSource $source, string $url, string $html, ?Closure $progress = null): ScrapeRun
+    {
+        $log = [];
+
+        $notify = function (string $message, array $data = []) use ($progress, &$log): void {
+            $log[] = $data === [] ? $message : $message . ' — ' . self::describe($data);
+
+            if ($progress !== null) {
+                $progress($message, $data);
+            }
+        };
+
+        $run = ScrapeRun::create([
+            'scrape_source_id' => $source->id,
+            'status' => ScrapeRun::STATUS_RUNNING,
+            'started_at' => now(),
+            'options' => ['ingest' => $url],
+            'pages_fetched' => 0,
+            'items_found' => 1,
+            'items_new' => 0,
+            'items_updated' => 0,
+            'items_failed' => 0,
+        ]);
+
+        $notify('Zpracovává se vložená stránka: ' . $url);
+
+        try {
+            // Vložené HTML může být uložené z prohlížeče v jiném kódování,
+            // stejně jako by přišlo po drátě.
+            $html = (new PageEncoding())->toUtf8($html);
+
+            $this->storeDetail($source, $run, $url, $html, false, $notify);
+            $run->status = ScrapeRun::STATUS_COMPLETED;
+        } catch (Throwable $e) {
+            $run->status = ScrapeRun::STATUS_FAILED;
+            $run->error = $e->getMessage();
+            $notify('CHYBA: ' . $e->getMessage());
+        }
+
+        $run->finished_at = now();
+        $run->log = $log === [] ? null : implode("\n", $log);
+        $run->save();
+
+        return $run;
+    }
+
+    /**
+     * Turn a page into a queued item.
+     *
+     * Split out from the fetching on purpose: the HTML does not have to come
+     * from our own request. Where a site refuses this server outright, a
+     * person with ordinary access to it can save the page and hand it in —
+     * same selectors, same guards, same review queue, no fetch at all.
+     */
+    private function storeDetail(ScrapeSource $source, ScrapeRun $run, string $url, string $html, bool $dryRun, Closure $notify): void
+    {
+        $adapter = $this->adapters->make($source->adapter);
+        $externalId = $adapter->externalId($source, $url);
+        $minimumAge = $this->ageGuard->minimumFor((int) $source->setting('minimum_age', AgeGuard::MINIMUM));
+
+        $existing = $dryRun
+            ? null
+            : ScrapeItem::where('scrape_source_id', $source->id)
+                ->where('external_id', $externalId)
+                ->first();
+
         $result = $this->extractor->extract($html, $source->fieldMaps, $source);
         $images = $adapter->imageUrls($source, $html);
 

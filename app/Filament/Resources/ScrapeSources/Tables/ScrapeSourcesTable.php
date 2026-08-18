@@ -198,6 +198,58 @@ class ScrapeSourcesTable
                             ->send();
                     }),
 
+                // Poslední cesta, která funguje vždycky: web může odmítat
+                // tenhle server a přitom se k němu člověk u obyčejného
+                // prohlížeče dostane bez potíží. Tohle mu umožní stránku
+                // uložit a předat ji dál — stejné selektory, stejné pojistky,
+                // stejná fronta ke kontrole, jen bez stahování.
+                Action::make('ingestHtml')
+                    ->label('Vložit staženou stránku')
+                    ->icon('heroicon-o-document-arrow-up')
+                    ->color('gray')
+                    ->modalHeading('Zpracovat stránku uloženou z prohlížeče')
+                    ->modalDescription('V prohlížeči otevřete profil, uložte stránku (Ctrl+U → zkopírovat zdroj) a vložte ji sem. Adresa se použije pro identifikaci profilu — musí to být ta skutečná.')
+                    ->modalSubmitActionLabel('Zpracovat')
+                    ->form([
+                        TextInput::make('url')
+                            ->label('Adresa profilu')
+                            ->url()
+                            ->required()
+                            ->helperText('Ta, ze které stránka pochází. Podle ní se pozná, jestli už profil máme.'),
+
+                        \Filament\Forms\Components\Textarea::make('html')
+                            ->label('Zdrojový kód stránky')
+                            ->rows(10)
+                            ->required()
+                            ->helperText('Celé HTML. Fotky se stáhnou až při importu profilu, ty tedy web pouštět musí — pokud ne, profil vznikne bez nich.'),
+                    ])
+                    ->action(function (ScrapeSource $record, array $data) {
+                        try {
+                            $run = app(ScrapeRunner::class)->ingestHtml(
+                                $record,
+                                (string) $data['url'],
+                                (string) $data['html'],
+                            );
+                        } catch (Throwable $e) {
+                            Notification::make()->title('Zpracování selhalo')->body($e->getMessage())->danger()->send();
+
+                            return;
+                        }
+
+                        if ($run->error) {
+                            Notification::make()->title('Zpracování selhalo')->body($run->error)->danger()->persistent()->send();
+
+                            return;
+                        }
+
+                        Notification::make()
+                            ->title($run->items_new > 0 ? 'Profil přidán ke kontrole' : 'Profil aktualizován')
+                            ->body("Nových {$run->items_new}, změněných {$run->items_updated}, chyb {$run->items_failed}. Průběh běhu #{$run->id} ukáže, co selektory vrátily.")
+                            ->success()
+                            ->persistent()
+                            ->send();
+                    }),
+
                 // Když web stojí za kontrolou prohlížeče, je renderer jediná
                 // cesta, která nevyžaduje domluvu s provozovatelem. Ověřit ho
                 // musí jít jedním klikem — ne spuštěním celé sklizně, u které

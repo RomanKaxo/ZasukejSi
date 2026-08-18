@@ -287,11 +287,23 @@ class HttpFetcher
             $extra = is_array($decoded) ? $decoded : [];
         }
 
-        return array_merge([
+        $headers = [
             'User-Agent' => (string) $source->setting('user_agent'),
             'Accept' => 'text/html,application/xhtml+xml',
             'Accept-Language' => 'cs,en;q=0.8',
-        ], is_array($extra) ? array_map('strval', $extra) : []);
+        ];
+
+        // Vlastní cookies. Pomůžou u webů za přihlášením; u kontroly
+        // prohlížeče typu Cloudflare ne — ta váže své cookie na adresu a
+        // User-Agent, kterým ji vydala, takže zkopírovaná z jiného počítače
+        // neplatí. Je lepší to říct rovnou než nechat někoho hodinu zkoušet.
+        $cookies = $source->setting('cookies');
+
+        if (is_string($cookies) && trim($cookies) !== '') {
+            $headers['Cookie'] = trim($cookies);
+        }
+
+        return array_merge($headers, is_array($extra) ? array_map('strval', $extra) : []);
     }
 
     /**

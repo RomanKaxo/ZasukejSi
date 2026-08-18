@@ -264,7 +264,14 @@ class ScrapeSource extends Model
      * delay but the fetcher will not go below whatever robots.txt asks for.
      */
     public const DEFAULT_SETTINGS = [
-        'user_agent' => 'ZasukejSiBot/1.0 (+https://zasukejsi.cz/bot)',
+        // Bez slova „bot": řada plošných pravidel odmítá cokoli, co ho v sobě
+        // má, včetně slušně ohlášených čtenářů, které robots.txt povoluje.
+        // Adresa zůstává — kdo se chce ozvat, ví kam.
+        'user_agent' => 'ZasukejSi/1.0 (+https://zasukejsi.cz/kontakt)',
+
+        // Vlastní cookies, například relace z prohlížeče provozovatele.
+        // Formát je hlavička Cookie: "jmeno=hodnota; druhe=hodnota".
+        'cookies' => null,
         'crawl_delay' => 5,
         'timeout' => 25,
         'max_pages' => 5,
