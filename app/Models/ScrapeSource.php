@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * A site the scraper knows how to read.
@@ -129,7 +130,103 @@ class ScrapeSource extends Model
     public function isDue(): bool
     {
         return $this->isScheduled()
+            && $this->isWithinWindow()
             && ($this->next_run_at === null || $this->next_run_at->isPast());
+    }
+
+    /**
+     * Whether automatic runs are allowed right now.
+     *
+     * Scraping somebody else's site during their busiest hour is both rude and
+     * the surest way to be noticed and blocked; the small hours cost them
+     * nothing. The window covers manual runs never — when a person is sitting
+     * there waiting, the answer to „may I" is obviously yes.
+     *
+     * An hour window is read as „from, up to but not including to", so 2–6
+     * means 02:00 to 05:59. From and to being equal means the whole day, which
+     * is the same as not setting it.
+     */
+    public function isWithinWindow(?Carbon $at = null): bool
+    {
+        $at = $at ?? now();
+
+        $days = $this->windowDays();
+
+        // Carbon counts Sunday as 0; the setting uses 1–7 with Monday first,
+        // which is how a Czech operator reads a week.
+        if ($days !== [] && ! in_array($at->dayOfWeekIso, $days, true)) {
+            return false;
+        }
+
+        $from = $this->windowHour('run_window_from');
+        $to = $this->windowHour('run_window_to');
+
+        if ($from === null || $to === null || $from === $to) {
+            return true;
+        }
+
+        $hour = (int) $at->format('G');
+
+        // A window that wraps midnight — 22 to 6 — is the common case here,
+        // so it cannot be an afterthought.
+        return $from < $to
+            ? ($hour >= $from && $hour < $to)
+            : ($hour >= $from || $hour < $to);
+    }
+
+    /** @return array<int, int> ISO weekday numbers the source may run on. */
+    public function windowDays(): array
+    {
+        $value = $this->setting('run_days');
+
+        if (is_string($value)) {
+            $value = array_filter(array_map('trim', explode(',', $value)), fn ($v) => $v !== '');
+        }
+
+        if (! is_array($value)) {
+            return [];
+        }
+
+        $days = array_values(array_filter(
+            array_map('intval', $value),
+            fn (int $day) => $day >= 1 && $day <= 7,
+        ));
+
+        // All seven is the same as no restriction, and saying so keeps the
+        // „is it limited?" question answerable by one empty check.
+        return count($days) === 7 ? [] : $days;
+    }
+
+    /** An hour setting as 0–23, or null when it is not usable. */
+    private function windowHour(string $key): ?int
+    {
+        $value = $this->setting($key);
+
+        if ($value === null || $value === '' || ! is_numeric($value)) {
+            return null;
+        }
+
+        $hour = (int) $value;
+
+        return $hour >= 0 && $hour <= 23 ? $hour : null;
+    }
+
+    /** Když se okno zavře, tohle je nejbližší chvíle, kdy se zase otevře. */
+    public function windowOpensAt(?Carbon $at = null): ?Carbon
+    {
+        $cursor = ($at ?? now())->copy()->startOfHour();
+
+        // Nejvýš týden dopředu: dál už to není „brzy" a znamenalo by to, že
+        // je nastavení špatně.
+        for ($i = 0; $i < 24 * 7; $i++) {
+            $cursor->addHour();
+
+            if ($this->isWithinWindow($cursor)) {
+                return $cursor;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -198,6 +295,16 @@ class ScrapeSource extends Model
 
         // Kolikrát se zkusí stránka, která se nepodařila stáhnout.
         'max_attempts' => 5,
+
+        // Kontrola, že importované profily na zdroji pořád jsou.
+        'existence_confirmations' => 2,
+        'existence_interval_hours' => 24,
+        'existence_batch' => 100,
+
+        // Kdy se smí spouštět plánovaný běh. Prázdné = kdykoli.
+        'run_window_from' => null,
+        'run_window_to' => null,
+        'run_days' => null,
     ];
 
     public function fieldMaps(): HasMany

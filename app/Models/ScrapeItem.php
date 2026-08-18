@@ -43,6 +43,12 @@ class ScrapeItem extends Model
         'attempts',
         'last_attempt_at',
         'retry_after',
+        'missing_since',
+        'missing_checks',
+        'missing_checked_at',
+        'missing_resolution',
+        'missing_resolved_at',
+        'missing_resolved_by',
     ];
 
     protected function casts(): array
@@ -57,6 +63,10 @@ class ScrapeItem extends Model
             'attempts' => 'integer',
             'last_attempt_at' => 'datetime',
             'retry_after' => 'datetime',
+            'missing_since' => 'datetime',
+            'missing_checks' => 'integer',
+            'missing_checked_at' => 'datetime',
+            'missing_resolved_at' => 'datetime',
         ];
     }
 
@@ -77,6 +87,31 @@ class ScrapeItem extends Model
         $minutes = self::RETRY_BACKOFF[$attempts] ?? null;
 
         return $minutes === null ? null : now()->addMinutes($minutes);
+    }
+
+    /** What the operator decided about a profile that vanished from its source. */
+    public const MISSING_KEPT = 'kept';
+    public const MISSING_REMOVED = 'removed';
+
+    /**
+     * Whether this profile is waiting for somebody to say what to do.
+     *
+     * Confirmed gone, still on our site, nobody has decided yet.
+     */
+    public function isAwaitingRemovalDecision(): bool
+    {
+        return $this->missing_since !== null
+            && $this->missing_resolution === null
+            && $this->imported_profile_id !== null;
+    }
+
+    /** Profiles the source no longer has, still waiting for a decision. */
+    public function scopeMissingAtSource($query)
+    {
+        return $query
+            ->whereNotNull('missing_since')
+            ->whereNull('missing_resolution')
+            ->whereNotNull('imported_profile_id');
     }
 
     /** Failed pages whose next attempt has come due. */

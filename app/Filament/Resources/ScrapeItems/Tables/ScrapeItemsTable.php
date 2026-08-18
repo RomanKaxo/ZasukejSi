@@ -142,6 +142,21 @@ class ScrapeItemsTable
                     })
                     ->toggleable(),
 
+                // Profil, který ze zdroje zmizel. Bez tohohle sloupce se to
+                // pozná jedině tak, že si někdo otevře inzerát a uvidí 404.
+                TextColumn::make('missing_since')
+                    ->label('Zmizel ze zdroje')
+                    ->state(fn (ScrapeItem $record) => $record->missing_since?->diffForHumans())
+                    ->description(fn (ScrapeItem $record) => match ($record->missing_resolution) {
+                        ScrapeItem::MISSING_KEPT => 'ponecháno',
+                        ScrapeItem::MISSING_REMOVED => 'vyřešeno',
+                        default => $record->missing_since ? 'čeká na rozhodnutí' : null,
+                    })
+                    ->badge()
+                    ->color(fn (ScrapeItem $record) => $record->isAwaitingRemovalDecision() ? 'danger' : 'gray')
+                    ->placeholder('—')
+                    ->toggleable(),
+
                 TextColumn::make('updated_at')
                     ->label('Aktualizováno')
                     ->since()
@@ -168,6 +183,10 @@ class ScrapeItemsTable
                 Filter::make('possible_duplicates')
                     ->label('Možné duplicity')
                     ->query(fn ($query) => $query->possibleDuplicates()),
+
+                Filter::make('missing_at_source')
+                    ->label('Zmizely ze zdroje')
+                    ->query(fn ($query) => $query->missingAtSource()),
 
                 Filter::make('awaiting_retry')
                     ->label('Čeká na další pokus')
@@ -231,6 +250,56 @@ class ScrapeItemsTable
                     ->modalDescription('Zamítnutou položku další běh scraperu znovu nenabídne.')
                     ->visible(fn (ScrapeItem $record) => ! in_array($record->status, [ScrapeItem::STATUS_IMPORTED, ScrapeItem::STATUS_REJECTED], true))
                     ->action(fn (ScrapeItem $record) => $record->update(['status' => ScrapeItem::STATUS_REJECTED])),
+
+                // Rozhodnutí o profilu, který na zdroji už není. Odstranění
+                // musí schválit člověk — zmizení ze zdroje má několik nevinných
+                // vysvětlení a jedno špatné, a rozeznat je od sebe je úsudek
+                // o inzerátu skutečného člověka.
+                Action::make('keepProfile')
+                    ->label('Ponechat profil')
+                    ->icon('heroicon-o-hand-thumb-up')
+                    ->color('gray')
+                    ->visible(fn (?ScrapeItem $record) => (bool) $record?->isAwaitingRemovalDecision())
+                    ->requiresConfirmation()
+                    ->modalDescription('Profil zůstane, jak je. Na tuhle položku se scraper znovu ptát nebude.')
+                    ->action(function (ScrapeItem $record) {
+                        $record->forceFill([
+                            'missing_resolution' => ScrapeItem::MISSING_KEPT,
+                            'missing_resolved_at' => now(),
+                            'missing_resolved_by' => auth()->id(),
+                        ])->save();
+
+                        Notification::make()->title('Profil ponechán')->success()->send();
+                    }),
+
+                Action::make('archiveProfile')
+                    ->label('Skrýt profil')
+                    ->icon('heroicon-o-eye-slash')
+                    ->color('warning')
+                    ->visible(fn (?ScrapeItem $record) => (bool) $record?->isAwaitingRemovalDecision())
+                    ->requiresConfirmation()
+                    ->modalHeading('Skrýt profil z webu?')
+                    ->modalDescription('Profil se archivuje: zmizí z webu, ale nic se nemaže. Kdyby se dívka na zdroj vrátila, jde ho zase zveřejnit.')
+                    ->modalSubmitActionLabel('Skrýt')
+                    ->action(function (ScrapeItem $record) {
+                        $profile = $record->profile;
+
+                        if ($profile) {
+                            $profile->forceFill(['status' => 'archived'])->save();
+                        }
+
+                        $record->forceFill([
+                            'missing_resolution' => ScrapeItem::MISSING_REMOVED,
+                            'missing_resolved_at' => now(),
+                            'missing_resolved_by' => auth()->id(),
+                        ])->save();
+
+                        Notification::make()
+                            ->title('Profil skryt')
+                            ->body('Zůstává v administraci, na webu není.')
+                            ->success()
+                            ->send();
+                    }),
 
                 Action::make('import')
                     ->label('Vytvořit profil')

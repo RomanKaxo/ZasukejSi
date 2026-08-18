@@ -17,6 +17,18 @@ use Illuminate\Support\Str;
 
 class ScrapeSourceForm
 {
+    /** @return array<int, string> */
+    private static function hours(): array
+    {
+        $hours = [];
+
+        foreach (range(0, 23) as $hour) {
+            $hours[$hour] = sprintf('%02d:00', $hour);
+        }
+
+        return $hours;
+    }
+
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
@@ -80,6 +92,31 @@ class ScrapeSourceForm
                         ->helperText('Prázdné = bez omezení. Stahování čeká mezi požadavky, takže velký běh trvá.')
                         ->numeric()
                         ->minValue(1),
+
+                    Select::make('run_window_from')
+                        ->label('Stahovat od hodiny')
+                        ->options(self::hours())
+                        ->helperText('Prázdné = kdykoli. Stahovat cizí web v jeho nejrušnější hodinu je nezdvořilé i nejjistější cesta k blokaci.'),
+
+                    Select::make('run_window_to')
+                        ->label('Stahovat do hodiny')
+                        ->options(self::hours())
+                        ->helperText('Okno smí přecházet přes půlnoc — 22 až 6 je běžné nastavení.'),
+
+                    Select::make('run_days')
+                        ->label('Dny v týdnu')
+                        ->multiple()
+                        ->options([
+                            1 => 'Pondělí',
+                            2 => 'Úterý',
+                            3 => 'Středa',
+                            4 => 'Čtvrtek',
+                            5 => 'Pátek',
+                            6 => 'Sobota',
+                            7 => 'Neděle',
+                        ])
+                        ->helperText('Prázdné = každý den.')
+                        ->columnSpanFull(),
                 ])
                 ->columns(2),
 
@@ -139,6 +176,14 @@ class ScrapeSourceForm
                         ->default(true)
                         ->live()
                         ->helperText('Web, který nás odmítá, se ptaním každou hodinu nespraví. Ruční spuštění pauzu zase zruší.'),
+
+                    TextInput::make('max_attempts')
+                        ->label('Kolikrát zkusit stránku, která selhala')
+                        ->numeric()
+                        ->minValue(1)
+                        ->maxValue(20)
+                        ->default(5)
+                        ->helperText('Odstup mezi pokusy roste: 15 minut, hodina, 6 hodin, den.'),
 
                     TextInput::make('failure_threshold')
                         ->label('Kolik selhání v řadě')

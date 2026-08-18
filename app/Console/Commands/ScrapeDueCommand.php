@@ -34,6 +34,25 @@ class ScrapeDueCommand extends Command
 
         $sources = $query->get();
 
+        // The window is hours and weekdays, which no database expresses
+        // usefully, so it is applied here rather than in the scope. `--force`
+        // is a person asking on purpose and is not held to it.
+        if (! $this->option('force')) {
+            $waiting = $sources->reject(fn (ScrapeSource $source) => $source->isWithinWindow());
+
+            foreach ($waiting as $source) {
+                $opens = $source->windowOpensAt();
+
+                $this->line(sprintf(
+                    'Zdroj %s čeká na své okno%s.',
+                    $source->slug,
+                    $opens ? ' — otevře se ' . $opens->format('j. n. H:i') : '',
+                ));
+            }
+
+            $sources = $sources->diff($waiting);
+        }
+
         if ($sources->isEmpty()) {
             $this->info('Žádný zdroj není na řadě.');
 

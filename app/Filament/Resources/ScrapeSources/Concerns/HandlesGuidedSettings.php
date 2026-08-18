@@ -28,6 +28,10 @@ trait HandlesGuidedSettings
         'proxy',
         'auto_pause',
         'failure_threshold',
+        'max_attempts',
+        'run_window_from',
+        'run_window_to',
+        'run_days',
     ];
 
     /** @param array<string, mixed> $data */

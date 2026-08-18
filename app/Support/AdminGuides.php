@@ -175,7 +175,7 @@ class AdminGuides
                 'can' => [
                     'Spustit zkušební běh na jednom profilu a podívat se, co selektory vrátily.',
                     'Stáhnout celý výpis. Vše skončí ve frontě ke kontrole, nic se nepublikuje samo.',
-                    'Nastavit pravidelné spouštění.',
+                    'Nastavit pravidelné spouštění včetně hodin a dnů, kdy se smí stahovat. Ruční běh se oknem neřídí.',
                     'Vybrat, odkud se berou adresy: procházením výpisu, nebo ze sitemapy webu. Sitemapa umí i „jen to, co se od minule změnilo".',
                     'Stáhnout nastavení zdroje do souboru a jinde ho zase načíst — i s mapováním polí.',
                     'Zrušit pauzu u zdroje, který se sám pozastavil po opakovaných selháních.',
@@ -212,10 +212,12 @@ class AdminGuides
             'scrape-items' => [
                 'intro' => 'Fronta stažených profilů. Nic odsud neodejde na web bez vašeho schválení a i po importu je profil neveřejný.',
                 'can' => [
+                    'Rozhodnout o profilu, který ze zdroje zmizel: ponechat, nebo skrýt. Skrytí profil archivuje, nemaže ho.',
                     'Prohlédnout si, co scraper našel, a schválit nebo zamítnout.',
                     'Importovat schválené položky hromadně i s fotkami.',
                 ],
                 'cannot' => [
+                    'Smazat profil za vás. Zmizení ze zdroje se jen označí a nahlásí — rozhodnutí je vždycky vaše.',
                     'Importovat položku, která zmiňuje hodnotu, kterou náš číselník nezná — nejdřív ji doplňte ve frontě hodnot.',
                 ],
                 'links' => [

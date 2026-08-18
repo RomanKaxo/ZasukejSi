@@ -33,6 +33,7 @@ class OperationsOverview extends StatsOverviewWidget
             $this->openReports(),
             $this->unreadMessages(),
             $this->scrapeQueue(),
+            $this->vanishedProfiles(),
             $this->expiringSubscriptions(),
             $this->trafficLast30Days(),
         ];
@@ -71,6 +72,27 @@ class OperationsOverview extends StatsOverviewWidget
                 default => 'success',
             })
             ->url(route('filament.admin.resources.scrape-items.index'));
+    }
+
+    /**
+     * Profiles the source no longer has.
+     *
+     * A dead listing is the one thing a scraped catalogue gets wrong that
+     * costs the visitor something real, and nothing removes it on its own —
+     * so it sits here until somebody decides.
+     */
+    private function vanishedProfiles(): Stat
+    {
+        $count = ScrapeItem::query()->missingAtSource()->count();
+
+        return Stat::make('Zmizely ze zdroje', $count)
+            ->description($count > 0
+                ? 'Čekají na vaše rozhodnutí — samo se nic nesmaže.'
+                : 'Všechny profily na zdrojích pořád jsou.')
+            ->color($count > 0 ? 'danger' : 'success')
+            ->url(route('filament.admin.resources.scrape-items.index', [
+                'tableFilters' => ['missing_at_source' => ['isActive' => true]],
+            ]));
     }
 
     private function pendingProfiles(): Stat

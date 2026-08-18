@@ -45,3 +45,15 @@ Schedule::command('scrape:prune')
     ->weeklyOn(1, '03:40')
     ->withoutOverlapping()
     ->onOneServer();
+
+/**
+ * Profily, které ze zdroje zmizely.
+ *
+ * Scrapování jenom přidává. Bez téhle kontroly je dívka, která přestala
+ * inzerovat v březnu, u nás v prosinci pořád — veřejně a jako by byla aktuální.
+ * Kontrola nic nemaže ani neskrývá; jen označí a upozorní, rozhoduje člověk.
+ */
+Schedule::command('scrape:verify')
+    ->dailyAt('04:20')
+    ->withoutOverlapping(180)
+    ->onOneServer();

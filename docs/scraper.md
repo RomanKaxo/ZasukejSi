@@ -152,6 +152,8 @@ Nic z toho se neukládá a nevzniká z toho běh.
    | `proxy` | jen pro weby blokující adresu serveru |
    | `auto_pause`, `failure_threshold` | po kolika selháních v řadě se zdroj sám pozastaví |
    | `max_attempts` | kolikrát se zkusí stránka, která se nepodařila stáhnout |
+   | `run_window_from`, `run_window_to`, `run_days` | kdy se smí spouštět plánovaný běh |
+   | `existence_confirmations`, `existence_interval_hours`, `existence_batch` | kontrola, že importované profily na zdroji pořád jsou |
 
    Klíče z tabulky mají ve formuláři vlastní pole; syrový editor `Nastavení` je pro to ostatní.
 
@@ -209,6 +211,17 @@ Položka je jednoznačná dvojicí zdroj + `external_id`. Další běh:
 
 U sitemapy se navíc dá nechat jen to, co web sám označil jako změněné od posledního úspěšného běhu (`sitemap_changed_only`). Z nočního běhu se tím stane pár profilů místo celého webu.
 
+### Kdy se smí stahovat
+
+Plánovanému běhu se dají nastavit **hodiny a dny**. Stahovat cizí web v jeho nejrušnější hodinu je nezdvořilé a zároveň nejjistější cesta k tomu, aby si nás všimli a zablokovali; ve tři ráno je to nestojí nic.
+
+| Klíč | Význam |
+|---|---|
+| `run_window_from`, `run_window_to` | hodiny 0–23; okno smí přecházet přes půlnoc (22 → 6) |
+| `run_days` | dny v týdnu 1–7, pondělí první; prázdné nebo všech sedm = bez omezení |
+
+Mimo okno se běh nespustí a `scrape:due` napíše, kdy se okno zase otevře. **Ruční běh a `--force` se oknem neřídí** — když u toho někdo sedí a čeká, odpověď na „smím?" je zjevná.
+
 ### Když se stránka nepodaří stáhnout
 
 Selhání detailu se **ukládá jako položka ve stavu Chyba**, ne jako číslo v počitadle. Dřív byla adresa pryč a profil se vrátil, až když někdo prošel celý výpis znovu — u běhů, které se ptají jen na to, co se změnilo, klidně nikdy.
@@ -229,6 +242,27 @@ Opakovaný import přidával celou galerii znovu, takže profil po třetím impo
 - **shodný otisk obsahu** — chytne tutéž fotku na nové adrese po redesignu i dvakrát pod jiným jménem v jedné galerii.
 
 Fotky nahrané ručně se do porovnání zapojí taky: otisk se u nich dopočítá při prvním setkání a uloží.
+
+### Profily, které ze zdroje zmizely
+
+Scrapování jenom přidává. Dívka, která přestala inzerovat, ze zdroje zmizí — a u nás zůstávala navěky, veřejně a jako by byla aktuální. Z toho, co může scrapovaný katalog udělat špatně, je tohle jediné, co stojí návštěvníka něco skutečného: inzerát, který nikam nevede.
+
+```
+php artisan scrape:verify
+```
+
+Denně ve 4:20. U importovaných profilů ověří, že jejich stránka na zdroji pořád je, a řídí se dvěma pravidly:
+
+**Jedna 404 nic nedokazuje.** Weby stěhují stránky, mají výpadky a botovi, kterého neznají, vracejí divné stavy. Profil se označí za zmizelý až po několika stejných odpovědích v různých dnech (`existence_confirmations`, výchozí 2, kontrola nejvýš jednou za `existence_interval_hours`). **403 se nepočítá vůbec** — to znamená, že nás web odmítá, ne že profil neexistuje. Pozastavený zdroj se přeskakuje, jinak by hlásil, že zmizely úplně všechny profily.
+
+**Nic se nemaže samo.** Kontrola označí a upozorní; co dál, rozhoduje člověk. Zmizení ze zdroje má několik nevinných vysvětlení a jedno špatné a rozeznat je od sebe je úsudek o inzerátu skutečného člověka.
+
+Administrátor dostane globální notifikaci a na nástěnce dlaždici **Zmizely ze zdroje**. Ve stažených položkách je filtr *Zmizely ze zdroje* a u každé dvě rozhodnutí:
+
+- **Ponechat profil** — zůstane, jak je, a scraper se na něj už neptá;
+- **Skrýt profil** — profil se archivuje, tedy zmizí z webu, ale **nic se nemaže**; kdyby se dívka na zdroj vrátila, jde ho zase zveřejnit.
+
+Když se profil na zdroji objeví dřív, než někdo rozhodne, značka zmizí sama.
 
 ### Úklid
 
