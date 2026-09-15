@@ -15,11 +15,9 @@ class PopulateMediaSeeder extends Seeder
         $imageFiles = array_values(array_filter($imageFiles, fn ($f) => str_starts_with($f->getFilename(), 'model')));
 
         foreach ($profiles as $profile) {
-            if ($profile->getMedia('profile-images')->count() >= 2) {
+            if ($profile->getMedia('profile-images')->count() >= 1) {
                 continue;
             }
-
-            $profile->clearMediaCollection('profile-images');
 
             $picks = collect($imageFiles)->shuffle()->take(random_int(3, 5));
 

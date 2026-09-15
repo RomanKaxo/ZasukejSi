@@ -13,6 +13,28 @@
     </div>
     @endif
 
+    {{-- A validation failure anywhere in the form (e.g. a price row with an
+         amount but no duration) used to fail the whole save silently — the
+         only sign was small red text next to one field, often scrolled out
+         of view. This banner, plus the scroll-to-top in save(), makes the
+         "nothing saved" state visible instead of looking like nothing
+         happened. --}}
+    @if ($errors->any())
+    <div wire:key="validation-errors-banner" class="relative mx-auto w-[310px] px-4 py-3 md:w-full md:mx-0 bg-[#DD3888] rounded-[8px] mb-4">
+        <div class="flex items-start">
+            <x-icons name="TriangleAlert" class="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" style="color: #FFFFFF;" />
+            <div class="text-[14px] text-white" style="font-family: 'Poppins', sans-serif;">
+                <p class="font-medium mb-1">{{ __('front.profiles.form.validation_summary') }}</p>
+                <ul class="list-disc list-inside space-y-0.5">
+                    @foreach ($errors->all() as $index => $error)
+                        <li wire:key="validation-error-{{ $index }}">{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    </div>
+    @endif
+
 
 
     <form wire:submit="save" class="space-y-8">
@@ -322,12 +344,80 @@
                     </div>
                 </div>
 
-                <!-- Price rows -->
+                <!-- Fixed 30 / 60 minute price rows -->
+                <div class="space-y-4">
+                    <div class="flex flex-wrap items-end gap-4 md:flex-nowrap md:gap-[31px]">
+                        <div class="w-full md:w-[240px]">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.time_hours_full') }}</label>
+                            <div class="input-control w-full h-[50px] rounded-[8px] flex items-center px-4 bg-gray-50 text-gray-700">
+                                {{ __('front.profiles.form.time_30min') }}
+                            </div>
+                        </div>
+                        <div class="w-[143px] md:w-[240px]">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.incall_price_full') }}</label>
+                            <input
+                                type="number"
+                                inputmode="numeric"
+                                min="0"
+                                step="1"
+                                onkeydown="if(event.key === '-' || event.key === 'e' || event.key === '+') event.preventDefault()"
+                                wire:model="local_price_30_incall"
+                                class="input-control w-full h-[50px] rounded-[8px] @error('local_price_30_incall') border-red-500 @enderror">
+                            @error('local_price_30_incall') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="w-[143px] md:w-[240px]">
+                            <label class="block text-sm font-medium text-gray-400 mb-2">{{ __('front.profiles.form.outcall_price') }}</label>
+                            <input
+                                type="number"
+                                inputmode="numeric"
+                                min="0"
+                                step="1"
+                                onkeydown="if(event.key === '-' || event.key === 'e' || event.key === '+') event.preventDefault()"
+                                wire:model="local_price_30_outcall"
+                                class="input-control w-full h-[50px] rounded-[8px] @error('local_price_30_outcall') border-red-500 @enderror">
+                            @error('local_price_30_outcall') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-end gap-4 md:flex-nowrap md:gap-[31px]">
+                        <div class="w-full md:w-[240px]">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.time_hours') }}</label>
+                            <div class="input-control w-full h-[50px] rounded-[8px] flex items-center px-4 bg-gray-50 text-gray-700">
+                                {{ __('front.profiles.form.time_60min') }}
+                            </div>
+                        </div>
+                        <div class="w-[143px] md:w-[240px]">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.incall_price') }}</label>
+                            <input
+                                type="number"
+                                inputmode="numeric"
+                                min="0"
+                                step="1"
+                                onkeydown="if(event.key === '-' || event.key === 'e' || event.key === '+') event.preventDefault()"
+                                wire:model="local_price_60_incall"
+                                class="input-control w-full h-[50px] rounded-[8px] @error('local_price_60_incall') border-red-500 @enderror">
+                            @error('local_price_60_incall') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="w-[143px] md:w-[240px]">
+                            <label class="block text-sm font-medium text-gray-400 mb-2">{{ __('front.profiles.form.outcall_price') }}</label>
+                            <input
+                                type="number"
+                                inputmode="numeric"
+                                min="0"
+                                step="1"
+                                onkeydown="if(event.key === '-' || event.key === 'e' || event.key === '+') event.preventDefault()"
+                                wire:model="local_price_60_outcall"
+                                class="input-control w-full h-[50px] rounded-[8px] @error('local_price_60_outcall') border-red-500 @enderror">
+                            @error('local_price_60_outcall') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom duration price rows -->
                 <div class="space-y-4">
                     @foreach($local_prices as $index => $price)
                         <div wire:key="local-price-{{ $index }}" class="flex flex-wrap items-end gap-4 md:flex-nowrap md:gap-[31px]">
                             <div class="w-full md:w-[240px]">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ $loop->first ? __('front.profiles.form.time_hours_full') : __('front.profiles.form.time_hours') }}</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.time_hours') }}</label>
                                 <div class="relative">
                                     <input
                                         type="number"
@@ -350,7 +440,7 @@
                                 @error('local_prices.'.$index.'.time_hours') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             </div>
                             <div class="w-[143px] md:w-[240px]">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ $loop->first ? __('front.profiles.form.incall_price_full') : __('front.profiles.form.incall_price') }}</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.incall_price') }}</label>
                                 <input
                                     type="number"
                                     inputmode="numeric"
@@ -431,12 +521,80 @@
                     </div>
                 </div>
 
-                <!-- Price rows -->
+                <!-- Fixed 30 / 60 minute price rows -->
+                <div class="space-y-4">
+                    <div class="flex flex-wrap items-end gap-4 md:flex-nowrap md:gap-[31px]">
+                        <div class="w-full md:w-[240px]">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.time_hours_full') }}</label>
+                            <div class="input-control w-full h-[50px] rounded-[8px] flex items-center px-4 bg-gray-50 text-gray-700">
+                                {{ __('front.profiles.form.time_30min') }}
+                            </div>
+                        </div>
+                        <div class="w-[143px] md:w-[240px]">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.incall_price_full_intl') }}</label>
+                            <input
+                                type="number"
+                                inputmode="numeric"
+                                min="0"
+                                step="1"
+                                onkeydown="if(event.key === '-' || event.key === 'e' || event.key === '+') event.preventDefault()"
+                                wire:model="global_price_30_incall"
+                                class="input-control w-full h-[50px] rounded-[8px] @error('global_price_30_incall') border-red-500 @enderror">
+                            @error('global_price_30_incall') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="w-[143px] md:w-[240px]">
+                            <label class="block text-sm font-medium text-gray-400 mb-2">{{ __('front.profiles.form.outcall_price_intl') }}</label>
+                            <input
+                                type="number"
+                                inputmode="numeric"
+                                min="0"
+                                step="1"
+                                onkeydown="if(event.key === '-' || event.key === 'e' || event.key === '+') event.preventDefault()"
+                                wire:model="global_price_30_outcall"
+                                class="input-control w-full h-[50px] rounded-[8px] @error('global_price_30_outcall') border-red-500 @enderror">
+                            @error('global_price_30_outcall') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-end gap-4 md:flex-nowrap md:gap-[31px]">
+                        <div class="w-full md:w-[240px]">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.time_hours') }}</label>
+                            <div class="input-control w-full h-[50px] rounded-[8px] flex items-center px-4 bg-gray-50 text-gray-700">
+                                {{ __('front.profiles.form.time_60min') }}
+                            </div>
+                        </div>
+                        <div class="w-[143px] md:w-[240px]">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.incall_price') }}</label>
+                            <input
+                                type="number"
+                                inputmode="numeric"
+                                min="0"
+                                step="1"
+                                onkeydown="if(event.key === '-' || event.key === 'e' || event.key === '+') event.preventDefault()"
+                                wire:model="global_price_60_incall"
+                                class="input-control w-full h-[50px] rounded-[8px] @error('global_price_60_incall') border-red-500 @enderror">
+                            @error('global_price_60_incall') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="w-[143px] md:w-[240px]">
+                            <label class="block text-sm font-medium text-gray-400 mb-2">{{ __('front.profiles.form.outcall_price_intl') }}</label>
+                            <input
+                                type="number"
+                                inputmode="numeric"
+                                min="0"
+                                step="1"
+                                onkeydown="if(event.key === '-' || event.key === 'e' || event.key === '+') event.preventDefault()"
+                                wire:model="global_price_60_outcall"
+                                class="input-control w-full h-[50px] rounded-[8px] @error('global_price_60_outcall') border-red-500 @enderror">
+                            @error('global_price_60_outcall') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom duration price rows -->
                 <div class="space-y-4">
                     @foreach($global_prices as $index => $price)
                         <div wire:key="global-price-{{ $index }}" class="flex flex-wrap items-end gap-4 md:flex-nowrap md:gap-[31px]">
                             <div class="w-full md:w-[240px]">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ $loop->first ? __('front.profiles.form.time_hours_full') : __('front.profiles.form.time_hours') }}</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.time_hours') }}</label>
                                 <div class="relative">
                                     <input
                                         type="number"
@@ -459,7 +617,7 @@
                                 @error('global_prices.'.$index.'.time_hours') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             </div>
                             <div class="w-[143px] md:w-[240px]">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ $loop->first ? __('front.profiles.form.incall_price_full_intl') : __('front.profiles.form.incall_price') }}</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.incall_price') }}</label>
                                 <input
                                     type="number"
                                     inputmode="numeric"

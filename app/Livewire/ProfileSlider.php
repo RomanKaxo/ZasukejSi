@@ -75,6 +75,28 @@ class ProfileSlider extends Component
     #[Computed]
     public function profiles()
     {
+        $results = $this->buildQuery($this->sortBy)->limit($this->limit)->get();
+
+        // A "top rated this month" / "top rated" slider used to render its
+        // empty state whenever nothing matched, which on a young or quiet
+        // site meant several sliders sitting empty. Falling back keeps the
+        // row populated: this month's ratings, then all-time ratings, then
+        // — once there's no rating data at all to rank by — a random
+        // selection of existing profiles rather than pretending "newest" is
+        // a meaningful order for an unrated slider.
+        if ($results->isEmpty() && $this->sortBy === 'rating_this_month') {
+            $results = $this->buildQuery('rating')->limit($this->limit)->get();
+        }
+
+        if ($results->isEmpty() && in_array($this->sortBy, ['rating_this_month', 'rating'], true)) {
+            $results = $this->buildQuery('random')->limit($this->limit)->get();
+        }
+
+        return $results;
+    }
+
+    private function buildQuery(string $sortBy)
+    {
         // `segments` is eager-loaded because x-profile-card calls allSegments()
         // on every row — without it each card issues its own pivot query.
         $query = Profile::with(['user:id,name,last_activity', 'media', 'segments'])
@@ -123,13 +145,9 @@ class ProfileSlider extends Component
             $this->applyAgeGroupFilter($query, $this->ageGroup);
         }
 
-        $this->applySorting($query);
+        $this->applySorting($query, $sortBy);
 
-        // No cascading fallbacks. A slider headed "top rated this month" used to
-        // silently fall back to best-rated-ever, and then to newest-first, so it
-        // was never empty — it just showed profiles that did not match its own
-        // heading. An empty slider renders its empty state instead.
-        return $query->limit($this->limit)->get();
+        return $query;
     }
 
     /**
@@ -162,9 +180,9 @@ class ProfileSlider extends Component
     /**
      * Apply sorting to the query
      */
-    private function applySorting($query): void
+    private function applySorting($query, string $sortBy): void
     {
-        switch ($this->sortBy) {
+        switch ($sortBy) {
             case 'rating':
                 // Best rated profiles (all time)
                 $query->withAvg('ratings', 'percentage')
@@ -188,6 +206,9 @@ class ProfileSlider extends Component
                       ->orderBy('is_vip', $this->sortDirection)
                       ->orderBy('ratings_avg_percentage', $this->sortDirection)
                       ->orderBy('created_at', $this->sortDirection === 'desc' ? 'asc' : 'desc');
+                break;
+            case 'random':
+                $query->inRandomOrder();
                 break;
             case 'created_at':
             default:

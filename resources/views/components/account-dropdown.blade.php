@@ -6,7 +6,11 @@
     <!-- User Button -->
     <button @click="open = !open" class="w-[60px] h-[60px] bg-[#DD3888] flex items-center justify-center"
         :class="open ? 'rounded-t-[8px] rounded-b-none' : 'rounded-[8px]'">
-        <img src="{{ asset('images/icons/User.svg') }}" class="w-[26px] h-[26px]" alt="User">
+        {{-- pointer-events:none: without it, Safari can resolve the click's
+             target as this <img> rather than the button, which confuses
+             Alpine's open/away toggling and made the dropdown flash open
+             and immediately close. --}}
+        <img src="{{ asset('images/icons/User.svg') }}" class="w-[26px] h-[26px]" alt="User" style="pointer-events: none;">
     </button>
 
     <!-- Dropdown Menu -->

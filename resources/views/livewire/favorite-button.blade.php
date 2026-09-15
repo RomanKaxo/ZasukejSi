@@ -25,7 +25,7 @@
             />
         </svg>
         <span style="font-family:'Plus Jakarta Sans', sans-serif; font-weight:600; font-size:12px; color:#71717A; text-decoration: underline;">
-            {{ __('front.favorites.save') }}
+            {{ $isFavorited ? __('front.favorites.saved') : __('front.favorites.save') }}
         </span>
     </button>
 

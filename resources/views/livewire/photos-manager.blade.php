@@ -112,18 +112,18 @@
                         <div x-show="verifyModalOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center" style="display: none;">
                             <div class="fixed inset-0" style="background-color: #5C2D62CC; backdrop-filter: blur(30px);" @click="verifyModalOpen = false"></div>
 
-                            <div class="relative w-[600px] h-[908px] max-w-full max-h-full rounded-[24px] bg-white overflow-y-auto"
+                            <div class="verification-dialog relative w-[600px] max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-2rem)] rounded-[24px] bg-white overflow-y-auto"
                                 style="box-shadow: 0 10px 25px 0 #00000033;">
                                 <button type="button" @click="verifyModalOpen = false"
                                     class="absolute w-[35px] h-[35px] rounded-full bg-[#DD3888] hover:bg-[#CA2474] transition-colors duration-200 flex items-center justify-center"
-                                    style="top: 40px; right: 35px;">
+                                    style="top: 20px; right: 20px;">
                                     <svg class="w-[10px] h-[10px]" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M1 1L9 9M9 1L1 9" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
                                     </svg>
                                 </button>
 
-                                <div class="flex flex-col items-center px-10" style="margin-top: 80px;">
-                                    <img src="{{ asset('images/icons/BadgeCheckBig.svg') }}" class="w-[78px] h-[78px]" alt="">
+                                <div class="flex flex-col items-center px-5 sm:px-10 py-6">
+                                    <img src="{{ asset('images/icons/BadgeCheckBig.svg') }}" class="w-[60px] h-[60px]" alt="">
                                     <h2 class="text-center mt-4" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:36px; color:#5C2D62;">{{ __('front.profiles.photos.verify_modal_title') }}</h2>
                                     <p class="text-center mt-3" style="font-family:'Poppins',sans-serif; font-weight:400; font-size:14px; color:#505050;">
                                         {{ __('front.profiles.photos.verify_modal_desc_1') }}
@@ -132,32 +132,33 @@
                                     </p>
 
                                     @if ($this->isVerificationPending())
-                                        <div class="w-[510px] h-[535px] max-w-full rounded-[15px] bg-[#EBF8EC] flex flex-col items-center justify-center mt-6">
+                                        <div class="w-[510px] min-h-[240px] py-6 px-4 max-w-full rounded-[15px] bg-[#EBF8EC] flex flex-col items-center justify-center mt-6">
                                             <svg class="w-[36px] h-[36px]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <path d="M5 22H19M5 2H19M17 22V17.828C16.9999 17.2976 16.7891 16.789 16.414 16.414L12 12M12 12L7.586 16.414C7.2109 16.789 7.00011 17.2976 7 17.828V22M12 12L7.586 7.586C7.2109 7.21101 7.00011 6.70239 7 6.172V2M12 12L16.414 7.586C16.7891 7.21101 16.9999 6.70239 17 6.172V2" stroke="#00B80F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                             </svg>
                                             <p class="text-center w-[233px] h-[48px] mt-3" style="font-family:'Poppins',sans-serif; font-weight:400; font-size:14px; color:#505050;">{{ __('front.profiles.photos.verify_thanks_line1') }}<br>{{ __('front.profiles.photos.verify_thanks_line2') }}</p>
                                         </div>
                                     @else
-                                        <div class="w-[510px] h-[535px] max-w-full rounded-[15px] bg-[#F2F2F2] mt-6 flex items-center justify-center gap-4">
-                                            <div class="w-[214px] h-[285px] rounded-[15px] flex items-center justify-center overflow-hidden" style="border: 2px dashed #A4A4A4;">
+                                        <div class="w-[510px] py-6 px-4 max-w-full rounded-[15px] bg-[#F2F2F2] mt-6 flex items-center justify-center gap-4">
+                                            <div class="min-w-0 flex-1 max-w-[214px] h-[clamp(160px,30dvh,285px)] rounded-[15px] flex items-center justify-center overflow-hidden" style="border: 2px dashed #A4A4A4;">
                                                 <img src="{{ asset('images/AccountPhotos/verify.png') }}" class="w-full h-full object-cover" alt="">
                                             </div>
 
-                                            <div
-                                                class="relative w-[214px] h-[285px] bg-white border-2 border-dashed border-gray-300 rounded-[15px] flex flex-col items-center justify-center">
+                                            <button type="button"
+                                                @click="document.getElementById('video-upload-input').click()"
+                                                class="relative min-w-0 flex-1 max-w-[214px] h-[clamp(160px,30dvh,285px)] bg-white border-2 border-dashed border-gray-300 rounded-[15px] flex flex-col items-center justify-center cursor-pointer hover:border-primary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2">
                                                 <div class="w-[70px] h-[70px] bg-white rounded-full flex items-center justify-center" style="box-shadow: 0 4px 10px 0 #00000040;">
                                                     <img src="{{ asset('images/icons/ImagePlus.svg') }}" class="w-[32px] h-[32px]" alt="">
                                                 </div>
                                                 <span class="text-center" style="margin-top: 12px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 16px; color: #5C2D62;">{{ __('front.profiles.photos.video_add_line1') }}<br>{{ __('front.profiles.photos.video_add_line2') }}</span>
-                                            </div>
+                                            </button>
                                         </div>
 
                                         <p class="w-[450px] max-w-full mt-4" style="font-family:'Poppins',sans-serif; font-weight:400; font-size:11px; color:#5C5C5C;">{{ __('front.profiles.photos.verify_modal_terms') }}</p>
 
                                         <button type="button" wire:click="requestVerification" wire:loading.attr="disabled"
                                             wire:loading.class="opacity-50 cursor-not-allowed"
-                                            class="w-[450px] max-w-full h-[60px] rounded-lg bg-[#DD3888] hover:bg-[#CA2474] transition-colors mt-4 flex items-center justify-center">
+                                            class="sticky bottom-0 z-10 shrink-0 shadow-[0_0_0_12px_white] w-[450px] max-w-full h-[60px] rounded-lg bg-[#DD3888] hover:bg-[#CA2474] transition-colors mt-4 flex items-center justify-center">
                                             <span wire:loading.remove style="font-family:'Poppins',sans-serif; font-weight:600; font-size:16px; color:#FFFFFF;">{{ __('front.profiles.photos.verify_modal_submit') }}</span>
                                             <span wire:loading style="font-family:'Poppins',sans-serif; font-weight:600; font-size:16px; color:#FFFFFF;">{{ __('front.profiles.photos.processing') }}</span>
                                         </button>
@@ -302,7 +303,11 @@
     <hr class="w-[843px] max-w-full relative left-1/2 -translate-x-1/2 mt-[80px] mb-[50px]">
 
     <!-- Video Upload Section -->
-    <div class="mb-10">
+    <div id="profile-video-section" class="mb-10 scroll-mt-24">
+        <input id="video-upload-input" type="file" wire:model="video"
+            accept="video/mp4,video/webm,video/quicktime" class="!hidden"
+            @change="if (verifyModalOpen && $event.target.files.length) { verifyModalOpen = false; $nextTick(() => document.getElementById('profile-video-section').scrollIntoView({ block: 'start', behavior: 'smooth' })); }"
+            x-on:livewire-upload-error="$dispatch('video-upload-error')">
         <h2 class="mb-6 text-center lg:text-left" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">{{ __('front.profiles.photos.video_title') }}</h2>
 
         <div class="flex flex-col lg:flex-row gap-6 items-center lg:items-start">
@@ -340,9 +345,7 @@
                 @else
                     <label for="video-upload-input"
                         class="relative w-[240px] h-[381px] bg-white border-2 border-dashed border-gray-300 rounded-[15px] cursor-pointer hover:border-primary transition-colors !flex !flex-col !items-center !justify-center !p-0">
-                        <input id="video-upload-input" type="file" wire:model="video"
-                            accept="video/mp4,video/webm,video/quicktime" class="!hidden"
-                            x-on:livewire-upload-error="$dispatch('video-upload-error')">
+
                         <div
                             class="w-[70px] h-[70px] bg-white rounded-full flex items-center justify-center"
                             style="box-shadow: 0 4px 10px 0 #00000040;">

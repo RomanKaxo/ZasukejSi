@@ -16,13 +16,23 @@
         <h2 class="mb-4 text-left" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">{{ __('front.account.services.title') }}</h2>
 
         @if($services && $services->count() > 0)
+            @php
+                // The design fills the 3-column grid to 28 toggle slots by
+                // cycling the same real service list rather than needing 28
+                // distinct services. Every slot still points at the real
+                // $service->id, so toggling any copy toggles them all — only
+                // the DOM id per slot needs to stay unique.
+                $gridSlotCount = max($services->count(), 28);
+                $gridServices = collect(range(0, $gridSlotCount - 1))
+                    ->map(fn ($i) => $services[$i % $services->count()]);
+            @endphp
             <div class="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1">
-                @foreach($services as $service)
+                @foreach($gridServices as $slot => $service)
                 <div class="flex flex-col md:flex-row md:items-start md:justify-between py-1">
                     <div class="flex-shrink-0">
                         <x-toggle-switch
-                            name="service_{{ $service->id }}"
-                            id="service_{{ $service->id }}"
+                            name="service_{{ $service->id }}_{{ $slot }}"
+                            id="service_{{ $service->id }}_{{ $slot }}"
                             :checked="in_array($service->id, $selectedServices)"
                             wire:click="toggleService({{ $service->id }})"
                         />
@@ -93,7 +103,7 @@
     <hr class="w-[843px] max-w-full relative left-1/2 -translate-x-1/2 mt-[80px] mb-[50px]">
 
     <!-- Online Hours Section -->
-    <div class="py-6" x-data="{ stillOnline: @entangle('alwaysOnline') }">
+    <div class="py-6" x-data="{ stillOnline: @entangle('alwaysOnline'), dirty: false }">
         <h2 class="mb-4 text-left" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">{{ __('front.account.services.online_hours_title') }}</h2>
 
         <!-- Always Online Toggle -->
@@ -103,6 +113,7 @@
                 id="always_online"
                 :checked="$alwaysOnline"
                 x-model="stillOnline"
+                x-on:change="dirty = true"
             />
             <label for="always_online" class="ml-3" style="font-family:'Poppins',sans-serif; font-weight:400; font-size:14px; color:#505050;">
                 {{ __('front.account.services.always_online') }}
@@ -141,6 +152,7 @@
                     <div class="relative">
                         <select
                             wire:model="schedule.{{ $day['key'] }}.from"
+                            x-on:change="dirty = true"
                             name="{{ $day['key'] }}_from"
                             id="{{ $day['key'] }}_from"
                             class="input-control !w-[144px] !h-[50px] md:!w-[240px] md:!h-[50px] rounded-[8px] appearance-none pr-[54px]" :disabled="stillOnline">
@@ -165,6 +177,7 @@
                     <div class="relative">
                         <select
                             wire:model="schedule.{{ $day['key'] }}.to"
+                            x-on:change="dirty = true"
                             name="{{ $day['key'] }}_to"
                             id="{{ $day['key'] }}_to"
                             class="input-control !w-[144px] !h-[50px] md:!w-[240px] md:!h-[50px] rounded-[8px] appearance-none pr-[54px]" :disabled="stillOnline">
@@ -184,8 +197,13 @@
             @endforeach
         </div>
 
+        <!-- Unsaved changes notice -->
+        <p x-show="dirty" x-cloak class="mt-6 mb-0" style="font-family:'Poppins',sans-serif; font-weight:500; font-size:13px; color:#DD3888;">
+            {{ __('front.account.services.unsaved_changes') }}
+        </p>
+
         <!-- Save Button -->
-        <button type="button" wire:click="saveAvailability" class="mt-6 w-[310px] md:w-[240px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
+        <button type="button" x-on:click="$wire.saveAvailability().then(() => dirty = false)" class="mt-6 w-[310px] md:w-[240px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
             <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px] group-hover:hidden" alt="Save">
             <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px] hidden group-hover:block" alt="Save">
             <span class="text-[#A4A4A4] group-hover:text-white" style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px;">{{ __('front.profiles.form.save_changes') }}</span>

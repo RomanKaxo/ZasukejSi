@@ -268,7 +268,14 @@
                 datasets: [{
                     data: values,
                     backgroundColor: barColors,
-                    barThickness: 30,
+                    // Fixed pixel bars (barThickness: 30) forced a fixed gap per
+                    // category regardless of how many days were being charted, so
+                    // a full month only ever showed ~7 days before running out of
+                    // horizontal room. Percentage-based sizing shrinks bars and
+                    // gaps together so the whole range (Figma: 15 days) fits the
+                    // container width instead.
+                    categoryPercentage: 0.9,
+                    barPercentage: 0.6,
                     maxBarThickness: 30,
                     borderRadius: { topLeft: 8, topRight: 8, bottomLeft: 0, bottomRight: 0 },
                     borderSkipped: false
@@ -380,14 +387,14 @@
                         // use the chart container (parent of the canvas parent) as reference
                         const parentRect = canvas.parentElement.parentElement.getBoundingClientRect();
                         // Compute top relative to chart container
-                        const top = Math.round(badgeRect.bottom - parentRect.top + 8);
+                        const top = Math.round(badgeRect.bottom - parentRect.top + 16);
                         controls.style.top = top + 'px';
                         return;
                     }
 
-                    // Fallback: position controls just below the chart area
+                    // Keep controls below the date labels, with a 16px gap.
                     if (chart && chart.chartArea) {
-                        const top = Math.round(chart.chartArea.bottom + 12);
+                        const top = Math.round((chart.scales.x?.bottom ?? chart.chartArea.bottom) + 16);
                         controls.style.top = top + 'px';
                     }
                 } catch (e) { console.warn('positionControlsBelowBadge error', e); }

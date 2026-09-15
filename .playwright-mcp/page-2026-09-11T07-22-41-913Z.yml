@@ -1,0 +1,73 @@
+- generic [ref=f3e2]:
+  - navigation [ref=f3e3]:
+    - generic [ref=f3e6]:
+      - link "ESCORT-ONLINE.COM" [ref=f3e7] [cursor=pointer]:
+        - /url: https://dev.stanektech.cz
+      - button [ref=f3e10] [cursor=pointer]
+  - main [ref=f3e13]:
+    - generic [ref=f3e15]:
+      - generic [ref=f3e16]:
+        - link "ESCORT-ONLINE.COM" [ref=f3e17] [cursor=pointer]:
+          - /url: https://dev.stanektech.cz
+        - heading "Sign in to your account" [level=2] [ref=f3e19]
+        - paragraph [ref=f3e20]: Welcome back! Please sign in to continue.
+      - generic [ref=f3e22]:
+        - generic [ref=f3e23]:
+          - generic [ref=f3e24]: Email address
+          - textbox "Email address" [ref=f3e25]:
+            - /placeholder: Enter your email
+        - generic [ref=f3e26]:
+          - generic [ref=f3e27]: Password
+          - textbox "Password" [ref=f3e28]:
+            - /placeholder: Enter your password
+        - generic [ref=f3e29]:
+          - generic [ref=f3e30]:
+            - checkbox "Remember me" [ref=f3e32] [cursor=pointer]
+            - generic [ref=f3e33]: Remember me
+          - button "Sign in" [ref=f3e34] [cursor=pointer]
+        - paragraph [ref=f3e36]:
+          - text: Don't have an account?
+          - link "Register here" [ref=f3e37] [cursor=pointer]:
+            - /url: https://dev.stanektech.cz/register
+  - contentinfo [ref=f3e38]:
+    - generic [ref=f3e39]:
+      - heading "ESCORT-ONLINE.COM" [level=2] [ref=f3e41]
+      - generic [ref=f3e42]:
+        - button "Registration" [ref=f3e44] [cursor=pointer]
+        - generic [ref=f3e45]:
+          - generic [ref=f3e46]:
+            - link "VIP & Premium" [ref=f3e47] [cursor=pointer]:
+              - /url: https://dev.stanektech.cz/vip-premium
+            - link "FAQ" [ref=f3e48] [cursor=pointer]:
+              - /url: https://dev.stanektech.cz/faq
+            - link "Contact Us" [ref=f3e49] [cursor=pointer]:
+              - /url: https://dev.stanektech.cz/contact
+          - generic [ref=f3e50]:
+            - link "Ethics and Safety" [ref=f3e51] [cursor=pointer]:
+              - /url: https://dev.stanektech.cz/ethics
+            - link "Privacy Policy" [ref=f3e52] [cursor=pointer]:
+              - /url: https://dev.stanektech.cz/privacy-policy
+          - link "Terms of Service" [ref=f3e54] [cursor=pointer]:
+            - /url: https://dev.stanektech.cz/terms-of-service
+      - generic [ref=f3e55]:
+        - link "Česky Česky" [ref=f3e56] [cursor=pointer]:
+          - /url: https://dev.stanektech.cz/login?locale=cs
+          - img "Česky" [ref=f3e57]
+          - generic [ref=f3e58]: Česky
+        - link "English English" [ref=f3e59] [cursor=pointer]:
+          - /url: https://dev.stanektech.cz/login?locale=en
+          - img "English" [ref=f3e60]
+          - generic [ref=f3e61]: English
+        - link "Русский Русский" [ref=f3e62] [cursor=pointer]:
+          - /url: https://dev.stanektech.cz/login?locale=ru
+          - img "Русский" [ref=f3e63]
+          - generic [ref=f3e64]: Русский
+      - generic [ref=f3e66]:
+        - note [ref=f3e67]:
+          - img "lock" [ref=f3e68]
+          - generic [ref=f3e69]: We are a 100% discreet platform with professional personal data protection
+        - note [ref=f3e70]:
+          - generic [ref=f3e75]:
+            - generic [ref=f3e76]: Our project is eco-friendly
+            - generic [ref=f3e77]: Thanks to the girl verification system you won't travel anywhere unnecessarily
+        - generic [ref=f3e78]: © 2025 ZasukejSi.cz

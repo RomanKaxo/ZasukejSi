@@ -107,6 +107,18 @@ class ProfileForm extends Component
 
     public $global_prices = [];
 
+    // Fixed 30-minute / 60-minute price slots, shown as dedicated fields
+    // above the free-form custom-duration rows in $local_prices/$global_prices.
+    public $local_price_30_incall = '';
+    public $local_price_30_outcall = '';
+    public $local_price_60_incall = '';
+    public $local_price_60_outcall = '';
+
+    public $global_price_30_incall = '';
+    public $global_price_30_outcall = '';
+    public $global_price_60_incall = '';
+    public $global_price_60_outcall = '';
+
     public $contacts = [];
 
     #[Rule('nullable|in:pending,approved,rejected')]
@@ -176,8 +188,21 @@ class ProfileForm extends Component
             // which nests a schedule under a key. Availability::toText knows
             // every shape this column has been written in.
             $this->availability_hours = \App\Support\Availability::toText($profile->availability_hours);
-            $this->local_prices = $this->normalizePriceRows($profile->local_prices);
-            $this->global_prices = $this->normalizePriceRows($profile->global_prices);
+            [
+                $this->local_price_30_incall,
+                $this->local_price_30_outcall,
+                $this->local_price_60_incall,
+                $this->local_price_60_outcall,
+                $this->local_prices,
+            ] = $this->splitFixedPrices($this->normalizePriceRows($profile->local_prices));
+
+            [
+                $this->global_price_30_incall,
+                $this->global_price_30_outcall,
+                $this->global_price_60_incall,
+                $this->global_price_60_outcall,
+                $this->global_prices,
+            ] = $this->splitFixedPrices($this->normalizePriceRows($profile->global_prices));
             $this->contacts = is_array($profile->contacts) 
                 ? $profile->contacts 
                 : [];
@@ -383,6 +408,69 @@ class ProfileForm extends Component
         return array_values($rows);
     }
 
+    /**
+     * Pull the fixed 30-minute (0.5h) and 60-minute (1h) rows out of a price
+     * row list so they can be edited as dedicated fields, leaving only the
+     * custom-duration rows for the "Add another" list.
+     */
+    protected function splitFixedPrices(array $rows): array
+    {
+        $thirty = ['incall' => '', 'outcall' => ''];
+        $sixty = ['incall' => '', 'outcall' => ''];
+        $rest = [];
+
+        foreach ($rows as $row) {
+            $hours = is_numeric($row['time_hours'] ?? null) ? (float) $row['time_hours'] : null;
+
+            if ($hours === 0.5) {
+                $thirty = [
+                    'incall' => $row['incall_price'] ?? '',
+                    'outcall' => $row['outcall_price'] ?? '',
+                ];
+                continue;
+            }
+
+            if ($hours === 1.0) {
+                $sixty = [
+                    'incall' => $row['incall_price'] ?? '',
+                    'outcall' => $row['outcall_price'] ?? '',
+                ];
+                continue;
+            }
+
+            $rest[] = $row;
+        }
+
+        return [$thirty['incall'], $thirty['outcall'], $sixty['incall'], $sixty['outcall'], $rest];
+    }
+
+    /**
+     * Reassemble the fixed 30/60-minute fields and the custom-duration rows
+     * back into the single row list the `prices` columns store.
+     */
+    protected function buildPriceRows($incall30, $outcall30, $incall60, $outcall60, array $customRows): array
+    {
+        $rows = [];
+
+        if ($incall30 !== '' && $incall30 !== null) {
+            $rows[] = [
+                'time_hours' => 0.5,
+                'incall_price' => (float) $incall30,
+                'outcall_price' => ($outcall30 !== '' && $outcall30 !== null) ? (float) $outcall30 : null,
+            ];
+        }
+
+        if ($incall60 !== '' && $incall60 !== null) {
+            $rows[] = [
+                'time_hours' => 1,
+                'incall_price' => (float) $incall60,
+                'outcall_price' => ($outcall60 !== '' && $outcall60 !== null) ? (float) $outcall60 : null,
+            ];
+        }
+
+        return array_merge($rows, $customRows);
+    }
+
     public function addLocalPrice()
     {
         $this->local_prices[] = [
@@ -579,10 +667,18 @@ class ProfileForm extends Component
                 : 'nullable|string|in:' . implode(',', $this->bustSizeOptions);
             $validationRules['languages'] = 'nullable|string|max:255';
             $validationRules['availability_hours'] = 'nullable|string';
+            $validationRules['local_price_30_incall'] = 'nullable|numeric|min:0';
+            $validationRules['local_price_30_outcall'] = 'nullable|numeric|min:0';
+            $validationRules['local_price_60_incall'] = 'nullable|numeric|min:0';
+            $validationRules['local_price_60_outcall'] = 'nullable|numeric|min:0';
             $validationRules['local_prices'] = 'nullable|array';
             $validationRules['local_prices.*.time_hours'] = 'required|numeric|min:0|max:24';
             $validationRules['local_prices.*.incall_price'] = 'required|numeric|min:0';
             $validationRules['local_prices.*.outcall_price'] = 'nullable|numeric|min:0';
+            $validationRules['global_price_30_incall'] = 'nullable|numeric|min:0';
+            $validationRules['global_price_30_outcall'] = 'nullable|numeric|min:0';
+            $validationRules['global_price_60_incall'] = 'nullable|numeric|min:0';
+            $validationRules['global_price_60_outcall'] = 'nullable|numeric|min:0';
             $validationRules['global_prices'] = 'nullable|array';
             $validationRules['global_prices.*.time_hours'] = 'required|numeric|min:0|max:24';
             $validationRules['global_prices.*.incall_price'] = 'required|numeric|min:0';
@@ -609,7 +705,17 @@ class ProfileForm extends Component
             $validationRules['email_change_password'] = 'required|current_password';
         }
 
-        $this->validate($validationRules);
+        try {
+            $this->validate($validationRules);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // A validation failure anywhere in this form (e.g. a price row
+            // with an incall/outcall amount but no duration) used to fail
+            // silently: nothing saved, no scroll, no banner — the error sat
+            // as small red text next to whichever field caused it, easy to
+            // miss below the fold. Scroll up so the failure is visible.
+            $this->js('window.scrollTo({top: 0, behavior: "smooth"})');
+            throw $e;
+        }
 
         // Track email change before update
         $emailChanged = !empty($this->new_email) && $user->email !== $this->new_email;
@@ -681,8 +787,20 @@ class ProfileForm extends Component
                 'availability_hours' => $this->availability_hours
                     ? \App\Support\Availability::fromText($this->availability_hours, $user->profile->availability_hours ?? null)
                     : null,
-                'local_prices' => $this->local_prices ?: null,
-                'global_prices' => $this->global_prices ?: null,
+                'local_prices' => $this->buildPriceRows(
+                    $this->local_price_30_incall,
+                    $this->local_price_30_outcall,
+                    $this->local_price_60_incall,
+                    $this->local_price_60_outcall,
+                    $this->local_prices
+                ) ?: null,
+                'global_prices' => $this->buildPriceRows(
+                    $this->global_price_30_incall,
+                    $this->global_price_30_outcall,
+                    $this->global_price_60_incall,
+                    $this->global_price_60_outcall,
+                    $this->global_prices
+                ) ?: null,
                 'contacts' => $this->contacts ?: null,
                 'is_public' => $this->is_public,
             ];

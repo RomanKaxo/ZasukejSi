@@ -1,0 +1,100 @@
+- generic [ref=f6e2]:
+  - navigation [ref=f6e3]:
+    - generic [ref=f6e6]:
+      - link "ESCORT-ONLINE.COM" [ref=f6e7] [cursor=pointer]:
+        - /url: http://127.0.0.1:8123
+      - button [ref=f6e10] [cursor=pointer]
+  - main [ref=f6e13]:
+    - generic [ref=f6e15]:
+      - generic:
+        - generic:
+          - button "Toggle menu" [ref=f6e16] [cursor=pointer]
+          - complementary [ref=f6e19]:
+            - navigation [ref=f6e20]:
+              - list [ref=f6e21]:
+                - listitem [ref=f6e22]:
+                  - link "Ratings" [ref=f6e23] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8123/account/member/ratings
+                - listitem [ref=f6e26]:
+                  - link "My Favorites" [ref=f6e27] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8123/account/member/favorites
+                - listitem [ref=f6e30]:
+                  - link "Girls of the Month" [ref=f6e31] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8123/account/member/girls-of-month
+                - listitem [ref=f6e34]:
+                  - link "Girls Archive" [ref=f6e35] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8123/account/member/archive
+                - listitem [ref=f6e38]:
+                  - link "Reported Girls" [ref=f6e39] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8123/account/member/reported
+                - listitem [ref=f6e42]:
+                  - link "Membership" [ref=f6e43] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8123/account/member/membership
+                - listitem [ref=f6e46]:
+                  - link "Basic Settings" [ref=f6e47] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8123/account/member
+      - main [ref=f6e51]:
+        - generic [ref=f6e52]:
+          - generic [ref=f6e53]:
+            - heading "Girls Archive" [level=1] [ref=f6e54]
+            - paragraph [ref=f6e55]: In this section you will find all the girls who used to offer services in the Czech Republic and are no longer active. If you are curious which girls you missed because you registered later than others, browse the archive below.
+          - separator [ref=f6e56]
+          - generic [ref=f6e57]:
+            - generic [ref=f6e58]:
+              - generic [ref=f6e59]: Girl's age today
+              - combobox "Girl's age today" [ref=f6e61] [cursor=pointer]:
+                - option "Girl's age today" [selected]
+                - option "18-20 let"
+                - option "21-25 let"
+                - option "26-30 let"
+                - option "31-35 let"
+                - option "36-40 let"
+                - option "41-45 let"
+                - option "46-50 let"
+            - button "Search" [ref=f6e62] [cursor=pointer]
+          - separator [ref=f6e67]
+          - heading "Girls matching your search" [level=2] [ref=f6e68]
+          - paragraph [ref=f6e73]: No girls match the selected filter.
+  - contentinfo [ref=f6e74]:
+    - generic [ref=f6e75]:
+      - heading "ESCORT-ONLINE.COM" [level=2] [ref=f6e77]
+      - generic [ref=f6e78]:
+        - link "VIP & Premium" [ref=f6e80] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/vip-premium
+        - generic [ref=f6e81]:
+          - link "FAQ" [ref=f6e83] [cursor=pointer]:
+            - /url: http://127.0.0.1:8123/faq
+          - generic [ref=f6e84]:
+            - link "Ethics and Safety" [ref=f6e85] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/ethics
+            - link "Contact Us" [ref=f6e86] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/contact
+          - generic [ref=f6e87]:
+            - link "Privacy Policy" [ref=f6e88] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/privacy-policy
+            - link "Terms of Service" [ref=f6e89] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/terms-of-service
+            - link "Premium account for men" [ref=f6e90] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/vip-premium
+      - generic [ref=f6e91]:
+        - link "Česky Česky" [ref=f6e92] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/account/member/archive?locale=cs
+          - img "Česky" [ref=f6e93]
+          - generic [ref=f6e94]: Česky
+        - link "English English" [ref=f6e95] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/account/member/archive?locale=en
+          - img "English" [ref=f6e96]
+          - generic [ref=f6e97]: English
+        - link "Русский Русский" [ref=f6e98] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/account/member/archive?locale=ru
+          - img "Русский" [ref=f6e99]
+          - generic [ref=f6e100]: Русский
+      - generic [ref=f6e102]:
+        - note [ref=f6e103]:
+          - img "lock" [ref=f6e104]
+          - generic [ref=f6e105]: We are a 100% discreet platform with professional personal data protection
+        - note [ref=f6e106]:
+          - generic [ref=f6e111]:
+            - generic [ref=f6e112]: Our project is eco-friendly
+            - generic [ref=f6e113]: Thanks to the girl verification system you won't travel anywhere unnecessarily
+        - generic [ref=f6e114]: © 2025 ZasukejSi.cz

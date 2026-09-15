@@ -1,0 +1,479 @@
+- generic [ref=f5e2]:
+  - navigation [ref=f5e3]:
+    - generic [ref=f5e4]:
+      - generic [ref=f5e6]:
+        - link "ESCORT-ONLINE.COM" [ref=f5e7] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123
+        - button [expanded] [active] [ref=f5e10] [cursor=pointer]
+      - generic [ref=f5e975]:
+        - link "About" [ref=f5e976] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123
+        - link "VIP & Premium" [ref=f5e977] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/vip-premium
+        - link "FAQ" [ref=f5e978] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/faq
+        - link "Ethics" [ref=f5e979] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/ethics
+        - link "Contact" [ref=f5e980] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/contact
+        - separator [ref=f5e981]
+        - link [ref=f5e982] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/account
+        - link [ref=f5e986] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/messages
+        - link [ref=f5e990] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/account/profile
+        - link [ref=f5e995] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/account/photos
+        - link [ref=f5e999] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/account/services
+        - link [ref=f5e1003] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/account/statistics
+        - link [ref=f5e1007] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/notifications/archived
+        - button "Log-out" [ref=f5e1012] [cursor=pointer]
+        - generic [ref=f5e1017]:
+          - link "Česky Česky" [ref=f5e1018] [cursor=pointer]:
+            - /url: http://127.0.0.1:8123?locale=cs
+            - img "Česky" [ref=f5e1019]
+            - generic [ref=f5e1020]: Česky
+          - link "English English" [ref=f5e1021] [cursor=pointer]:
+            - /url: http://127.0.0.1:8123?locale=en
+            - img "English" [ref=f5e1022]
+            - generic [ref=f5e1023]: English
+          - link "Русский Русский" [ref=f5e1024] [cursor=pointer]:
+            - /url: http://127.0.0.1:8123?locale=ru
+            - img "Русский" [ref=f5e1025]
+            - generic [ref=f5e1026]: Русский
+  - main [ref=f5e13]:
+    - generic [ref=f5e14]:
+      - generic [ref=f5e18]:
+        - heading "We are a community of people who enjoy sex." [level=1] [ref=f5e19]: We are a communityof people who enjoy sex.
+        - paragraph [ref=f5e20]: Girls, sign up todayand gain new clients.
+      - generic [ref=f5e24]:
+        - generic [ref=f5e26]:
+          - heading "Girls in Europe" [level=1] [ref=f5e31]
+          - generic [ref=f5e32]:
+            - button "Open country search" [ref=f5e33] [cursor=pointer]
+            - generic [ref=f5e37]:
+              - generic [ref=f5e38]:
+                - generic [ref=f5e39]: Country and town
+                - button "Country and town" [ref=f5e41] [cursor=pointer]:
+                  - generic [ref=f5e42]: Albania
+              - generic [ref=f5e43]:
+                - generic [ref=f5e44]: Select town
+                - button "Select town" [ref=f5e46] [cursor=pointer]
+          - generic [ref=f5e48]:
+            - button "All Girls" [ref=f5e49] [cursor=pointer]
+            - button "18-25 yo" [ref=f5e53] [cursor=pointer]
+            - button "26-30 yo" [ref=f5e54] [cursor=pointer]
+            - button "31-35 yo" [ref=f5e55] [cursor=pointer]
+            - button "36-40 yo" [ref=f5e56] [cursor=pointer]
+            - button "40-50 yo" [ref=f5e57] [cursor=pointer]
+            - button "50 yo +" [ref=f5e58] [cursor=pointer]
+          - generic [ref=f5e60]:
+            - button "Recommendation" [ref=f5e61] [cursor=pointer]
+            - button "Verified photo" [ref=f5e64] [cursor=pointer]
+            - button "Video" [ref=f5e66] [cursor=pointer]
+            - button "Porno actress" [ref=f5e68] [cursor=pointer]
+            - button "New" [ref=f5e70] [cursor=pointer]
+            - button "Rating" [ref=f5e73] [cursor=pointer]
+        - generic [ref=f5e76]:
+          - generic [ref=f5e77] [cursor=pointer]:
+            - generic [ref=f5e78]:
+              - generic [ref=f5e79]: VIP
+              - generic [ref=f5e92]:
+                - img "Alexandra" [ref=f5e93]
+                - img "Alexandra" [ref=f5e94]
+                - img "Alexandra" [ref=f5e95]
+                - img "Alexandra" [ref=f5e96]
+                - img "Alexandra" [ref=f5e97]
+              - generic [ref=f5e98]:
+                - button [ref=f5e99]
+                - button [ref=f5e101]
+                - button [ref=f5e103]
+                - button [ref=f5e105]
+                - button [ref=f5e107]
+            - generic [ref=f5e109]:
+              - heading "Alexandra" [level=4] [ref=f5e112]
+              - generic [ref=f5e113]:
+                - generic [ref=f5e114]:
+                  - generic [ref=f5e115]: 168 cm
+                  - generic [ref=f5e117]: 19 years
+                - generic [ref=f5e119]:
+                  - generic [ref=f5e120]: "Rating:"
+                  - generic [ref=f5e121]: —
+          - generic [ref=f5e122] [cursor=pointer]:
+            - generic [ref=f5e123]:
+              - generic [ref=f5e124]: VIP
+              - generic [ref=f5e137]:
+                - img "Tamara" [ref=f5e138]
+                - img "Tamara" [ref=f5e139]
+                - img "Tamara" [ref=f5e140]
+                - img "Tamara" [ref=f5e141]
+                - img "Tamara" [ref=f5e142]
+              - generic [ref=f5e143]:
+                - button [ref=f5e144]
+                - button [ref=f5e146]
+                - button [ref=f5e148]
+                - button [ref=f5e150]
+                - button [ref=f5e152]
+            - generic [ref=f5e154]:
+              - heading "Tamara" [level=4] [ref=f5e158]
+              - generic [ref=f5e159]:
+                - generic [ref=f5e160]:
+                  - generic [ref=f5e161]: 168 cm
+                  - generic [ref=f5e163]: 19 years
+                - generic [ref=f5e165]:
+                  - generic [ref=f5e166]: "Rating:"
+                  - generic [ref=f5e167]: —
+          - generic [ref=f5e168] [cursor=pointer]:
+            - generic [ref=f5e169]:
+              - generic [ref=f5e170]: VIP
+              - generic [ref=f5e183]:
+                - img "Jana" [ref=f5e184]
+                - img "Jana" [ref=f5e185]
+                - img "Jana" [ref=f5e186]
+                - img "Jana" [ref=f5e187]
+                - img "Jana" [ref=f5e188]
+              - generic [ref=f5e189]:
+                - button [ref=f5e190]
+                - button [ref=f5e192]
+                - button [ref=f5e194]
+                - button [ref=f5e196]
+                - button [ref=f5e198]
+            - generic [ref=f5e200]:
+              - heading "Jana" [level=4] [ref=f5e203]
+              - generic [ref=f5e204]:
+                - generic [ref=f5e205]:
+                  - generic [ref=f5e206]: 168 cm
+                  - generic [ref=f5e208]: 19 years
+                - generic [ref=f5e210]:
+                  - generic [ref=f5e211]: "Rating:"
+                  - generic [ref=f5e212]: —
+          - generic [ref=f5e213] [cursor=pointer]:
+            - generic [ref=f5e214]:
+              - generic [ref=f5e215]: VIP
+              - generic [ref=f5e228]:
+                - img "Angela" [ref=f5e229]
+                - img "Angela" [ref=f5e230]
+                - img "Angela" [ref=f5e231]
+                - img "Angela" [ref=f5e232]
+                - img "Angela" [ref=f5e233]
+              - generic [ref=f5e234]:
+                - button [ref=f5e235]
+                - button [ref=f5e237]
+                - button [ref=f5e239]
+                - button [ref=f5e241]
+                - button [ref=f5e243]
+            - generic [ref=f5e245]:
+              - heading "Angela" [level=4] [ref=f5e248]
+              - generic [ref=f5e249]:
+                - generic [ref=f5e250]:
+                  - generic [ref=f5e251]: 168 cm
+                  - generic [ref=f5e253]: 19 years
+                - generic [ref=f5e255]:
+                  - generic [ref=f5e256]: "Rating:"
+                  - generic [ref=f5e257]: —
+          - generic [ref=f5e261]:
+            - generic [ref=f5e262]: Our project is eco-friendly
+            - generic [ref=f5e263]: Thanks to the girl verification system you won't travel anywhere unnecessarily
+          - generic [ref=f5e264] [cursor=pointer]:
+            - generic [ref=f5e265]:
+              - generic [ref=f5e266]: VIP
+              - generic [ref=f5e279]:
+                - img "Lucie" [ref=f5e280]
+                - img "Lucie" [ref=f5e281]
+                - img "Lucie" [ref=f5e282]
+                - img "Lucie" [ref=f5e283]
+                - img "Lucie" [ref=f5e284]
+              - generic [ref=f5e285]:
+                - button [ref=f5e286]
+                - button [ref=f5e288]
+                - button [ref=f5e290]
+                - button [ref=f5e292]
+                - button [ref=f5e294]
+            - generic [ref=f5e296]:
+              - heading "Lucie" [level=4] [ref=f5e299]
+              - generic [ref=f5e300]:
+                - generic [ref=f5e301]:
+                  - generic [ref=f5e302]: 168 cm
+                  - generic [ref=f5e304]: 19 years
+                - generic [ref=f5e306]:
+                  - generic [ref=f5e307]: "Rating:"
+                  - generic [ref=f5e308]: —
+          - generic [ref=f5e323] [cursor=pointer]:
+            - heading "Savannah Waters" [level=4] [ref=f5e326]
+            - generic [ref=f5e327]:
+              - generic [ref=f5e328]:
+                - generic [ref=f5e329]: —
+                - generic [ref=f5e331]: 18 years
+              - generic [ref=f5e333]:
+                - generic [ref=f5e334]: "Rating:"
+                - generic [ref=f5e335]: —
+          - generic [ref=f5e350] [cursor=pointer]:
+            - heading "Daphney Hegmann" [level=4] [ref=f5e353]
+            - generic [ref=f5e354]:
+              - generic [ref=f5e355]:
+                - generic [ref=f5e356]: —
+                - generic [ref=f5e358]: 38 years
+              - generic [ref=f5e360]:
+                - generic [ref=f5e361]: "Rating:"
+                - generic [ref=f5e362]: —
+          - generic [ref=f5e377] [cursor=pointer]:
+            - heading "Carrie Harvey" [level=4] [ref=f5e380]
+            - generic [ref=f5e381]:
+              - generic [ref=f5e382]:
+                - generic [ref=f5e383]: —
+                - generic [ref=f5e385]: 32 years
+              - generic [ref=f5e387]:
+                - generic [ref=f5e388]: "Rating:"
+                - generic [ref=f5e389]: —
+          - generic [ref=f5e392]:
+            - generic [ref=f5e393]:
+              - img "Advert background" [ref=f5e395]
+              - generic [ref=f5e398]:
+                - heading "Earn while you are still young..." [level=2] [ref=f5e401]
+                - paragraph [ref=f5e402]: Gentlemen are waiting who truly appreciate the time and care you devote to your body!
+            - generic [ref=f5e403]:
+              - paragraph [ref=f5e409]: Verified profiles help build trust and improve response rates.
+              - paragraph [ref=f5e415]: A polished presentation makes it easier to attract new clients quickly.
+          - generic [ref=f5e430] [cursor=pointer]:
+            - heading "Carrie Weissnat" [level=4] [ref=f5e434]
+            - generic [ref=f5e435]:
+              - generic [ref=f5e436]:
+                - generic [ref=f5e437]: —
+                - generic [ref=f5e439]: 52 years
+              - generic [ref=f5e441]:
+                - generic [ref=f5e442]: "Rating:"
+                - generic [ref=f5e443]: —
+          - generic [ref=f5e458] [cursor=pointer]:
+            - heading "Winona Ortiz" [level=4] [ref=f5e461]
+            - generic [ref=f5e462]:
+              - generic [ref=f5e463]:
+                - generic [ref=f5e464]: —
+                - generic [ref=f5e466]: 33 years
+              - generic [ref=f5e468]:
+                - generic [ref=f5e469]: "Rating:"
+                - generic [ref=f5e470]: —
+          - generic [ref=f5e485] [cursor=pointer]:
+            - heading "Katharina Flatley" [level=4] [ref=f5e489]
+            - generic [ref=f5e490]:
+              - generic [ref=f5e491]:
+                - generic [ref=f5e492]: —
+                - generic [ref=f5e494]: 44 years
+              - generic [ref=f5e496]:
+                - generic [ref=f5e497]: "Rating:"
+                - generic [ref=f5e498]: —
+          - generic [ref=f5e513] [cursor=pointer]:
+            - heading "Gisselle Prohaska" [level=4] [ref=f5e516]
+            - generic [ref=f5e517]:
+              - generic [ref=f5e518]:
+                - generic [ref=f5e519]: —
+                - generic [ref=f5e521]: 19 years
+              - generic [ref=f5e523]:
+                - generic [ref=f5e524]: "Rating:"
+                - generic [ref=f5e525]: —
+          - generic [ref=f5e540] [cursor=pointer]:
+            - heading "Minnie Parisian" [level=4] [ref=f5e543]
+            - generic [ref=f5e544]:
+              - generic [ref=f5e545]:
+                - generic [ref=f5e546]: —
+                - generic [ref=f5e548]: 55 years
+              - generic [ref=f5e550]:
+                - generic [ref=f5e551]: "Rating:"
+                - generic [ref=f5e552]: —
+          - generic [ref=f5e567] [cursor=pointer]:
+            - heading "Euna Schmidt" [level=4] [ref=f5e571]
+            - generic [ref=f5e572]:
+              - generic [ref=f5e573]:
+                - generic [ref=f5e574]: —
+                - generic [ref=f5e576]: 25 years
+              - generic [ref=f5e578]:
+                - generic [ref=f5e579]: "Rating:"
+                - generic [ref=f5e580]: —
+          - generic [ref=f5e595] [cursor=pointer]:
+            - heading "Helena Crist" [level=4] [ref=f5e598]
+            - generic [ref=f5e599]:
+              - generic [ref=f5e600]:
+                - generic [ref=f5e601]: —
+                - generic [ref=f5e603]: 39 years
+              - generic [ref=f5e605]:
+                - generic [ref=f5e606]: "Rating:"
+                - generic [ref=f5e607]: —
+          - generic [ref=f5e622] [cursor=pointer]:
+            - heading "Noemie McDermott" [level=4] [ref=f5e625]
+            - generic [ref=f5e626]:
+              - generic [ref=f5e627]:
+                - generic [ref=f5e628]: —
+                - generic [ref=f5e630]: 36 years
+              - generic [ref=f5e632]:
+                - generic [ref=f5e633]: "Rating:"
+                - generic [ref=f5e634]: —
+          - generic [ref=f5e649] [cursor=pointer]:
+            - heading "Genesis Armstrong" [level=4] [ref=f5e652]
+            - generic [ref=f5e653]:
+              - generic [ref=f5e654]:
+                - generic [ref=f5e655]: —
+                - generic [ref=f5e657]: 27 years
+              - generic [ref=f5e659]:
+                - generic [ref=f5e660]: "Rating:"
+                - generic [ref=f5e661]: —
+          - generic [ref=f5e676] [cursor=pointer]:
+            - heading "Roberta Hauck" [level=4] [ref=f5e679]
+            - generic [ref=f5e680]:
+              - generic [ref=f5e681]:
+                - generic [ref=f5e682]: —
+                - generic [ref=f5e684]: 35 years
+              - generic [ref=f5e686]:
+                - generic [ref=f5e687]: "Rating:"
+                - generic [ref=f5e688]: —
+          - generic [ref=f5e703] [cursor=pointer]:
+            - heading "Birdie Hettinger" [level=4] [ref=f5e707]
+            - generic [ref=f5e708]:
+              - generic [ref=f5e709]:
+                - generic [ref=f5e710]: —
+                - generic [ref=f5e712]: 32 years
+              - generic [ref=f5e714]:
+                - generic [ref=f5e715]: "Rating:"
+                - generic [ref=f5e716]: —
+          - generic [ref=f5e717] [cursor=pointer]:
+            - generic [ref=f5e718]: VIP
+            - generic [ref=f5e736]:
+              - heading "Desiree Powlowski" [level=4] [ref=f5e739]
+              - generic [ref=f5e740]:
+                - generic [ref=f5e741]:
+                  - generic [ref=f5e742]: —
+                  - generic [ref=f5e744]: 40 years
+                - generic [ref=f5e746]:
+                  - generic [ref=f5e747]: "Rating:"
+                  - generic [ref=f5e748]: —
+          - generic [ref=f5e763] [cursor=pointer]:
+            - heading "Adele Howe" [level=4] [ref=f5e766]
+            - generic [ref=f5e767]:
+              - generic [ref=f5e768]:
+                - generic [ref=f5e769]: —
+                - generic [ref=f5e771]: 46 years
+              - generic [ref=f5e773]:
+                - generic [ref=f5e774]: "Rating:"
+                - generic [ref=f5e775]: —
+          - generic [ref=f5e790] [cursor=pointer]:
+            - heading "Alyson Rogahn" [level=4] [ref=f5e793]
+            - generic [ref=f5e794]:
+              - generic [ref=f5e795]:
+                - generic [ref=f5e796]: —
+                - generic [ref=f5e798]: 33 years
+              - generic [ref=f5e800]:
+                - generic [ref=f5e801]: "Rating:"
+                - generic [ref=f5e802]: —
+          - generic [ref=f5e803] [cursor=pointer]:
+            - generic [ref=f5e804]: VIP
+            - generic [ref=f5e822]:
+              - heading "Premium Zena Praha" [level=4] [ref=f5e825]
+              - generic [ref=f5e826]:
+                - generic [ref=f5e827]:
+                  - generic [ref=f5e828]: —
+                  - generic [ref=f5e830]: 27 years
+                - generic [ref=f5e832]:
+                  - generic [ref=f5e833]: "Rating:"
+                  - generic [ref=f5e834]: —
+          - generic [ref=f5e849] [cursor=pointer]:
+            - heading "Sarah Johnson Massage Therapy" [level=4] [ref=f5e853]
+            - generic [ref=f5e854]:
+              - generic [ref=f5e855]:
+                - generic [ref=f5e856]: —
+                - generic [ref=f5e858]: 29 years
+              - generic [ref=f5e860]:
+                - generic [ref=f5e861]: "Rating:"
+                - generic [ref=f5e862]: —
+          - generic [ref=f5e877] [cursor=pointer]:
+            - heading "Jane Professional Massage" [level=4] [ref=f5e881]
+            - generic [ref=f5e882]:
+              - generic [ref=f5e883]:
+                - generic [ref=f5e884]: —
+                - generic [ref=f5e886]: 28 years
+              - generic [ref=f5e888]:
+                - generic [ref=f5e889]: "Rating:"
+                - generic [ref=f5e890]: 5.0/5
+        - generic [ref=f5e895]:
+          - generic [ref=f5e896]:
+            - img "Novinky" [ref=f5e897]
+            - heading "Latest News" [level=2] [ref=f5e898]
+          - generic [ref=f5e899]:
+            - article [ref=f5e900]:
+              - link "New Features Announcement calendar 11. 9. 2026 clock 1 min read" [ref=f5e901] [cursor=pointer]:
+                - /url: http://127.0.0.1:8123/new-features-announcement
+                - img "New Features Announcement" [ref=f5e902]
+                - generic [ref=f5e903]:
+                  - generic [ref=f5e904]:
+                    - img "calendar" [ref=f5e905]
+                    - generic [ref=f5e906]: 11. 9. 2026
+                  - generic [ref=f5e907]:
+                    - img "clock" [ref=f5e908]
+                    - generic [ref=f5e909]: 1 min read
+              - heading [level=3] [ref=f5e910]:
+                - link "New Features Announcement" [ref=f5e911] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8123/new-features-announcement
+              - paragraph [ref=f5e912]: Exciting new features have been added to our platform. Check out what's new and how it can benefit you.
+              - link "Read article" [ref=f5e913] [cursor=pointer]:
+                - /url: http://127.0.0.1:8123/new-features-announcement
+            - article [ref=f5e914]:
+              - link "Understanding Our Verification Process calendar 11. 9. 2026 clock 1 min read" [ref=f5e915] [cursor=pointer]:
+                - /url: http://127.0.0.1:8123/verification-process
+                - img "Understanding Our Verification Process" [ref=f5e916]
+                - generic [ref=f5e917]:
+                  - generic [ref=f5e918]:
+                    - img "calendar" [ref=f5e919]
+                    - generic [ref=f5e920]: 11. 9. 2026
+                  - generic [ref=f5e921]:
+                    - img "clock" [ref=f5e922]
+                    - generic [ref=f5e923]: 1 min read
+              - heading [level=3] [ref=f5e924]:
+                - link "Understanding Our Verification Process" [ref=f5e925] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8123/verification-process
+              - paragraph [ref=f5e926]: Learn about our verification process and why it's important for building trust in our community.
+              - link "Read article" [ref=f5e927] [cursor=pointer]:
+                - /url: http://127.0.0.1:8123/verification-process
+  - contentinfo [ref=f5e928]:
+    - generic [ref=f5e929]:
+      - heading "ESCORT-ONLINE.COM" [level=2] [ref=f5e931]
+      - generic [ref=f5e932]:
+        - link "VIP & Premium" [ref=f5e934] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/vip-premium
+        - generic [ref=f5e935]:
+          - link "FAQ" [ref=f5e937] [cursor=pointer]:
+            - /url: http://127.0.0.1:8123/faq
+          - generic [ref=f5e938]:
+            - link "Ethics and Safety" [ref=f5e939] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/ethics
+            - link "Contact Us" [ref=f5e940] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/contact
+          - generic [ref=f5e941]:
+            - link "Privacy Policy" [ref=f5e942] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/privacy-policy
+            - link "Terms of Service" [ref=f5e943] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/terms-of-service
+            - link "Premium account for men" [ref=f5e944] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/vip-premium
+      - generic [ref=f5e945]:
+        - link "Česky Česky" [ref=f5e946] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123?locale=cs
+          - img "Česky" [ref=f5e947]
+          - generic [ref=f5e948]: Česky
+        - link "English English" [ref=f5e949] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123?locale=en
+          - img "English" [ref=f5e950]
+          - generic [ref=f5e951]: English
+        - link "Русский Русский" [ref=f5e952] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123?locale=ru
+          - img "Русский" [ref=f5e953]
+          - generic [ref=f5e954]: Русский
+      - generic [ref=f5e956]:
+        - note [ref=f5e957]:
+          - img "lock" [ref=f5e958]
+          - generic [ref=f5e959]: We are a 100% discreet platform with professional personal data protection
+        - note [ref=f5e960]:
+          - generic [ref=f5e965]:
+            - generic [ref=f5e966]: Our project is eco-friendly
+            - generic [ref=f5e967]: Thanks to the girl verification system you won't travel anywhere unnecessarily
+        - generic [ref=f5e968]: © 2025 ZasukejSi.cz

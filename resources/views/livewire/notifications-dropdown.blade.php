@@ -18,7 +18,11 @@
         title="{{ __('front.nav.notifications') }}"
     >
         <span class="w-[60px] h-[60px] border border-[#DD3888] rounded-[8px] flex items-center justify-center">
-            <img src="{{ asset('images/icons/bell.svg') }}" class="w-[26px] h-[26px]" alt="{{ __('front.nav.notifications') }}">
+            {{-- pointer-events:none: without it, Safari can resolve the
+                 click's target as this <img> rather than the button, which
+                 confuses Alpine's open/click.outside toggling and made the
+                 dropdown flash open and immediately close. --}}
+            <img src="{{ asset('images/icons/bell.svg') }}" class="w-[26px] h-[26px]" alt="{{ __('front.nav.notifications') }}" style="pointer-events: none;">
         </span>
 
         @if($this->unreadCount > 0)

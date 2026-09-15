@@ -1,0 +1,161 @@
+- generic [ref=f9e2]:
+  - navigation [ref=f9e3]:
+    - generic [ref=f9e6]:
+      - link "ZAŠUKEJSI.CZ" [ref=f9e7] [cursor=pointer]:
+        - /url: http://127.0.0.1:8123
+      - generic [ref=f9e9]:
+        - link "Úvod" [ref=f9e10] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123
+        - link "VIP a Premium" [ref=f9e11] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/vip-premium
+        - link "FAQ" [ref=f9e12] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/faq
+        - link "Etika" [ref=f9e13] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/ethics
+        - link "Kontakt" [ref=f9e14] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/contact
+      - generic [ref=f9e15]:
+        - generic [ref=f9e16]:
+          - button [ref=f9e18] [cursor=pointer]:
+            - img "Oznámení" [ref=f9e20]
+          - link [ref=f9e22] [cursor=pointer]:
+            - /url: http://127.0.0.1:8123/messages
+            - img "Moje zprávy" [ref=f9e23]
+          - button [ref=f9e25] [cursor=pointer]:
+            - img "User" [ref=f9e26]
+        - button [ref=f9e29] [cursor=pointer]:
+          - img "Česky" [ref=f9e30]
+  - main [ref=f9e31]:
+    - generic [ref=f9e32]:
+      - generic [ref=f9e33]:
+        - complementary [ref=f9e34]:
+          - generic [ref=f9e35]:
+            - generic [ref=f9e36]:
+              - img "star" [ref=f9e37]
+              - text: VIP PROFIL
+            - generic [ref=f9e38]:
+              - img "camera-off" [ref=f9e39]
+              - text: FOTO OVĚŘENO
+          - heading "Alexandra" [level=1] [ref=f9e41]
+          - generic [ref=f9e42]: ONLINE
+          - strong [ref=f9e45]: Hodnocení
+          - generic [ref=f9e50]: Ostrava / Moravskoslezský Kraj
+          - generic [ref=f9e53]:
+            - generic [ref=f9e54]:
+              - generic [ref=f9e55]: Věk
+              - generic [ref=f9e56]: 19 let
+            - generic [ref=f9e57]:
+              - generic [ref=f9e58]: Váha
+              - generic [ref=f9e59]: —
+            - generic [ref=f9e60]:
+              - generic [ref=f9e61]: Výška
+              - generic [ref=f9e62]: 168 cm / 5'6"
+            - generic [ref=f9e63]:
+              - generic [ref=f9e64]: Prsa
+              - generic [ref=f9e65]: —
+            - generic [ref=f9e66]:
+              - generic [ref=f9e67]: Jazyky
+              - generic [ref=f9e68]: —
+          - generic [ref=f9e69]:
+            - generic [ref=f9e70]: InCall
+            - generic [ref=f9e74]: OutCall
+          - link "Poslat zprávu" [ref=f9e78] [cursor=pointer]:
+            - /url: http://127.0.0.1:8123/messages/12
+        - generic [ref=f9e80]:
+          - generic "Profile actions" [ref=f9e81]:
+            - generic [ref=f9e82]:
+              - link "Dát hodnocení" [ref=f9e83] [cursor=pointer]:
+                - /url: http://127.0.0.1:8123/account/member/ratings?profile=7
+              - link "Obnovit přístup" [ref=f9e86] [cursor=pointer]:
+                - /url: http://127.0.0.1:8123/account/password
+              - link "Nahlásit profil" [ref=f9e89] [cursor=pointer]:
+                - /url: "#"
+          - generic [ref=f9e92]:
+            - button "Uložit" [ref=f9e95] [cursor=pointer]
+            - generic [ref=f9e100]:
+              - button [ref=f9e101] [cursor=pointer]:
+                - img "Alexandra" [ref=f9e102]
+              - button [ref=f9e103] [cursor=pointer]:
+                - img "Alexandra" [ref=f9e104]
+              - button [ref=f9e105] [cursor=pointer]:
+                - img "Alexandra" [ref=f9e106]
+              - button "Previous slide" [ref=f9e107] [cursor=pointer]: ❮
+              - button "Next slide" [ref=f9e108] [cursor=pointer]: ❯
+          - generic [ref=f9e109]:
+            - heading "Více o mně" [level=2] [ref=f9e110]
+            - generic [ref=f9e111]: Zkušený masér/masérka nabízející relaxační a terapeutické masáže.
+          - generic [ref=f9e112]:
+            - generic [ref=f9e113]:
+              - heading "Video" [level=3] [ref=f9e114]
+              - generic [ref=f9e116]:
+                - img "Alexandra" [ref=f9e117]
+                - button "Play video" [ref=f9e118] [cursor=pointer]
+            - generic [ref=f9e120]:
+              - generic [ref=f9e121]:
+                - heading "Moje ceny" [level=3] [ref=f9e122]
+                - paragraph [ref=f9e123]: Neuvedeno
+              - generic [ref=f9e124]:
+                - heading "Služby" [level=3] [ref=f9e125]
+                - paragraph [ref=f9e126]: Neuvedeno
+      - generic [ref=f9e127]:
+        - generic [ref=f9e128]:
+          - generic [ref=f9e129]:
+            - heading "Nejlépe hodnocené dívky" [level=2] [ref=f9e130]
+            - generic [ref=f9e131]: tento měsíc
+          - link "Premium účet vám odemkne hodnocení" [ref=f9e134] [cursor=pointer]:
+            - /url: http://127.0.0.1:8123/vip-premium
+        - generic [ref=f9e137]:
+          - generic:
+            - button "Previous slide" [disabled] [ref=f9e140] [cursor=pointer]: ⏴
+            - button "Next slide" [disabled] [ref=f9e141] [cursor=pointer]: ⏵
+      - generic [ref=f9e142]:
+        - generic [ref=f9e143]:
+          - generic [ref=f9e144]:
+            - heading "Nejlépe hodnocené dívky" [level=2] [ref=f9e145]
+            - generic [ref=f9e146]: za celou dobu
+          - link "Premium účet vám odemkne hodnocení" [ref=f9e149] [cursor=pointer]:
+            - /url: http://127.0.0.1:8123/vip-premium
+        - generic [ref=f9e152]:
+          - generic:
+            - button "Previous slide" [disabled] [ref=f9e155] [cursor=pointer]: ⏴
+            - button "Next slide" [disabled] [ref=f9e156] [cursor=pointer]: ⏵
+      - generic [ref=f9e157]:
+        - generic [ref=f9e158]:
+          - generic [ref=f9e159]: Nový svět na dosah...
+          - generic [ref=f9e160]: Staň se členem ZašukejSi.cz
+        - generic [ref=f9e162] [cursor=pointer]
+        - generic [ref=f9e164]:
+          - generic [ref=f9e165]: Swingers akce pro členy
+          - generic [ref=f9e168]: Hodnocení dívek od komunity
+          - generic [ref=f9e171]: Databáze dívek na jednom místě
+        - button "Registrovat se ZDARMA" [ref=f9e174] [cursor=pointer]
+  - contentinfo [ref=f9e175]:
+    - generic [ref=f9e176]:
+      - heading "ZAŠUKEJSI.CZ" [level=2] [ref=f9e178]
+      - generic [ref=f9e179]:
+        - link "VIP & Premium" [ref=f9e181] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/vip-premium
+        - generic [ref=f9e182]:
+          - link "FAQ" [ref=f9e184] [cursor=pointer]:
+            - /url: http://127.0.0.1:8123/faq
+          - generic [ref=f9e185]:
+            - link "Etika a bezpečnost" [ref=f9e186] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/ethics
+            - link "Kontakt" [ref=f9e187] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/contact
+          - generic [ref=f9e188]:
+            - link "Ochrana osobních údajů" [ref=f9e189] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/privacy-policy
+            - link "Obchodní podmínky" [ref=f9e190] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/terms-of-service
+            - link "Prémium účet pro pány" [ref=f9e191] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/vip-premium
+        - note [ref=f9e193]:
+          - img "lock" [ref=f9e194]
+          - generic [ref=f9e195]: Jsme 100% diskrétní platforma s profesionální ochranou osobních údajů
+      - generic [ref=f9e197]:
+        - generic [ref=f9e198]:
+          - generic [ref=f9e199]: Náš projekt je Ekologický
+          - generic [ref=f9e200]: Díky systému ověření dívek nepojedete nikam zbytečně
+        - separator [ref=f9e201]
+        - generic [ref=f9e202]: © 2025 ZasukejSi.cz

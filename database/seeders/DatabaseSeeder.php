@@ -378,6 +378,14 @@ class DatabaseSeeder extends Seeder
 
         $this->call(ReportSeeder::class);
 
+        // Photos and ratings for every seeded profile that doesn't already
+        // have them. Without this, "Girls of the Month" and the homepage
+        // "top rated" sliders had nothing to rank — no profile had both a
+        // photo and a rating — and rendered their empty state on a fresh
+        // seed instead of showing the demo profiles that do exist.
+        $this->call(PopulateMediaSeeder::class);
+        $this->call(PopulateRatingsSeeder::class);
+
         // Must run after every profile exists: it lists the countries that hold
         // profiles alongside the ones the site displayed before the `countries`
         // table replaced the hardcoded arrays.

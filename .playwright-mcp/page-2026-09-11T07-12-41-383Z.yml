@@ -1,0 +1,103 @@
+- generic [ref=f1e2]:
+  - navigation [ref=f1e3]:
+    - generic [ref=f1e4]:
+      - generic [ref=f1e6]:
+        - link "ESCORT-ONLINE.COM" [ref=f1e7] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123
+        - button [expanded] [active] [ref=f1e10] [cursor=pointer]
+      - generic [ref=f1e142]:
+        - link "About" [ref=f1e143] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123
+        - link "VIP & Premium" [ref=f1e144] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/vip-premium
+        - link "FAQ" [ref=f1e145] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/faq
+        - link "Ethics" [ref=f1e146] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/etika
+        - link "Contact" [ref=f1e147] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/kontakt
+        - separator [ref=f1e148]
+        - button "Registration" [ref=f1e149] [cursor=pointer]
+        - button [ref=f1e150] [cursor=pointer]
+        - generic [ref=f1e154]:
+          - link "Česky Česky" [ref=f1e155] [cursor=pointer]:
+            - /url: http://127.0.0.1:8123?locale=cs
+            - img "Česky" [ref=f1e156]
+            - generic [ref=f1e157]: Česky
+          - link "English English" [ref=f1e158] [cursor=pointer]:
+            - /url: http://127.0.0.1:8123?locale=en
+            - img "English" [ref=f1e159]
+            - generic [ref=f1e160]: English
+          - link "Русский Русский" [ref=f1e161] [cursor=pointer]:
+            - /url: http://127.0.0.1:8123?locale=ru
+            - img "Русский" [ref=f1e162]
+            - generic [ref=f1e163]: Русский
+  - main [ref=f1e13]:
+    - generic [ref=f1e14]:
+      - generic [ref=f1e18]:
+        - heading "We are a community of people who enjoy sex." [level=1] [ref=f1e19]: We are a communityof people who enjoy sex.
+        - paragraph [ref=f1e20]: Girls, sign up todayand gain new clients.
+      - generic [ref=f1e24]:
+        - generic [ref=f1e26]:
+          - heading "Girls in Europe" [level=1] [ref=f1e31]
+          - generic [ref=f1e32]:
+            - button "Open country search" [ref=f1e33] [cursor=pointer]
+            - generic [ref=f1e37]:
+              - generic [ref=f1e38]:
+                - generic [ref=f1e39]: Country and town
+                - button "Country and town" [ref=f1e41] [cursor=pointer]:
+                  - generic [ref=f1e42]: Select country
+              - generic [ref=f1e43]:
+                - generic [ref=f1e44]: Select town
+                - button "Select town" [ref=f1e46] [cursor=pointer]
+          - generic [ref=f1e48]:
+            - button "All Girls" [ref=f1e49] [cursor=pointer]
+            - button "18-25 yo" [ref=f1e53] [cursor=pointer]
+            - button "26-30 yo" [ref=f1e54] [cursor=pointer]
+            - button "31-35 yo" [ref=f1e55] [cursor=pointer]
+            - button "36-40 yo" [ref=f1e56] [cursor=pointer]
+            - button "40-50 yo" [ref=f1e57] [cursor=pointer]
+            - button "50 yo +" [ref=f1e58] [cursor=pointer]
+          - generic [ref=f1e60]:
+            - button "Recommendation" [ref=f1e61] [cursor=pointer]
+            - button "Verified photo" [ref=f1e64] [cursor=pointer]
+            - button "Video" [ref=f1e66] [cursor=pointer]
+            - button "Porno actress" [ref=f1e68] [cursor=pointer]
+            - button "New" [ref=f1e70] [cursor=pointer]
+            - button "Rating" [ref=f1e73] [cursor=pointer]
+        - generic [ref=f1e76]:
+          - heading "Nothing found" [level=3] [ref=f1e80]
+          - paragraph [ref=f1e81]:
+            - text: try adjusting the search filters or
+            - button "clear them" [ref=f1e82] [cursor=pointer]
+        - generic [ref=f1e84]:
+          - generic [ref=f1e85]:
+            - img "Novinky" [ref=f1e86]
+            - heading "Latest News" [level=2] [ref=f1e87]
+          - paragraph [ref=f1e89]: Not specified
+  - contentinfo [ref=f1e90]:
+    - generic [ref=f1e91]:
+      - heading "ESCORT-ONLINE.COM" [level=2] [ref=f1e93]
+      - button "Registration" [ref=f1e96] [cursor=pointer]
+      - generic [ref=f1e97]:
+        - link "Česky Česky" [ref=f1e98] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123?locale=cs
+          - img "Česky" [ref=f1e99]
+          - generic [ref=f1e100]: Česky
+        - link "English English" [ref=f1e101] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123?locale=en
+          - img "English" [ref=f1e102]
+          - generic [ref=f1e103]: English
+        - link "Русский Русский" [ref=f1e104] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123?locale=ru
+          - img "Русский" [ref=f1e105]
+          - generic [ref=f1e106]: Русский
+      - generic [ref=f1e108]:
+        - note [ref=f1e109]:
+          - img "lock" [ref=f1e110]
+          - generic [ref=f1e111]: We are a 100% discreet platform with professional personal data protection
+        - note [ref=f1e112]:
+          - generic [ref=f1e117]:
+            - generic [ref=f1e118]: Our project is eco-friendly
+            - generic [ref=f1e119]: Thanks to the girl verification system you won't travel anywhere unnecessarily
+        - generic [ref=f1e120]: © 2025 ZasukejSi.cz

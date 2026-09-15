@@ -87,11 +87,11 @@
                         spaceBetween: 16
                     },
                     1024: {
-                        slidesPerView: 4,
+                        slidesPerView: 5,
                         spaceBetween: 20
                     },
                     1280: {
-                        slidesPerView: 4,
+                        slidesPerView: 5,
                         spaceBetween: 20
                     }
                 },

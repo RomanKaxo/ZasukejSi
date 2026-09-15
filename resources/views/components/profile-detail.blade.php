@@ -708,7 +708,7 @@
     }
 
     .vip-gallery-desktop-nav.vip-gallery-desktop-next {
-        right: 60px !important;
+        right: 120px !important;
     }
 
     .vip-profile-favorite {
@@ -1049,17 +1049,21 @@
 
     .vip-rec-slider {
         position: relative;
-        width: 1050px;
+        width: 1150px;
         height: 540px;
-        max-width: 100%;
+        /* Deliberately uncapped: the column this sits in (.vip-slider-section,
+           margin-left: 315px) only has ~1029px to give it, short of the
+           1150px five 214px cards + four 20px gaps need. The section and its
+           ancestors are `overflow: visible`, so the slider keeps its left
+           edge (and the prev-arrow position) in place and bleeds past the
+           page's right padding instead of the cards themselves shrinking. */
         overflow: visible;
     }
 
     .vip-rec-slider .profile-slider-container,
     .vip-rec-slider .swiper {
-        width: 1050px !important;
+        width: 1150px !important;
         height: 540px !important;
-        max-width: 100%;
     }
 
     .vip-rec-slider [class*="swiper-button-prev-"],
@@ -1068,7 +1072,10 @@
         align-items: center;
         justify-content: center;
         position: absolute;
-        top: 50%;
+        /* Aligned to the card image band (image-height 265px + the
+           swiper-wrapper's 6px top padding) instead of the old 50%, which
+           centered on the whole 520px card and sat lower than the photos. */
+        top: 140px;
         transform: translateY(-50%);
         z-index: 10;
         cursor: pointer;

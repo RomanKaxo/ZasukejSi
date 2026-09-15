@@ -281,10 +281,17 @@
                             <button class="language-dropdown-toggle flex items-center" id="nav-language" @click.stop="langOpen = !langOpen" type="button">
                                 {{-- Current language; the flag comes from
                                      config/locales.php rather than an if-chain
-                                     that only knew two languages. --}}
+                                     that only knew two languages.
+
+                                     pointer-events:none on the flag: without
+                                     it, Safari can resolve the click's target
+                                     as this <img> instead of the button,
+                                     which confused Alpine's open/click.outside
+                                     toggling and made the dropdown flash open
+                                     and immediately close. --}}
                                 <img src="{{ asset(\App\Support\Locales::flag(app()->getLocale())) }}"
                                      alt="{{ \App\Support\Locales::nativeName(app()->getLocale()) }}"
-                                     class="w-6 h-6 rounded">
+                                     class="w-6 h-6 rounded" style="pointer-events: none;">
                             </button>
                             
                             <div class="language-dropdown-menu absolute top-full right-0 bg-white p-2 rounded-lg shadow-lg transition-opacity duration-200 z-50"
@@ -341,7 +348,16 @@
         </div>
 
         <!-- Mobile menu -->
-        <div class="lg:hidden" id="mobile-menu" x-show="mobileMenuOpen" x-cloak x-transition.opacity.duration.180ms>
+        {{-- Safari on iOS never scrolls the overflow of a `position:fixed`
+             ancestor (#navbar) unless the scrollable box itself declares
+             overflow-y + -webkit-overflow-scrolling; Chrome fakes it via the
+             page underneath, which is why this only broke in Safari. Logged
+             in, the extra account rows push the menu past the viewport, so
+             without this it was simply unreachable there — and the huge
+             fixed box also kept Safari from compositing the backdrop blur
+             behind it. --}}
+        <div class="lg:hidden" id="mobile-menu" x-show="mobileMenuOpen" x-cloak x-transition.opacity.duration.180ms
+             style="max-height:calc(100vh - 56px);max-height:calc(100dvh - 56px);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;">
             <div class="flex flex-col items-center p-4 py-5 pt-6 bg-white" style="border-radius:0 0 24px 24px;">
 
                 @php

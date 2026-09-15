@@ -102,31 +102,24 @@
         <!-- Advert for VIP (hidden on mobile) -->
         @unless(request()->routeIs('preview.*'))
         @php
-            $vipAdvertImages = [
-                'images/vip-advert.png',
-                'images/vip-advert2.png',
-                'images/vip-advert3.png',
-                'images/vip-advert4.png',
-                'images/vip-advert5.png',
-                'images/vip-advert6.png',
-                'images/vip-advert7.png',
-            ];
+            $vipOwnPhotoUrl = auth()->user()?->profile?->getFirstImageUrl('medium');
         @endphp
         <div class="mt-6 relative hidden md:block">
-            <!-- VIP Image (auto-rotating) -->
-            <div
-                class="relative w-full aspect-[210/334] overflow-hidden rounded-t-xl"
-                x-data="{ current: 0, images: @js($vipAdvertImages) }"
-                x-init="current = Math.floor(Math.random() * images.length); setInterval(() => { current = (current + 1) % images.length }, 10000)"
-            >
-                @foreach ($vipAdvertImages as $i => $vipImage)
+            <!-- VIP Image (own profile photo) -->
+            <div class="relative w-full aspect-[210/334] overflow-hidden rounded-t-xl">
+                @if ($vipOwnPhotoUrl)
                     <img
-                        src="{{ asset($vipImage) }}"
+                        src="{{ $vipOwnPhotoUrl }}"
                         alt="VIP"
-                        class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out"
-                        x-bind:class="current === {{ $i }} ? 'opacity-100' : 'opacity-0'"
+                        class="absolute inset-0 w-full h-full object-cover"
                     >
-                @endforeach
+                @else
+                    <img
+                        src="{{ asset('images/vip-advert.png') }}"
+                        alt="VIP"
+                        class="absolute inset-0 w-full h-full object-cover"
+                    >
+                @endif
             </div>
 
             <!-- Golden Background Section -->

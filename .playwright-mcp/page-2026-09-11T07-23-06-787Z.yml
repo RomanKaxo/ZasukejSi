@@ -1,0 +1,113 @@
+- generic [ref=f4e2]:
+  - navigation [ref=f4e3]:
+    - generic [ref=f4e6]:
+      - link "ESCORT-ONLINE.COM" [ref=f4e7] [cursor=pointer]:
+        - /url: https://dev.stanektech.cz
+      - button [expanded] [active] [ref=f4e10] [cursor=pointer]
+  - main [ref=f4e13]:
+    - generic [ref=f4e15]:
+      - generic:
+        - generic:
+          - button "Toggle menu" [ref=f4e16] [cursor=pointer]
+          - complementary [ref=f4e19]:
+            - navigation [ref=f4e20]:
+              - list [ref=f4e21]:
+                - listitem [ref=f4e22]:
+                  - link "Ratings" [ref=f4e23] [cursor=pointer]:
+                    - /url: https://dev.stanektech.cz/account/member/ratings
+                - listitem [ref=f4e26]:
+                  - link "My Favorites" [ref=f4e27] [cursor=pointer]:
+                    - /url: https://dev.stanektech.cz/account/member/favorites
+                - listitem [ref=f4e30]:
+                  - link "Girls of the Month" [ref=f4e31] [cursor=pointer]:
+                    - /url: https://dev.stanektech.cz/account/member/girls-of-month
+                - listitem [ref=f4e34]:
+                  - link "Girls Archive" [ref=f4e35] [cursor=pointer]:
+                    - /url: https://dev.stanektech.cz/account/member/archive
+                - listitem [ref=f4e38]:
+                  - link "Reported Girls" [ref=f4e39] [cursor=pointer]:
+                    - /url: https://dev.stanektech.cz/account/member/reported
+                - listitem [ref=f4e42]:
+                  - link "Membership" [ref=f4e43] [cursor=pointer]:
+                    - /url: https://dev.stanektech.cz/account/member/membership
+                - listitem [ref=f4e46]:
+                  - link "Basic Settings" [ref=f4e47] [cursor=pointer]:
+                    - /url: https://dev.stanektech.cz/account/member
+      - main [ref=f4e51]:
+        - heading "Basic Settings" [level=1] [ref=f4e53]
+        - separator [ref=f4e54]
+        - generic [ref=f4e55]:
+          - heading "My Information" [level=2] [ref=f4e56]
+          - generic [ref=f4e57]:
+            - generic [ref=f4e58]:
+              - generic [ref=f4e59]: Your nickname
+              - textbox "Your nickname" [ref=f4e60]: John Smith
+            - generic [ref=f4e61]:
+              - generic [ref=f4e62]: Your email
+              - textbox "Your email" [disabled] [ref=f4e63]: user@example.com
+            - button "Save Save changes" [ref=f4e64] [cursor=pointer]:
+              - img "Save" [ref=f4e65]
+              - generic [ref=f4e66]: Save changes
+        - separator [ref=f4e67]
+        - generic [ref=f4e68]:
+          - heading "Change Password" [level=2] [ref=f4e69]
+          - generic [ref=f4e70]:
+            - generic [ref=f4e71]:
+              - generic [ref=f4e72]: Enter your current password
+              - textbox "Enter your current password" [ref=f4e73]:
+                - /placeholder: ••••••••
+            - generic [ref=f4e74]:
+              - generic [ref=f4e75]: New Password (minimum 8 characters, numbers and letters)
+              - textbox "New Password (minimum 8 characters, numbers and letters)" [ref=f4e76]:
+                - /placeholder: ••••••••
+            - generic [ref=f4e77]:
+              - generic [ref=f4e78]: Re-enter new password
+              - textbox "Re-enter new password" [ref=f4e79]:
+                - /placeholder: ••••••••
+            - button "Save Save changes" [ref=f4e80] [cursor=pointer]:
+              - img "Save" [ref=f4e81]
+              - generic [ref=f4e82]: Save changes
+  - contentinfo [ref=f4e83]:
+    - generic [ref=f4e84]:
+      - heading "ESCORT-ONLINE.COM" [level=2] [ref=f4e86]
+      - generic [ref=f4e87]:
+        - link "VIP & Premium" [ref=f4e89] [cursor=pointer]:
+          - /url: https://dev.stanektech.cz/vip-premium
+        - generic [ref=f4e90]:
+          - generic [ref=f4e91]:
+            - link "FAQ" [ref=f4e92] [cursor=pointer]:
+              - /url: https://dev.stanektech.cz/faq
+            - link "Contact Us" [ref=f4e93] [cursor=pointer]:
+              - /url: https://dev.stanektech.cz/contact
+          - generic [ref=f4e94]:
+            - link "Ethics and Safety" [ref=f4e95] [cursor=pointer]:
+              - /url: https://dev.stanektech.cz/ethics
+            - link "Privacy Policy" [ref=f4e96] [cursor=pointer]:
+              - /url: https://dev.stanektech.cz/privacy-policy
+          - generic [ref=f4e97]:
+            - link "Terms of Service" [ref=f4e98] [cursor=pointer]:
+              - /url: https://dev.stanektech.cz/terms-of-service
+            - link "Premium account for men" [ref=f4e99] [cursor=pointer]:
+              - /url: https://dev.stanektech.cz/vip-premium
+      - generic [ref=f4e100]:
+        - link "Česky Česky" [ref=f4e101] [cursor=pointer]:
+          - /url: https://dev.stanektech.cz/account/member?locale=cs
+          - img "Česky" [ref=f4e102]
+          - generic [ref=f4e103]: Česky
+        - link "English English" [ref=f4e104] [cursor=pointer]:
+          - /url: https://dev.stanektech.cz/account/member?locale=en
+          - img "English" [ref=f4e105]
+          - generic [ref=f4e106]: English
+        - link "Русский Русский" [ref=f4e107] [cursor=pointer]:
+          - /url: https://dev.stanektech.cz/account/member?locale=ru
+          - img "Русский" [ref=f4e108]
+          - generic [ref=f4e109]: Русский
+      - generic [ref=f4e111]:
+        - note [ref=f4e112]:
+          - img "lock" [ref=f4e113]
+          - generic [ref=f4e114]: We are a 100% discreet platform with professional personal data protection
+        - note [ref=f4e115]:
+          - generic [ref=f4e120]:
+            - generic [ref=f4e121]: Our project is eco-friendly
+            - generic [ref=f4e122]: Thanks to the girl verification system you won't travel anywhere unnecessarily
+        - generic [ref=f4e123]: © 2025 ZasukejSi.cz

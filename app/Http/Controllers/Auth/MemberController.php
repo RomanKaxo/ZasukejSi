@@ -102,51 +102,36 @@ class MemberController extends Controller
     }
 
     /**
-     * Girls of the month: the TOP 50 by average rating **received this month**.
-     *
-     * The ranking used to be all-time despite the page (and the route name)
-     * promising a monthly one, so it never changed from month to month.
+     * The ten highest-rated public profiles for the current calendar month.
      */
-    public function girlsOfMonth(Request $request)
+    public function girlsOfMonth()
     {
-        $user = Auth::user();
-
-        $ageRange = $request->string('age_range')->toString();
-        $ageBounds = self::AGE_RANGES[$ageRange] ?? null;
-
         $monthStart = now()->startOfMonth();
-        // Unqualified on purpose: inside the relation subquery the default table
-        // is `profile_ratings` (the Rating model's table), so prefixing with
-        // "ratings." would reference a table that does not exist.
-        $ratedThisMonth = fn ($query) => $query->where('created_at', '>=', $monthStart);
+        $nextMonth = $monthStart->copy()->addMonth();
+        $ratedThisMonth = fn ($query) => $query
+            ->where('created_at', '>=', $monthStart)
+            ->where('created_at', '<', $nextMonth);
 
-        $topIds = \App\Models\Profile::approved()
+        $profiles = \App\Models\Profile::approved()
             ->public()
-            ->withAvg(['ratings' => $ratedThisMonth], 'percentage')
-            ->whereHas('ratings', $ratedThisMonth)
-            ->when($ageBounds, fn ($query) => $query->whereBetween('age', $ageBounds))
-            ->orderByDesc('ratings_avg_percentage')
-            ->limit(50)
-            ->pluck('id');
-
-        $profiles = \App\Models\Profile::whereIn('id', $topIds)
             ->with(['media', 'segments'])
+            ->whereHas('ratings', $ratedThisMonth)
             ->withAvg(['ratings' => $ratedThisMonth], 'percentage')
+            ->withCount(['ratings' => $ratedThisMonth])
             ->orderByDesc('ratings_avg_percentage')
-            ->paginate(16)
-            ->withQueryString();
+            ->orderByDesc('ratings_count')
+            ->orderBy('profiles.id')
+            ->limit(10)
+            ->get();
 
         return view('member.girls-of-month', [
-            'user' => $user,
+            'user' => Auth::user(),
             'profiles' => $profiles,
-            'ageRanges' => self::AGE_RANGES,
-            'selectedAgeRange' => $ageRange,
-        ])->with('wideContent', true)->with('sidebarOffset', 95);
+        ])->with('wideContent', true)->with('sidebarOffset', 3);
     }
 
     /**
-     * Age range filter options, shared by the girls archive and the
-     * girls-of-the-month ranking.
+     * Age range filter options for the girls archive.
      */
     public const AGE_RANGES = [
         '18-20' => [18, 20],

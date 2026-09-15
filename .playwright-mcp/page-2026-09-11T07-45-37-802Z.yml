@@ -1,0 +1,409 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e6]:
+      - link "ZAŠUKEJSI.CZ" [ref=e7] [cursor=pointer]:
+        - /url: http://127.0.0.1:8123
+      - generic [ref=e9]:
+        - link "Úvod" [ref=e10] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123
+        - link "VIP a Premium" [ref=e11] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/vip-premium
+        - link "FAQ" [ref=e12] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/faq
+        - link "Etika" [ref=e13] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/ethics
+        - link "Kontakt" [ref=e14] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/contact
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - button [ref=e18] [cursor=pointer]:
+            - img "Oznámení" [ref=e20]
+          - link [ref=e22] [cursor=pointer]:
+            - /url: http://127.0.0.1:8123/messages
+            - img "Moje zprávy" [ref=e23]
+          - button [ref=e25] [cursor=pointer]:
+            - img "User" [ref=e26]
+        - button [ref=e29] [cursor=pointer]:
+          - img "Česky" [ref=e30]
+  - main [ref=e31]:
+    - generic [ref=e32]:
+      - generic [ref=e33]:
+        - complementary [ref=e34]:
+          - generic [ref=e35]:
+            - generic [ref=e36]:
+              - img "star" [ref=e37]
+              - text: VIP PROFIL
+            - generic [ref=e38]:
+              - img "camera-off" [ref=e39]
+              - text: FOTO OVĚŘENO
+          - heading "Alexandra" [level=1] [ref=e41]
+          - generic [ref=e42]: ONLINE
+          - generic [ref=e44]:
+            - strong [ref=e45]: Hodnocení
+            - generic [ref=e46]: "3.5"
+          - generic [ref=e50]: Ostrava / Moravskoslezský Kraj
+          - generic [ref=e53]:
+            - generic [ref=e54]:
+              - generic [ref=e55]: Věk
+              - generic [ref=e56]: 19 let
+            - generic [ref=e57]:
+              - generic [ref=e58]: Váha
+              - generic [ref=e59]: —
+            - generic [ref=e60]:
+              - generic [ref=e61]: Výška
+              - generic [ref=e62]: 168 cm / 5'6"
+            - generic [ref=e63]:
+              - generic [ref=e64]: Prsa
+              - generic [ref=e65]: —
+            - generic [ref=e66]:
+              - generic [ref=e67]: Jazyky
+              - generic [ref=e68]: —
+          - generic [ref=e69]:
+            - generic [ref=e70]: InCall
+            - generic [ref=e74]: OutCall
+          - link "Poslat zprávu" [ref=e78] [cursor=pointer]:
+            - /url: http://127.0.0.1:8123/messages/12
+        - generic [ref=e80]:
+          - generic "Profile actions" [ref=e81]:
+            - generic [ref=e82]:
+              - link "Dát hodnocení" [ref=e83] [cursor=pointer]:
+                - /url: http://127.0.0.1:8123/account/member/ratings?profile=7
+              - link "Obnovit přístup" [ref=e86] [cursor=pointer]:
+                - /url: http://127.0.0.1:8123/account/password
+              - link "Nahlásit profil" [ref=e89] [cursor=pointer]:
+                - /url: "#"
+          - generic [ref=e92]:
+            - button "Uložit" [ref=e95] [cursor=pointer]
+            - generic [ref=e100]:
+              - button [ref=e101] [cursor=pointer]:
+                - img "Alexandra" [ref=e102]
+              - button [ref=e103] [cursor=pointer]:
+                - img "Alexandra" [ref=e104]
+              - button [ref=e105] [cursor=pointer]:
+                - img "Alexandra" [ref=e106]
+              - button "Previous slide" [ref=e107] [cursor=pointer]: ❮
+              - button "Next slide" [ref=e108] [cursor=pointer]: ❯
+          - generic [ref=e109]:
+            - heading "Více o mně" [level=2] [ref=e110]
+            - generic [ref=e111]: Zkušený masér/masérka nabízející relaxační a terapeutické masáže.
+          - generic [ref=e112]:
+            - generic [ref=e113]:
+              - heading "Video" [level=3] [ref=e114]
+              - generic [ref=e116]:
+                - img "Alexandra" [ref=e117]
+                - button "Play video" [ref=e118] [cursor=pointer]
+            - generic [ref=e120]:
+              - generic [ref=e121]:
+                - heading "Moje ceny" [level=3] [ref=e122]
+                - paragraph [ref=e123]: Neuvedeno
+              - generic [ref=e124]:
+                - heading "Služby" [level=3] [ref=e125]
+                - paragraph [ref=e126]: Neuvedeno
+      - generic [ref=e127]:
+        - generic [ref=e128]:
+          - generic [ref=e129]:
+            - heading "Nejlépe hodnocené dívky" [level=2] [ref=e130]
+            - generic [ref=e131]: tento měsíc
+          - link "Premium účet vám odemkne hodnocení" [ref=e134] [cursor=pointer]:
+            - /url: http://127.0.0.1:8123/vip-premium
+        - generic [ref=e137]:
+          - generic [ref=e139]:
+            - group "1 / 4" [ref=e140]:
+              - generic [ref=e141] [cursor=pointer]:
+                - generic [ref=e142]:
+                  - paragraph [ref=e150]: OVĚŘENO
+                  - generic [ref=e151]:
+                    - img "Angela" [ref=e152]
+                    - img "Angela" [ref=e153]
+                    - img "Angela" [ref=e154]
+                    - img "Angela" [ref=e155]
+                    - img "Angela" [ref=e156]
+                  - generic [ref=e157]:
+                    - button [ref=e158]
+                    - button [ref=e160]
+                    - button [ref=e162]
+                    - button [ref=e164]
+                    - button [ref=e166]
+                - generic [ref=e168]:
+                  - generic [ref=e169]:
+                    - heading "Angela" [level=4] [ref=e171]
+                    - generic [ref=e172]: VIP
+                  - link "Detail" [ref=e177]:
+                    - /url: http://127.0.0.1:8123/profiles/4
+                  - generic [ref=e182]:
+                    - generic [ref=e183]:
+                      - generic [ref=e184]: 168 cm
+                      - generic [ref=e186]: 19 let
+                    - heading "Jihomoravský kraj" [level=5] [ref=e190]
+                    - generic [ref=e191]:
+                      - generic [ref=e192]: "Hodnocení:"
+                      - generic [ref=e193]: 5.0/5
+            - group "2 / 4" [ref=e197]:
+              - generic [ref=e198] [cursor=pointer]:
+                - generic [ref=e199]:
+                  - paragraph [ref=e207]: OVĚŘENO
+                  - generic [ref=e208]:
+                    - img "Lucie" [ref=e209]
+                    - img "Lucie" [ref=e210]
+                    - img "Lucie" [ref=e211]
+                    - img "Lucie" [ref=e212]
+                    - img "Lucie" [ref=e213]
+                  - generic [ref=e214]:
+                    - button [ref=e215]
+                    - button [ref=e217]
+                    - button [ref=e219]
+                    - button [ref=e221]
+                    - button [ref=e223]
+                - generic [ref=e225]:
+                  - generic [ref=e226]:
+                    - heading "Lucie" [level=4] [ref=e228]
+                    - generic [ref=e229]: VIP
+                  - link "Detail" [ref=e234]:
+                    - /url: http://127.0.0.1:8123/profiles/5
+                  - generic [ref=e239]:
+                    - generic [ref=e240]:
+                      - generic [ref=e241]: 168 cm
+                      - generic [ref=e243]: 19 let
+                    - heading "Brno" [level=5] [ref=e247]
+                    - generic [ref=e248]:
+                      - generic [ref=e249]: "Hodnocení:"
+                      - generic [ref=e250]: 4.0/5
+            - group "3 / 4" [ref=e254]:
+              - generic [ref=e255] [cursor=pointer]:
+                - generic [ref=e256]:
+                  - paragraph [ref=e264]: OVĚŘENO
+                  - generic [ref=e265]:
+                    - img "Jana" [ref=e266]
+                    - img "Jana" [ref=e267]
+                    - img "Jana" [ref=e268]
+                    - img "Jana" [ref=e269]
+                    - img "Jana" [ref=e270]
+                  - generic [ref=e271]:
+                    - button [ref=e272]
+                    - button [ref=e274]
+                    - button [ref=e276]
+                    - button [ref=e278]
+                    - button [ref=e280]
+                - generic [ref=e282]:
+                  - generic [ref=e283]:
+                    - heading "Jana" [level=4] [ref=e285]
+                    - generic [ref=e286]: VIP
+                  - link "Detail" [ref=e291]:
+                    - /url: http://127.0.0.1:8123/profiles/8
+                  - generic [ref=e296]:
+                    - generic [ref=e297]:
+                      - generic [ref=e298]: 168 cm
+                      - generic [ref=e300]: 19 let
+                    - heading "Ostrava" [level=5] [ref=e304]
+                    - generic [ref=e305]:
+                      - generic [ref=e306]: "Hodnocení:"
+                      - generic [ref=e307]: 4.0/5
+            - group "4 / 4" [ref=e311]:
+              - generic [ref=e312] [cursor=pointer]:
+                - generic [ref=e313]:
+                  - generic [ref=e314]:
+                    - paragraph [ref=e321]: OVĚŘENO
+                    - generic [ref=e322]: ONLINE
+                  - generic [ref=e324]:
+                    - img "Tamara" [ref=e325]
+                    - img "Tamara" [ref=e326]
+                    - img "Tamara" [ref=e327]
+                    - img "Tamara" [ref=e328]
+                    - img "Tamara" [ref=e329]
+                  - generic [ref=e330]:
+                    - button [ref=e331]
+                    - button [ref=e333]
+                    - button [ref=e335]
+                    - button [ref=e337]
+                    - button [ref=e339]
+                - generic [ref=e341]:
+                  - generic [ref=e342]:
+                    - heading "Tamara" [level=4] [ref=e344]
+                    - generic [ref=e345]: VIP
+                  - link "Detail" [ref=e350]:
+                    - /url: http://127.0.0.1:8123/profiles/6
+                  - generic [ref=e355]:
+                    - generic [ref=e356]:
+                      - generic [ref=e357]: 168 cm
+                      - generic [ref=e359]: 19 let
+                    - heading "Praha" [level=5] [ref=e363]
+                    - generic [ref=e364]:
+                      - generic [ref=e365]: "Hodnocení:"
+                      - generic [ref=e366]: 3.0/5
+          - generic:
+            - button "Previous slide" [disabled] [ref=e370] [cursor=pointer]: ⏴
+            - button "Next slide" [disabled] [ref=e371] [cursor=pointer]: ⏵
+      - generic [ref=e372]:
+        - generic [ref=e373]:
+          - generic [ref=e374]:
+            - heading "Nejlépe hodnocené dívky" [level=2] [ref=e375]
+            - generic [ref=e376]: za celou dobu
+          - link "Premium účet vám odemkne hodnocení" [ref=e379] [cursor=pointer]:
+            - /url: http://127.0.0.1:8123/vip-premium
+        - generic [ref=e382]:
+          - generic [ref=e384]:
+            - group "1 / 4" [ref=e385]:
+              - generic [ref=e386] [cursor=pointer]:
+                - generic [ref=e387]:
+                  - paragraph [ref=e395]: OVĚŘENO
+                  - generic [ref=e396]:
+                    - img "Angela" [ref=e397]
+                    - img "Angela" [ref=e398]
+                    - img "Angela" [ref=e399]
+                    - img "Angela" [ref=e400]
+                    - img "Angela" [ref=e401]
+                  - generic [ref=e402]:
+                    - button [ref=e403]
+                    - button [ref=e405]
+                    - button [ref=e407]
+                    - button [ref=e409]
+                    - button [ref=e411]
+                - generic [ref=e413]:
+                  - generic [ref=e414]:
+                    - heading "Angela" [level=4] [ref=e416]
+                    - generic [ref=e417]: VIP
+                  - link "Detail" [ref=e422]:
+                    - /url: http://127.0.0.1:8123/profiles/4
+                  - generic [ref=e427]:
+                    - generic [ref=e428]:
+                      - generic [ref=e429]: 168 cm
+                      - generic [ref=e431]: 19 let
+                    - heading "Jihomoravský kraj" [level=5] [ref=e435]
+                    - generic [ref=e436]:
+                      - generic [ref=e437]: "Hodnocení:"
+                      - generic [ref=e438]: 5.0/5
+            - group "2 / 4" [ref=e442]:
+              - generic [ref=e443] [cursor=pointer]:
+                - generic [ref=e444]:
+                  - paragraph [ref=e452]: OVĚŘENO
+                  - generic [ref=e453]:
+                    - img "Lucie" [ref=e454]
+                    - img "Lucie" [ref=e455]
+                    - img "Lucie" [ref=e456]
+                    - img "Lucie" [ref=e457]
+                    - img "Lucie" [ref=e458]
+                  - generic [ref=e459]:
+                    - button [ref=e460]
+                    - button [ref=e462]
+                    - button [ref=e464]
+                    - button [ref=e466]
+                    - button [ref=e468]
+                - generic [ref=e470]:
+                  - generic [ref=e471]:
+                    - heading "Lucie" [level=4] [ref=e473]
+                    - generic [ref=e474]: VIP
+                  - link "Detail" [ref=e479]:
+                    - /url: http://127.0.0.1:8123/profiles/5
+                  - generic [ref=e484]:
+                    - generic [ref=e485]:
+                      - generic [ref=e486]: 168 cm
+                      - generic [ref=e488]: 19 let
+                    - heading "Brno" [level=5] [ref=e492]
+                    - generic [ref=e493]:
+                      - generic [ref=e494]: "Hodnocení:"
+                      - generic [ref=e495]: 4.0/5
+            - group "3 / 4" [ref=e499]:
+              - generic [ref=e500] [cursor=pointer]:
+                - generic [ref=e501]:
+                  - paragraph [ref=e509]: OVĚŘENO
+                  - generic [ref=e510]:
+                    - img "Jana" [ref=e511]
+                    - img "Jana" [ref=e512]
+                    - img "Jana" [ref=e513]
+                    - img "Jana" [ref=e514]
+                    - img "Jana" [ref=e515]
+                  - generic [ref=e516]:
+                    - button [ref=e517]
+                    - button [ref=e519]
+                    - button [ref=e521]
+                    - button [ref=e523]
+                    - button [ref=e525]
+                - generic [ref=e527]:
+                  - generic [ref=e528]:
+                    - heading "Jana" [level=4] [ref=e530]
+                    - generic [ref=e531]: VIP
+                  - link "Detail" [ref=e536]:
+                    - /url: http://127.0.0.1:8123/profiles/8
+                  - generic [ref=e541]:
+                    - generic [ref=e542]:
+                      - generic [ref=e543]: 168 cm
+                      - generic [ref=e545]: 19 let
+                    - heading "Ostrava" [level=5] [ref=e549]
+                    - generic [ref=e550]:
+                      - generic [ref=e551]: "Hodnocení:"
+                      - generic [ref=e552]: 4.0/5
+            - group "4 / 4" [ref=e556]:
+              - generic [ref=e557] [cursor=pointer]:
+                - generic [ref=e558]:
+                  - generic [ref=e559]:
+                    - paragraph [ref=e566]: OVĚŘENO
+                    - generic [ref=e567]: ONLINE
+                  - generic [ref=e569]:
+                    - img "Tamara" [ref=e570]
+                    - img "Tamara" [ref=e571]
+                    - img "Tamara" [ref=e572]
+                    - img "Tamara" [ref=e573]
+                    - img "Tamara" [ref=e574]
+                  - generic [ref=e575]:
+                    - button [ref=e576]
+                    - button [ref=e578]
+                    - button [ref=e580]
+                    - button [ref=e582]
+                    - button [ref=e584]
+                - generic [ref=e586]:
+                  - generic [ref=e587]:
+                    - heading "Tamara" [level=4] [ref=e589]
+                    - generic [ref=e590]: VIP
+                  - link "Detail" [ref=e595]:
+                    - /url: http://127.0.0.1:8123/profiles/6
+                  - generic [ref=e600]:
+                    - generic [ref=e601]:
+                      - generic [ref=e602]: 168 cm
+                      - generic [ref=e604]: 19 let
+                    - heading "Praha" [level=5] [ref=e608]
+                    - generic [ref=e609]:
+                      - generic [ref=e610]: "Hodnocení:"
+                      - generic [ref=e611]: 3.0/5
+          - generic:
+            - button "Previous slide" [disabled] [ref=e615] [cursor=pointer]: ⏴
+            - button "Next slide" [disabled] [ref=e616] [cursor=pointer]: ⏵
+      - generic [ref=e617]:
+        - generic [ref=e618]:
+          - generic [ref=e619]: Nový svět na dosah...
+          - generic [ref=e620]: Staň se členem ZašukejSi.cz
+        - generic [ref=e622] [cursor=pointer]
+        - generic [ref=e624]:
+          - generic [ref=e625]: Swingers akce pro členy
+          - generic [ref=e628]: Hodnocení dívek od komunity
+          - generic [ref=e631]: Databáze dívek na jednom místě
+        - button "Registrovat se ZDARMA" [ref=e634] [cursor=pointer]
+  - contentinfo [ref=e635]:
+    - generic [ref=e636]:
+      - heading "ZAŠUKEJSI.CZ" [level=2] [ref=e638]
+      - generic [ref=e639]:
+        - link "VIP & Premium" [ref=e641] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/vip-premium
+        - generic [ref=e642]:
+          - link "FAQ" [ref=e644] [cursor=pointer]:
+            - /url: http://127.0.0.1:8123/faq
+          - generic [ref=e645]:
+            - link "Etika a bezpečnost" [ref=e646] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/ethics
+            - link "Kontakt" [ref=e647] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/contact
+          - generic [ref=e648]:
+            - link "Ochrana osobních údajů" [ref=e649] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/privacy-policy
+            - link "Obchodní podmínky" [ref=e650] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/terms-of-service
+            - link "Prémium účet pro pány" [ref=e651] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/vip-premium
+        - note [ref=e653]:
+          - img "lock" [ref=e654]
+          - generic [ref=e655]: Jsme 100% diskrétní platforma s profesionální ochranou osobních údajů
+      - generic [ref=e657]:
+        - generic [ref=e658]:
+          - generic [ref=e659]: Náš projekt je Ekologický
+          - generic [ref=e660]: Díky systému ověření dívek nepojedete nikam zbytečně
+        - separator [ref=e661]
+        - generic [ref=e662]: © 2025 ZasukejSi.cz

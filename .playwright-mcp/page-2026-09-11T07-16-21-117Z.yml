@@ -1,0 +1,74 @@
+- generic [ref=f2e2]:
+  - navigation [ref=f2e3]:
+    - generic [ref=f2e6]:
+      - link "ESCORT-ONLINE.COM" [ref=f2e7] [cursor=pointer]:
+        - /url: http://127.0.0.1:8123
+      - button [ref=f2e10] [cursor=pointer]
+  - main [ref=f2e13]:
+    - generic [ref=f2e15]:
+      - generic [ref=f2e16]:
+        - link "ESCORT-ONLINE.COM" [ref=f2e17] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123
+        - heading "Sign in to your account" [level=2] [ref=f2e19]
+        - paragraph [ref=f2e20]: Welcome back! Please sign in to continue.
+      - generic [ref=f2e22]:
+        - generic [ref=f2e23]:
+          - generic [ref=f2e24]: Email address
+          - textbox "Email address" [ref=f2e25]:
+            - /placeholder: Enter your email
+        - generic [ref=f2e26]:
+          - generic [ref=f2e27]: Password
+          - textbox "Password" [ref=f2e28]:
+            - /placeholder: Enter your password
+        - generic [ref=f2e29]:
+          - generic [ref=f2e30]:
+            - checkbox "Remember me" [ref=f2e32] [cursor=pointer]
+            - generic [ref=f2e33]: Remember me
+          - button "Sign in" [ref=f2e34] [cursor=pointer]
+        - paragraph [ref=f2e36]:
+          - text: Don't have an account?
+          - link "Register here" [ref=f2e37] [cursor=pointer]:
+            - /url: http://127.0.0.1:8123/register
+  - contentinfo [ref=f2e38]:
+    - generic [ref=f2e39]:
+      - heading "ESCORT-ONLINE.COM" [level=2] [ref=f2e41]
+      - generic [ref=f2e42]:
+        - button "Registration" [ref=f2e44] [cursor=pointer]
+        - generic [ref=f2e45]:
+          - generic [ref=f2e46]:
+            - link "VIP & Premium" [ref=f2e47] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/vip-premium
+            - link "FAQ" [ref=f2e48] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/faq
+          - generic [ref=f2e49]:
+            - link "Ethics and Safety" [ref=f2e50] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/ethics
+            - link "Contact Us" [ref=f2e51] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/contact
+          - generic [ref=f2e52]:
+            - link "Privacy Policy" [ref=f2e53] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/privacy-policy
+            - link "Terms of Service" [ref=f2e54] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/terms-of-service
+      - generic [ref=f2e55]:
+        - link "Česky Česky" [ref=f2e56] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/login?locale=cs
+          - img "Česky" [ref=f2e57]
+          - generic [ref=f2e58]: Česky
+        - link "English English" [ref=f2e59] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/login?locale=en
+          - img "English" [ref=f2e60]
+          - generic [ref=f2e61]: English
+        - link "Русский Русский" [ref=f2e62] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/login?locale=ru
+          - img "Русский" [ref=f2e63]
+          - generic [ref=f2e64]: Русский
+      - generic [ref=f2e66]:
+        - note [ref=f2e67]:
+          - img "lock" [ref=f2e68]
+          - generic [ref=f2e69]: We are a 100% discreet platform with professional personal data protection
+        - note [ref=f2e70]:
+          - generic [ref=f2e75]:
+            - generic [ref=f2e76]: Our project is eco-friendly
+            - generic [ref=f2e77]: Thanks to the girl verification system you won't travel anywhere unnecessarily
+        - generic [ref=f2e78]: © 2025 ZasukejSi.cz
