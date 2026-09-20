@@ -44,6 +44,11 @@
                         ]
                         : ($accountGender === 'female'
                             ? [
+                                // Její veřejný profil; bez vytvořeného profilu
+                                // není kam odkazovat, tak se položka nenabídne.
+                                ...($accountUser->profile
+                                    ? [['url' => route('profiles.show', $accountUser->profile->id), 'label' => __('front.nav.my_profile'), 'icon' => 'Eye.svg']]
+                                    : []),
                                 ['url' => route('account.dashboard'), 'label' => __('front.account.sidebar.basic'), 'icon' => 'User.svg'],
                                 ['url' => route('account.photos'), 'label' => __('front.account.sidebar.photos'), 'icon' => 'Images.svg'],
                                 ['url' => route('account.services'), 'label' => __('front.account.sidebar.services'), 'icon' => 'List.svg'],

@@ -471,6 +471,42 @@ class ProfileForm extends Component
         return array_merge($rows, $customRows);
     }
 
+    /**
+     * Choices for a price row's time allocation: 30 min, 1 h, 1:30 h ... 24 h.
+     *
+     * A value saved earlier that is not on the half-hour grid (scraped or
+     * hand-typed, e.g. 0.75) is kept as an extra option, otherwise the select
+     * would silently show nothing for it and the row would look empty.
+     *
+     * @return array<string, string> option value => label
+     */
+    public function durationOptions(mixed $current = null): array
+    {
+        $format = function (float $hours): string {
+            $minutes = (int) round($hours * 60);
+
+            if ($minutes < 60) {
+                return $minutes . ' min';
+            }
+
+            return $minutes % 60 === 0
+                ? intdiv($minutes, 60) . ' h'
+                : intdiv($minutes, 60) . ':' . str_pad((string) ($minutes % 60), 2, '0', STR_PAD_LEFT) . ' h';
+        };
+
+        $options = [];
+        for ($hours = 0.5; $hours <= 24; $hours += 0.5) {
+            $options[(string) $hours] = $format($hours);
+        }
+
+        if (is_numeric($current) && (float) $current > 0 && ! isset($options[(string) (float) $current])) {
+            $options[(string) (float) $current] = $format((float) $current);
+            uksort($options, fn ($a, $b) => (float) $a <=> (float) $b);
+        }
+
+        return $options;
+    }
+
     public function addLocalPrice()
     {
         $this->local_prices[] = [
@@ -672,7 +708,7 @@ class ProfileForm extends Component
             $validationRules['local_price_60_incall'] = 'nullable|numeric|min:0';
             $validationRules['local_price_60_outcall'] = 'nullable|numeric|min:0';
             $validationRules['local_prices'] = 'nullable|array';
-            $validationRules['local_prices.*.time_hours'] = 'required|numeric|min:0|max:24';
+            $validationRules['local_prices.*.time_hours'] = 'required|numeric|min:0.5|max:24|multiple_of:0.5';
             $validationRules['local_prices.*.incall_price'] = 'required|numeric|min:0';
             $validationRules['local_prices.*.outcall_price'] = 'nullable|numeric|min:0';
             $validationRules['global_price_30_incall'] = 'nullable|numeric|min:0';
@@ -680,7 +716,7 @@ class ProfileForm extends Component
             $validationRules['global_price_60_incall'] = 'nullable|numeric|min:0';
             $validationRules['global_price_60_outcall'] = 'nullable|numeric|min:0';
             $validationRules['global_prices'] = 'nullable|array';
-            $validationRules['global_prices.*.time_hours'] = 'required|numeric|min:0|max:24';
+            $validationRules['global_prices.*.time_hours'] = 'required|numeric|min:0.5|max:24|multiple_of:0.5';
             $validationRules['global_prices.*.incall_price'] = 'required|numeric|min:0';
             $validationRules['global_prices.*.outcall_price'] = 'nullable|numeric|min:0';
             $validationRules['contacts'] = 'nullable|array';

@@ -379,15 +379,15 @@
         margin-bottom: 12px;
         color: #505050;
         font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 13px;
+        font-size: 16px;
         font-weight: 600;
         text-align: center;
     }
 
     .vip-profile-meta-location img {
-        width: 20px;
-        height: 20px;
-        flex: 0 0 20px;
+        width: 40px;
+        height: 40px;
+        flex: 0 0 40px;
     }
 
     .vip-profile-meta-table {
@@ -1521,7 +1521,7 @@
         .vip-profile-meta-location {
             gap: 6px;
             margin-bottom: 10px;
-            font-size: 12px;
+            font-size: 15px;
         }
 
         .vip-profile-meta-table {
@@ -2572,6 +2572,18 @@
                 <h1 class="vip-profile-name">{{ $profile->display_name ?? 'Alexandrina' }}</h1>
             </div>
 
+            <div class="vip-profile-meta-location">
+                <img src="{{ asset('images/icons/location.svg') }}" alt="" aria-hidden="true">
+                <span style="display:flex;flex-direction:column;align-items:flex-start;line-height:1.3;">
+                    @if(filled($profile->city) || filled($profile->region))
+                        @if(filled($profile->city))<span>{{ $profile->city }}</span>@endif
+                        @if(filled($profile->region))<span>{{ $profile->region }}</span>@endif
+                    @else
+                        <span>Jihomoravský kraj</span>
+                    @endif
+                </span>
+            </div>
+
             @if($isOnline)
             <div class="vip-profile-online-badge">
                 <span>{{ __('front.profiles.list.online') }}</span>
@@ -2603,11 +2615,6 @@
                         <x-icons name="lock" class="inline-block" style="width:18px;height:18px;color:#FF4DA6;" />
                     @endif
                 </span>
-            </div>
-
-            <div class="vip-profile-meta-location">
-                <img src="{{ asset('images/icons/location.svg') }}" alt="" aria-hidden="true">
-                <span>{{ implode(' / ', array_filter([$profile->city, $profile->region])) ?: 'Jihomoravský kraj' }}</span>
             </div>
 
             <div class="vip-profile-meta-table">

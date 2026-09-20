@@ -39,7 +39,7 @@
         <x-icons name="search" style="width:20px;height:20px;color:#FFFFFF;" />
     </button>
 </form>
-<hr class="mt-8 rounded-none" style="padding-bottom:100px;">
+<hr class="mt-8 rounded-none" style="padding-bottom:100px;border-radius:0;">
 
 <h2 class="text-center" style="font-family:'Poppins',sans-serif;font-weight:700;font-size:24px;color:#5C2D62;padding-bottom:56px;">
     {{ __('front.account.member.archive_results_heading') }}

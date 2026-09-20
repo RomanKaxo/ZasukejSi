@@ -434,7 +434,11 @@
                             ['route' => 'account.member.archive', 'label' => __('front.account.member.archive'), 'icon' => 'History'],
                             ['route' => 'account.member.reported', 'label' => __('front.account.member.reported'), 'icon' => 'OctagonAlert'],
                         ] : [
-                            ['route' => 'account.dashboard', 'label' => __('front.nav.my_profile'), 'icon' => 'User'],
+                            // Veřejný profil, pokud ho má; jinak zůstává
+                            // odkaz na nastavení, aby tlačítko nebylo mrtvé.
+                            auth()->user()?->profile
+                                ? ['route' => 'profiles.show', 'url' => route('profiles.show', auth()->user()->profile->id), 'label' => __('front.nav.my_profile'), 'icon' => 'User']
+                                : ['route' => 'account.dashboard', 'label' => __('front.nav.my_profile'), 'icon' => 'User'],
                             ['route' => 'messages.index', 'label' => __('front.account.member.messages'), 'icon' => 'mail', 'badge' => $mobileMailBadge],
                             ['route' => 'account.edit', 'label' => __('front.account.member.settings'), 'icon' => 'Settings'],
                             // Za návrhem:
@@ -445,8 +449,14 @@
                         ];
                     @endphp
                     @foreach($mobileTabs as $tab)
-                        @php $mobileTabActive = request()->routeIs($tab['route']); @endphp
-                        <a href="{{ route($tab['route']) }}"
+                        @php
+                            // Karta s vlastní adresou (můj veřejný profil) svítí
+                            // jen na ní, ne na profilu každé jiné ženy.
+                            $mobileTabActive = isset($tab['url'])
+                                ? request()->url() === $tab['url']
+                                : request()->routeIs($tab['route']);
+                        @endphp
+                        <a href="{{ $tab['url'] ?? route($tab['route']) }}"
                            class="relative flex items-center w-full"
                            style="width:304px;max-width:100%;height:60px;margin-bottom:10px;padding:0 16px;gap:12px;border-radius:8px;font-family:'Poppins',sans-serif;font-weight:500;font-size:18px;
                                background:{{ $mobileTabActive ? '#DD3888' : 'transparent' }};

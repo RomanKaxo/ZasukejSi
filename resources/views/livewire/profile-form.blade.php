@@ -419,15 +419,19 @@
                             <div class="w-full md:w-[240px]">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.time_hours') }}</label>
                                 <div class="relative">
-                                    <input
-                                        type="number"
-                                        inputmode="decimal"
-                                        min="0"
-                                        max="24"
-                                        step="0.5"
-                                        onkeydown="if(event.key === '-' || event.key === 'e' || event.key === '+') event.preventDefault()"
+                                    <select
                                         wire:model="local_prices.{{ $index }}.time_hours"
-                                        class="input-control w-full h-[50px] rounded-[8px] pr-[54px] md:pr-5 @error('local_prices.'.$index.'.time_hours') border-red-500 @enderror">
+                                        class="input-control w-full h-[50px] rounded-[8px] appearance-none pr-[54px] @error('local_prices.'.$index.'.time_hours') border-red-500 @enderror">
+                                        <option value="">&mdash;</option>
+                                        @foreach($this->durationOptions($price['time_hours'] ?? null) as $value => $label)
+                                            <option value="{{ $value }}">{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                    <div class="hidden md:flex absolute right-1 top-1/2 -translate-y-1/2 w-[42px] h-[42px] rounded-[4px] bg-[#DD3888] items-center justify-center pointer-events-none">
+                                        <svg class="w-[10px] h-[5px]" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M1 1L5 4L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </div>
                                     <button
                                         type="button"
                                         wire:click="removeLocalPrice({{ $index }})"
@@ -596,15 +600,19 @@
                             <div class="w-full md:w-[240px]">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.time_hours') }}</label>
                                 <div class="relative">
-                                    <input
-                                        type="number"
-                                        inputmode="decimal"
-                                        min="0"
-                                        max="24"
-                                        step="0.5"
-                                        onkeydown="if(event.key === '-' || event.key === 'e' || event.key === '+') event.preventDefault()"
+                                    <select
                                         wire:model="global_prices.{{ $index }}.time_hours"
-                                        class="input-control w-full h-[50px] rounded-[8px] pr-[54px] md:pr-5 @error('global_prices.'.$index.'.time_hours') border-red-500 @enderror">
+                                        class="input-control w-full h-[50px] rounded-[8px] appearance-none pr-[54px] @error('global_prices.'.$index.'.time_hours') border-red-500 @enderror">
+                                        <option value="">&mdash;</option>
+                                        @foreach($this->durationOptions($price['time_hours'] ?? null) as $value => $label)
+                                            <option value="{{ $value }}">{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                    <div class="hidden md:flex absolute right-1 top-1/2 -translate-y-1/2 w-[42px] h-[42px] rounded-[4px] bg-[#DD3888] items-center justify-center pointer-events-none">
+                                        <svg class="w-[10px] h-[5px]" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M1 1L5 4L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </div>
                                     <button
                                         type="button"
                                         wire:click="removeGlobalPrice({{ $index }})"
