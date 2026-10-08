@@ -29,6 +29,7 @@ class ServicesManager extends Component
     public $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
     public $alwaysOnline = false;
     public $schedule = [];
+    public string $availabilityMessage = '';
 
     public function mount()
     {
@@ -43,6 +44,7 @@ class ServicesManager extends Component
         $this->services = Service::active()->ordered()->get();
 
         $storedSchedule = [];
+        $hasSavedSchedule = false;
 
         // Load selected services for this profile
         if ($this->hasProfile) {
@@ -57,12 +59,13 @@ class ServicesManager extends Component
             $availability = is_array($this->profile->availability_hours) ? $this->profile->availability_hours : [];
             $this->alwaysOnline = (bool) ($availability['always_online'] ?? false);
             $storedSchedule = $availability['schedule'] ?? [];
+            $hasSavedSchedule = array_key_exists('schedule', $availability);
         }
 
         foreach ($this->days as $day) {
             $this->schedule[$day] = [
-                'from' => $storedSchedule[$day]['from'] ?? '09:00',
-                'to' => $storedSchedule[$day]['to'] ?? '16:30',
+                'from' => $storedSchedule[$day]['from'] ?? ($hasSavedSchedule ? '' : '09:00'),
+                'to' => $storedSchedule[$day]['to'] ?? ($hasSavedSchedule ? '' : '16:30'),
             ];
         }
     }
@@ -96,6 +99,7 @@ class ServicesManager extends Component
         $this->selectedServices = $this->profile->fresh()->services->pluck('id')->toArray();
 
         session()->flash('message', __('front.account.services.success'));
+        $this->dispatch('services-saved');
     }
 
     public function toggleLanguage($language)
@@ -130,6 +134,7 @@ class ServicesManager extends Component
         $this->profile->save();
 
         session()->flash('message', __('front.account.services.languages_success'));
+        $this->dispatch('services-saved');
     }
 
     public function saveAvailability()
@@ -139,6 +144,13 @@ class ServicesManager extends Component
         if (!$user->profile) {
             return;
         }
+
+        $rules = ['alwaysOnline' => 'boolean', 'schedule' => 'array'];
+        foreach (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as $day) {
+            $rules["schedule.$day.from"] = "nullable|required_with:schedule.$day.to|date_format:H:i";
+            $rules["schedule.$day.to"] = "nullable|required_with:schedule.$day.from|date_format:H:i";
+        }
+        $this->validate($rules);
 
         $this->profile = $user->profile;
 
@@ -158,7 +170,8 @@ class ServicesManager extends Component
         ];
         $this->profile->save();
 
-        session()->flash('message', __('front.account.services.availability_success'));
+        $this->availabilityMessage = __('front.account.services.availability_success');
+        $this->dispatch('availability-saved');
     }
 
     public function render()
@@ -166,4 +179,3 @@ class ServicesManager extends Component
         return view('livewire.services-manager');
     }
 }
-

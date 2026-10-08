@@ -92,6 +92,7 @@ return [
         'gents_registered' => 'registrovaných pánů',
     ],
     'nav' => [
+        'language' => 'Jazyk',
         'home' => 'Úvod',
         'countries' => 'Země',
         'vip' => 'VIP a Premium',
@@ -266,7 +267,7 @@ return [
                 'Ukrajinština' => 'Ukrajinština',
             ],
             'availability_success' => 'Dostupnost byla úspěšně aktualizována!',
-            'unsaved_changes' => 'Máte neuložené změny.',
+            'unsaved_changes' => 'Veškeré změny dostupnosti je potřeba potvrdit tlačítkem níže.',
             'online_hours_title' => 'Kdy bude systém ukazovat, že nejsi online?',
             'always_online' => 'Budu stále online',
             'time_from' => 'Pondělí OD',
@@ -478,6 +479,7 @@ return [
     'profiles' => [
         'detail' => 'Detail profilu',
         'detail_page' => [
+            'owner_preview' => 'Náhled vašeho profilu. Tento profil zatím není veřejně dostupný.',
             'vip' => 'VIP',
             'photos_unverified' => 'FOTO NEOVĚŘENO',
             'call' => 'Zavolat',
@@ -730,6 +732,7 @@ return [
             'limit_reached' => 'Dosáhli jste maximálního počtu :max fotografií.',
             'set_as_main' => 'Nastavit jako hlavní',
             'main_set' => 'Hlavní fotografie byla nastavena.',
+            'set_main' => 'Nastavit jako hlavní',
             'add_more' => 'Přidat další',
             'add_photo' => 'Přidat foto',
             'add_photo_line1' => 'Přidat',

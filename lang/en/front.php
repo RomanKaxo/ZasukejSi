@@ -84,6 +84,7 @@ return [
         'gents_registered' => 'gents registered',
     ],
     'nav' => [
+        'language' => 'Language',
         'home' => 'About',
         'countries' => 'Countries',
         'vip' => 'VIP & Premium',
@@ -253,7 +254,7 @@ return [
                 'Ukrajinština' => 'Ukrainian',
             ],
             'availability_success' => 'Availability has been successfully updated!',
-            'unsaved_changes' => 'You have unsaved changes.',
+            'unsaved_changes' => 'Confirm all availability changes using the button below.',
             'online_hours_title' => 'When will the system show you as offline?',
             'always_online' => 'Always online',
             'time_from' => 'Monday FROM',
@@ -468,6 +469,7 @@ return [
     'profiles' => [
         'detail' => 'Profile Detail',
         'detail_page' => [
+            'owner_preview' => 'Your profile preview. This profile is not publicly available yet.',
             'vip' => 'VIP',
             'photos_unverified' => 'PHOTOS UNVERIFIED',
             'call' => 'Call',
@@ -720,6 +722,7 @@ return [
             'limit_reached' => 'You have reached the maximum of :max photos.',
             'set_as_main' => 'Set as main',
             'main_set' => 'Main photo has been set.',
+            'set_main' => 'Set as main photo',
             'add_more' => 'Add more',
             'add_photo' => 'Add photo',
             'add_photo_line1' => 'Add',

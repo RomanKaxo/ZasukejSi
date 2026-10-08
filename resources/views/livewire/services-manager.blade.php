@@ -1,4 +1,5 @@
-<div class="w-[310px] md:w-full mx-auto">
+<div class="w-[310px] md:w-full mx-auto" x-data @services-saved.window="$nextTick(() => $refs.feedback.scrollIntoView({ behavior: 'smooth', block: 'start' }))">
+    <div x-ref="feedback" style="scroll-margin-top: 110px;" role="status" aria-live="polite">
     @if (session()->has('message'))
     <div class="alert alert-success flex items-center justify-between mb-6">
         <div class="flex items-center font-semibold">
@@ -10,6 +11,10 @@
         </button>
     </div>
     @endif
+    @if (session()->has('error'))
+        <p class="alert alert-danger mb-6">{{ session('error') }}</p>
+    @endif
+    </div>
 
     <!-- Services Section -->
     <div class="py-6">
@@ -34,6 +39,7 @@
                             name="service_{{ $service->id }}_{{ $slot }}"
                             id="service_{{ $service->id }}_{{ $slot }}"
                             :checked="in_array($service->id, $selectedServices)"
+                            :aria-label="$service->name"
                             wire:click="toggleService({{ $service->id }})"
                         />
                     </div>
@@ -60,11 +66,6 @@
             </div>
         @endif
 
-        <button type="button" class="mt-6 w-[312px] md:w-[240px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
-            <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px] group-hover:hidden" alt="Save">
-            <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px] hidden group-hover:block" alt="Save">
-            <span class="text-[#A4A4A4] group-hover:text-white" style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px;">{{ __('front.profiles.form.save_changes') }}</span>
-        </button>
     </div>
 
     <hr class="w-[843px] max-w-full relative left-1/2 -translate-x-1/2 mt-[80px] mb-[50px]">
@@ -81,6 +82,7 @@
                         name="language_{{ Str::slug($language) }}"
                         id="language_{{ Str::slug($language) }}"
                         :checked="in_array($language, $selectedLanguages)"
+                        :aria-label="__('front.account.services.language_names.' . $language)"
                         wire:click="toggleLanguage('{{ $language }}')"
                     />
                 </div>
@@ -93,17 +95,12 @@
             @endforeach
         </div>
 
-        <button type="button" class="mt-6 w-[312px] md:w-[240px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
-            <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px] group-hover:hidden" alt="Save">
-            <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px] hidden group-hover:block" alt="Save">
-            <span class="text-[#A4A4A4] group-hover:text-white" style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px;">{{ __('front.profiles.form.save_changes') }}</span>
-        </button>
     </div>
 
     <hr class="w-[843px] max-w-full relative left-1/2 -translate-x-1/2 mt-[80px] mb-[50px]">
 
     <!-- Online Hours Section -->
-    <div class="py-6" x-data="{ stillOnline: @entangle('alwaysOnline'), dirty: false }">
+    <div class="py-6" x-data="{ stillOnline: @entangle('alwaysOnline'), dirty: false, saving: false }" @availability-saved.window="dirty = false">
         <h2 class="mb-4 text-left" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">{{ __('front.account.services.online_hours_title') }}</h2>
 
         <!-- Always Online Toggle -->
@@ -114,6 +111,7 @@
                 :checked="$alwaysOnline"
                 x-model="stillOnline"
                 x-on:change="dirty = true"
+                x-bind:disabled="saving"
             />
             <label for="always_online" class="ml-3" style="font-family:'Poppins',sans-serif; font-weight:400; font-size:14px; color:#505050;">
                 {{ __('front.account.services.always_online') }}
@@ -146,7 +144,7 @@
             <div class="flex flex-wrap gap-4">
                 <!-- From Time -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="{{ $day['key'] }}_from" class="block text-sm font-medium text-gray-700 mb-2">
                         {{ $day['label'] }} {{ __('front.account.services.from') }}
                     </label>
                     <div class="relative">
@@ -155,7 +153,7 @@
                             x-on:change="dirty = true"
                             name="{{ $day['key'] }}_from"
                             id="{{ $day['key'] }}_from"
-                            class="input-control !w-[144px] !h-[50px] md:!w-[240px] md:!h-[50px] rounded-[8px] appearance-none pr-[54px]" :disabled="stillOnline">
+                            class="input-control !w-[144px] !h-[50px] md:!w-[240px] md:!h-[50px] rounded-[8px] appearance-none pr-[54px]" :disabled="stillOnline || saving">
                             <option value="">-</option>
                             @foreach($timeOptions as $time)
                                 <option value="{{ $time }}">{{ $time }}</option>
@@ -171,7 +169,7 @@
 
                 <!-- To Time -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="{{ $day['key'] }}_to" class="block text-sm font-medium text-gray-700 mb-2">
                         {{ $day['label'] }} {{ __('front.account.services.to') }}
                     </label>
                     <div class="relative">
@@ -180,7 +178,7 @@
                             x-on:change="dirty = true"
                             name="{{ $day['key'] }}_to"
                             id="{{ $day['key'] }}_to"
-                            class="input-control !w-[144px] !h-[50px] md:!w-[240px] md:!h-[50px] rounded-[8px] appearance-none pr-[54px]" :disabled="stillOnline">
+                            class="input-control !w-[144px] !h-[50px] md:!w-[240px] md:!h-[50px] rounded-[8px] appearance-none pr-[54px]" :disabled="stillOnline || saving">
                             <option value="">-</option>
                             @foreach($timeOptions as $time)
                                 <option value="{{ $time }}">{{ $time }}</option>
@@ -202,11 +200,21 @@
             {{ __('front.account.services.unsaved_changes') }}
         </p>
 
-        <!-- Save Button -->
-        <button type="button" x-on:click="$wire.saveAvailability().then(() => dirty = false)" class="mt-6 w-[310px] md:w-[240px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
-            <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px] group-hover:hidden" alt="Save">
-            <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px] hidden group-hover:block" alt="Save">
-            <span class="text-[#A4A4A4] group-hover:text-white" style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px;">{{ __('front.profiles.form.save_changes') }}</span>
+        @if ($errors->any())
+            <div role="alert" class="mt-4 text-sm text-red-600">
+                @foreach ($errors->all() as $error)
+                    <p>{{ $error }}</p>
+                @endforeach
+            </div>
+        @endif
+        @if ($availabilityMessage)
+            <p x-show="!dirty" role="status" class="mt-4 text-sm text-green-700">{{ $availabilityMessage }}</p>
+        @endif
+
+        <!-- Only an acknowledged save clears the unsaved state. -->
+        <button id="save-availability" type="button" :disabled="!dirty || saving" :aria-busy="saving.toString()" x-on:click="saving = true; $wire.saveAvailability().finally(() => saving = false)" :style="{ backgroundColor: dirty ? '#5C2D62' : '#E8E8E8', color: dirty ? '#FFFFFF' : '#A4A4A4' }" class="mt-6 w-[310px] md:w-[240px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 transition-colors duration-200 disabled:cursor-not-allowed">
+            <img :src="dirty ? @js(asset('images/icons/SaveWhite.svg')) : @js(asset('images/icons/Save.svg'))" class="w-[20px] h-[20px]" alt="">
+            <span style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px;">{{ __('front.profiles.form.save_changes') }}</span>
         </button>
     </div>
 </div>

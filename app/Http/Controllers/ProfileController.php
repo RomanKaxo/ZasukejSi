@@ -67,8 +67,15 @@ class ProfileController extends Controller
      */
     public function show($id): View
     {
-        $profile = Profile::public()
-            ->approved()
+        $profile = Profile::query()
+            ->where(function ($query) {
+                $query->where(fn ($public) => $public->public()->approved());
+
+                // Owners can preview their own unpublished profile from "My profile".
+                if (auth()->check()) {
+                    $query->orWhere('user_id', auth()->id());
+                }
+            })
             ->with(['user:id,name,last_activity,phone', 'services', 'media', 'segments'])
             ->select($this->getProfileDetailColumns())
             ->findOrFail($id);

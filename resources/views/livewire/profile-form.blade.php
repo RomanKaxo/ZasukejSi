@@ -1,4 +1,4 @@
-﻿<div>
+<div>
 
 
     @if (session()->has('message'))
@@ -46,13 +46,19 @@
             <div class="grid grid-cols-1 gap-[10px] !mt-0">
                 <!-- Name -->
                 <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.nickname') }}</label>
+                    @php($nicknameField = $hasProfile ? 'display_name' : 'name')
+                    <label for="{{ $nicknameField }}" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.nickname') }}</label>
                     <input
                         type="text"
-                        id="name"
-                        wire:model="name"
-                        class="input-control mt-1 @error('name') border-red-500 @enderror">
-                    @error('name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        id="{{ $nicknameField }}"
+                        wire:model="{{ $nicknameField }}"
+                        class="input-control mt-1 @error($nicknameField) border-red-500 @enderror">
+                    @error($nicknameField) <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="account_email" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.your_email') }}</label>
+                    <input type="email" id="account_email" value="{{ auth()->user()->email }}" readonly class="input-control mt-1 bg-gray-50">
                 </div>
 
                 @if($hasProfile)

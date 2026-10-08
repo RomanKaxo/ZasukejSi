@@ -2546,6 +2546,9 @@
 </style>
 
 <div class="vip-profile-page">
+    @if(auth()->id() === $profile->user_id && (!$profile->is_public || $profile->status !== 'approved'))
+        <p role="status" class="rounded-lg bg-purple-50 p-4 text-center text-purple-900">{{ __('front.profiles.detail_page.owner_preview') }}</p>
+    @endif
     <section class="vip-profile-hero">
         <aside class="vip-profile-panel">
             <div class="vip-profile-status-bar">

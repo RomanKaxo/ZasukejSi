@@ -89,6 +89,11 @@ class PhotosManager extends Component
             return;
         }
 
+        $media = $user->profile->getMedia('profile-images')->firstWhere('id', $mediaId);
+        if (! $media) {
+            return;
+        }
+
         // Remove main flag from all photos
         $user->profile->getMedia('profile-images')->each(function ($media) {
             $media->setCustomProperty('is_main', false);
@@ -96,11 +101,8 @@ class PhotosManager extends Component
         });
 
         // Set new main photo
-        $media = $user->profile->getMedia('profile-images')->where('id', $mediaId)->first();
-        if ($media) {
-            $media->setCustomProperty('is_main', true);
-            $media->save();
-        }
+        $media->setCustomProperty('is_main', true);
+        $media->save();
 
         // Reload images
         $this->loadImages($user->profile->fresh());

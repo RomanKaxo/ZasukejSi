@@ -1,10 +1,11 @@
 <div 
     x-data="{ open: false }" 
     @click.away="open = false" 
+    @keydown.escape.window="open = false"
     class="relative"
 >
     <!-- User Button -->
-    <button @click="open = !open" class="w-[60px] h-[60px] bg-[#DD3888] flex items-center justify-center"
+    <button type="button" @click.stop="open = !open" :aria-expanded="open.toString()" aria-label="{{ __('front.nav.myaccount') }}" class="w-[60px] h-[60px] bg-[#DD3888] flex items-center justify-center"
         :class="open ? 'rounded-t-[8px] rounded-b-none' : 'rounded-[8px]'">
         {{-- pointer-events:none: without it, Safari can resolve the click's
              target as this <img> rather than the button, which confuses
@@ -65,10 +66,10 @@
                     <li>
                         <a href="{{ $link['url'] }}"
                            class="flex items-center px-4 gap-3 transition-colors duration-200"
-                           style="width: 230px; height: 50px; border-radius: 8px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; color: #FFFFFF; text-decoration: none; background-color: transparent;"
+                           style="width: 230px; height: 50px; border-radius: 8px; font-family: 'Poppins', sans-serif; font-variant-ligatures: none; font-weight: 600; color: #FFFFFF; text-decoration: none; background-color: transparent;"
                            onmouseover="this.style.backgroundColor='#5C2D62'; this.style.color='#FFFFFF';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#FFFFFF';">
-                            <img src="{{ asset('images/icons/' . $link['icon']) }}" class="w-[20px] h-[20px]" alt="{{ $link['label'] }}" style="filter: brightness(0) invert(1);">
+                            <img src="{{ asset('images/icons/' . $link['icon']) }}" class="w-[20px] h-[20px]" alt="" aria-hidden="true" style="filter: brightness(0) invert(1);">
                             {{ $link['label'] }}
                         </a>
                     </li>
@@ -81,10 +82,10 @@
                         @csrf
                         <button type="submit"
                            class="flex items-center px-4 gap-3 transition-colors duration-200"
-                           style="width: 230px; height: 50px; border-radius: 8px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; color: #FFFFFF; text-decoration: none; background-color: transparent;"
+                           style="width: 230px; height: 50px; border-radius: 8px; font-family: 'Poppins', sans-serif; font-variant-ligatures: none; font-weight: 600; color: #FFFFFF; text-decoration: none; background-color: transparent;"
                            onmouseover="this.style.backgroundColor='#5C2D62'; this.style.color='#FFFFFF';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#FFFFFF';">
-                            <img src="{{ asset('images/icons/User.svg') }}" class="w-[20px] h-[20px]" alt="{{ __('front.nav.logout') }}" style="filter: brightness(0) invert(1);">
+                            <img src="{{ asset('images/icons/User.svg') }}" class="w-[20px] h-[20px]" alt="" aria-hidden="true" style="filter: brightness(0) invert(1);">
                             {{ __('front.nav.logout') }}
                         </button>
                     </form>

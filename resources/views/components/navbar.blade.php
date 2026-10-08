@@ -9,7 +9,8 @@
         #navbar {
             width: 100%;
             max-width: 100vw;
-            overflow-x: clip;
+            /* WebKit also clips dropdown painting vertically with overflow-x: clip. */
+            overflow: visible;
         }
 
         /* Odrolovaná lišta stojí nad obsahem a bez podkladu se s ním slévala.
@@ -276,9 +277,9 @@
                     @endauth
 
                     <!-- Language Switcher - Desktop Only -->
-                    <div class="hidden lg:inline" x-data="{ langOpen: false }" @click.outside="langOpen = false">
+                    <div class="hidden lg:inline-block" x-data="{ langOpen: false }" @click.outside="langOpen = false" @keydown.escape.window="langOpen = false">
                         <div class="language-dropdown relative">
-                            <button class="language-dropdown-toggle flex items-center" id="nav-language" @click.stop="langOpen = !langOpen" type="button">
+                            <button class="language-dropdown-toggle flex items-center" id="nav-language" @click.stop="langOpen = !langOpen" type="button" aria-controls="nav-language-menu" :aria-expanded="langOpen.toString()" aria-label="{{ __('front.nav.language') }}">
                                 {{-- Current language; the flag comes from
                                      config/locales.php rather than an if-chain
                                      that only knew two languages.
@@ -294,7 +295,8 @@
                                      class="w-6 h-6 rounded" style="pointer-events: none;">
                             </button>
                             
-                            <div class="language-dropdown-menu absolute top-full right-0 bg-white p-2 rounded-lg shadow-lg transition-opacity duration-200 z-50"
+                            <div id="nav-language-menu" class="language-dropdown-menu absolute top-full right-0 bg-white p-2 rounded-lg shadow-lg transition-opacity duration-200 z-50"
+                                 @click.stop
                                  x-show="langOpen"
                                  x-cloak
                                  x-transition:enter="transition ease-out duration-150"
@@ -305,7 +307,7 @@
                                  x-transition:leave-end="opacity-0 scale-95">
                                 @foreach(\App\Support\Locales::all() as $code => $meta)
                                     @continue($code === app()->getLocale())
-                                    <a href="{{ url()->current() }}?locale={{ $code }}"
+                                    <a href="{{ request()->fullUrlWithQuery(['locale' => $code]) }}"
                                        class="language-dropdown-item flex items-center gap-2 {{ ! $loop->last ? 'mb-1' : '' }}"
                                        title="{{ $meta['native'] }}">
                                         <img src="{{ asset($meta['flag']) }}" alt="{{ $meta['native'] }}" class="w-6 h-6">

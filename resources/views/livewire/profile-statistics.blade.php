@@ -37,20 +37,17 @@
     @else
 
     <div class="w-full h-[510px] rounded-[15px] relative mx-auto max-[426px]:hidden">
-    <!-- Chart will draw its own grid; removed static HTML grid to avoid duplication -->
-
-    <!-- Chart canvas (Chart.js will draw grid & labels) -->
-    <div class="absolute inset-0 z-10" wire:ignore>
-        <canvas id="{{ $chartId }}" class="w-full h-full block"></canvas>
+    <div class="absolute inset-x-0 top-0 bottom-[65px] overflow-x-auto" data-chart-viewport tabindex="0" aria-label="{{ $variant === 'detail' ? __('front.account.statistics.detail_views_title') : __('front.account.statistics.profile_views_title') }}">
+        <div class="relative h-full" data-chart-content>
+            <div class="absolute inset-0 z-10" wire:ignore>
+                <canvas id="{{ $chartId }}" class="w-full h-full block"></canvas>
+            </div>
+            <div id="{{ $badgesId }}" class="absolute inset-0 z-20 pointer-events-none" wire:ignore></div>
+        </div>
     </div>
 
-    <!-- badges overlay: we'll position badges exactly under each bar using Chart.js coordinates -->
-    <div id="{{ $badgesId }}" class="absolute left-0 top-0 w-full h-full z-20 pointer-events-none"></div>
-
-    <!-- profile label removed to avoid clashing with page heading -->
-
-    <!-- Controls block INSIDE the chart container; JS will position it directly under the VIP badge -->
-    <div id="{{ $controlsId }}" class="absolute left-1/2 transform -translate-x-1/2 z-30 max-[426px]:hidden" style="pointer-events:auto; display:block; width:100%; max-width:843px;">
+    <!-- Month controls stay visible while the date range scrolls. -->
+    <div id="{{ $controlsId }}" class="absolute bottom-0 left-1/2 transform -translate-x-1/2 z-30 max-[426px]:hidden" style="pointer-events:auto; display:block; width:100%; max-width:843px;">
         <div class="w-full mx-auto flex items-center justify-center gap-6">
             <div class="w-[255px] h-px bg-[#E6E6E6]"></div>
 
@@ -98,7 +95,7 @@
                             {{ $label }}
                         </div>
 
-                        <div class="flex min-w-0 flex-1 items-center">
+                        <div class="flex min-w-0 flex-1 items-center pr-[28px]">
                             <div class="relative flex h-[20px] flex-1 items-center" style="--bar-width: {{ $barWidth }}%;">
                                 <div class="h-[20px] rounded-r-[999px] rounded-l-[4px]" style="width: var(--bar-width); background-color: {{ $barColor }};"></div>
 
@@ -124,17 +121,17 @@
         </div>
 
         <div class="mt-6 flex h-[85px] items-center justify-between rounded-[15px] bg-[#FFF8FB] px-[16px]">
-            <button type="button" aria-label="Previous month" class="h-[45px] w-[45px] rounded-[8px] bg-[#DD3888] flex items-center justify-center text-white transition">
+            <button type="button" wire:click="previousMonth" aria-label="Previous month" class="h-[45px] w-[45px] rounded-[8px] bg-[#DD3888] flex items-center justify-center text-white transition">
                 <svg width="7" height="9" viewBox="0 0 7 9" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <path d="M6 0L0 4.5L6 9V0Z" fill="currentColor"/>
                 </svg>
             </button>
 
             <div class="flex-1 text-center text-[#5C2D62] text-[16px] font-bold leading-none" style="font-family: 'Poppins', sans-serif;">
-                {{ isset($currentMonth) ? $currentMonth->locale('cs')->translatedFormat('F Y') : now()->locale('cs')->translatedFormat('F Y') }}
+                {{ $this->currentMonth->locale(app()->getLocale())->translatedFormat('F Y') }}
             </div>
 
-            <button type="button" aria-label="Next month" class="h-[45px] w-[45px] rounded-[8px] bg-[#FFF4F9] flex items-center justify-center text-[#DD3888] transition">
+            <button type="button" wire:click="nextMonth" @disabled($this->isCurrentMonth) aria-label="Next month" class="h-[45px] w-[45px] rounded-[8px] bg-[#FFF4F9] flex items-center justify-center text-[#DD3888] transition">
                 <svg width="7" height="9" viewBox="0 0 7 9" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <path d="M1 0L7 4.5L1 9V0Z" fill="currentColor"/>
                 </svg>
@@ -153,13 +150,12 @@
 <script>
 (function () {
     function initChart() {
-        if (window.matchMedia('(max-width: 426px)').matches) {
+        if (!window.Chart || window.matchMedia('(max-width: 426px)').matches) {
             return;
         }
 
         const chartId = @json($chartId);
         const badgesId = @json($badgesId);
-        const controlsId = @json($controlsId);
         const chartGlobalName = @json($chartGlobalName);
         const canvas = document.getElementById(chartId);
         if (!canvas) { console.warn('profileStatsChart canvas not found'); return; }
@@ -176,6 +172,11 @@
         const barColors = chartData.colors || [];
         const yAxisMax = chartData.yAxisMax ?? 10;
         const yAxisStep = chartData.yAxisStep ?? 2;
+
+        // Keep approximately 15 legible days in the desktop viewport. Longer
+        // months scroll horizontally without skipping dates or inventing data.
+        const content = canvas.closest('[data-chart-content]');
+        content.style.minWidth = `${labels.length * 52 + 40}px`;
 
         // Ensure canvas has explicit pixel size so Chart.js can draw correctly
         const parentRect = canvas.parentElement.getBoundingClientRect();
@@ -237,7 +238,7 @@
         // We'll rely on Chart.js to draw the horizontal grid lines so they align
         // perfectly with bar values. Increase bottom padding to move the
         // x-axis date labels further down so badges can sit below them.
-        const bottomPadding = 120;
+        const bottomPadding = 70;
 
         // plugin to draw baseline at y=0 (horizontal) so we don't rely on axis borders
         const baselinePlugin = {
@@ -268,12 +269,6 @@
                 datasets: [{
                     data: values,
                     backgroundColor: barColors,
-                    // Fixed pixel bars (barThickness: 30) forced a fixed gap per
-                    // category regardless of how many days were being charted, so
-                    // a full month only ever showed ~7 days before running out of
-                    // horizontal room. Percentage-based sizing shrinks bars and
-                    // gaps together so the whole range (Figma: 15 days) fits the
-                    // container width instead.
                     categoryPercentage: 0.9,
                     barPercentage: 0.6,
                     maxBarThickness: 30,
@@ -305,8 +300,11 @@
                     x: {
                         ticks: {
                             display: true,
+                            autoSkip: false,
+                            minRotation: 0,
+                            maxRotation: 0,
                             color: '#505050',
-                            font: { family: 'Poppins', size: 14, weight: '500' },
+                            font: { family: 'Poppins', size: 12, weight: '500' },
                             padding: 8
                         },
                         grid: { display: false, drawBorder: false, drawTicks: false },
@@ -372,59 +370,28 @@
                 container.appendChild(wrapper);
             });
 
-            // After rendering badges, position controls under the first badge
-            positionControlsBelowBadge();
-        }
-
-        function positionControlsBelowBadge() {
-                try {
-                    const controls = document.getElementById(controlsId);
-                    const badgeEl = document.querySelector('#' + badgesId + ' .zs-vip-wrapper');
-                    const chart = window[chartGlobalName];
-                    if (!controls) return;
-                    if (badgeEl) {
-                        const badgeRect = badgeEl.getBoundingClientRect();
-                        // use the chart container (parent of the canvas parent) as reference
-                        const parentRect = canvas.parentElement.parentElement.getBoundingClientRect();
-                        // Compute top relative to chart container
-                        const top = Math.round(badgeRect.bottom - parentRect.top + 16);
-                        controls.style.top = top + 'px';
-                        return;
-                    }
-
-                    // Keep controls below the date labels, with a 16px gap.
-                    if (chart && chart.chartArea) {
-                        const top = Math.round((chart.scales.x?.bottom ?? chart.chartArea.bottom) + 16);
-                        controls.style.top = top + 'px';
-                    }
-                } catch (e) { console.warn('positionControlsBelowBadge error', e); }
         }
 
         // initial render
         renderVipBadges(window[chartGlobalName]);
 
         // update badges on resize to keep them aligned
-        window.addEventListener('resize', function () {
-            if (window[chartGlobalName]) renderVipBadges(window[chartGlobalName]);
-        });
+        window[chartGlobalName].options.onResize = () => requestAnimationFrame(() => renderVipBadges(window[chartGlobalName]));
     }
 
-    // Livewire 3 hook names. This used to listen for 'livewire:load' and
-    // 'message.processed', which are Livewire 2 — neither ever fired here, so
-    // the chart was never redrawn after an update.
     document.addEventListener('livewire:initialized', function () {
         initChart();
-
-        if (window.Livewire && typeof window.Livewire.hook === 'function') {
-            window.Livewire.hook('morph.updated', function () {
-                initChart();
-            });
+        const root = document.getElementById(@json('profileStatsRoot-' . $instanceId));
+        if (root) {
+            new MutationObserver(initChart).observe(root, { attributes: true, attributeFilter: ['data-chart'] });
         }
     });
-
     document.addEventListener('DOMContentLoaded', initChart);
-
-    // Try to initialize immediately in case events already fired
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(initChart, 150);
+    });
     initChart();
 })();
 </script>

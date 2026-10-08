@@ -913,7 +913,7 @@ class Profile extends Model implements HasMedia
      */
     public function getFirstImageUrl($conversion = null): ?string
     {
-        $firstImage = $this->getFirstMedia('profile-images');
+        $firstImage = $this->getAllImages()->first();
         
         if (!$firstImage) {
             return null;
@@ -935,7 +935,10 @@ class Profile extends Model implements HasMedia
      */
     public function getAllImages()
     {
-        return $this->getMedia('profile-images');
+        // The photo selected in account settings must lead every public gallery.
+        return $this->getMedia('profile-images')
+            ->sortByDesc(fn ($media) => (bool) $media->getCustomProperty('is_main', false))
+            ->values();
     }
 
     /**

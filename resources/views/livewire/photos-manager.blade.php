@@ -206,6 +206,10 @@
                             <path d="M1 1L9 9M9 1L1 9" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
                     </button>
+                    <button type="button" wire:click="setAsMainPhoto({{ $photo->id }})" wire:loading.attr="disabled"
+                        class="absolute bottom-2 inset-x-2 rounded-lg bg-[#5C2D62] px-2 py-2 text-xs font-semibold text-white">
+                        {{ __('front.profiles.photos.set_main') }}
+                    </button>
                 </div>
             @empty
                 <p class="w-full text-sm text-gray-500 mb-2" style="font-family:'Poppins',sans-serif;">
