@@ -61,7 +61,7 @@ class MobileMenuOrderTest extends TestCase
             [
                 'account/member/ratings',   // Můj profil
                 'messages',                 // Moje zprávy
-                'account/member/favorites',// Moje favoritky
+                'account/member/favorites', // Moje favoritky
                 'account/member',           // Základní nastavení
             ],
             array_slice($order, 0, 4),
@@ -76,7 +76,7 @@ class MobileMenuOrderTest extends TestCase
 
         foreach (['girls-of-month', 'archive', 'reported'] as $route) {
             $this->assertStringContainsString(
-                'account/member/' . $route,
+                'account/member/'.$route,
                 $html,
                 "Sekce {$route} není z mobilu dosažitelná.",
             );
@@ -90,5 +90,31 @@ class MobileMenuOrderTest extends TestCase
         foreach (['Registrace', 'Log-in', 'Česky', 'English', 'Русский'] as $expected) {
             $this->assertStringContainsString($expected, $html);
         }
+    }
+
+    public function test_every_provider_section_is_reachable_from_the_header_menu(): void
+    {
+        $provider = User::factory()->create(['gender' => 'female', 'email_verified_at' => now()]);
+        $html = $this->actingAs($provider)->get('/')->assertOk()->getContent();
+        $start = strpos($html, 'id="mobile-menu"');
+        $menu = substr($html, $start, strpos($html, '</nav>', $start) - $start);
+
+        foreach ([
+            'account.dashboard', 'account.edit', 'account.photos',
+            'account.services', 'account.statistics',
+            'account.subscription.index', 'account.reviews',
+        ] as $route) {
+            $this->assertStringContainsString('href="'.route($route).'"', $menu, $route);
+        }
+    }
+
+    public function test_member_membership_is_reachable_from_the_header_menu(): void
+    {
+        $member = User::factory()->create(['gender' => 'male', 'email_verified_at' => now()]);
+        $html = $this->actingAs($member)->get('/')->assertOk()->getContent();
+        $start = strpos($html, 'id="mobile-menu"');
+        $menu = substr($html, $start, strpos($html, '</nav>', $start) - $start);
+
+        $this->assertStringContainsString('href="'.route('account.member.membership.index').'"', $menu);
     }
 }

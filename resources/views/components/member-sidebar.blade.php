@@ -1,28 +1,9 @@
-<div x-data>
-{{-- Mobile Menu Button --}}
-<button 
-    @click="$store.memberSidebar.toggle()"
-    class="fixed top-20 left-4 z-50 md:hidden bg-primary text-white p-3 rounded-lg shadow-lg hover:bg-primary-600 transition-colors"
-    aria-label="Toggle menu"
->
-    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-</button>
-
-{{-- Overlay for mobile --}}
-<div 
-    x-show="$store.memberSidebar.isOpen" 
-    @click="$store.memberSidebar.close()"
-    x-transition.opacity
-    x-cloak
-    class="fixed inset-0 bg-black/50 z-40 md:hidden"
-></div>
+<div>
+{{-- Mobile member navigation lives in the header menu. --}}
 
 {{-- Sidebar --}}
 <aside
-    class="w-full h-full md:w-[220px] md:relative fixed top-0 left-0 z-40 bg-white transition-transform duration-300 md:translate-x-0 overflow-y-auto pt-28 md:pt-0 md:mt-[75px]"
-    :class="$store.memberSidebar.isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
+    class="hidden md:block w-full h-full md:w-[220px] md:relative bg-white overflow-y-auto md:mt-[75px]"
 >
     <!-- Navigation Menu -->
     <nav class="p-6 md:p-0">
@@ -132,17 +113,3 @@
     </nav>
 </aside>
 </div>
-
-<script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.store('memberSidebar', {
-            isOpen: false,
-            toggle() {
-                this.isOpen = !this.isOpen;
-            },
-            close() {
-                this.isOpen = false;
-            }
-        });
-    });
-</script>

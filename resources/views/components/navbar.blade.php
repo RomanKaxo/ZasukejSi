@@ -435,6 +435,7 @@
                             ['route' => 'account.member.girls-of-month', 'label' => __('front.account.member.girls_of_month'), 'icon' => 'CalendarDays'],
                             ['route' => 'account.member.archive', 'label' => __('front.account.member.archive'), 'icon' => 'History'],
                             ['route' => 'account.member.reported', 'label' => __('front.account.member.reported'), 'icon' => 'OctagonAlert'],
+                            ['route' => 'account.member.membership.index', 'label' => __('front.account.member.membership'), 'icon' => 'star'],
                         ] : [
                             // Veřejný profil, pokud ho má; jinak zůstává
                             // odkaz na nastavení, aby tlačítko nebylo mrtvé.
@@ -444,9 +445,12 @@
                             ['route' => 'messages.index', 'label' => __('front.account.member.messages'), 'icon' => 'mail', 'badge' => $mobileMailBadge],
                             ['route' => 'account.edit', 'label' => __('front.account.member.settings'), 'icon' => 'Settings'],
                             // Za návrhem:
+                            ['route' => 'account.dashboard', 'label' => __('front.account.sidebar.basic'), 'icon' => 'User'],
                             ['route' => 'account.photos', 'label' => __('front.account.sidebar.photos'), 'icon' => 'Images'],
                             ['route' => 'account.services', 'label' => __('front.account.sidebar.services'), 'icon' => 'List'],
                             ['route' => 'account.statistics', 'label' => __('front.account.sidebar.statistics'), 'icon' => 'BarChart4'],
+                            ['route' => 'account.subscription.index', 'label' => __('front.account.sidebar.subscription'), 'icon' => 'star'],
+                            ['route' => 'account.reviews', 'label' => __('front.account.sidebar.reviews'), 'icon' => 'star'],
                             ['route' => 'notifications.archived', 'label' => __('front.nav.notifications'), 'icon' => 'bell', 'badge' => $mobileNotificationBadge],
                         ];
                     @endphp

@@ -33,3 +33,21 @@ Samostatné doplnění katalogu po aktualizaci aplikace:
 ```sh
 php artisan db:seed --class=ServicesSeeder --force
 ```
+
+## Dodatečná oprava mobilního menu
+
+- Odstraněno druhé plovoucí tlačítko účtu a členského menu. Na mobilu mělo
+  průhledný podklad s bílou ikonou a překrývalo růžovou hlášku. Mobilní
+  navigace nyní používá menu v hlavičce; boční menu zůstává od 768 px.
+- V hlavičce jsou dostupné také základní údaje profilu, předplatné a recenze
+  poskytovatelky a předplatné člena. Odstranění druhého menu tak neodřízne
+  žádnou sekci účtu. Dva regresní testy před doplněním zachytily chybějící
+  odkazy na předplatné.
+- Po této změně prošlo **813 testů, 1994 assertions**, produkční build,
+  kompilace Blade a Pint upraveného testu. Devět existujících upozornění
+  PHPUnit zůstává beze změny.
+- **Pět kol v Chromiu a pět ve WebKitu** proklikalo všech sedm sekcí profilu
+  i všech sedm sekcí člena. Kontroly zahrnují šířky 320, 375, 390, 768, 1024
+  a 1440 px, otevírání a zavírání hlavního menu, dostupnost odkazů při rolování,
+  nepřekrytou hlášku, zachované vystředění a nulové vodorovné přetékání.
+  Nebyly zachyceny JavaScript chyby ani místní HTTP odpovědi 4xx/5xx.
