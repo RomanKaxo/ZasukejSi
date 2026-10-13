@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\User;
 use App\Models\MemberSubscription;
 use App\Models\Profile;
-use App\Models\Service;
 use App\Models\Subscription;
 use App\Models\SubscriptionType;
 use Illuminate\Database\Seeder;
@@ -289,40 +288,7 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // Create Services
-        $services = [
-            ['name' => ['cs' => 'Pozice 69', 'en' => 'Position 69'], 'sort_order' => 1],
-            ['name' => ['cs' => 'Vaginální sex', 'en' => 'Vaginal sex'], 'sort_order' => 2],
-            ['name' => ['cs' => 'Výstřik na obličej', 'en' => 'Facial'], 'sort_order' => 3],
-            ['name' => ['cs' => 'Výstřik do pusy', 'en' => 'Cum in mouth'], 'sort_order' => 4],
-            ['name' => ['cs' => 'Výstřik na tělo', 'en' => 'Cum on body'], 'sort_order' => 5],
-            ['name' => ['cs' => 'Lízání', 'en' => 'Licking'], 'sort_order' => 6],
-            ['name' => ['cs' => 'Nadávání', 'en' => 'Dirty talk'], 'sort_order' => 7],
-            ['name' => ['cs' => 'Erotická masáž', 'en' => 'Erotic massage'], 'sort_order' => 8],
-            ['name' => ['cs' => 'Facesitting', 'en' => 'Facesitting'], 'sort_order' => 9],
-            ['name' => ['cs' => 'Prstění', 'en' => 'Fingering'], 'sort_order' => 10],
-        ];
-
-        foreach ($services as $serviceData) {
-            // Match on the JSON path, not on the whole `name` value. `name` is
-            // translatable, so firstOrCreate(['name' => [...]]) compares the
-            // encoded JSON as a string; that never matched the stored row and
-            // every db:seed run appended another copy of the whole list.
-            $exists = Service::query()
-                ->where('name->cs', $serviceData['name']['cs'])
-                ->exists();
-
-            if ($exists) {
-                continue;
-            }
-
-            Service::create([
-                'name' => $serviceData['name'],
-                'description' => ['cs' => '', 'en' => ''],
-                'sort_order' => $serviceData['sort_order'],
-                'is_active' => true,
-            ]);
-        }
+        $this->call(ServicesSeeder::class);
 
         // Create some test ratings for profiles
         $profiles = Profile::where('is_public', true)->get();

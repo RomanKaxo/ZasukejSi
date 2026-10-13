@@ -31,18 +31,18 @@
              širší než obrazovka: začínal na levém okraji, pravá půlka přetékala
              mimo a jeho vystředěný obsah tím pádem vycházel vedle. --}}
         <div x-data="{ show: true }" x-show="show" class="sticky top-14 md:top-20 z-40 w-full md:w-[1134px] max-w-full md:mx-auto mb-8">
-            <div class="relative mx-auto w-[310px] min-h-[110px] px-4 py-3 md:w-full md:min-h-[50px] md:mx-0 md:px-4 md:py-0 bg-[#FFE0E5] rounded-[8px] md:flex md:items-center md:justify-center">
-                <img src="{{ asset('images/icons/OctagonAlert.svg') }}" class="absolute top-3 left-3 md:static md:mr-3 w-[20px] h-[20px]" alt="">
-                <button
-                    @click="show = false"
-                    aria-label="{{ __('front.notifications.archive') }}"
-                    class="absolute top-3 right-3 md:right-4 md:top-1/2 md:-translate-y-1/2 text-[#DD3888] font-bold">X</button>
-                <span class="block pl-8 pt-1 md:pl-0 md:pt-0 md:py-3 font-medium text-[14px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">
+            <div class="mx-auto grid w-[310px] max-w-full min-h-[110px] grid-cols-[20px_minmax(0,1fr)_20px] items-center gap-3 px-3 py-3 md:w-full md:min-h-[50px] md:mx-0 md:px-4 bg-[#FFE0E5] rounded-[8px]">
+                <img src="{{ asset('images/icons/OctagonAlert.svg') }}" class="w-[20px] h-[20px]" alt="">
+                <span class="min-w-0 text-center font-medium text-[14px] leading-5 text-[#505050]" style="font-family: 'Poppins', sans-serif;">
                     {{ __('front.account.completion.prompt') }}
                     @foreach($missingSteps as $step)
                         <a href="{{ route($step['route']) }}" class="underline">{{ $step['label'] }}</a>{{ ! $loop->last ? ', ' : '' }}
                     @endforeach
                 </span>
+                <button type="button"
+                    @click="show = false"
+                    aria-label="{{ __('front.notifications.archive') }}"
+                    class="flex w-[20px] h-[20px] items-center justify-center text-[#DD3888] font-bold">X</button>
             </div>
         </div>
     @endif

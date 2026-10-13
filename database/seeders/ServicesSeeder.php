@@ -16,63 +16,67 @@ class ServicesSeeder extends Seeder
             [
                 'name' => ['cs' => 'Pozice 69', 'en' => 'Position 69'],
                 'description' => ['cs' => 'Klasická pozice 69', 'en' => 'Classic 69 position'],
-                'sort_order' => 1
+                'sort_order' => 1,
             ],
             [
                 'name' => ['cs' => 'Vaginální sex', 'en' => 'Vaginal Sex'],
                 'description' => null,
-                'sort_order' => 2
+                'sort_order' => 2,
             ],
             [
                 'name' => ['cs' => 'Výstřik na obličej', 'en' => 'Facial'],
                 'description' => null,
-                'sort_order' => 3
+                'sort_order' => 3,
             ],
             [
                 'name' => ['cs' => 'Výstřik do pusy', 'en' => 'Cumshot in Mouth'],
                 'description' => null,
-                'sort_order' => 4
+                'sort_order' => 4,
             ],
             [
                 'name' => ['cs' => 'Výstřik na tělo', 'en' => 'Body Cumshot'],
                 'description' => null,
-                'sort_order' => 5
+                'sort_order' => 5,
             ],
             [
                 'name' => ['cs' => 'Lízání', 'en' => 'Oral'],
                 'description' => null,
-                'sort_order' => 6
+                'sort_order' => 6,
             ],
             [
                 'name' => ['cs' => 'Nadávání', 'en' => 'Dirty Talk'],
                 'description' => null,
-                'sort_order' => 7
+                'sort_order' => 7,
             ],
             [
                 'name' => ['cs' => 'Erotická masáž', 'en' => 'Erotic Massage'],
                 'description' => null,
-                'sort_order' => 8
+                'sort_order' => 8,
             ],
             [
                 'name' => ['cs' => 'Facesitting', 'en' => 'Facesitting'],
                 'description' => null,
-                'sort_order' => 9
+                'sort_order' => 9,
             ],
             [
                 'name' => ['cs' => 'Prstění', 'en' => 'Fingering'],
                 'description' => null,
-                'sort_order' => 10
+                'sort_order' => 10,
             ],
         ];
 
-        // `name` is a translatable JSON column, so there is no natural key to
-        // match on. Guard the whole seeder instead — without this, every run
-        // appends a second copy of the list rather than failing visibly.
-        if (Service::count() > 0) {
-            return;
-        }
-
         foreach ($services as $service) {
+            // Fill a partial catalog without replacing IDs, admin edits or
+            // existing profile selections. Match translated names individually.
+            $exists = Service::query()
+                ->where('name->cs', $service['name']['cs'])
+                ->orWhere('name->en', $service['name']['en'])
+                ->exists();
+
+            if ($exists) {
+                continue;
+            }
+
             Service::create([
                 'name' => $service['name'],
                 'description' => $service['description'],
@@ -82,4 +86,3 @@ class ServicesSeeder extends Seeder
         }
     }
 }
-

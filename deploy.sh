@@ -117,6 +117,7 @@ echo "  Migrace a storage OK"
 echo ""
 echo "[10/11] Seed základních dat..."
 php artisan db:seed --class=RoleSeeder --force 2>/dev/null || echo "  RoleSeeder přeskočen nebo neexistuje"
+php artisan db:seed --class=ServicesSeeder --force
 
 PAGE_COUNT=$(php artisan tinker --execute="echo \\App\\Models\\Page::count();" 2>/dev/null | tail -1 | tr -d '[:space:]' || echo "0")
 if [ "$PAGE_COUNT" = "0" ] || [ -z "$PAGE_COUNT" ]; then

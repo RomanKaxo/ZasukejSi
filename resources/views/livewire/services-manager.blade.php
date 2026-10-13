@@ -21,23 +21,13 @@
         <h2 class="mb-4 text-left" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">{{ __('front.account.services.title') }}</h2>
 
         @if($services && $services->count() > 0)
-            @php
-                // The design fills the 3-column grid to 28 toggle slots by
-                // cycling the same real service list rather than needing 28
-                // distinct services. Every slot still points at the real
-                // $service->id, so toggling any copy toggles them all — only
-                // the DOM id per slot needs to stay unique.
-                $gridSlotCount = max($services->count(), 28);
-                $gridServices = collect(range(0, $gridSlotCount - 1))
-                    ->map(fn ($i) => $services[$i % $services->count()]);
-            @endphp
             <div class="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1">
-                @foreach($gridServices as $slot => $service)
-                <div class="flex flex-col md:flex-row md:items-start md:justify-between py-1">
+                @foreach($services as $service)
+                <div wire:key="service-{{ $service->id }}" class="flex flex-col md:flex-row md:items-start md:justify-between py-1">
                     <div class="flex-shrink-0">
                         <x-toggle-switch
-                            name="service_{{ $service->id }}_{{ $slot }}"
-                            id="service_{{ $service->id }}_{{ $slot }}"
+                            name="service_{{ $service->id }}"
+                            id="service_{{ $service->id }}"
                             :checked="in_array($service->id, $selectedServices)"
                             :aria-label="$service->name"
                             wire:click="toggleService({{ $service->id }})"
