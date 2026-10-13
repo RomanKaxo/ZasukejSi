@@ -7,6 +7,7 @@ use App\Models\ProfileView;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -40,6 +41,21 @@ class ProfileController extends Controller
      */
     public function api(Request $request): JsonResponse
     {
+        $validator = Validator::make($request->only(['city', 'age_min', 'age_max', 'per_page', 'page']), [
+            'city' => ['nullable', 'string', 'max:255'],
+            'age_min' => ['nullable', 'integer', 'min:18', 'max:120'],
+            'age_max' => ['nullable', 'integer', 'min:18', 'max:120'],
+            'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
+            'page' => ['sometimes', 'integer', 'min:1'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => __('The given data was invalid.'),
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
         $profiles = $this->getPublicProfiles($request, true);
         
         // Record impressions for profiles shown in API response
@@ -120,7 +136,7 @@ class ProfileController extends Controller
         }
 
         // Pagination
-        $perPage = $forApi ? ($request->get('per_page', 10)) : 10;
+        $perPage = $forApi ? (int) $request->input('per_page', 10) : 10;
         $profiles = $query->paginate($perPage);
 
         // Transform data for API responses

@@ -261,11 +261,12 @@
 </div>
 
 <!-- Delete Account Modal -->
-<div x-data="{ show: false }" 
+<div x-data="{ show: @js($errors->has('password')) }"
      x-on:open-modal.window="if ($event.detail === 'confirm-user-deletion') show = true"
      x-on:close-modal.window="if ($event.detail === 'confirm-user-deletion') show = false"
+     x-on:keydown.escape.window="show = false"
      x-show="show"
-     class="fixed inset-0 overflow-y-auto z-50" 
+     class="fixed inset-0 overflow-y-auto z-[110]"
      style="display: none;">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div x-show="show" 
@@ -275,7 +276,7 @@
              x-transition:leave="ease-in duration-200"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 transition-opacity" 
+             class="fixed inset-0 z-0 transition-opacity"
              aria-hidden="true">
             <div class="absolute inset-0 bg-gray-500 opacity-75" x-on:click="show = false"></div>
         </div>
@@ -289,7 +290,8 @@
              x-transition:leave="ease-in duration-200"
              x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
              x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-             class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+             class="relative z-10 inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+             role="dialog" aria-modal="true" aria-labelledby="confirm-user-deletion-title">
             
             <form method="POST" action="{{ route('account.destroy') }}">
                 @csrf
@@ -303,7 +305,7 @@
                             </svg>
                         </div>
                         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900">{{ __('front.profiles.form.delete_account') }}</h3>
+                            <h3 id="confirm-user-deletion-title" class="text-lg leading-6 font-medium text-gray-900">{{ __('front.profiles.form.delete_account') }}</h3>
                             <div class="mt-2">
                                 <p class="text-sm text-gray-500">
                                     {{ __('front.profiles.form.delete_account_confirm') }}
@@ -316,6 +318,9 @@
                                            placeholder="{{ __('front.profiles.form.password_confirm') }}"
                                            required
                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                                    @error('password')
+                                        <p role="alert" class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
                                 </div>
                             </div>
                         </div>

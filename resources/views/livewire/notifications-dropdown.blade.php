@@ -94,7 +94,10 @@
             @endforeach
         @endif
 
-        <div class="p-3 border-t border-gray-100 text-center">
+        <div class="p-3 border-t border-gray-100 text-center flex flex-col gap-2">
+            <a href="{{ route('notifications.index') }}" class="text-sm text-primary hover:underline">
+                {{ __('front.notifications.view_active') }}
+            </a>
             <a href="{{ route('notifications.archived') }}" class="text-sm text-primary hover:underline">
                 {{ __('front.notifications.view_archived') }}
             </a>

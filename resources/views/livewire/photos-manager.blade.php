@@ -86,6 +86,11 @@
                     <h3 class="mt-4 mb-2" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">
                         {{ __('front.profiles.photos.verified_title') }}</h3>
                     <p style="font-family:'Poppins',sans-serif; font-weight:400; font-size:14px; color:#505050;">{{ __('front.profiles.photos.verified_desc') }}</p>
+                @elseif($this->isVerificationPending())
+                    <h3 class="mb-4" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">
+                        {{ __('front.profiles.photos.pending_title') }}
+                    </h3>
+                    <p role="status" class="text-sm text-gray-600 max-w-full">{{ __('front.profiles.photos.verification_pending') }}</p>
                 @elseif($this->isVerificationRejected())
                     <!-- Rejected Status -->
                     <h3 class="mb-2" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">
@@ -235,7 +240,7 @@
             <div x-show="modalOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center" style="display: none;">
                 <div class="fixed inset-0" style="background-color: #5C2D62CC; backdrop-filter: blur(30px);" @click="modalOpen = false"></div>
 
-                <div class="relative w-[1000px] h-[570px] max-w-full max-h-full rounded-[24px] bg-[#FFFFFF] p-10 overflow-y-auto"
+                <div class="photo-upload-dialog relative w-[1000px] max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-2rem)] min-h-[400px] rounded-[24px] bg-[#FFFFFF] px-5 py-16 sm:p-10 overflow-y-auto"
                     style="box-shadow: 0 10px 25px 0 #00000033;">
                     <button type="button" @click="modalOpen = false"
                         class="absolute top-6 right-6 w-[35px] h-[35px] rounded-full bg-[#DD3888] hover:bg-[#CA2474] transition-colors duration-200 flex items-center justify-center">
@@ -246,7 +251,7 @@
 
                     <h2 class="text-center mb-8" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:36px; color:#5C2D62;">{{ __('front.profiles.photos.upload_modal_title') }}</h2>
 
-                    <div class="absolute left-0 right-0 bottom-[180px] px-10">
+                    <div class="w-full">
                         <div class="flex flex-wrap justify-center gap-4">
                             @foreach ($images as $index => $image)
                                 @if ($image)
@@ -285,7 +290,7 @@
                         </div>
                     </div>
 
-                    <div class="absolute bottom-[80px] left-0 right-0 flex justify-center">
+                    <div class="mt-8 flex justify-center">
                         <button type="button" wire:click="uploadImages" wire:loading.attr="disabled"
                             wire:loading.class="opacity-50 cursor-not-allowed"
                             class="w-[200px] h-[50px] rounded-lg bg-[#5C2D62] flex items-center justify-center gap-2">

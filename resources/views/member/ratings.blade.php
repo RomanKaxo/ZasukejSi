@@ -1,7 +1,7 @@
 @extends('layouts.member')
 
 @section('member-content')
-<div class="w-[310px] md:w-auto mx-auto">
+<div class="w-[310px] max-w-full md:w-auto mx-auto">
 <!-- Welcome Title -->
 <div class="mb-4 md:mb-8 text-center">
     <h1 style="font-family:'Poppins',sans-serif;font-weight:700;font-size:36px;">

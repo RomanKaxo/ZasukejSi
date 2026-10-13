@@ -13,9 +13,14 @@
 @if($reports->count() > 0)
 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
     @foreach($reports as $report)
+    @php
+        $maySeeProfileImage = ($report->profile->is_public && $report->profile->status === 'approved')
+            || (int) $report->profile->user_id === (int) $user->id
+            || $user->hasAnyRole(['admin', 'super_admin']);
+    @endphp
     <div class="flex gap-0 reported-pair">
-        <x-profile-card :profile="$report->profile" :isReported="true" />
-        <x-reported-info-card :report="$report" />
+        <x-profile-card :profile="$report->profile" :isReported="true" :imagesOverride="$maySeeProfileImage ? null : []" />
+        <x-reported-info-card :report="$report" :showProfileImage="$maySeeProfileImage" />
     </div>
     @endforeach
 </div>

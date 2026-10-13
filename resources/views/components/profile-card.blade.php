@@ -1,8 +1,9 @@
-@props(['profile', 'imageOverride' => null, 'imagesOverride' => null, 'variant' => null, 'showRemoveButton' => false, 'removeUrl' => null, 'cardHeight' => '520px', 'imageHeight' => '265px', 'simpleMode' => false, 'isReported' => false])
+@props(['profile', 'imageOverride' => null, 'imagesOverride' => null, 'variant' => null, 'showRemoveButton' => false, 'removeUrl' => null, 'cardHeight' => '520px', 'imageHeight' => '265px', 'simpleMode' => false, 'isReported' => false, 'showDetailLink' => true])
 
 @php
     // Zajistíme, že $isReported je vždy bool
     $isReported = (bool)($isReported ?? false);
+    $canOpenDetail = (bool) $showDetailLink && !$isReported;
     
     $cardContent = (isset($profile->content) && is_array($profile->content)) ? $profile->content : [];
     $cardLocation = $cardContent['card_location'] ?? ($profile->city ?? null);
@@ -44,7 +45,7 @@
 @php
     // Prepare image URLs for simple Alpine-based slideshow
     $imageUrls = [];
-    if($imagesOverride && is_array($imagesOverride)) {
+    if(is_array($imagesOverride)) {
         $imageUrls = $imagesOverride;
     } elseif($imageOverride) {
         $imageUrls = [$imageOverride];
@@ -65,7 +66,7 @@
     $hasMultiplePhotos = count($imageUrls) > 1;
 @endphp
 
-<div class="{{ $isReported ? 'h-[510px] reported-profile-card' : '' }} {{ $showRemoveButton ? '' : 'overflow-hidden' }} bg-white rounded-lg transition-all duration-300 cursor-pointer group relative z-10 home-profile-card"
+<div class="{{ $isReported ? 'h-[510px] reported-profile-card' : '' }} {{ $showRemoveButton ? '' : 'overflow-hidden' }} bg-white rounded-lg transition-all duration-300 {{ $canOpenDetail ? 'cursor-pointer' : '' }} group relative z-10 home-profile-card"
      style="width: 214px; {{ !$isReported ? 'height: ' . ($simpleMode ? '340px' : $cardHeight) . ';' : '' }} {{ $isReported ? 'border-top-left-radius:15px;border-bottom-left-radius:15px;border-top-right-radius:0;border-bottom-right-radius:0;' : 'border-radius: 15px;' }} box-shadow: 0 15px 15px 0 rgba(92, 45, 98, 0.1);"
      x-cloak x-data="{ removed: false, removeError: false, showBtn: false, currentIndex: 0, imageUrls: [] }" data-image-urls='@json($imageUrls)' x-init="imageUrls = JSON.parse($el.getAttribute('data-image-urls') || '[]')" x-show="!removed" @mouseenter="showBtn = true" @mouseleave="showBtn = false">
     @if($showRemoveButton)
@@ -182,6 +183,10 @@
 
         </div>
 
+        @if($canOpenDetail)
+            <a href="{{ $profileUrl }}" class="absolute inset-0 z-10 home-profile-card-image-link" tabindex="-1" aria-label="{{ __('front.profiles.list.detail') }}: {{ $profileName }}"></a>
+        @endif
+
         @if(!$simpleMode && !$shouldBlur && $hasMultiplePhotos)
         <!-- Prev/Next Arrows (visible on hover) -->
         <button type="button" @click.stop.prevent="currentIndex = (currentIndex - 1 + imageUrls.length) % imageUrls.length" x-show="showBtn" class="absolute top-1/2 -translate-y-1/2 left-2 z-30 flex items-center justify-center" style="width:32px;height:32px;border-radius:9999px;border:1px solid #E4E4E7;background:#FFFFFF;">
@@ -211,7 +216,11 @@
                     <span class="home-profile-card-online-dot" aria-hidden="true"></span>
                 @endif
                 <h4 class="text-gray-700 truncate min-w-0 home-profile-card-name {{ $shouldBlur ? 'blur-md' : '' }}" style="font-family: 'Poppins', sans-serif; font-weight:700; font-size:18px; color:#333;">
-                    {{ $profileName }}
+                    @if($canOpenDetail)
+                        <a href="{{ $profileUrl }}" class="block truncate home-profile-card-name-link" style="color:inherit;text-decoration:none;">{{ $profileName }}</a>
+                    @else
+                        {{ $profileName }}
+                    @endif
                 </h4>
             </div>
             @if($isVip && !$simpleMode)
@@ -222,7 +231,7 @@
             @endif
         </div>
 
-        @if(!$simpleMode && !$isReported)
+        @if(!$simpleMode && $canOpenDetail)
         <!-- Details Button -->
             <a href="{{ $profileUrl }}"
             class="flex items-center justify-between home-profile-card-cta"

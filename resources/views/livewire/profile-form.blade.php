@@ -38,7 +38,7 @@
 
 
     <form wire:submit="save" class="space-y-8">
-    <div class="profile-form-narrow w-[312px] md:w-[400px] max-w-full mx-auto space-y-8">
+    <div class="profile-form-narrow w-[312px] max-w-full md:w-[400px] mx-auto space-y-8">
         <!-- Personal Information Section -->
         <div class="space-y-6">
             <h3 style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62; margin-bottom:19px;">{{ __('front.profiles.form.my_data') }}</h3>
@@ -179,7 +179,7 @@
             </div>
             @endif
 
-            <button type="submit" class="w-[312px] md:w-[400px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
+            <button type="submit" class="w-[312px] max-w-full md:w-[400px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
                 <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px] group-hover:hidden" alt="Save">
                 <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px] hidden group-hover:block" alt="Save">
                 <span class="text-[#A4A4A4] group-hover:text-white" style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px;">{{ __('front.profiles.form.save_changes') }}</span>
@@ -259,7 +259,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="w-[312px] md:w-[400px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
+                <button type="submit" class="w-[312px] max-w-full md:w-[400px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
                     <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px]" alt="Save">
                     <span style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px; color: #A4A4A4;">{{ __('front.profiles.form.save_changes') }}</span>
                 </button>
@@ -278,11 +278,11 @@
                         id="about"
                         wire:model="about"
                         maxlength="640"
-                        class="input-control w-[312px] md:w-[400px] h-[396px] rounded-[8px] resize-none @error('about') border-red-500 @enderror"></textarea>
+                        class="input-control w-[312px] max-w-full md:w-[400px] h-[396px] rounded-[8px] resize-none @error('about') border-red-500 @enderror"></textarea>
                     @error('about') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
-                <button type="submit" class="w-[312px] md:w-[400px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
+                <button type="submit" class="w-[312px] max-w-full md:w-[400px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
                     <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px]" alt="Save">
                     <span style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px; color: #A4A4A4;">{{ __('front.profiles.form.save_changes') }}</span>
                 </button>
@@ -314,7 +314,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="w-[312px] md:w-[400px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
+                <button type="submit" class="w-[312px] max-w-full md:w-[400px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
                     <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px]" alt="Save">
                     <span style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px; color: #A4A4A4;">{{ __('front.profiles.form.save_changes') }}</span>
                 </button>
@@ -331,7 +331,7 @@
                 </div>
 
                 <!-- Currency -->
-                <div class="relative w-[312px] md:w-[240px]">
+                <div class="relative w-[312px] max-w-full md:w-[240px]">
                     <label for="local_currency" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.local_currency') }}</label>
                     <div class="relative group">
                         <select
@@ -495,7 +495,7 @@
                     {{ __('front.profiles.form.add_local_price') }}
                 </button>
 
-                <button type="submit" class="w-[312px] md:w-[240px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
+                <button type="submit" class="w-[312px] max-w-full md:w-[240px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
                     <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px]" alt="Save">
                     <span style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px; color: #A4A4A4;">{{ __('front.profiles.form.save_changes') }}</span>
                 </button>
@@ -512,7 +512,7 @@
                 </div>
 
                 <!-- Currency -->
-                <div class="relative w-[312px] md:w-[240px]">
+                <div class="relative w-[312px] max-w-full md:w-[240px]">
                     <label for="global_currency" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.global_currency') }}</label>
                     <div class="relative group">
                         <select
@@ -676,7 +676,7 @@
                     {{ __('front.profiles.form.add_local_price') }}
                 </button>
 
-                <button type="submit" class="w-[312px] md:w-[240px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
+                <button type="submit" class="w-[312px] max-w-full md:w-[240px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
                     <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px]" alt="Save">
                     <span style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px; color: #A4A4A4;">{{ __('front.profiles.form.save_changes') }}</span>
                 </button>

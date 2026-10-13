@@ -21,8 +21,15 @@ class AccountController extends Controller
     {
         $user = Auth::user();
         $user->load(['profile', 'roles', 'permissions']);
-        
-        return view('account.dashboard', compact('user'));
+        $profile = $user->profile;
+        $ratingCount = $profile?->getTotalRatings() ?? 0;
+        $stats = [
+            'views' => $profile ? \App\Models\ProfileView::getTotalStats($profile->id) : 0,
+            'rating' => $ratingCount > 0 ? $profile->getAverageRating().'/5' : '—',
+            'reviews' => $ratingCount,
+        ];
+
+        return view('account.dashboard', compact('user', 'stats'));
     }
 
     /**

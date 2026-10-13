@@ -3,7 +3,8 @@
 
 @import 'tailwindcss';
 
-:root {
+/* Register the palette so Tailwind also generates bg-/text-/border utilities. */
+@theme static {
 
   /* Font Family Configuration */
   --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
@@ -56,11 +57,10 @@
   --color-gray-disabled: rgb(242, 242, 242);
 
 
-  /* Swiper JS Variables */
+}
+
+:root {
   --swiper-theme-color: var(--color-primary);
-
-  /* --shadow-lg: var(0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)); */
-
 }
 
 /* Headings Component Styles */

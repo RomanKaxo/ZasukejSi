@@ -1,6 +1,11 @@
 @extends('layouts.member')
 
-@section('title', __('front.membership.success_title'))
+@section('title', match ($state) {
+    'active' => __('front.membership.success_title'),
+    'granted' => __('front.membership.granted_title'),
+    'pending' => __('front.membership.pending_title'),
+    default => __('front.membership.unverified_title'),
+})
 
 @php
     $activeItem = 'membership';

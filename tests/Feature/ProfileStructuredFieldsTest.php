@@ -118,6 +118,29 @@ class ProfileStructuredFieldsTest extends TestCase
         $this->assertSame('777 111 222', $profile->phone);
     }
 
+    public function test_first_phone_survives_an_empty_contact_repeater(): void
+    {
+        $profile = $this->profile(['contacts' => null, 'phone' => null]);
+
+        // Filament normalizes its empty repeater from null to [] while the
+        // administrator fills the separate phone field in the same save.
+        $profile->update(['contacts' => [], 'phone' => '+420777000606']);
+
+        $fresh = $profile->fresh();
+        $this->assertSame('+420777000606', $fresh->phone);
+        $this->assertSame([['type' => 'phone', 'value' => '+420777000606']], $fresh->contacts);
+    }
+
+    public function test_clearing_existing_contacts_clears_the_phone(): void
+    {
+        $profile = $this->profile(['contacts' => [['type' => 'phone', 'value' => '777111222']]]);
+
+        $profile->update(['contacts' => []]);
+
+        $this->assertNull($profile->fresh()->phone);
+        $this->assertSame([], $profile->fresh()->contacts);
+    }
+
     /**
      * The point of the columns: these queries were impossible before.
      */

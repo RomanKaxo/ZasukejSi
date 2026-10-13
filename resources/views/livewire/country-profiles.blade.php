@@ -1,8 +1,21 @@
 @php
-    $isEnglishHomepage = request()->routeIs('profiles.index') || request()->routeIs('countries.index');
+    // This component is embedded in the public country listing. Livewire
+    // actions use livewire.update, so routing must not change its layout.
+    $isEnglishHomepage = true;
 @endphp
 
 <div>
+<style>
+    .country-location-text { min-width: 0; }
+    .country-location-label { overflow-wrap: anywhere; }
+    @media (max-width: 767px) {
+        .country-location-header { padding: 0 12px; gap: 8px; }
+        .country-location-icon { width: 32px; height: 32px; }
+        .country-location-label { font-size: 22px !important; }
+        .country-location-clear { padding: 8px; }
+    }
+</style>
+
     <div class="grid grid-cols-1 lg:grid-cols-4">
         <!-- Left Panel - Countries List -->
         <div class="lg:col-span-1">
@@ -67,19 +80,19 @@
             <!-- Header -->
             <div class="mb-6">
                 @if($selectedCountry || $selectedRegion)
-                <div class="mx-auto w-full max-w-[904px] h-[100px] border-2 border-[#F2F2F2] rounded-xl flex items-center gap-4 px-6">
-                    <img src="/images/icons/MapPinned.svg" alt="map pinned" class="w-[48px] h-[48px] flex-shrink-0" />
-                    <div class="flex flex-col justify-center flex-1">
+                <div class="country-location-header mx-auto w-full max-w-[904px] h-[100px] border-2 border-[#F2F2F2] rounded-xl flex items-center gap-4 px-6">
+                    <img src="/images/icons/MapPinned.svg" alt="map pinned" class="country-location-icon w-[48px] h-[48px] flex-shrink-0" />
+                    <div class="country-location-text flex flex-col justify-center flex-1">
                         @if($selectedRegion)
-                            <div style="font-family:'Poppins', sans-serif; font-weight:700; font-size:30px; color:#5C2D62; line-height:1;">{{ $selectedRegion }}</div>
+                            <div class="country-location-label" style="font-family:'Poppins', sans-serif; font-weight:700; font-size:30px; color:#5C2D62; line-height:1;">{{ $selectedRegion }}</div>
                             <div style="font-family:'Poppins', sans-serif; font-weight:400; font-size:14px; color:#DD3888;">{{ $selectedCountry ? __('codes.' . strtolower($selectedCountry->country_code)) : '' }}</div>
                         @else
-                            <div style="font-family:'Poppins', sans-serif; font-weight:700; font-size:30px; color:#5C2D62; line-height:1;">{{ $selectedCountry ? __('codes.' . strtolower($selectedCountry->country_code)) : __('front.countries.all_profiles') }}</div>
+                            <div class="country-location-label" style="font-family:'Poppins', sans-serif; font-weight:700; font-size:30px; color:#5C2D62; line-height:1;">{{ $selectedCountry ? __('codes.' . strtolower($selectedCountry->country_code)) : __('front.countries.all_profiles') }}</div>
                         @endif
                     </div>
                     <!-- Clear Location Button -->
                     <button wire:click="clearLocation"
-                        class="flex-shrink-0 p-3 rounded-full bg-primary text-white hover:bg-primary-600 transition-all duration-200"
+                        class="country-location-clear flex-shrink-0 p-3 rounded-full bg-primary text-white hover:bg-primary-600 transition-all duration-200"
                         title="{{ __('front.profiles.list.clear_all_filters') }}">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>

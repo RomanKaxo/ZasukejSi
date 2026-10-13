@@ -79,6 +79,12 @@ class SubscriptionCheckoutController extends \Illuminate\Routing\Controller
             return $this->awaitBankTransfer($profile, $subscriptionType);
         }
 
+        $stripeMethod = \App\Services\Payments\PaymentMethods::find(\App\Models\PaymentMethod::CODE_STRIPE);
+        if (($chosen !== '' && ! \App\Services\Payments\PaymentMethods::isAvailable($chosen))
+            || ($stripeMethod && ! $stripeMethod->is_enabled && \App\Services\Payments\StripeGateway::isConfigured())) {
+            return back()->with('error', __('front.membership.payments_unavailable'));
+        }
+
         // No gateway: finish the order without taking money, so the flow can be
         // walked end to end. Same rule as the membership checkout.
         if (\App\Support\OfflineCheckout::shouldHandle()) {
@@ -170,6 +176,7 @@ class SubscriptionCheckoutController extends \Illuminate\Routing\Controller
         $profile = Auth::user()?->profile;
 
         $paid = false;
+        $granted = false;
         $subscription = null;
 
         if ($sessionId !== '') {
@@ -177,12 +184,9 @@ class SubscriptionCheckoutController extends \Illuminate\Routing\Controller
                 $session = \App\Services\Payments\StripeGateway::client()
                     ?->checkout->sessions->retrieve($sessionId);
 
-                $paid = ($session->payment_status ?? null) === 'paid';
-
-                // Only trust a session that belongs to this user's profile.
-                if ($paid && $profile && (int) ($session->metadata->profile_id ?? 0) !== $profile->id) {
-                    $paid = false;
-                }
+                $paid = $profile !== null
+                    && ($session->payment_status ?? null) === 'paid'
+                    && (int) ($session->metadata->profile_id ?? 0) === $profile->id;
             } catch (\Throwable $e) {
                 Log::warning('Could not verify Stripe checkout session', [
                     'session_id' => $sessionId,
@@ -193,6 +197,7 @@ class SubscriptionCheckoutController extends \Illuminate\Routing\Controller
 
         if ($paid && $profile) {
             $subscription = Subscription::query()
+                ->active()
                 ->where('profile_id', $profile->id)
                 ->where('metadata->stripe_session_id', $sessionId)
                 ->first();
@@ -200,16 +205,21 @@ class SubscriptionCheckoutController extends \Illuminate\Routing\Controller
 
         // Aktivace bez platby se sem dostane přímo, bez relace Stripe.
         if ($sessionId === '' && $request->boolean('granted')) {
-            $paid = true;
-            $subscription = $profile?->subscriptions()
-                ->where('status', Subscription::STATUS_ACTIVE)
+            $manualSubscription = $profile?->subscriptions()
+                ->active()
                 ->latest('ends_at')
                 ->first();
+
+            if ($manualSubscription && \App\Support\OfflineCheckout::wasManual($manualSubscription->metadata)) {
+                $granted = true;
+                $subscription = $manualSubscription;
+            }
         }
 
         return view('account.subscription-success', [
             'sessionId' => $sessionId,
             'paid' => $paid,
+            'granted' => $granted,
             // Null while the webhook has not been processed yet.
             'subscription' => $subscription,
         ]);

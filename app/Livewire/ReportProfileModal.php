@@ -62,7 +62,17 @@ class ReportProfileModal extends Component
 
         $this->validate();
 
-        if (! $this->profileId || ! Profile::whereKey($this->profileId)->exists()) {
+        $profile = $this->profileId ? Profile::find($this->profileId) : null;
+        $user = auth()->user();
+        $canReport = $profile && (
+            ($profile->status === 'approved' && $profile->is_public)
+            || ($user && (int) $profile->user_id === (int) $user->id)
+            || ($user && $user->hasAnyRole(['admin', 'super_admin']))
+        );
+
+        // A public Livewire property can be altered independently of the
+        // profile page. Recheck visibility before it enters member history.
+        if (! $canReport) {
             $this->addError('email', __('front.profiles.detail_page.report_modal.invalid_profile'));
 
             return;
@@ -70,6 +80,7 @@ class ReportProfileModal extends Component
 
         ProfileReport::create([
             'profile_id' => $this->profileId,
+            'reporter_id' => auth()->id(),
             'email' => $this->email,
             'message' => $this->message,
             'screenshot_path' => $this->screenshot?->store('profile-reports', 'public'),

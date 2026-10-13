@@ -168,7 +168,7 @@ class ProfileForm extends Component
             $this->display_name = $profile->display_name ?? '';
             $this->age = $profile->age ?? '';
             $this->city = $profile->city ?? '';
-            $this->country_code = $profile->country_code ?? '';
+            $this->country_code = strtolower($profile->country_code ?? '');
             $this->address = $profile->address ?? '';
             $this->about = $profile->about ?? '';
             $content = is_array($profile->content) ? $profile->content : [];
@@ -417,12 +417,15 @@ class ProfileForm extends Component
     {
         $thirty = ['incall' => '', 'outcall' => ''];
         $sixty = ['incall' => '', 'outcall' => ''];
+        $hasThirty = false;
+        $hasSixty = false;
         $rest = [];
 
         foreach ($rows as $row) {
             $hours = is_numeric($row['time_hours'] ?? null) ? (float) $row['time_hours'] : null;
 
-            if ($hours === 0.5) {
+            if ($hours === 0.5 && ! $hasThirty) {
+                $hasThirty = true;
                 $thirty = [
                     'incall' => $row['incall_price'] ?? '',
                     'outcall' => $row['outcall_price'] ?? '',
@@ -430,7 +433,8 @@ class ProfileForm extends Component
                 continue;
             }
 
-            if ($hours === 1.0) {
+            if ($hours === 1.0 && ! $hasSixty) {
+                $hasSixty = true;
                 $sixty = [
                     'incall' => $row['incall_price'] ?? '',
                     'outcall' => $row['outcall_price'] ?? '',
@@ -452,23 +456,44 @@ class ProfileForm extends Component
     {
         $rows = [];
 
-        if ($incall30 !== '' && $incall30 !== null) {
+        if (($incall30 !== '' && $incall30 !== null) || ($outcall30 !== '' && $outcall30 !== null)) {
             $rows[] = [
                 'time_hours' => 0.5,
-                'incall_price' => (float) $incall30,
+                'incall_price' => ($incall30 !== '' && $incall30 !== null) ? (float) $incall30 : null,
                 'outcall_price' => ($outcall30 !== '' && $outcall30 !== null) ? (float) $outcall30 : null,
             ];
         }
 
-        if ($incall60 !== '' && $incall60 !== null) {
+        if (($incall60 !== '' && $incall60 !== null) || ($outcall60 !== '' && $outcall60 !== null)) {
             $rows[] = [
                 'time_hours' => 1,
-                'incall_price' => (float) $incall60,
+                'incall_price' => ($incall60 !== '' && $incall60 !== null) ? (float) $incall60 : null,
                 'outcall_price' => ($outcall60 !== '' && $outcall60 !== null) ? (float) $outcall60 : null,
             ];
         }
 
         return array_merge($rows, $customRows);
+    }
+
+    protected function validatePriceDurations(string $kind): void
+    {
+        $seen = [];
+        foreach ([30 => 0.5, 60 => 1.0] as $minutes => $hours) {
+            $incall = $this->{$kind.'_price_'.$minutes.'_incall'};
+            $outcall = $this->{$kind.'_price_'.$minutes.'_outcall'};
+            if (($incall !== '' && $incall !== null) || ($outcall !== '' && $outcall !== null)) {
+                $seen[(string) $hours] = true;
+            }
+        }
+        foreach ($this->{$kind.'_prices'} as $index => $row) {
+            $duration = (string) (float) $row['time_hours'];
+            if (isset($seen[$duration])) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    $kind.'_prices.'.$index.'.time_hours' => __('validation.distinct', ['attribute' => __('front.profiles.form.time_hours')]),
+                ]);
+            }
+            $seen[$duration] = true;
+        }
     }
 
     /**
@@ -743,6 +768,10 @@ class ProfileForm extends Component
 
         try {
             $this->validate($validationRules);
+            if ($this->hasProfile) {
+                $this->validatePriceDurations('local');
+                $this->validatePriceDurations('global');
+            }
         } catch (\Illuminate\Validation\ValidationException $e) {
             // A validation failure anywhere in this form (e.g. a price row
             // with an incall/outcall amount but no duration) used to fail

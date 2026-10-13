@@ -92,4 +92,24 @@ class ProfileAdminContentIntegrityTest extends TestCase
         $this->assertTrue($content['is_showcase'] ?? false, 'Admin save wiped is_showcase.');
         $this->assertSame(29, $profile->fresh()->age);
     }
+
+    public function test_admin_save_accepts_stored_country_and_keeps_first_phone(): void
+    {
+        $admin = $this->admin();
+        $profile = Profile::factory()->for(User::factory())->create([
+            'country_code' => 'CZ', 'city' => null, 'contacts' => null,
+            'phone' => null, 'local_prices' => [], 'global_prices' => [],
+            'availability_hours' => null,
+        ]);
+
+        Livewire::actingAs($admin)
+            ->test(\App\Filament\Resources\Profiles\Pages\EditProfile::class, ['record' => $profile->getRouteKey()])
+            ->fillForm(['age' => 29, 'phone' => '+420777000606'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame('CZ', $profile->fresh()->country_code);
+        $this->assertSame(29, $profile->fresh()->age);
+        $this->assertSame('+420777000606', $profile->fresh()->phone);
+    }
 }

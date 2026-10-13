@@ -1,7 +1,7 @@
 @extends('layouts.member')
 
 @section('member-content')
-<div class="w-[310px] md:w-auto mx-auto">
+<div class="w-[310px] max-w-full md:w-auto mx-auto">
 <!-- Page Title -->
 <div class="mb-4 md:mb-8 text-center">
     <h1 style="font-family:'Poppins',sans-serif;font-weight:700;font-size:36px;color:#5C2D62;">{{ __('front.account.member.archive') }}</h1>
@@ -13,7 +13,7 @@
 
 <!-- Age Filter -->
 <form method="GET" action="{{ route('account.member.archive') }}" class="flex items-end justify-center gap-4 flex-wrap" style="padding-bottom:60px;">
-    <div>
+    <div class="w-full min-w-0 md:w-auto">
         <label for="age_range" class="block mb-2" style="font-family:'Poppins',sans-serif;font-weight:400;font-size:14px;color:#505050;padding-top:31px;">
             {{ __('front.account.member.archive_age_label') }}
         </label>
@@ -48,7 +48,11 @@
 @if($profiles->count() > 0)
 <div class="mt-6 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
     @foreach($profiles as $profile)
-        <x-profile-card :profile="$profile" />
+        @php
+            $maySeeProfileImage = (int) $profile->user_id === (int) $user->id
+                || $user->hasAnyRole(['admin', 'super_admin']);
+        @endphp
+        <x-profile-card :profile="$profile" :showDetailLink="false" :imagesOverride="$maySeeProfileImage ? null : []" />
     @endforeach
 </div>
 

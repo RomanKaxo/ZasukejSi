@@ -50,6 +50,11 @@ return [
         'locked_rating' => 'Рейтинг открывается с Premium-членством',
     ],
 
+    'subscription' => [
+        'granted_title' => 'Подписка активна',
+        'activated_without_payment' => 'Подписка активна. Оплата не производилась — платёжный шлюз пока не настроен.',
+    ],
+
     'landing' => [
         'wearecommunity' => 'Мы сообщество людей,',
         'fucking' => 'которые любят секс.',
@@ -102,6 +107,8 @@ return [
     ],
 
     'notifications' => [
+        'view_active' => 'Активные уведомления',
+        'mark_read' => 'Отметить как прочитанное',
         'archived_title' => 'Архив уведомлений',
         'no_notifications' => 'Нет уведомлений',
         'no_archived' => 'Нет архивных уведомлений',

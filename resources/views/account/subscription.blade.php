@@ -33,6 +33,12 @@
         </div>
     @endif
 
+    @if (session('error'))
+        <div role="alert" class="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" style="font-family:'Poppins',sans-serif;">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <!-- Current plan -->
     <div class="mb-8 rounded-xl border-2 border-gray-200 p-5" style="font-family:'Poppins',sans-serif;">
         <h2 class="mb-2 text-lg font-semibold" style="color:#5C2D62;">{{ __('front.subscription.current_plan') }}</h2>

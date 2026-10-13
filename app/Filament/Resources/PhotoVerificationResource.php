@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PhotoVerificationResource\Pages;
+use App\Models\Profile;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
@@ -83,7 +84,14 @@ class PhotoVerificationResource extends Resource
 
                 TextColumn::make('model.user.email')
                     ->label(__('filament.attributes.email'))
-                    ->searchable(),
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->whereHasMorph(
+                        'model',
+                        [Profile::class],
+                        fn (Builder $profiles): Builder => $profiles->whereHas(
+                            'user',
+                            fn (Builder $users): Builder => $users->where('email', 'like', '%'.$search.'%')
+                        )
+                    )),
 
                 TextColumn::make('custom_properties.is_main')
                     ->label(__('filament.pages.photo_verifications.main_photo'))

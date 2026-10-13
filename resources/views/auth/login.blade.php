@@ -5,7 +5,7 @@
 @section('content')
 <!-- Add top padding to account for fixed navbar -->
 <div class="pt-28 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="p-10 rounded-3xl max-w-2xl w-full space-y-8 border-2 border-gray-200">
+    <div class="p-4 sm:p-10 rounded-3xl max-w-2xl w-full space-y-8 border-2 border-gray-200">
         <div class="text-center">
             <!-- Logo -->
             <a href="{{ route('profiles.index') }}" class="inline-block mb-6">
@@ -46,7 +46,7 @@
             </div>
         @endif
 
-        <div class="p-8">
+        <div class="p-2 sm:p-8">
             <form class="space-y-6" action="{{ route('login') }}" method="POST">
                 @csrf
 
@@ -74,14 +74,14 @@
                 </div>
 
                 <!-- Remember Me and Submit Button -->
-                <div class="w-full flex items-center justify-between space-x-6">
-                    <div class="flex items-center justify-start flex-grow-1 max-w-sm">
+                <div class="w-full flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-center justify-start min-w-0">
                         <div class="-translate-y-px">
                             <input id="remember" name="remember" type="checkbox" 
                                    {{ old('remember') ? 'checked' : '' }}
                                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
                         </div>
-                        <label for="remember" class="ml-2 block text-sm text-gray-700 min-w-30">
+                        <label for="remember" class="ml-2 block text-sm text-gray-700">
                             {{ __('front.auth.login.remember') }}
                         </label>
                     </div>

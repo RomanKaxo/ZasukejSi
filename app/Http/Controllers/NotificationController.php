@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notification;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class NotificationController extends Controller implements HasMiddleware
 {
@@ -14,6 +16,20 @@ class NotificationController extends Controller implements HasMiddleware
         return [
             new Middleware('auth'),
         ];
+    }
+
+    public function index(Request $request): View
+    {
+        $notifications = Notification::activeForUser(Auth::id())
+            ->with('userStates')
+            ->latest()
+            ->orderByDesc('id')
+            ->paginate(20);
+
+        return view('account.notifications.index', [
+            'notifications' => $notifications,
+            ...$this->viewData(),
+        ]);
     }
 
     public function archive(Notification $notification)
@@ -76,8 +92,22 @@ class NotificationController extends Controller implements HasMiddleware
         $notifications = Notification::archivedForUser(Auth::id())
             ->with('userStates')
             ->latest()
+            ->orderByDesc('id')
             ->paginate(20);
 
-        return view('account.notifications.archived', compact('notifications'));
+        return view('account.notifications.archived', [
+            'notifications' => $notifications,
+            ...$this->viewData(),
+        ]);
+    }
+
+    private function viewData(): array
+    {
+        $member = Auth::user()->isMale() && ! Auth::user()->hasRole('admin');
+
+        return [
+            'notificationLayout' => $member ? 'layouts.member' : 'layouts.account',
+            'notificationContentSection' => $member ? 'member-content' : 'account-content',
+        ];
     }
 }

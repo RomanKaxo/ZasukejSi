@@ -33,6 +33,7 @@ class CountryProfiles extends Component
     
     protected $queryString = [
         'region' => ['except' => ''],
+        'selectedCountryCode' => ['except' => null, 'as' => 'country_code'],
         'ageGroup' => ['except' => '', 'as' => 'age'],
         'sortRecommendation' => ['except' => '', 'as' => 'recommend'],
         'hasVerifiedPhoto' => ['except' => false, 'as' => 'verified_photo'],
@@ -46,6 +47,9 @@ class CountryProfiles extends Component
     {
         // Handle search parameters from redirect
         $this->region = request('region', request('city', ''));
+        $this->selectedCountryCode = request()->filled('country_code')
+            ? strtoupper((string) request('country_code'))
+            : null;
         $this->ageGroup = request('age', '');
         $this->sortRecommendation = request('recommend', '');
         $this->hasVerifiedPhoto = request()->boolean('verified_photo');
@@ -56,6 +60,11 @@ class CountryProfiles extends Component
         
         if ($this->region) {
             $this->autoSelectRegionFromSearch($this->region);
+            $this->selectedRegion ??= $this->region;
+        }
+
+        if ($this->selectedCountryCode) {
+            $this->expandedCountries = [$this->selectedCountryCode];
         }
     }
     
@@ -74,7 +83,9 @@ class CountryProfiles extends Component
             ->where('profiles.status', 'approved')
             ->where('profiles.is_public', true)
             ->whereNotNull('profiles.verified_at')
+            ->whereNull('profiles.deleted_at')
             ->whereNotNull('profiles.country_code')
+            ->when($this->selectedCountryCode, fn ($query) => $query->where('profiles.country_code', $this->selectedCountryCode))
             ->where('cities.admin_name', $searchRegion)
             ->select('profiles.country_code', 'cities.admin_name')
             ->first();
@@ -87,8 +98,10 @@ class CountryProfiles extends Component
                 })
                 ->where('profiles.status', 'approved')
                 ->where('profiles.is_public', true)
-                ->whereNotNull('profiles.verified_at')
-                ->whereNotNull('profiles.country_code')
+                  ->whereNotNull('profiles.verified_at')
+                  ->whereNull('profiles.deleted_at')
+                  ->whereNotNull('profiles.country_code')
+                  ->when($this->selectedCountryCode, fn ($query) => $query->where('profiles.country_code', $this->selectedCountryCode))
                 ->whereRaw('LOWER(cities.admin_name) LIKE ?', ['%' . mb_strtolower($searchRegion) . '%'])
                 ->select('profiles.country_code', 'cities.admin_name')
                 ->first();
@@ -106,6 +119,7 @@ class CountryProfiles extends Component
     {
         $this->selectedCountryCode = $countryCode;
         $this->selectedRegion = null;
+        $this->region = '';
         $this->resetPage();
     }
 
@@ -114,6 +128,7 @@ class CountryProfiles extends Component
     {
         $this->selectedCountryCode = $countryCode;
         $this->selectedRegion = $region;
+        $this->region = $region ?? '';
         $this->resetPage();
     }
     
@@ -136,6 +151,7 @@ class CountryProfiles extends Component
             $this->expandedCountries = array_diff($this->expandedCountries, [$countryCode]);
         } else {
             $this->expandedCountries[] = $countryCode;
+            $this->selectCountry($countryCode);
         }
     }
 
@@ -267,8 +283,7 @@ class CountryProfiles extends Component
         $query = Profile::with(['user:id,name,last_activity', 'media', 'segments'])
             ->where('status', 'approved')
             ->where('is_public', true)
-            ->whereNotNull('verified_at')
-            ->orderBy('created_at', 'desc');
+            ->whereNotNull('verified_at');
 
         // Location filters
         if ($this->selectedCountryCode) {
@@ -287,13 +302,11 @@ class CountryProfiles extends Component
         if ($this->sortRecommendation) {
             // Sort by: 1) VIP status, 2) average rating, 3) newest
             $sortDirection = $this->sortRecommendation === 'desc' ? 'desc' : 'asc';
-            $reverseSortDirection = $this->sortRecommendation === 'desc' ? 'asc' : 'desc';
             
             $query->withAvg('ratings', 'percentage')
                   ->withExists('activeSubscription as is_vip')
                   ->orderBy('is_vip', $sortDirection)
-                  ->orderBy('ratings_avg_percentage', $sortDirection)
-                  ->orderBy('created_at', $reverseSortDirection);
+                  ->orderBy('ratings_avg_percentage', $sortDirection);
         }
 
         if ($this->hasVerifiedPhoto) {
@@ -301,9 +314,9 @@ class CountryProfiles extends Component
         }
 
         if ($this->hasVideo) {
-            // Filter profiles that have video media in their profile-images collection
+            // New uploads use profile-video; older imports may mix videos and photos.
             $query->whereHas('media', function($q) {
-                $q->where('collection_name', 'profile-images')
+                $q->whereIn('collection_name', ['profile-video', 'profile-images'])
                   ->where('mime_type', 'like', 'video/%');
             });
         }
@@ -312,17 +325,15 @@ class CountryProfiles extends Component
             $query->where('is_porn_actress', true);
         }
 
-        if ($this->sortNew) {
-            // Sort by created_at (newest/oldest)
-            $query->orderBy('created_at', $this->sortNew === 'desc' ? 'desc' : 'asc');
-        }
-
         if ($this->hasRating) {
             // Filter profiles that have at least one rating and order by most rated (rating count)
             $query->withCount('ratings')
                   ->whereHas('ratings')
                   ->orderBy('ratings_count', 'desc');
         }
+
+        $query->orderBy('created_at', $this->sortNew === 'asc' ? 'asc' : 'desc')
+            ->orderByDesc('id');
 
         return $query->paginate($this->perPage);
     }

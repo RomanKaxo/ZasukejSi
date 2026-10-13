@@ -118,6 +118,14 @@ class MembershipCheckoutController extends \Illuminate\Routing\Controller
             return $this->awaitBankTransfer($user, $subscriptionType);
         }
 
+        // A disabled method can retain credentials for later re-enabling.
+        // Those credentials must not send this checkout to the gateway.
+        $stripeMethod = \App\Services\Payments\PaymentMethods::find(\App\Models\PaymentMethod::CODE_STRIPE);
+        if (($chosen !== '' && ! \App\Services\Payments\PaymentMethods::isAvailable($chosen))
+            || ($stripeMethod && ! $stripeMethod->is_enabled && StripeGateway::isConfigured())) {
+            return back()->with('error', __('front.membership.payments_unavailable'));
+        }
+
         // No gateway: finish the order without taking money, so the flow can be
         // walked end to end. The subscription is marked as manual, and the
         // buyer is told plainly that nothing was charged.
@@ -277,10 +285,14 @@ class MembershipCheckoutController extends \Illuminate\Routing\Controller
         // Aktivace bez platby se sem dostane přímo, bez relace Stripe: brána
         // není nastavená a členství vzniklo hned.
         if ($sessionId === '' && $request->boolean('granted')) {
-            return view('member.membership-success', [
-                'state' => 'granted',
-                'membership' => MemberSubscription::forUser($user->id)->active()->latest('ends_at')->first(),
-            ]);
+            $grantedMembership = MemberSubscription::forUser($user->id)->active()->latest('ends_at')->first();
+
+            if ($grantedMembership && OfflineCheckout::wasManual($grantedMembership->metadata)) {
+                return view('member.membership-success', [
+                    'state' => 'granted',
+                    'membership' => $grantedMembership,
+                ]);
+            }
         }
 
         // Čtyři různé konce, ne jeden. „Zaplaceno a běží" a „zaplaceno,

@@ -317,7 +317,7 @@ class ProfileForm
                     ->label(__('profiles.form.country'))
                     ->options(function () {
                         $codes = include base_path('lang/en/codes.php');
-                        return collect($codes)->mapWithKeys(fn($name, $code) => [strtolower($code) => $name]);
+                        return collect($codes)->mapWithKeys(fn($name, $code) => [strtoupper($code) => $name]);
                     })
                     ->searchable(),
 

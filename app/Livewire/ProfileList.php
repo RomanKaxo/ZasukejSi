@@ -95,7 +95,7 @@ class ProfileList extends Component
 
     public function resetFilters()
     {
-        $this->reset(['region', 'ageMin', 'ageMax', 'verified', 'ageGroup', 'sortRecommendation', 'hasVerifiedPhoto', 'hasVideo', 'isPornActress', 'sortNew', 'hasRating', 'segmentId']);
+        $this->reset(['region', 'country', 'countryCode', 'ageMin', 'ageMax', 'verified', 'ageGroup', 'sortRecommendation', 'hasVerifiedPhoto', 'hasVideo', 'isPornActress', 'sortNew', 'hasRating', 'segmentId']);
         $this->resetPage();
     }
 
@@ -238,8 +238,6 @@ class ProfileList extends Component
             $query->orderByDesc('content->is_showcase');
         }
 
-        $query->orderBy('created_at', 'desc');
-
         // Apply search filters (from search component)
         if ($this->countryCode) {
             // Codes are stored uppercase (Profile::setCountryCodeAttribute), so a
@@ -271,13 +269,11 @@ class ProfileList extends Component
         if ($this->sortRecommendation) {
             // Sort by: 1) VIP status, 2) average rating, 3) newest
             $sortDirection = $this->sortRecommendation === 'desc' ? 'desc' : 'asc';
-            $reverseSortDirection = $this->sortRecommendation === 'desc' ? 'asc' : 'desc';
             
             $query->withAvg('ratings', 'percentage')
                   ->withExists('activeSubscription as is_vip')
                   ->orderBy('is_vip', $sortDirection)
-                  ->orderBy('ratings_avg_percentage', $sortDirection)
-                  ->orderBy('created_at', $reverseSortDirection);
+                  ->orderBy('ratings_avg_percentage', $sortDirection);
         }
 
         if ($this->hasVerifiedPhoto) {
@@ -285,20 +281,15 @@ class ProfileList extends Component
         }
 
         if ($this->hasVideo) {
-            // Filter profiles that have video media in their profile-images collection
+            // New uploads use profile-video; older imports may mix videos and photos.
             $query->whereHas('media', function($q) {
-                $q->where('collection_name', 'profile-images')
+                $q->whereIn('collection_name', ['profile-video', 'profile-images'])
                   ->where('mime_type', 'like', 'video/%');
             });
         }
 
         if ($this->isPornActress) {
             $query->where('is_porn_actress', true);
-        }
-
-        if ($this->sortNew) {
-            // Sort by created_at (newest/oldest)
-            $query->orderBy('created_at', $this->sortNew === 'desc' ? 'desc' : 'asc');
         }
 
         if ($this->hasRating) {
@@ -313,6 +304,11 @@ class ProfileList extends Component
                 $q->where('segments.id', $this->segmentId);
             });
         }
+
+        // Apply the default date ordering after the visitor's ranking criteria.
+        // An earlier created_at DESC made every sort control ineffective.
+        $query->orderBy('created_at', $this->sortNew === 'asc' ? 'asc' : 'desc')
+            ->orderByDesc('id');
 
         $profiles = $query->paginate($this->perPage);
         if (app()->environment('local') || request()->query('debug_profiles')) {

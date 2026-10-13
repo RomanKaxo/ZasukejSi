@@ -146,7 +146,8 @@ class CheckoutRedirectsTest extends TestCase
             ->followingRedirects()
             ->post(route('account.subscription.checkout', $this->plan('profile')))
             ->assertSuccessful()
-            ->assertSee(__('front.subscription.success_title'));
+            ->assertSee(__('front.subscription.granted_title'))
+            ->assertSee(__('front.subscription.activated_without_payment'));
     }
 
     /**

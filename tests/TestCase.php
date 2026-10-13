@@ -4,6 +4,7 @@ namespace Tests;
 
 use App\Models\Setting;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Support\Facades\Storage;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -21,5 +22,9 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
 
         Setting::flush();
+
+        // All provider uploads now target this private disk. Older media tests
+        // fake only public; never let them write/delete real local profile files.
+        Storage::fake('profile-media');
     }
 }

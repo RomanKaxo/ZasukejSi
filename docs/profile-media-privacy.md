@@ -1,0 +1,24 @@
+# Profile media privacy migration
+
+Profile images (including verification photos in `profile-images`), videos and conversions now use the local `profile-media` disk at `storage/app/profile-media`. It has no public symlink or automatic disk-serving route. CMS/Page assets continue to use `public`.
+
+`/media/{id}/{filename}` and the Laravel `/storage/{id}/{filename}` compatibility route permit approved public profiles, the profile owner and admin/super_admin. Unavailable, private or unapproved profiles return404 to other viewers. Profile responses use private/no-store cache headers so an owner preview cannot enter a shared cache. Existing cached public responses must also be invalidated in any CDN/proxy during deployment.
+
+Changing collections and route authorization alone does **not** remove legacy files from a web server's public `/storage` symlink. Do not claim privacy is closed until the file migration has completed and direct static URLs have been checked.
+
+## Deployment
+
+1. Back up the media table and both storage roots. Pause uploads, scraper image imports and conversion workers during migration; an in-flight conversion can otherwise write to the old disk after cleanup. Deploy the code/config and refresh any configuration cache through the usual deployment process. `deploy.sh` (also used by `deploy-production.sh`) requires maintenance mode to start successfully and runs the ordinary migration after schema migrations and before recreating the public storage symlink. A privacy-migration failure aborts deployment and leaves the app in maintenance mode. A failed deploy must not be described as completing privacy cleanup.
+2. Run `php artisan media:privatize-profiles --dry-run` against the intended database. The command handles the configured DefaultPathGenerator layout, preserving its prefix and media IDs. Custom path generators and other disk types require a separately reviewed migration.
+3. For a single database, run `php artisan media:privatize-profiles`. It copies all original/conversion/responsive files, checks SHA256 digests, checks the original size and advertised conversions, and only then changes the disk fields and removes verified public copies. IDs, filenames, UUIDs, order, properties, conversion flags and timestamps remain unchanged.
+4. If multiple databases reference the **same** physical files, first run `php artisan media:privatize-profiles --stage` for every database while public source files still exist. This copies and verifies files and updates each database's disk references, but explicitly leaves public files exposed. After all database copies are staged, run the ordinary command to finalize cleanup. Repeat it for each database to verify idempotent private references. Do not delete public copies while an unstaged database still needs them.
+5. A nonzero exit means a record or cleanup is incomplete. Copy failure leaves its public source and old disk reference intact. Cleanup failure retains verified private data and reports that public files may remain. Correct missing/corrupt/conflicting files and rerun. A private file conflicting with the source is never overwritten automatically.
+6. Verify representative old `/storage/{id}/{filename}` **and conversion paths** at the actual web server, including any CDN. Confirm no profile files remain in the public disk and CMS assets still work. Guest requests for private/pending/rejected profiles must be denied: canonical routes return404, while legacy/static conversion paths may return403 or404. Owner/admin requests and approved public media must still work through `/media`.
+
+`--id=123 --id=456` limits the command to selected media records. `--dry-run` changes neither files nor rows. `--stage` does not complete privacy cleanup, even when it exits successfully. Do not use it as a substitute for finalization.
+
+The migration is operational, not an automatic schema migration: applying code must not delete shared files while other checkouts or databases still reference them. `deploy.sh` runs ordinary finalization for a single database and keeps the app in maintenance mode if that command fails. For shared database copies, stage all copies before using the deployment script. Maintenance mode does not replace pausing already-running conversions or workers running with `--force`.
+
+Initial regressions use `Storage::fake('public')` and `Storage::fake('profile-media')`; production/shared fixture migration requires the coordinated deployment steps above.
+
+Deployment and PHP-FPM must share a readable storage owner/group. `deploy.sh` restricts private-media directories to750 and files to640 after its general storage permission step. Confirm these ownership requirements before deployment; do not fix unreadable private media by exposing that directory through a public alias.

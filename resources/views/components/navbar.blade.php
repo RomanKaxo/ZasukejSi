@@ -431,7 +431,7 @@
                             ['route' => 'account.member.favorites', 'label' => __('front.account.member.favorites'), 'icon' => 'heart'],
                             ['route' => 'account.member.dashboard', 'label' => __('front.account.member.settings'), 'icon' => 'Settings'],
                             // Za návrhem:
-                            ['route' => 'notifications.archived', 'label' => __('front.nav.notifications'), 'icon' => 'bell', 'badge' => $mobileNotificationBadge],
+                            ['route' => 'notifications.index', 'label' => __('front.nav.notifications'), 'icon' => 'bell', 'badge' => $mobileNotificationBadge],
                             ['route' => 'account.member.girls-of-month', 'label' => __('front.account.member.girls_of_month'), 'icon' => 'CalendarDays'],
                             ['route' => 'account.member.archive', 'label' => __('front.account.member.archive'), 'icon' => 'History'],
                             ['route' => 'account.member.reported', 'label' => __('front.account.member.reported'), 'icon' => 'OctagonAlert'],
@@ -451,7 +451,7 @@
                             ['route' => 'account.statistics', 'label' => __('front.account.sidebar.statistics'), 'icon' => 'BarChart4'],
                             ['route' => 'account.subscription.index', 'label' => __('front.account.sidebar.subscription'), 'icon' => 'star'],
                             ['route' => 'account.reviews', 'label' => __('front.account.sidebar.reviews'), 'icon' => 'star'],
-                            ['route' => 'notifications.archived', 'label' => __('front.nav.notifications'), 'icon' => 'bell', 'badge' => $mobileNotificationBadge],
+                            ['route' => 'notifications.index', 'label' => __('front.nav.notifications'), 'icon' => 'bell', 'badge' => $mobileNotificationBadge],
                         ];
                     @endphp
                     @foreach($mobileTabs as $tab)

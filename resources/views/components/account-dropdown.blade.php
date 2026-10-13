@@ -60,6 +60,7 @@
                                 // co platí pro každého.
                                 ['url' => route('account.edit'), 'label' => __('front.account.sidebar.basic'), 'icon' => 'User.svg'],
                             ]);
+                    $links[] = ['url' => route('notifications.index'), 'label' => __('front.nav.notifications'), 'icon' => 'bell.svg'];
                 @endphp
 
                 @foreach($links as $link)

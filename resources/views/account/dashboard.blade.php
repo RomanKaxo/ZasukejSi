@@ -14,8 +14,8 @@
                 {{ __('front.account.dashboard.basic_info') }}
             </h1>
         </div>
-        <hr class="w-[312px] mx-auto mb-4">
-        <div class="flex items-center justify-between w-[312px] mx-auto">
+        <hr class="w-[312px] max-w-full mx-auto mb-4">
+        <div class="flex items-center justify-between w-[312px] max-w-full mx-auto">
             <div class="flex items-center gap-1.5">
                 <div class="w-[14px] h-[14px] rounded-full {{ auth()->user()->isOnline() ? 'bg-[#00B80F]' : 'bg-gray-300' }}"></div>
                 <span class="text-[13px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">
@@ -30,13 +30,13 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-[70px]">
         @php
             $cards = [
-                ['icon' => 'Eye', 'value' => '10 458', 'label' => __('front.account.statistics.total_profile_views')],
-                ['icon' => 'ThumbsUp', 'value' => '4.78/5', 'label' => __('front.account.statistics.my_rating')],
-                ['icon' => 'MessageCircleMore', 'value' => '12', 'label' => __('front.account.statistics.my_reviews')],
+                ['icon' => 'Eye', 'value' => number_format($stats['views'], 0, '', ' '), 'label' => __('front.account.statistics.total_profile_views')],
+                ['icon' => 'ThumbsUp', 'value' => $stats['rating'], 'label' => __('front.account.statistics.my_rating')],
+                ['icon' => 'MessageCircleMore', 'value' => $stats['reviews'], 'label' => __('front.account.statistics.my_reviews')],
             ];
         @endphp
         @foreach($cards as $card)
-            <div class="w-[312px] mx-auto md:w-[272px] md:mx-0 h-[100px] rounded-[8px] flex flex-col items-center justify-center bg-gradient-to-b from-[#E6E6E6] to-[#FFFFFF]">
+            <div class="w-[312px] max-w-full mx-auto md:w-[272px] md:mx-0 h-[100px] rounded-[8px] flex flex-col items-center justify-center bg-gradient-to-b from-[#E6E6E6] to-[#FFFFFF]">
                 <img src="{{ asset('images/icons/' . $card['icon'] . '.svg') }}" class="w-[28px] h-[28px] mb-1" alt="{{ $card['label'] }}">
                 <span class="font-bold text-[24px] text-[#5C2D62]" style="font-family: 'Poppins', sans-serif;">{{ $card['value'] }}</span>
                 <span class="text-[13px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">{{ $card['label'] }}</span>
@@ -44,7 +44,7 @@
         @endforeach
     </div>
 
-    <hr class="w-[312px] mx-auto mb-4 md:hidden">
+    <hr class="w-[312px] max-w-full mx-auto mb-4 md:hidden">
 
     {{-- Email Not Verified Warning --}}
     @if (!auth()->user()->hasVerifiedEmail())
@@ -139,4 +139,3 @@
     @livewire('profile-form')
 
 @endsection
-

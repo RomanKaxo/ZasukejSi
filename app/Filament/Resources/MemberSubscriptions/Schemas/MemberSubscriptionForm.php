@@ -52,28 +52,28 @@ class MemberSubscriptionForm
                     }),
 
                 DateTimePicker::make('starts_at')
-                    ->label(__('subscriptions.fields.starts_at'))
+                    ->label(__('subscriptions.form.starts_at'))
                     ->required()
                     ->default(now()),
 
                 DateTimePicker::make('ends_at')
-                    ->label(__('subscriptions.fields.ends_at'))
+                    ->label(__('subscriptions.form.ends_at'))
                     ->required()
                     ->after('starts_at'),
 
                 Select::make('status')
-                    ->label(__('subscriptions.fields.status'))
+                    ->label(__('subscriptions.form.status'))
                     ->required()
                     ->options(MemberSubscription::statuses())
                     ->default(MemberSubscription::STATUS_ACTIVE),
 
                 Toggle::make('auto_renew')
-                    ->label(__('subscriptions.fields.auto_renew'))
-                    ->helperText(__('subscriptions.fields.auto_renew_helper'))
+                    ->label(__('subscriptions.form.auto_renew'))
+                    ->helperText(__('subscriptions.form.auto_renew_helper'))
                     ->default(false),
 
                 Textarea::make('notes')
-                    ->label(__('subscriptions.fields.cancel_reason'))
+                    ->label(__('subscriptions.form.notes'))
                     ->rows(3)
                     ->columnSpanFull(),
             ]);

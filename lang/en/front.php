@@ -353,6 +353,8 @@ return [
         'days' => ':count days',
         'success_title' => 'Payment successful',
         'success_description' => 'Thank you, your subscription is now active.',
+        'granted_title' => 'Subscription is active',
+        'activated_without_payment' => 'Subscription is active. No payment was taken — the payment gateway is not set up yet.',
         'activation_pending' => 'Payment received. We are activating your subscription — it will appear in your subscription overview as soon as the confirmation arrives.',
         'unverified_title' => 'We could not verify this payment',
         'unverified_description' => 'Stripe does not report this checkout as completed. If you were charged, please contact us — you will not be billed twice.',
@@ -839,6 +841,8 @@ return [
     ],
 
     'notifications' => [
+        'view_active' => 'Active notifications',
+        'mark_read' => 'Mark as read',
         'archived_title' => 'Archived Notifications',
         'no_notifications' => 'No notifications',
         'no_archived' => 'No archived notifications',

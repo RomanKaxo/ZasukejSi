@@ -1,5 +1,5 @@
 <div x-data="{ show: false, closing: false }"
-    x-on:show-reset-modal.window="show = true; $wire.show()"
+    x-on:show-reset-modal.window="closing = false; show = true; $wire.show()"
     x-on:hide-reset-modal.window="show = false; closing = false"
     x-init="$watch('show', v => { document.body.style.overflow = v ? 'hidden' : ''; if (v) { document.body.classList.add('modal-open') } else { document.body.classList.remove('modal-open') } ; window.dispatchEvent(new CustomEvent('modal-visibility-changed', { detail: { open: v } })); })"
     x-on:keydown.escape.window="if (show) { closing = true; show = false; $wire.hide() }">
@@ -98,6 +98,7 @@
                 <!-- Action Buttons -->
                 <div class="space-y-2 sm:space-y-2.5 md:space-y-3">
                     <button type="button"
+                        @click="show = false; closing = false"
                         wire:click="backToLogin"
                         x-bind:disabled="closing"
                         class="modal-btn-primary">

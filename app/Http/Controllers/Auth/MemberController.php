@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use App\Models\Report;
+use App\Models\ProfileReport;
 
 /**
  * Controller for male user (member) account features.
@@ -154,6 +155,7 @@ class MemberController extends Controller
         $ageBounds = self::AGE_RANGES[$ageRange] ?? null;
 
         $profiles = \App\Models\Profile::archived()
+            ->public()
             ->with(['media'])
             ->when($ageBounds, fn ($query) => $query->whereBetween('age', $ageBounds))
             ->latest()
@@ -174,11 +176,21 @@ class MemberController extends Controller
     public function reported()
     {
         $user = Auth::user();
-        $reports = Report::with('profile.media', 'profile.activeSubscription')
+        $legacyReports = Report::with('profile.media', 'profile.activeSubscription')
             ->whereHas('profile')
             ->where('reporter_id', $user->id)
             ->latest()
             ->get();
+
+        // Ownership comes from authentication at submission time, not from a
+        // contact email anyone can type into the public report form.
+        $reports = ProfileReport::with('profile.media', 'profile.activeSubscription')
+            ->whereHas('profile')
+            ->where('reporter_id', $user->id)
+            ->get()
+            ->concat($legacyReports)
+            ->sortByDesc('created_at')
+            ->values();
 
         return view('member.reported', compact('user', 'reports'))->with('wideContent', true)->with('sidebarOffset', 95);
     }

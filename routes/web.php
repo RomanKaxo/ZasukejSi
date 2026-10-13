@@ -97,6 +97,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->
 
 // Notifications
 Route::middleware(['auth', 'verified'])->prefix('notifications')->name('notifications.')->group(function () {
+    Route::get('/', [App\Http\Controllers\NotificationController::class, 'index'])->name('index');
     Route::get('/archived', [App\Http\Controllers\NotificationController::class, 'archived'])->name('archived');
     Route::post('/{notification}/archive', [App\Http\Controllers\NotificationController::class, 'archive'])->name('archive');
     Route::delete('/{notification}', [App\Http\Controllers\NotificationController::class, 'delete'])->name('delete');
@@ -178,4 +179,3 @@ Route::get('/{slug}', function ($slug) {
         ->firstOrFail();
     return view('pages.show', compact('page'));
 })->name('pages.show');
-

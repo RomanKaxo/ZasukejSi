@@ -1,5 +1,5 @@
 <div x-data="{ show: false, closing: false }"
-    x-on:show-login-modal.window="console.log('Login modal event received'); show = true; $wire.show()"
+    x-on:show-login-modal.window="console.log('Login modal event received'); closing = false; show = true; $wire.show()"
     x-on:hide-login-modal.window="show = false; closing = false"
     x-init="console.log('Login modal Alpine initialized'); $watch('show', v => { document.body.style.overflow = v ? 'hidden' : ''; if (v) { document.body.classList.add('modal-open') } else { document.body.classList.remove('modal-open') } ; window.dispatchEvent(new CustomEvent('modal-visibility-changed', { detail: { open: v } })); })"
     x-on:keydown.escape.window="if (show) { closing = true; show = false; $wire.hide() }">

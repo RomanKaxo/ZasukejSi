@@ -12,9 +12,10 @@ set -euo pipefail
 DEPLOY_DIR="$(cd "$(dirname "$0")" && pwd)"
 PHP_FPM_SERVICE="${PHP_FPM_SERVICE:-php8.3-fpm}"
 APP_WENT_DOWN=0
+MEDIA_PRIVACY_FAILED=0
 
 finish() {
-    if [ "$APP_WENT_DOWN" -eq 1 ]; then
+    if [ "$APP_WENT_DOWN" -eq 1 ] && [ "$MEDIA_PRIVACY_FAILED" -eq 0 ]; then
         php artisan up >/dev/null 2>&1 || true
     fi
 }
@@ -79,7 +80,10 @@ fi
 
 echo ""
 echo "[5/11] Maintenance mode..."
-php artisan down --retry=60 >/dev/null 2>&1 || true
+if ! php artisan down --retry=60; then
+    echo "  CHYBA: Maintenance mode se nepodařilo zapnout. Nasazení bylo zastaveno."
+    exit 1
+fi
 APP_WENT_DOWN=1
 echo "  Aplikace je v maintenance mode"
 
@@ -110,7 +114,15 @@ echo "  Frontend build OK"
 
 echo ""
 echo "[9/11] Migrace + storage..."
+php artisan config:clear
 php artisan migrate --force
+# Profile files must leave the static /storage tree before reopening the app.
+# This is intentionally fail-fast; staging or incomplete cleanup is not a deploy.
+if ! php artisan media:privatize-profiles; then
+    MEDIA_PRIVACY_FAILED=1
+    echo "  CHYBA: Přesun médií nebyl dokončen. Aplikace zůstává v maintenance mode."
+    exit 1
+fi
 php artisan storage:link --force 2>/dev/null || true
 echo "  Migrace a storage OK"
 
@@ -153,6 +165,12 @@ php artisan icons:cache 2>/dev/null || true
 php artisan queue:restart 2>/dev/null || true
 
 chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+# Keep private media readable by the configured web-server group, not by all
+# local users. Deployment and PHP-FPM must share the storage owner/group.
+if [ -d storage/app/profile-media ]; then
+    find storage/app/profile-media -type d -exec chmod 750 {} +
+    find storage/app/profile-media -type f -exec chmod 640 {} +
+fi
 chmod -R 755 public 2>/dev/null || true
 
 sudo systemctl restart "$PHP_FPM_SERVICE" 2>/dev/null || \

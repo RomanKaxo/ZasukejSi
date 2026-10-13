@@ -47,6 +47,17 @@ return [
             'report' => false,
         ],
 
+        // Profile photos, verification images and videos are served only by
+        // MediaController. No public URL, storage symlink or signed-disk route.
+        'profile-media' => [
+            'driver' => 'local',
+            'root' => storage_path('app/profile-media'),
+            'visibility' => 'private',
+            'serve' => false,
+            'throw' => true,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

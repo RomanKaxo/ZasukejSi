@@ -3,12 +3,12 @@
     <div class="w-full mx-auto lg:mx-0" style="max-width:510px;">
         {{-- Region Filter --}}
         <div class="flex justify-center" style="padding-bottom:32px;">
-            <div>
+            <div class="w-full min-w-0">
                 <label for="kraj" class="block mb-2" style="font-family:'Poppins',sans-serif;font-weight:400;font-size:14px;color:#505050;">
                     {{ __('front.account.member.select_region') }}
                 </label>
-                <div class="relative rating-region-select">
-                    <select id="kraj" name="kraj" class="appearance-none member-select" style="width:100%;height:60px;border-radius:8px;border:1px solid #E6E6E6;padding:0 66px 0 16px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:14px;color:#505050;background:#FFFFFF;">
+                <div class="relative rating-region-select" style="width:100%;max-width:510px;">
+                    <select id="kraj" name="kraj" wire:model.live="region" class="appearance-none member-select" style="width:100%;height:60px;border-radius:8px;border:1px solid #E6E6E6;padding:0 66px 0 16px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:14px;color:#505050;background:#FFFFFF;">
                         <option value="">{{ __('front.account.member.select_region') }}</option>
                         @foreach($regions as $key => $label)
                             <option value="{{ $key }}">{{ $label }}</option>
@@ -362,7 +362,7 @@
                     // The percentage the member actually chose. Deriving it back
                     // from the star mirror drew a 70% rating as 80%.
                     $userRatingPercent = (int) ($profile->ratings->first()?->percentage ?? 0);
-                    $avgRatingPercent = $profile->ratings_count > 0 ? round((float) ($profile->ratings_avg_percentage ?? 0), 1) : 0;
+                    $avgRatingPercent = ($profile->others_count ?? 0) > 0 ? round((float) ($profile->others_avg_percentage ?? 0), 1) : 0;
                     $ratingBarColor = fn ($percent) => \App\Support\RatingScale::color((float) $percent);
                 @endphp
                 <button
@@ -370,7 +370,7 @@
                     wire:key="profile-{{ $profile->id }}"
                     class="flex items-center gap-3 mx-auto hover:shadow transition-shadow duration-150 shadow-sm mb-2
                         {{ $selectedProfileId === $profile->id ? 'ring-2 ring-primary-300' : '' }}"
-                    style="width:280px;height:100px;background:#FFFFFF;border-radius:16px;padding:0 12px;"
+                    style="width:280px;max-width:100%;height:100px;background:#FFFFFF;border-radius:16px;padding:0 12px;"
                 >
                     {{-- Thumbnail --}}
                     <div class="overflow-hidden flex-shrink-0 bg-gradient-to-br from-primary-100 to-secondary-100" style="width:64px;height:80px;border-radius:8px;">
@@ -415,6 +415,7 @@
                                 </span>
                             </div>
                             {{-- Others Rating --}}
+                            @can('view-ratings')
                             <div class="flex items-center gap-2">
                                 <div class="rounded-full overflow-hidden bg-gray-200 flex-shrink-0" style="width:70px;height:10px;">
                                     <div class="h-full rounded-full" style="width: {{ $avgRatingPercent }}%;background:{{ $ratingBarColor($avgRatingPercent) }};"></div>
@@ -423,6 +424,11 @@
                                     {{ __('front.member.ratings.others_rating_label') }}: <span style="font-weight:700;">{{ number_format($avgRatingPercent, 0) }} %</span>
                                 </span>
                             </div>
+                            @else
+                            <span class="block text-[10px] leading-tight text-primary-700">
+                                {{ __('front.membership.locked_rating') }}
+                            </span>
+                            @endcan
                         </div>
                     </div>
                 </button>
@@ -474,7 +480,7 @@
 
     <div class="flex justify-center" style="margin-top:16px;">
         <a href="{{ route('account.member.favorites') }}"
-           class="flex items-center justify-center w-[309px] md:w-[311px]"
+           class="flex items-center justify-center w-[309px] md:w-[311px] max-w-full"
            style="height:60px;border-radius:8px;background:#5C2D62;font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:#FFFFFF;">
             {{ __('front.member.ratings.open_favorites', ['count' => auth()->user()->favoriteProfiles()->count()]) }}
         </a>

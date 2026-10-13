@@ -189,7 +189,10 @@ class Profile extends Model implements HasMedia
         // The phone works the same way round: typing it into the field writes
         // it back into the contact list the public profile is built from, and
         // editing the list updates the field.
-        if ($this->isDirty('phone') && ! $this->isDirty('contacts')) {
+        // A repeater hydrates NULL contacts as []; that is not an instruction
+        // to erase the first phone typed into its dedicated field.
+        $contactsStayedEmpty = blank($this->getOriginal('contacts')) && blank($this->contacts);
+        if ($this->isDirty('phone') && (! $this->isDirty('contacts') || $contactsStayedEmpty)) {
             $this->attributes['contacts'] = json_encode(
                 self::withPhone($this->contacts ?? [], $this->attributes['phone'] ?? null),
                 JSON_UNESCAPED_UNICODE
@@ -857,12 +860,14 @@ class Profile extends Model implements HasMedia
     {
         $this->addMediaCollection('profile-images')
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
-            ->useDisk('public');
+            ->useDisk('profile-media')
+            ->storeConversionsOnDisk('profile-media');
 
         $this->addMediaCollection('profile-video')
             ->acceptsMimeTypes(['video/mp4', 'video/webm', 'video/quicktime'])
             ->singleFile()
-            ->useDisk('public');
+            ->useDisk('profile-media')
+            ->storeConversionsOnDisk('profile-media');
     }
 
     /**

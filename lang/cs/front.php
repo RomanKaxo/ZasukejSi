@@ -367,6 +367,8 @@ return [
         'days' => ':count dní',
         'success_title' => 'Platba proběhla úspěšně',
         'success_description' => 'Děkujeme, vaše předplatné je nyní aktivní.',
+        'granted_title' => 'Předplatné je aktivní',
+        'activated_without_payment' => 'Předplatné je aktivní. Platba neproběhla — platební brána zatím není nastavená.',
         'activation_pending' => 'Platba proběhla. Předplatné aktivujeme během okamžiku — jakmile potvrzení dorazí, uvidíte ho v přehledu předplatného.',
         'unverified_title' => 'Platbu se nepodařilo ověřit',
         'unverified_description' => 'Tuto platbu jsme u Stripe nenašli jako dokončenou. Pokud jste částku uhradili, kontaktujte nás — nic vám nebude účtováno dvakrát.',
@@ -853,6 +855,8 @@ return [
     ],
 
     'notifications' => [
+        'view_active' => 'Aktivní oznámení',
+        'mark_read' => 'Označit jako přečtené',
         'archived_title' => 'Archivovaná oznámení',
         'no_notifications' => 'Žádná oznámení',
         'no_archived' => 'Žádná archivovaná oznámení',

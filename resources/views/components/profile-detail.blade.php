@@ -8,6 +8,7 @@
     $gallerySlides = $images->map(fn ($image) => $image->getUrl())->values();
     $averageRating = $profile->getAverageRating();
     $totalRatings = $profile->getTotalRatings();
+    $ratingsVisible = \Illuminate\Support\Facades\Gate::allows('view-ratings');
     $isOnline = $profile->isOnline();
     $isNewProfile = $totalRatings === 0 || optional($profile->created_at)->gt(now()->subDays(30));
     // Contacts are a single phone number (from the account) plus toggles
@@ -2609,13 +2610,15 @@
             <div class="vip-profile-rating-summary">
                 <strong>{{ __('front.profiles.list.rating') }}</strong>
                 <span class="vip-profile-rating-icons">
-                    @if($totalRatings > 0)
+                    @if($ratingsVisible && $totalRatings > 0)
                         <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" style="color:#FFC107;">
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                         </svg>
                         <span>{{ number_format($averageRating, 1) }}</span>
-                    @else
+                    @elseif(!$ratingsVisible)
                         <x-icons name="lock" class="inline-block" style="width:18px;height:18px;color:#FF4DA6;" />
+                    @else
+                        <x-empty-value />
                     @endif
                 </span>
             </div>
@@ -2748,12 +2751,12 @@
                         @if(auth()->user()->isMale())
                             @livewire('favorite-button', ['profile' => $profile], key('favorite-'.$profile->id))
                         @else
-                            <button type="button" class="vip-profile-static-favorite">
+                            <button type="button" class="vip-profile-static-favorite" disabled title="{{ __('front.favorites.members_only') }}" aria-label="{{ __('front.favorites.members_only') }}">
                                 <img src="{{ asset('images/icons/heart.svg') }}" alt="" aria-hidden="true">
                             </button>
                         @endif
                     @else
-                        <button type="button" class="vip-profile-static-favorite">
+                        <button type="button" class="vip-profile-static-favorite" x-data @click="$dispatch('show-login-modal')" aria-label="{{ __('front.favorites.login_required') }}">
                             <img src="{{ asset('images/icons/heart.svg') }}" alt="" aria-hidden="true">
                         </button>
                     @endauth
@@ -2899,7 +2902,7 @@
                                     <tbody>
                                         @foreach($globalPrices as $price)
                                             <tr>
-                                                <td>{{ rtrim(rtrim((string) ($price['time_hours'] ?? ''), '0'), '.') }}h</td>
+                                                <td>{{ (float) ($price['time_hours'] ?? 0) }}h</td>
                                                 <td>
                                                     @if(!empty($price['incall_price']) && $profile->incall)
                                                         {{ number_format($price['incall_price'], 0, ',', ' ') }} {{ $globalCurrency }}
@@ -2951,7 +2954,7 @@
                                     <tbody>
                                         @foreach($displayPrices as $price)
                                             <tr>
-                                                <td>{{ rtrim(rtrim((string) ($price['time_hours'] ?? ''), '0'), '.') }}h</td>
+                                                <td>{{ (float) ($price['time_hours'] ?? 0) }}h</td>
                                                 <td>
                                                     @if(!empty($price['incall_price']) && $profile->incall)
                                                         {{ number_format($price['incall_price'], 0, ',', ' ') }} Kč
@@ -3070,7 +3073,7 @@
                 <span style="font-family:'Poppins', sans-serif;font-weight:400;font-size:13px;color:#505050;text-align:left;line-height:1.3;">{{ __('front.profiles.detail_page.girls_database') }}</span>
             </div>
         </div>
-        <button class="vip-video-register-btn">{{ __('auth.register.register_button') }}</button>
+        <button type="button" class="vip-video-register-btn" x-data @click="$dispatch('show-register-modal')">{{ __('auth.register.register_button') }}</button>
     </section>
 </div>
 
@@ -3108,25 +3111,6 @@
 <script>
     (function() {
         function initProfileDetailSwiper() {
-            // Handle static favorite button clicks
-            document.querySelectorAll('.vip-profile-static-favorite').forEach(button => {
-                if (button._favInitialized) return;
-                button._favInitialized = true;
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const img = this.querySelector('img');
-                    if (img) {
-                        img.classList.add('heart-animate');
-                        if (img.src.includes('heart.svg') && !img.src.includes('HeartFilled')) {
-                            img.src = "{{ asset('images/icons/HeartFilled.svg') }}";
-                        } else {
-                            img.src = "{{ asset('images/icons/heart.svg') }}";
-                        }
-                        setTimeout(() => { img.classList.remove('heart-animate'); }, 400);
-                    }
-                });
-            });
-
             if (typeof Swiper === 'undefined') {
                 // Swiper not yet loaded — wait for the ready event
                 document.addEventListener('swiper:ready', initProfileDetailSwiper, { once: true });

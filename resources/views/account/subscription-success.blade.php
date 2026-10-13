@@ -1,6 +1,6 @@
 @extends('layouts.account')
 
-@section('title', __('front.subscription.success_title'))
+@section('title', $granted ? __('front.subscription.granted_title') : ($paid ? __('front.subscription.success_title') : __('front.subscription.unverified_title')))
 
 @php
     $activeItem = 'subscription';
@@ -11,8 +11,8 @@
          even for a URL typed by hand or a payment that never completed. --}}
     <div class="flex flex-col items-center justify-center py-16 text-center" style="font-family:'Poppins',sans-serif;">
         <div class="mb-6 flex h-20 w-20 items-center justify-center rounded-full"
-             style="background: {{ $paid ? 'linear-gradient(90deg, #A07613 0%, #B9A143 100%)' : '#F2F2F2' }};">
-            @if($paid)
+             style="background: {{ $paid || $granted ? 'linear-gradient(90deg, #A07613 0%, #B9A143 100%)' : '#F2F2F2' }};">
+            @if($paid || $granted)
                 <svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
@@ -24,7 +24,9 @@
         </div>
 
         <h1 class="mb-2 text-2xl font-bold" style="color:#5C2D62;">
-            @if($paid)
+            @if($granted)
+                {{ __('front.subscription.granted_title') }}
+            @elseif($paid)
                 {{ __('front.subscription.success_title') }}
             @else
                 {{ __('front.subscription.unverified_title') }}
@@ -32,7 +34,9 @@
         </h1>
 
         <p class="mb-8 max-w-md text-[15px] text-[#505050]">
-            @if($paid && $subscription)
+            @if($granted)
+                {{ __('front.subscription.activated_without_payment') }}
+            @elseif($paid && $subscription)
                 {{ __('front.subscription.success_description') }}
             @elseif($paid)
                 {{-- Paid, but the webhook that creates the subscription has not

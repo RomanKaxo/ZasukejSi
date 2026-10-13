@@ -5,8 +5,12 @@ namespace App\Livewire;
 use App\Models\Notification;
 use App\Models\Profile;
 use App\Support\RatingScale;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -21,6 +25,27 @@ class MemberRatings extends Component
     /** How many profiles the rating-history panel loads at a time. */
     public const PROFILES_PER_PAGE = 15;
 
+    /** Administrative names used by the existing city catalogue. */
+    private const REGION_ADMIN_NAMES = [
+        'hlavni-mesto-praha' => 'Praha',
+        'stredocesky' => 'Středočeský Kraj',
+        'jihocesky' => 'Jihočeský Kraj',
+        'plzensky' => 'Plzeňský Kraj',
+        'karlovarsky' => 'Karlovarský Kraj',
+        'ustecky' => 'Ústecký Kraj',
+        'liberecky' => 'Liberecký Kraj',
+        'kralovehradecky' => 'Královéhradecký Kraj',
+        'pardubicky' => 'Pardubický Kraj',
+        'vysocina' => 'Vysočina',
+        'jihomoravsky' => 'Jihomoravský Kraj',
+        'olomoucky' => 'Olomoucký Kraj',
+        'zlinsky' => 'Zlínský Kraj',
+        'moravskoslezsky' => 'Moravskoslezský Kraj',
+    ];
+
+    #[Url(as: 'kraj', except: '')]
+    public string $region = '';
+
     public ?Profile $selectedProfile = null;
     public int $selectedProfileId = 0;
     public bool $isFavorited = false;
@@ -31,15 +56,13 @@ class MemberRatings extends Component
 
     public function mount()
     {
+        $this->normalizeRegion();
         // Arriving from a profile's "Dát hodnocení" link — open that profile
         // straight away instead of a random one.
         $requested = (int) request('profile', 0);
 
         if ($requested > 0) {
-            $target = Profile::approved()
-                ->public()
-                ->whereHas('user', fn ($q) => $q->where('gender', 'female'))
-                ->find($requested);
+            $target = $this->profilesQuery()->find($requested);
 
             if ($target) {
                 $this->selectProfile($target->id);
@@ -50,23 +73,71 @@ class MemberRatings extends Component
 
         // Land on a random profile rather than always the same
         // alphabetically-first one.
-        $userId = Auth::id();
+        $this->selectInitialProfile();
+    }
 
-        $firstProfile = Profile::approved()
-            ->public()
-            ->whereHas('user', fn($q) => $q->where('gender', 'female'))
+    public function updatedRegion(): void
+    {
+        $this->normalizeRegion();
+        $this->resetPage();
+        $this->ratingError = '';
+        $this->selectInitialProfile();
+    }
+
+    private function normalizeRegion(): void
+    {
+        if (! array_key_exists($this->region, self::REGION_ADMIN_NAMES)) {
+            $this->region = '';
+        }
+    }
+
+    private function selectInitialProfile(): void
+    {
+        $userId = Auth::id();
+        $firstProfile = $this->profilesQuery()
             ->whereDoesntHave('ratings', fn($q) => $q->where('user_id', $userId))
             ->inRandomOrder()
             ->first()
-            ?? Profile::approved()
-                ->public()
-                ->whereHas('user', fn($q) => $q->where('gender', 'female'))
-                ->inRandomOrder()
-                ->first();
+            ?? $this->profilesQuery()->inRandomOrder()->first();
 
         if ($firstProfile) {
             $this->selectProfile($firstProfile->id);
+        } else {
+            $this->selectedProfile = null;
+            $this->selectedProfileId = 0;
+            $this->isFavorited = false;
         }
+    }
+
+    private function profilesQuery(): Builder
+    {
+        $query = Profile::approved()->public()
+            ->whereHas('user', fn ($q) => $q->where('gender', 'female'));
+
+        if (! isset(self::REGION_ADMIN_NAMES[$this->region])) {
+            return $query;
+        }
+
+        $regionName = self::REGION_ADMIN_NAMES[$this->region];
+        $regionLabel = \App\Http\Controllers\Auth\MemberController::CZECH_REGIONS[$this->region];
+
+        return $query->where('profiles.country_code', 'CZ')
+            ->where(function ($query) use ($regionName, $regionLabel) {
+                $query->whereExists(function ($cities) use ($regionName, $regionLabel) {
+                    $cities->select(DB::raw(1))->from('cities')
+                        ->whereColumn('cities.country_code', 'profiles.country_code')
+                        ->where(function ($names) {
+                            $names->whereRaw('LOWER(cities.name) = LOWER(profiles.city)')
+                                ->orWhereRaw('LOWER(cities.name_ascii) = LOWER(profiles.city)');
+                        })
+                        ->whereIn('cities.admin_name', [$regionName, $regionLabel]);
+                });
+
+                // The catalogue calls the capital Prague; Czech profiles use Praha.
+                if ($this->region === 'hlavni-mesto-praha') {
+                    $query->orWhereIn('profiles.city', ['Praha', 'Prague']);
+                }
+            });
     }
 
     /**
@@ -80,16 +151,20 @@ class MemberRatings extends Component
      */
     public function availableProfilesQuery()
     {
-        return Profile::approved()
-            ->public()
-            ->whereHas('user', fn($q) => $q->where('gender', 'female'))
+        $query = $this->profilesQuery()
             ->with([
                 'media',
                 'ratings' => fn ($q) => $q->where('user_id', Auth::id()),
-            ])
-            ->withCount('ratings')
-            ->withAvg('ratings', 'percentage')
-            ->orderBy('display_name');
+            ]);
+
+        if (Gate::allows('view-ratings')) {
+            $others = fn ($q) => $q->where(fn ($q) => $q
+                ->where('user_id', '!=', Auth::id())->orWhereNull('user_id'));
+            $query->withCount(['ratings as others_count' => $others])
+                ->withAvg(['ratings as others_avg_percentage' => $others], 'percentage');
+        }
+
+        return $query->orderBy('display_name');
     }
 
     /**
@@ -105,14 +180,16 @@ class MemberRatings extends Component
      */
     public function selectProfile(int $profileId)
     {
-        $this->selectedProfile = Profile::approved()
-            ->public()
+        $this->selectedProfile = $this->profilesQuery()
             ->with(['media', 'user'])
             ->find($profileId);
 
         if ($this->selectedProfile) {
             $this->selectedProfileId = $profileId;
             $this->updateFavoriteStatus();
+        } else {
+            $this->selectedProfileId = 0;
+            $this->isFavorited = false;
         }
     }
 
@@ -234,9 +311,7 @@ class MemberRatings extends Component
 
         // Pick a random profile the user hasn't rated yet, excluding the one
         // currently shown.
-        $nextProfile = Profile::approved()
-            ->public()
-            ->whereHas('user', fn($q) => $q->where('gender', 'female'))
+        $nextProfile = $this->profilesQuery()
             ->whereDoesntHave('ratings', fn($q) => $q->where('user_id', $userId))
             ->where('id', '!=', $currentId)
             ->with(['media'])

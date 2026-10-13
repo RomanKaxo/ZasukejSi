@@ -88,6 +88,13 @@
                     {{ __('front.account.member.settings') }}
                 </a>
             </li>
+            <li>
+                <a href="{{ route('notifications.index') }}"
+                   class="nav-button !w-[210px] !h-[50px] !p-0 !px-4 !rounded-[8px] !border !border-[#E6E6E6] {{ request()->routeIs('notifications.*') ? 'active' : '' }}">
+                    <img src="{{ asset('images/icons/bell.svg') }}" class="w-5 h-5 mr-3" alt="">
+                    {{ __('front.nav.notifications') }}
+                </a>
+            </li>
         </ul>
 
         <!-- Advert for Premium (hidden on mobile) -->
