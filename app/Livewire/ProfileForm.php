@@ -760,8 +760,8 @@ class ProfileForm extends Component
             $validationRules['new_password'] = 'required|string|min:8|confirmed';
         }
 
-        // Add email change validation rules if user is changing email
-        if (!empty($this->new_email)) {
+        $emailChanged = trim((string) $this->new_email) !== '' && $user->email !== $this->new_email;
+        if ($emailChanged) {
             $validationRules['new_email'] = 'required|email|max:255|unique:users,email,' . $user->id;
             $validationRules['email_change_password'] = 'required|current_password';
         }
@@ -781,9 +781,6 @@ class ProfileForm extends Component
             $this->js('window.scrollTo({top: 0, behavior: "smooth"})');
             throw $e;
         }
-
-        // Track email change before update
-        $emailChanged = !empty($this->new_email) && $user->email !== $this->new_email;
 
         // Update user data
         $user->name = $this->name;
@@ -882,6 +879,13 @@ class ProfileForm extends Component
         }
 
         session()->flash('message', __('front.profiles.form.saved'));
+
+        if ($emailChanged) {
+            session()->flash('status', 'verification-link-sent');
+            $this->redirectRoute('verification.notice');
+
+            return;
+        }
         
         // Scroll to top after successful save
         $this->js('window.scrollTo({top: 0, behavior: "smooth"})');

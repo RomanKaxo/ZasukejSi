@@ -207,8 +207,8 @@ class MemberController extends Controller
             'phone' => ['nullable', 'string', 'max:20', 'unique:users,phone,' . $user->id],
         ];
 
-        // Add email change validation if new_email is provided
-        if ($request->filled('new_email')) {
+        $emailChanged = $request->filled('new_email') && $user->email !== $request->new_email;
+        if ($emailChanged) {
             $rules['new_email'] = ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id];
             $rules['email_change_password'] = ['required', 'current_password'];
         }
@@ -219,14 +219,14 @@ class MemberController extends Controller
         // The `phone` column has a unique index; an empty string (unlike
         // NULL) counts as a real value there, so a second user with no
         // phone number would collide and the save would fail silently.
-        $user->phone = $request->phone !== '' ? $request->phone : null;
+        if ($request->has('phone')) {
+            $user->phone = $request->phone !== '' ? $request->phone : null;
+        }
 
         // Handle email change
-        $emailChanged = false;
-        if ($request->filled('new_email') && $user->email !== $request->new_email) {
+        if ($emailChanged) {
             $user->email = $request->new_email;
             $user->email_verified_at = null;
-            $emailChanged = true;
         }
 
         $user->save();
@@ -234,6 +234,8 @@ class MemberController extends Controller
         // Send email verification notification after save
         if ($emailChanged) {
             $user->sendEmailVerificationNotification();
+
+            return redirect()->route('verification.notice')->with('status', 'verification-link-sent');
         }
 
         return redirect()->route('account.member.dashboard')->with('status', 'settings-updated');

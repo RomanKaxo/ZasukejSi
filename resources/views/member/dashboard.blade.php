@@ -88,6 +88,23 @@
                     class="input-control !w-[400px] !h-[50px] max-w-full bg-gray-50 text-gray-500 cursor-not-allowed">
             </div>
 
+            <div class="space-y-4">
+                <h3 class="font-semibold text-secondary">{{ __('front.profiles.form.change_email') }}</h3>
+                <div>
+                    <label for="new_email" class="block mb-2">{{ __('front.profiles.form.new_email') }}</label>
+                    <input type="email" id="new_email" name="new_email" value="{{ old('new_email') }}" autocomplete="email"
+                        class="input-control !w-[400px] !h-[50px] max-w-full @error('new_email') border-red-500 @enderror">
+                    @error('new_email') <p role="alert" class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label for="email_change_password" class="block mb-2">{{ __('front.profiles.form.password_to_confirm') }}</label>
+                    <input type="password" id="email_change_password" name="email_change_password" autocomplete="current-password"
+                        class="input-control !w-[400px] !h-[50px] max-w-full @error('email_change_password') border-red-500 @enderror">
+                    @error('email_change_password') <p role="alert" class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <p class="text-sm text-gray-500">{{ __('front.profiles.form.email_change_notice') }}</p>
+            </div>
+
             <!-- Submit Button -->
             <button type="submit" class="!w-[400px] max-w-full h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
                 <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px] group-hover:hidden" alt="Save">

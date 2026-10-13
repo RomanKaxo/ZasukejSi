@@ -50,11 +50,16 @@ class AccountController extends Controller
     {
         $user = Auth::user();
 
-        $request->validate([
+        $emailChanged = $request->input('email') !== $user->email;
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
             'phone' => ['nullable', 'string', 'max:20', 'unique:users,phone,' . $user->id],
-        ]);
+        ];
+        if ($emailChanged) {
+            $rules['email_change_password'] = ['required', 'current_password'];
+        }
+        $request->validate($rules);
 
         $user->fill($request->only(['name', 'email', 'phone']));
 
@@ -63,6 +68,12 @@ class AccountController extends Controller
         }
 
         $user->save();
+
+        if ($emailChanged) {
+            $user->sendEmailVerificationNotification();
+
+            return redirect()->route('verification.notice')->with('status', 'verification-link-sent');
+        }
 
         return redirect()->route('account.edit')->with('status', 'profile-updated');
     }

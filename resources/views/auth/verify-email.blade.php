@@ -24,6 +24,7 @@
             <p class="mt-2 text-sm text-gray-600">
                 {{ __('front.auth.verify_email_sent') }}
             </p>
+            <p class="mt-2 text-sm font-semibold break-all">{{ auth()->user()->email }}</p>
         </div>
 
         <div class="p-8">

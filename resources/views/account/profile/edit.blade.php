@@ -91,6 +91,16 @@
 
                                 <!-- Phone -->
                                 <div class="col-span-6 sm:col-span-4">
+                                    <label for="email_change_password">{{ __('front.profiles.form.password_to_confirm') }}</label>
+                                    <input type="password" name="email_change_password" id="email_change_password" autocomplete="current-password"
+                                        class="input-control mt-1 @error('email_change_password') border-red-500 @enderror">
+                                    @error('email_change_password')
+                                        <p role="alert" class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                    <p class="mt-1 text-sm text-gray-500">{{ __('front.profiles.form.email_change_notice') }}</p>
+                                </div>
+
+                                <div class="col-span-6 sm:col-span-4">
                                     <label for="phone">{{ __('Phone number') }}</label>
                                     <input type="tel" 
                                            name="phone" 

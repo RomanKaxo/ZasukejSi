@@ -89,3 +89,15 @@ Frontend build prošel (91 modulů). Config, route a view cache se úspěšně v
 Kontrolované části zahrnují uložení a přepsání formulářů, opětovné načtení, služby a jazyky, ceny/dostupnost, hesla, registraci a obnovu, lokální zprávy, osobní i globální oznámení, oblíbené profily, hlášení, CMS, veřejné filtry, API a administraci.
 
 Reálné platby, SMTP doručení, externí telefonní aplikace a produkční provoz nebyly ověřovány. Některé dynamické popupy a přehrávání videa v mobilním WebKitu nebylo možné dokončit kvůli pádu lokálního WPE runneru; to není vydáváno za prokázanou chybu aplikace. Fyzický dotykový swipe a všechny kombinace dat/stavů nejsou pokryté. Existující PHPUnit deprecations a buildové informace o absolutních SVG cestách jsou oddělené od nových funkčních chyb.
+
+## Doplnění kontroly nastavení účtu
+
+Původní audit nesprávně přijal zamčený e-mail v hlavních nastaveních jako záměr. Formuláře člena i poskytovatele nyní mají dostupnou změnu adresy s potvrzením současným heslem. Nová adresa se ukládá, vyžaduje ověření a následně funguje pro přihlášení. Původní přihlašovací adresa ani původní ověřovací odkaz už nefungují. Stejná pravidla a odeslání ověřovacího odkazu platí pro starší `/account/profile` formulář.
+
+Ve stejném nastavení byla opravena ztráta uloženého telefonu při změně přezdívky: pole, které formulář neodesílá, se nemaže. U nezměněné adresy není požadováno heslo ani nové ověření. Potvrzovací heslo se při chybě validace neukládá do session starých vstupů. Chybové a ukládací bannery respektují šířku mobilu.
+
+Funkční kontrakt běžného nastavení se kontroluje skutečným postupem **změnit → uložit → ověřit zápis → načíst znovu → přepsat → načíst znovu**. U přihlašovacích údajů se doplňuje odhlášení, přihlášení novými údaji a odmítnutí starých. Disabled/readonly není samo o sobě důkazem zamýšleného chování; audit musí ověřit očekávanou funkci a dostupnou cestu změny. Základní pole e-mail, přezdívka, telefon a heslo se z kontroly nevynechávají.
+
+Regresní sada změny e-mailu má 20 testů / 121 assertions. Původní chyby jsou doložené selháním sedmi základních, čtyř legacy a jednoho session testu před příslušnými opravami. Browser provedl 96 kontrol hlavních formulářů v Chromium/WebKit na 1440/375/320 px a osm kompletních legacy průchodů na desktopu a mobilu. Kontrolovány jsou duplicity, špatné heslo, databázové zápisy, ověření, oba přihlašovací e-maily, přepsání přezdívky a zachování telefonu. Skutečné SMTP doručení je nadále mimo rozsah; místní browser používá log mailer, testy zachycují skutečnou verifikační notifikaci.
+
+Po tomto doplnění prošla znovu celá sada: **914 testů / 2 501 assertions**, bez failures/errors/skipped, s devíti existujícími PHPUnit deprecations. Nový build, syntax a config/route/view cache rovněž prošly.

@@ -2,7 +2,7 @@
 
 
     @if (session()->has('message'))
-    <div class="relative mx-auto w-[310px] h-[110px] px-4 py-3 md:w-full md:h-[50px] md:mx-0 md:px-4 md:py-0 bg-[#01B810] rounded-[8px] flex items-center justify-center mb-4">
+    <div class="relative mx-auto w-[310px] max-w-full h-[110px] px-4 py-3 md:w-full md:h-[50px] md:mx-0 md:px-4 md:py-0 bg-[#01B810] rounded-[8px] flex items-center justify-center mb-4">
         <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px] mr-3" alt="Save">
         <span class="font-medium text-[14px] text-white text-center" style="font-family: 'Poppins', sans-serif;">{{ session('message') }}</span>
         <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 md:right-4" onclick="this.parentElement.remove()">
@@ -20,7 +20,7 @@
          "nothing saved" state visible instead of looking like nothing
          happened. --}}
     @if ($errors->any())
-    <div wire:key="validation-errors-banner" class="relative mx-auto w-[310px] px-4 py-3 md:w-full md:mx-0 bg-[#DD3888] rounded-[8px] mb-4">
+    <div wire:key="validation-errors-banner" class="relative mx-auto w-[310px] max-w-full px-4 py-3 md:w-full md:mx-0 bg-[#DD3888] rounded-[8px] mb-4">
         <div class="flex items-start">
             <x-icons name="TriangleAlert" class="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" style="color: #FFFFFF;" />
             <div class="text-[14px] text-white" style="font-family: 'Poppins', sans-serif;">
@@ -59,6 +59,23 @@
                 <div>
                     <label for="account_email" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.your_email') }}</label>
                     <input type="email" id="account_email" value="{{ auth()->user()->email }}" readonly class="input-control mt-1 bg-gray-50">
+                </div>
+
+                <div class="space-y-3">
+                    <h4 class="font-semibold text-secondary">{{ __('front.profiles.form.change_email') }}</h4>
+                    <div>
+                        <label for="new_email" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.new_email') }}</label>
+                        <input type="email" id="new_email" wire:model="new_email" autocomplete="email"
+                            class="input-control mt-1 @error('new_email') border-red-500 @enderror">
+                        @error('new_email') <p role="alert" class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="email_change_password" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.profiles.form.password_to_confirm') }}</label>
+                        <input type="password" id="email_change_password" wire:model="email_change_password" autocomplete="current-password"
+                            class="input-control mt-1 @error('email_change_password') border-red-500 @enderror">
+                        @error('email_change_password') <p role="alert" class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <p class="text-sm text-gray-500">{{ __('front.profiles.form.email_change_notice') }}</p>
                 </div>
 
                 @if($hasProfile)
