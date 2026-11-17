@@ -48,7 +48,9 @@
         .homepage-hero .hero-copy-block { top: -15px; }
         .homepage-hero .hero-main-title { line-height: 60px; }
         .homepage-hero .hero-subtitle { font-size: 26px; line-height: 34px; margin-top: -11px; }
-        .homepage-hero { background-size: auto 488px !important; background-position: calc(50% + 5px) 45% !important; }
+        /* Pass 4: the exact Figma layer "Rectangle 4" of home-24 (1332 x 478,
+           crop and white fade baked in), laid 1:1 over the hero box. */
+        .homepage-hero { background-size: 1332px 478px !important; background-position: -1px 0 !important; }
         .homepage-hero .hero-desktop-badges { left: 124px !important; top: 398px; bottom: auto !important; gap: 8px !important; }
         /* home-24: the counter pills are 30 px tall (y 398–427). */
         .homepage-hero .hero-desktop-badges > .search-badge { height: 30px; }
@@ -132,6 +134,7 @@
 
     <x-hero-section 
         :title="$heroTitle"
+        :backgroundImage="$isEnglishHomepage ? '/images/header-en.jpg' : '/images/header.jpg'"
         :subtitle="__('front.landing.girlsregisternow')"
         :showSearch="!$isEnglishHomepage"
     >

@@ -10,7 +10,7 @@
     @if($profiles->isNotEmpty())
         <div class="member-card-grid member-card-grid--top">
             @foreach($profiles as $profile)
-                <x-profile-card :profile="$profile" />
+                <x-profile-card :profile="$profile" :rating-decimals="2" />
             @endforeach
         </div>
     @else

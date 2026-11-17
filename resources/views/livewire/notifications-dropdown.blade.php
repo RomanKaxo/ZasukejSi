@@ -26,7 +26,7 @@
         </span>
 
         @if($this->unreadCount > 0)
-            <span class="absolute -top-1 -right-1 w-[26px] h-[26px] bg-[#00B80F] rounded-full flex items-center justify-center font-bold text-[10px] text-white"
+            <span class="absolute -top-[5px] -right-[5px] w-[26px] h-[26px] bg-[#00B80F] rounded-full flex items-center justify-center font-bold text-[10px] text-white"
                   style="font-family: 'Poppins', sans-serif;">
                 {{ $this->unreadCount > 99 ? '99+' : $this->unreadCount }}
             </span>

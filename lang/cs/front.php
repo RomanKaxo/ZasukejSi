@@ -542,7 +542,7 @@ return [
             'top_rated_girls' => 'Nejlépe hodnocené dívky',
             'this_month' => 'tento měsíc',
             'all_time' => 'za celou dobu',
-            'premium_unlocks_rating' => 'Premium účet vám odemkne hodnocení',
+            'premium_unlocks_rating' => 'Premuim účet vám  odemkne hodnocení', // literally as VIP.jpg / ne VIP.jpg / phone 360 px-12, typo and the wider gap included (Roman, pass 4)
             'new_world_heading' => 'Nový svět na dosah...',
             'become_member' => 'Staň se členem :brand',
             'swingers_events' => 'Swingers akce pro členy',
@@ -712,7 +712,7 @@ return [
             'create_profile_btn' => 'Vytvořit profil',
             'display_name_taken' => 'Toto zobrazované jméno je již obsazené. Zvolte prosím jiné.',
             'profile_created' => 'Váš profil byl vytvořen a odeslán ke kontrole!',
-            'saved' => 'Změna úspěšně uložena',
+            'saved' => 'Změna úspěšen uložena', // literally as home-4 (Roman, pass 4)
             'validation_summary' => 'Změny se neuložily, opravte prosím tyto chyby:',
             'savechanges' => 'Uložit změny',
             'saving' => 'Ukládám...',

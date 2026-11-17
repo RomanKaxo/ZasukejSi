@@ -424,9 +424,24 @@ body.modal-open {
   overscroll-behavior: none;
 }
 
-.modal-backdrop {
-  @apply fixed inset-0 backdrop-blur-lg;
+/* Modal veil, measured on the Figma frames against the same page without the
+   modal (pass 4): #5C2D62 at 80 % everywhere; background blur 16 px on desktop
+   (home-15/16/22/23) and 4 px on the 360 px frames (phone 360 px-6..-10).
+   The page header stays visible under the veil, blurred like the rest. */
+.modal-backdrop,
+.zs-modal-veil {
+  position: fixed;
+  inset: 0;
   background-color: rgba(92, 45, 98, 0.8);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+@media (max-width: 767px) {
+  .modal-backdrop,
+  .zs-modal-veil {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
 }
 
 .modal-container {
@@ -1161,6 +1176,10 @@ body.modal-open {
      the copyright line to the page end. */
   .site-footer { padding-top: 128px !important; padding-bottom: 0 !important; }
   .site-footer .footer-wordmark { margin-top: 0; }
+  /* Pass 4: wordmark ink 868–1055, 276 px above the page end in home.jpg,
+     home-17, home-8, home-5 (VIP 866, home-11 869: the frames disagree by
+     ±1–2 px); it was 866 and 1 px higher on every layout. */
+  .site-footer .footer-wordmark { position: relative; left: 2px; top: 1px; }
   .site-footer-container > .text-center:first-child { margin-bottom: 35px !important; }
   .site-footer .footer-meta { padding-top: 35px !important; }
 }
@@ -1716,116 +1735,160 @@ body.modal-open {
   }
 
   .profile-list-cards-grid > .home-profile-card,
-  .profile-list-cards-grid .home-profile-card-content {
+  .profile-list-cards-grid .home-profile-card-content,
+  .vip-rec-slider .home-profile-card,
+  .member-card-grid .home-profile-card,
+  .vip-rec-slider .home-profile-card-content,
+  .member-card-grid .home-profile-card-content {
     width: 100% !important;
     min-width: 0;
   }
 
-  .profile-list-cards-grid .home-profile-card-media {
+  .profile-list-cards-grid .home-profile-card-media,
+  .vip-rec-slider .home-profile-card-media,
+  .member-card-grid .home-profile-card-media {
     width: 100% !important;
     height: auto !important;
     aspect-ratio: 145 / 183;
     margin: 0;
   }
 
-  .profile-list-cards-grid .home-profile-card-image {
+  .profile-list-cards-grid .home-profile-card-image,
+  .vip-rec-slider .home-profile-card-image,
+  .member-card-grid .home-profile-card-image {
     width: 100% !important;
     height: 100% !important;
   }
 
   /* Name 20.6px under the photo, flush with its left edge; then the two
      stat pills (30px, 6px apart) and, 6px under them, the rating bar. */
-  .profile-list-cards-grid .home-profile-card-content {
+  .profile-list-cards-grid .home-profile-card-content,
+  .vip-rec-slider .home-profile-card-content,
+  .member-card-grid .home-profile-card-content {
     padding: 16.5px 0 0 !important;
     gap: 0;
   }
 
-  .profile-list-cards-grid .home-profile-card-header {
+  .profile-list-cards-grid .home-profile-card-header,
+  .vip-rec-slider .home-profile-card-header,
+  .member-card-grid .home-profile-card-header {
     padding: 0 !important;
     margin: 0 !important;
   }
 
-  .profile-list-cards-grid .home-profile-card-rating-wrap {
+  .profile-list-cards-grid .home-profile-card-rating-wrap,
+  .vip-rec-slider .home-profile-card-rating-wrap,
+  .member-card-grid .home-profile-card-rating-wrap {
     width: 100%;
     margin: 16px 0 0;
     gap: 6px;
   }
 
-  .profile-list-cards-grid .home-profile-card-stats {
+  .profile-list-cards-grid .home-profile-card-stats,
+  .vip-rec-slider .home-profile-card-stats,
+  .member-card-grid .home-profile-card-stats {
     width: 100%;
     gap: 6px !important;
   }
 
-  .profile-list-cards-grid .home-profile-card-stat {
+  .profile-list-cards-grid .home-profile-card-stat,
+  .vip-rec-slider .home-profile-card-stat,
+  .member-card-grid .home-profile-card-stat {
     flex: 1 1 0;
     width: auto !important;
   }
 
-  .profile-list-cards-grid .home-profile-card-rating-badge {
+  .profile-list-cards-grid .home-profile-card-rating-badge,
+  .vip-rec-slider .home-profile-card-rating-badge,
+  .member-card-grid .home-profile-card-rating-badge {
     order: 2;
     height: 30px !important;
   }
 
   /* An open rating ("Hodnocení: 4,7/5 ♥") is 35 px tall in the phone
      frames (phone 360 px-17…20); only the locked one is 30. */
-  .profile-list-cards-grid .home-profile-card-rating-badge:not(.home-profile-card-rating-badge--locked) {
+  .profile-list-cards-grid .home-profile-card-rating-badge:not(.home-profile-card-rating-badge--locked),
+  .vip-rec-slider .home-profile-card-rating-badge:not(.home-profile-card-rating-badge--locked),
+  .member-card-grid .home-profile-card-rating-badge:not(.home-profile-card-rating-badge--locked) {
     height: 35px !important;
   }
 
   /* Locked rating: "Hodnocení:" on #F2F2F2 over 82 of the 145px, the pink
      padlock on #E8E8E8 beside it. */
-  .profile-list-cards-grid .home-profile-card-rating-badge--locked > div:first-child {
+  .profile-list-cards-grid .home-profile-card-rating-badge--locked > div:first-child,
+  .vip-rec-slider .home-profile-card-rating-badge--locked > div:first-child,
+  .member-card-grid .home-profile-card-rating-badge--locked > div:first-child {
     flex: 0 0 56.55% !important;
     padding: 0 !important;
     background: #F2F2F2 !important;
   }
 
-  .profile-list-cards-grid .home-profile-card-rating-badge--locked > div:first-child {
+  .profile-list-cards-grid .home-profile-card-rating-badge--locked > div:first-child,
+  .vip-rec-slider .home-profile-card-rating-badge--locked > div:first-child,
+  .member-card-grid .home-profile-card-rating-badge--locked > div:first-child {
     border-radius: 8px;
     position: relative;
     z-index: 1;
   }
 
-  .profile-list-cards-grid .home-profile-card-name {
+  .profile-list-cards-grid .home-profile-card-name,
+  .vip-rec-slider .home-profile-card-name,
+  .member-card-grid .home-profile-card-name {
     color: #505050 !important;
   }
 
   /* Badges 10px in from the photo's corner, 47x25, 6px apart; the
      verified one is camera + tick side by side (the inline style stacks
      them for the desktop "OVĚŘENO" label). */
-  .profile-list-cards-grid .home-profile-card-badge-stack {
+  .profile-list-cards-grid .home-profile-card-badge-stack,
+  .vip-rec-slider .home-profile-card-badge-stack,
+  .member-card-grid .home-profile-card-badge-stack {
     top: 10px !important;
     left: 10px !important;
     gap: 6px;
   }
 
   .profile-list-cards-grid .home-profile-card-verified-badge,
-  .profile-list-cards-grid .home-profile-card-vip-mobile {
+  .profile-list-cards-grid .home-profile-card-vip-mobile,
+  .vip-rec-slider .home-profile-card-verified-badge,
+  .member-card-grid .home-profile-card-verified-badge,
+  .vip-rec-slider .home-profile-card-vip-mobile,
+  .member-card-grid .home-profile-card-vip-mobile {
     height: 25px !important;
   }
 
-  .profile-list-cards-grid .home-profile-card-verified-badge {
+  .profile-list-cards-grid .home-profile-card-verified-badge,
+  .vip-rec-slider .home-profile-card-verified-badge,
+  .member-card-grid .home-profile-card-verified-badge {
     flex-direction: row !important;
   }
 
-  .profile-list-cards-grid .home-profile-card-verified-camera {
+  .profile-list-cards-grid .home-profile-card-verified-camera,
+  .vip-rec-slider .home-profile-card-verified-camera,
+  .member-card-grid .home-profile-card-verified-camera {
     margin-top: 0 !important;
   }
 
   /* Photo dots 16px above the photo's bottom edge. */
-  .profile-list-cards-grid .home-profile-card-media > .bottom-3 {
+  .profile-list-cards-grid .home-profile-card-media > .bottom-3,
+  .vip-rec-slider .home-profile-card-media > .bottom-3,
+  .member-card-grid .home-profile-card-media > .bottom-3 {
     bottom: 16px;
   }
 
   /* The frame's padlock is the icon at its natural 16x18 (2px stroke),
      1.5px left of centre. */
-  .profile-list-cards-grid .home-profile-card-rating-badge--locked > div:last-child > span {
+  .profile-list-cards-grid .home-profile-card-rating-badge--locked > div:last-child > span,
+  .vip-rec-slider .home-profile-card-rating-badge--locked > div:last-child > span,
+  .member-card-grid .home-profile-card-rating-badge--locked > div:last-child > span {
     width: 16px !important;
     height: 18px !important;
     margin-right: 3px;
   }
 
-  .profile-list-cards-grid .home-profile-card-rating-badge--locked > div:last-child svg {
+  .profile-list-cards-grid .home-profile-card-rating-badge--locked > div:last-child svg,
+  .vip-rec-slider .home-profile-card-rating-badge--locked > div:last-child svg,
+  .member-card-grid .home-profile-card-rating-badge--locked > div:last-child svg {
     width: 100%;
     height: 100%;
   }
@@ -1925,4 +1988,78 @@ body.modal-open {
   html[lang="en"] .profile-list-cards-grid .home-profile-card-location > h5 { line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   html[lang="en"] .profile-list-cards-grid .home-profile-card-rating-wrap { gap: 5px; }
   html[lang="en"] .profile-list-cards-grid .home-profile-card-rating-badge { order: 2; }
+}
+
+/* ===================================================================
+   Pass 4: the profile card outside the main listing (member grids and the
+   detail page's "Nejlépe hodnocené dívky" sliders), measured on
+   VIP.jpg (slider), muž - záložky (favourites, rows 2+) and
+   muž - záložky-4 (Dívky měsíce TOP 10), 1920 px.
+   Same body as the listing card in home.jpg: 210 px wide, 20 px gutters,
+   VIP pill 20 px under the photo, a 45 px Detail button 20 px below it,
+   6 px to the 30 px chips, the place (44 px band), then the rating.
+   A locked rating is the listing's 30 px two-tone bar and the card is
+   510 px tall (favourites); an open one is the 40 px green bar and the
+   card 520 px (TOP 10, slider). The slider keeps its 40 px locked bar.
+   =================================================================== */
+.home-profile-card-blur-lock { width: 70px; height: 70px; }
+.home-profile-card-blur-lock-icon { width: 29px; height: 29px; }
+@media (max-width: 767px) {
+  .home-profile-card-blur-lock { width: 50px; height: 50px; }
+  .home-profile-card-blur-lock-icon { width: 22px; height: 22px; }
+}
+
+@media (min-width: 768px) {
+  .member-card-grid .home-profile-card,
+  .member-card-grid .home-profile-card-media,
+  .member-card-grid .home-profile-card-image { width: 210px !important; }
+  .member-card-grid .home-profile-card:has(.home-profile-card-rating-badge--locked) { height: 510px !important; }
+}
+@media (min-width: 1280px) {
+  /* Four cards on a 231.3 px pitch from x 625 (favourites: 625 / 856 / 1088 / 1319). */
+  .member-card-grid { margin-right: -2px; }
+  .vip-rec-slider .swiper-slide { width: 210px !important; }
+  .vip-rec-slider .home-profile-card,
+  .vip-rec-slider .home-profile-card-media,
+  .vip-rec-slider .home-profile-card-image { width: 210px !important; }
+}
+@media (min-width: 768px) {
+  .member-card-grid .home-profile-card:not(.reported-profile-card) .home-profile-card-content { padding: 20px 20px 0 !important; }
+  .member-card-grid .home-profile-card:not(.reported-profile-card) .home-profile-card-content > * { margin-top: 0 !important; margin-bottom: 0 !important; }
+  .member-card-grid .home-profile-card:not(.reported-profile-card) .home-profile-card-header { padding: 0 !important; height: 26px; }
+  .member-card-grid .home-profile-card:not(.reported-profile-card) .home-profile-card-content > .home-profile-card-cta { width: 100% !important; height: 45px !important; margin-top: 20px !important; }
+  .member-card-grid .home-profile-card:not(.reported-profile-card) .home-profile-card-content > .home-profile-card-rating-wrap { display: flex; flex-direction: column; margin-top: 6px !important; }
+  .member-card-grid .home-profile-card-stats { gap: 6px !important; }
+  .member-card-grid .home-profile-card-stat { flex: 1 1 0; width: auto !important; }
+  .member-card-grid .home-profile-card-name { color: #505050 !important; }
+  .member-card-grid .home-profile-card-location { column-gap: 3px !important; padding-top: 12px !important; padding-bottom: 12px !important; }
+  .member-card-grid .home-profile-card-rating-badge--locked { height: 30px !important; }
+  .member-card-grid .home-profile-card-rating-badge--locked > div:first-child { background: #F2F2F2 !important; border-radius: 0 8px 8px 0; position: relative; z-index: 1; flex: 0 0 82px !important; }
+  .member-card-grid .home-profile-card-rating-badge--locked > div:last-child { margin-left: -8px; padding-left: 8px; }
+  .member-card-grid .home-profile-card-rating-badge:not(.home-profile-card-rating-badge--locked) { height: 40px !important; }
+}
+@media (min-width: 1280px) {
+  .vip-rec-slider .home-profile-card-content { padding: 20px 20px 0 !important; }
+  .vip-rec-slider .home-profile-card-content > * { margin-top: 0 !important; margin-bottom: 0 !important; }
+  .vip-rec-slider .home-profile-card-header { padding: 0 !important; height: 26px; }
+  .vip-rec-slider .home-profile-card-content > .home-profile-card-cta { width: 100% !important; height: 45px !important; margin-top: 20px !important; }
+  .vip-rec-slider .home-profile-card-content > .home-profile-card-rating-wrap { display: flex; flex-direction: column; margin-top: 6px !important; }
+  .vip-rec-slider .home-profile-card-stats { gap: 6px !important; }
+  .vip-rec-slider .home-profile-card-stat { flex: 1 1 0; width: auto !important; }
+  .vip-rec-slider .home-profile-card-name { color: #505050 !important; }
+  .vip-rec-slider .home-profile-card-location { column-gap: 3px !important; padding-top: 12px !important; padding-bottom: 12px !important; }
+  .vip-rec-slider .home-profile-card-rating-badge { height: 40px !important; }
+}
+/* Open rating bar (TOP 10 "Hodnocení: 4,92/5 ♥"): label, value and a
+   13 x 12 heart 6 px apart, the group centred. */
+@media (min-width: 768px) {
+  .member-card-grid .home-profile-card-rating-badge:not(.home-profile-card-rating-badge--locked),
+  .vip-rec-slider .home-profile-card-rating-badge:not(.home-profile-card-rating-badge--locked) { gap: 3px !important; }
+  .member-card-grid .home-profile-card-rating-badge:not(.home-profile-card-rating-badge--locked) > span:last-child,
+  .vip-rec-slider .home-profile-card-rating-badge:not(.home-profile-card-rating-badge--locked) > span:last-child { width: 17px !important; height: 17px !important; }
+}
+/* Favourites wrap each card in a div: let it fill the 155 px column so the
+   card does not shrink to its content (was 160 / 163 px side by side). */
+@media (max-width: 767px) {
+  .member-card-grid > .relative { width: 100%; }
 }

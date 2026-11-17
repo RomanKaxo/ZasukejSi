@@ -1,4 +1,79 @@
 <div class="profile-slider-container w-full overflow-visible" wire:ignore>
+    {{-- The slider's own styles live inside the component root. They used to be
+         pushed to a 'styles' stack that no layout prints, so none of them ever
+         applied (pass 2 C finding); inside the root they apply wherever the
+         slider is rendered, also after Livewire re-renders. --}}
+    {{-- Defaults wrapped in :where() so a page that tunes its slider (the
+         detail's .vip-rec-slider rules) still wins on equal terms. --}}
+    <style>
+        :where(.profile-slider-container) [class*="swiper-button-prev-"],
+        :where(.profile-slider-container) [class*="swiper-button-next-"] {
+            border: none !important;
+            background: #DD3888 !important;
+            color: #fff !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+        }
+    
+        :where(.profile-slider-container) [class*="swiper-button-prev-"]:hover,
+        :where(.profile-slider-container) [class*="swiper-button-next-"]:hover {
+            background: #c71d6f !important;
+        }
+    
+        /* phone 360 px-12: arrows 32 px under the card's last chip. */
+        .slider-nav-controls-{{ $sliderId }} {
+            margin-top: 14px;
+            width: 100%;
+        }
+    
+        /* Desktop (VIP.jpg) has no dots under the slider; the arrows stay,
+           the detail page places them beside the cards. */
+        @media (min-width: 768px) {
+            .slider-nav-controls-{{ $sliderId }} .swiper-pagination {
+                display: none !important;
+            }
+        }
+    
+        /* Pagination styling */
+        .slider-nav-controls-{{ $sliderId }} .swiper-pagination {
+            position: static;
+            bottom: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            margin: 0;
+            width: auto !important;
+            flex: 0 0 auto;
+            transform: none !important;
+            left: auto !important;
+        }
+    
+        /* phone 360 px-12: grey dots 10 px (#E8E8E8), the active one 8 px pink,
+           4 px apart. */
+        :where([class*="slider-nav-controls-"]) .swiper-pagination-bullet {
+            width: 10px;
+            height: 10px;
+            margin: 0 !important;
+            background: #E8E8E8 !important;
+            opacity: 1 !important;
+            border-radius: 50% !important;
+        }
+    
+        :where([class*="slider-nav-controls-"]) .swiper-pagination-bullet-active {
+            width: 8px;
+            height: 8px;
+            background: #DD3888 !important;
+            opacity: 1 !important;
+        }
+    
+        @media (max-width: 425px) {
+            .swiper.{{ $sliderId }} > .swiper-wrapper > .swiper-slide {
+                width: calc(50% - 9.5px) !important;
+                flex: 0 0 calc(50% - 9.5px) !important;
+            }
+        }
+    </style>
     @if($title)
     <div class="mb-6">
         <h2 class="text-2xl md:text-3xl font-bold text-secondary">{{ $title }}</h2>
@@ -24,11 +99,12 @@
         <!-- Navigation Buttons Below (Mobile) -->
         <div class="slider-nav-controls-{{ $sliderId }} mt-4 md:hidden" style="display:grid; grid-template-columns:45px minmax(0, 1fr) 45px; align-items:center; width:100%; column-gap:12px;">
             <button class="swiper-button-prev-{{ $sliderId }} w-[45px] h-[45px] bg-primary text-white rounded-lg flex items-center justify-center hover:shadow-lg transition-all duration-200 cursor-pointer" style="background:#DD3888; color:#fff; width:45px; height:45px; border-radius:8px; margin:0;">
-                ⏴
+                {{-- VIP.jpg / phone 360 px-12: a 7 x 9 px white triangle (the ⏴ glyph rendered 3 x 5). --}}
+                <svg width="7" height="9" viewBox="0 0 7 9" aria-hidden="true" style="display:block;position:relative;left:-1px;"><path d="M0 4.5L7 0V9Z" fill="#FFFFFF"/></svg>
             </button>
             <div class="swiper-pagination-{{ $sliderId }} swiper-pagination" style="position:static; margin:0 auto; width:auto; justify-self:center;"></div>
             <button class="swiper-button-next-{{ $sliderId }} w-[45px] h-[45px] bg-primary text-white rounded-lg flex items-center justify-center hover:shadow-lg transition-all duration-200 cursor-pointer" style="background:#DD3888; color:#fff; width:45px; height:45px; border-radius:8px; margin:0;">
-                ⏵
+                <svg width="7" height="9" viewBox="0 0 7 9" aria-hidden="true" style="display:block;position:relative;left:1px;"><path d="M7 4.5L0 0V9Z" fill="#FFFFFF"/></svg>
             </button>
         </div>
     </div>
@@ -91,12 +167,12 @@
                         slidesPerView: 5,
                         spaceBetween: 20
                     },
-                    // VIP.jpg @1920: 214 px cards on a 231 px pitch (first card
+                    // VIP.jpg @1920: 210 px cards on a 231 px pitch (first card
                     // flush with the 844 px content column, fifth one fading
                     // out past it). Slide width comes from CSS.
                     1280: {
                         slidesPerView: 'auto',
-                        spaceBetween: 17
+                        spaceBetween: 21
                     }
                 },
 
@@ -196,75 +272,4 @@
         });
     })();
 </script>
-@endpush
-
-@push('styles')
-<style>
-    .profile-slider-container [class*="swiper-button-prev-"],
-    .profile-slider-container [class*="swiper-button-next-"] {
-        border: none !important;
-        background: #DD3888 !important;
-        color: #fff !important;
-        padding: 0 !important;
-        box-shadow: 0 10px 18px rgba(221, 56, 136, 0.25) !important;
-    }
-
-    .profile-slider-container [class*="swiper-button-prev-"]:hover,
-    .profile-slider-container [class*="swiper-button-next-"]:hover {
-        background: #c71d6f !important;
-    }
-
-    /* Hide nav buttons on desktop, show only below on mobile */
-    .slider-nav-controls-{{ $sliderId }} {
-        margin-top: 12px;
-        width: 100%;
-    }
-
-    @media (min-width: 768px) {
-        .slider-nav-controls-{{ $sliderId }} {
-            display: none;
-        }
-    }
-
-    /* Pagination styling */
-    .profile-slider-container .swiper-pagination,
-    .slider-nav-controls-{{ $sliderId }} .swiper-pagination {
-        position: static;
-        bottom: auto;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 4px;
-        margin: 0;
-        width: auto !important;
-        flex: 0 0 auto;
-        transform: none !important;
-        left: auto !important;
-    }
-
-    /* phone 360 px-12: grey dots 10 px (#E8E8E8), the active one 8 px pink,
-       4 px apart. */
-    .profile-slider-container .swiper-pagination-bullet {
-        width: 10px;
-        height: 10px;
-        margin: 0 !important;
-        background: #E8E8E8 !important;
-        opacity: 1 !important;
-        border-radius: 50% !important;
-    }
-
-    .profile-slider-container .swiper-pagination-bullet-active {
-        width: 8px;
-        height: 8px;
-        background: #DD3888 !important;
-        opacity: 1 !important;
-    }
-
-    @media (max-width: 425px) {
-        .profile-slider-container .swiper-slide {
-            width: calc(50% - 9.5px) !important;
-            flex: 0 0 calc(50% - 9.5px) !important;
-        }
-    }
-</style>
 @endpush

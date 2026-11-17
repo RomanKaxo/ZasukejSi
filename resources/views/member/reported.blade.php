@@ -56,6 +56,12 @@
         .reported-grid .reported-info-card p { display: -webkit-box !important; -webkit-box-orient: vertical; -webkit-line-clamp: 7; line-clamp: 7; overflow: hidden; line-height: 22px !important; }
         .reported-grid .reported-info-card-badges { gap: 7px; }
         .reported-grid .reported-info-card-button { margin-top: 11px; }
+        /* Pass 4: the pills always start 283 px under the panel top and the
+           button sits 26.5 px above its bottom (Angela's two pills stay up
+           under the text in the frame, they did not slide down to the
+           button); the button keeps the bottom. */
+        .reported-grid .reported-info-card-badges { position: absolute; top: 283px; left: 29px; right: 29px; bottom: 27px; margin-top: 0 !important; justify-content: flex-start; }
+        .reported-grid .reported-info-card-button { margin-top: auto !important; }
     }
 </style>
 @endsection

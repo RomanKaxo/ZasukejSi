@@ -155,7 +155,7 @@
                     <!-- Verify Photo Modal -->
                     <template x-teleport="body">
                         <div x-show="verifyModalOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center" style="display: none;">
-                            <div class="fixed inset-0" style="background-color: #5C2D62CC; backdrop-filter: blur(30px);" @click="verifyModalOpen = false"></div>
+                            <div class="fixed inset-0 zs-modal-veil" @click="verifyModalOpen = false"></div>
 
                             <div class="verification-dialog relative w-[600px] max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-2rem)] rounded-[24px] bg-white overflow-y-auto"
                                 style="box-shadow: 0 10px 25px 0 #00000033;">
@@ -280,7 +280,7 @@
             <!-- Upload Modal -->
             <template x-teleport="body">
             <div x-show="modalOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center" style="display: none;">
-                <div class="fixed inset-0" style="background-color: #5C2D62CC; backdrop-filter: blur(30px);" @click="modalOpen = false"></div>
+                <div class="fixed inset-0 zs-modal-veil" @click="modalOpen = false"></div>
 
                 {{-- pass 1 overlay (home-15 / home-16): title glyph 100px under
                      the top, 200px tiles ~90px under the title, the 200x50 button

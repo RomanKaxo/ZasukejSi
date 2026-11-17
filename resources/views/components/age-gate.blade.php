@@ -70,8 +70,16 @@
             position: absolute;
             inset: 0;
             background: rgba(92, 45, 98, 0.8);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
+            /* Same veil as the auth modals (pass 4 fit): 4 px on phones
+               (phone 360 px-10), 16 px on desktop (home-22/23). */
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        @media (max-width: 767px) {
+            .age-gate__backdrop {
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
+            }
         }
 
         .age-gate__card {

@@ -1,10 +1,14 @@
 <nav class="fixed top-0 left-0 right-0 z-100 bg-transparent rounded-b-3xl transition-all duration-300" id="navbar"
      x-data="{ mobileMenuOpen: false, scrolled: false }"
+     @modal-visibility-changed.window="if ($event.detail && $event.detail.open) mobileMenuOpen = false"
      x-init="scrolled = window.scrollY > 8; window.addEventListener('scroll', () => scrolled = window.scrollY > 8, { passive: true })"
      :class="scrolled ? 'is-scrolled' : ''"
      @click.outside="mobileMenuOpen = false">
     <style>
-        body.modal-open #navbar { display: none !important; }
+        /* Figma home-22/23 and phone 360 px-6..-10: the header stays on the
+           page behind an open modal, blurred under the veil. It only drops
+           below the modal layer (z-50) instead of disappearing. */
+        body.modal-open #navbar { z-index: 40 !important; }
 
         #navbar {
             width: 100%;
@@ -313,7 +317,10 @@
                     
                     @auth
                     <!-- Custom Icon Buttons - Auth Only -->
-                    <div class="flex items-center space-x-3">
+                    {{-- 10 px between bell, envelope and user tile (home-2/home-5:
+                         1258/1328/1398, each 60 px wide); space-x-3 gave 12 px and
+                         shifted bell 4 px and envelope 2 px left. --}}
+                    <div class="flex items-center" style="gap:10px;">
                         {{-- Notifications: a fully working dropdown (unread count,
                              mark read, archive) that reuses this button's exact
                              geometry. It replaced a static div whose badge read

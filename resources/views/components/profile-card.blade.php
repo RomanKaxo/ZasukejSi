@@ -1,4 +1,4 @@
-@props(['profile', 'imageOverride' => null, 'imagesOverride' => null, 'variant' => null, 'showRemoveButton' => false, 'removeUrl' => null, 'cardHeight' => '520px', 'imageHeight' => '265px', 'simpleMode' => false, 'isReported' => false, 'showDetailLink' => true])
+@props(['profile', 'imageOverride' => null, 'imagesOverride' => null, 'variant' => null, 'showRemoveButton' => false, 'removeUrl' => null, 'cardHeight' => '520px', 'imageHeight' => '265px', 'simpleMode' => false, 'isReported' => false, 'showDetailLink' => true, 'ratingDecimals' => 1])
 
 @php
     // Zajistíme, že $isReported je vždy bool
@@ -165,8 +165,10 @@
 
         @if($shouldBlur)
         <div class="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
-            <span class="inline-flex items-center justify-center bg-white rounded-full p-5 shadow-lg">
-                <x-icons name="lock" strokeWidth="1" class="w-8 h-8 -translate-y-0.5" style="color: #DD3888;" />
+            {{-- VIP.jpg: a 70 px white circle, padlock ink 26 x 29; phone 360 px-12:
+                 a 50 px circle (sizes in components.css, .home-profile-card-blur-lock). --}}
+            <span class="home-profile-card-blur-lock inline-flex items-center justify-center bg-white rounded-full shadow-lg">
+                <x-icons name="lock" strokeWidth="1" class="home-profile-card-blur-lock-icon -translate-y-0.5" style="color: #DD3888;" />
             </span>
         </div>
         @endif
@@ -323,7 +325,8 @@
                     <div style="font-family:'Plus Jakarta Sans', sans-serif;font-weight:600;font-size:11px;color:#505050;line-height:1;">{{ __('front.profiles.list.rating') }}:</div>
                     <div style="font-family:'Poppins', sans-serif;font-weight:600;font-size:14px;color:#5C2D62;line-height:1;">
                         @if($rating !== null)
-                            {{ number_format($rating, 1) }}/5
+                            {{-- Czech frames write "4,9/5" (VIP.jpg) and, on the TOP 10 page, "4,92/5". --}}
+                            {{ number_format($rating, $ratingDecimals, app()->getLocale() === 'cs' ? ',' : '.', '') }}/5
                         @else
                             <x-empty-value />
                         @endif

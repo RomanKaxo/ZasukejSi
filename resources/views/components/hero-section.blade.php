@@ -63,7 +63,8 @@
         border-bottom-right-radius: 24px;
         /* Figma home.jpg crops the photo 77 px further left than a centred
            cover (the "BIG" watermarks sit at x 788 / 1056 / 1326). */
-        background-position: calc(50% - 77px) center;
+        /* Pass 4: 76 px matches home.jpg pixel for pixel (77 left it 1 px off). */
+        background-position: calc(50% - 76px) center;
         background-size: cover;
         background-repeat: no-repeat;
         overflow: visible;

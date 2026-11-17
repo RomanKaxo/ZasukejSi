@@ -2,8 +2,7 @@
     <div x-show="$store.reportedCase.isOpen"
         x-transition.opacity
         @click="$store.reportedCase.close()"
-        class="fixed inset-0 z-[110] backdrop-blur-lg"
-        style="background-color: rgba(92, 45, 98, 0.8);">
+        class="fixed inset-0 z-[110] zs-modal-veil">
     </div>
 
     <div x-show="$store.reportedCase.isOpen"
