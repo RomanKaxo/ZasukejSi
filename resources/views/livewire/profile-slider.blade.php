@@ -74,9 +74,10 @@
                 
                 // Responsive breakpoints
                 breakpoints: {
+                    // phone 360 px-12: two 145.5 px cards, 19 px apart.
                     0: {
                         slidesPerView: 2,
-                        spaceBetween: 8
+                        spaceBetween: 19
                     },
                     480: {
                         slidesPerView: 2,
@@ -90,9 +91,12 @@
                         slidesPerView: 5,
                         spaceBetween: 20
                     },
+                    // VIP.jpg @1920: 214 px cards on a 231 px pitch (first card
+                    // flush with the 844 px content column, fifth one fading
+                    // out past it). Slide width comes from CSS.
                     1280: {
-                        slidesPerView: 5,
-                        spaceBetween: 20
+                        slidesPerView: 'auto',
+                        spaceBetween: 17
                     }
                 },
 
@@ -101,6 +105,19 @@
                     clickable: true,
                     type: 'bullets',
                     dynamicBullets: false,
+                },
+
+                // phone 360 px-12: five dots between the arrows, whatever the
+                // number of pages; the window follows the active one.
+                on: {
+                    paginationUpdate: function (sw) {
+                        const bullets = sw.pagination && sw.pagination.bullets ? Array.from(sw.pagination.bullets) : [];
+                        const count = bullets.length;
+                        if (count <= 5) { bullets.forEach(function (b) { b.style.display = ''; }); return; }
+                        const active = Math.max(0, bullets.findIndex(function (b) { return b.classList.contains('swiper-pagination-bullet-active'); }));
+                        const start = Math.max(0, Math.min(active - 2, count - 5));
+                        bullets.forEach(function (b, i) { b.style.display = (i >= start && i < start + 5) ? '' : 'none'; });
+                    },
                 },
 
                 navigation: {
@@ -217,7 +234,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        gap: 6px;
+        gap: 4px;
         margin: 0;
         width: auto !important;
         flex: 0 0 auto;
@@ -225,23 +242,28 @@
         left: auto !important;
     }
 
+    /* phone 360 px-12: grey dots 10 px (#E8E8E8), the active one 8 px pink,
+       4 px apart. */
     .profile-slider-container .swiper-pagination-bullet {
-        width: 8px;
-        height: 8px;
-        background: #E0E0E0 !important;
+        width: 10px;
+        height: 10px;
+        margin: 0 !important;
+        background: #E8E8E8 !important;
         opacity: 1 !important;
         border-radius: 50% !important;
     }
 
     .profile-slider-container .swiper-pagination-bullet-active {
+        width: 8px;
+        height: 8px;
         background: #DD3888 !important;
         opacity: 1 !important;
     }
 
     @media (max-width: 425px) {
         .profile-slider-container .swiper-slide {
-            width: calc(50% - 4px) !important;
-            flex: 0 0 calc(50% - 4px) !important;
+            width: calc(50% - 9.5px) !important;
+            flex: 0 0 calc(50% - 9.5px) !important;
         }
     }
 </style>

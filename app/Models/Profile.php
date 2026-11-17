@@ -24,6 +24,10 @@ class Profile extends Model implements HasMedia
      */
     public $translatable = ['display_name', 'about'];
 
+    private ?array $imageOrderState = null;
+
+    private ?\Illuminate\Support\Collection $orderedImages = null;
+
     /**
      * The attributes that are mass assignable.
      *
@@ -599,6 +603,10 @@ class Profile extends Model implements HasMedia
             return (bool) $this->attributes['is_vip'];
         }
 
+        if ($this->relationLoaded('activeSubscription')) {
+            return $this->activeSubscription !== null;
+        }
+
         return $this->activeSubscription()->exists();
     }
 
@@ -749,10 +757,11 @@ class Profile extends Model implements HasMedia
 
         // Notify user about verification
         if (!$wasVerified) {
-            Notification::createForUser(
+            Notification::createTranslatedForUser(
                 $this->user_id,
-                __('notifications.profile.verified_title'),
-                __('notifications.profile.verified_message'),
+                'notifications.profile.verified_title',
+                'notifications.profile.verified_message',
+                [],
                 'success'
             );
         }
@@ -771,10 +780,11 @@ class Profile extends Model implements HasMedia
 
         // Notify user about verification removal
         if ($wasVerified) {
-            Notification::createForUser(
+            Notification::createTranslatedForUser(
                 $this->user_id,
-                __('notifications.profile.unverified_title'),
-                __('notifications.profile.unverified_message'),
+                'notifications.profile.unverified_title',
+                'notifications.profile.unverified_message',
+                [],
                 'warning'
             );
         }
@@ -795,30 +805,41 @@ class Profile extends Model implements HasMedia
             $originalStatus = $profile->getOriginal('status');
             $newStatus = $profile->status;
 
+            // Approval publishes the profile: the account tells the provider her
+            // profile becomes visible once approved, and the listing only shows
+            // approved *and* public profiles. Hiding an approved profile (e.g.
+            // after a report) does not change the status, so it stays hidden.
+            if ($originalStatus !== 'approved' && $newStatus === 'approved') {
+                $profile->is_public = true;
+            }
+
             // Only notify on status changes
             if ($originalStatus !== $newStatus) {
                 if ($newStatus === 'approved') {
-                    Notification::createForUser(
+                    Notification::createTranslatedForUser(
                         $profile->user_id,
-                        __('notifications.profile.approved_title'),
-                        __('notifications.profile.approved_message'),
+                        'notifications.profile.approved_title',
+                        'notifications.profile.approved_message',
+                        [],
                         'success'
                     );
                 } elseif ($newStatus === 'rejected') {
-                    Notification::createForUser(
+                    Notification::createTranslatedForUser(
                         $profile->user_id,
-                        __('notifications.profile.rejected_title'),
-                        __('notifications.profile.rejected_message'),
+                        'notifications.profile.rejected_title',
+                        'notifications.profile.rejected_message',
+                        [],
                         'danger'
                     );
                 } elseif ($newStatus === 'pending' && $originalStatus === 'draft') {
                     // Notify admins about new profile submission
                     $admins = User::role('admin')->get();
                     foreach ($admins as $admin) {
-                        Notification::createForUser(
+                        Notification::createTranslatedForUser(
                             $admin->id,
-                            __('notifications.admin.new_profile_title'),
-                            __('notifications.admin.new_profile_message', ['name' => $profile->display_name]),
+                            'notifications.admin.new_profile_title',
+                            'notifications.admin.new_profile_message',
+                            ['name' => $profile->display_name],
                             'info'
                         );
                     }
@@ -940,10 +961,35 @@ class Profile extends Model implements HasMedia
      */
     public function getAllImages()
     {
+        // Unattached uploads on an unsaved model are owned by MediaLibrary.
+        if (! $this->exists) {
+            return $this->getMedia('profile-images')
+                ->sortByDesc(fn ($media) => (bool) $media->getCustomProperty('is_main', false))
+                ->values();
+        }
+
+        // Compare raw ordering inputs: additions, removals, reloading the
+        // relation and an in-place change of the main photo all invalidate it.
+        $state = [];
+        foreach ($this->media as $media) {
+            $state[] = [spl_object_id($media), $media->getRawOriginal('id'),
+                $media->getAttributes()['collection_name'] ?? null,
+                $media->getAttributes()['order_column'] ?? null,
+                $media->getAttributes()['custom_properties'] ?? null];
+        }
+
+        if ($this->orderedImages !== null && $state === $this->imageOrderState) {
+            // Preserve the old API's independent, mutable collection per call.
+            return clone $this->orderedImages;
+        }
+
+        $this->imageOrderState = $state;
         // The photo selected in account settings must lead every public gallery.
-        return $this->getMedia('profile-images')
+        $this->orderedImages = $this->getMedia('profile-images')
             ->sortByDesc(fn ($media) => (bool) $media->getCustomProperty('is_main', false))
             ->values();
+
+        return clone $this->orderedImages;
     }
 
     /**
@@ -988,6 +1034,10 @@ class Profile extends Model implements HasMedia
      */
     public function getTotalRatings(): int
     {
+        if (array_key_exists('ratings_count', $this->attributes)) {
+            return (int) $this->attributes['ratings_count'];
+        }
+
         return $this->ratings()->count();
     }
 
@@ -1093,11 +1143,14 @@ class Profile extends Model implements HasMedia
             ['rating' => $stars, 'percentage' => $percentage]
         );
 
+        unset($this->ratings_count, $this->ratings_avg_percentage);
+
         if ($isNewRating && $this->user_id) {
-            Notification::createForUser(
+            Notification::createTranslatedForUser(
                 $this->user_id,
-                __('notifications.rating.received_title'),
-                __('notifications.rating.received_message', ['stars' => $stars]),
+                'notifications.rating.received_title',
+                'notifications.rating.received_message',
+                ['stars' => $stars],
                 $percentage >= RatingScale::THRESHOLD_GOOD
                     ? 'success'
                     : ($percentage >= RatingScale::THRESHOLD_FAIR ? 'info' : 'warning')

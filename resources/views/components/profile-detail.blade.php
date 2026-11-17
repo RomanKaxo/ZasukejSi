@@ -36,11 +36,11 @@
         ->filter()
         ->map(fn ($lang) => \Illuminate\Support\Facades\Lang::has('front.account.services.language_names.' . $lang) ? __('front.account.services.language_names.' . $lang) : $lang)
         ->values();
-    $languagesExtraCount = max(0, $languagesList->count() - 2);
+    // Figma (VIP, ne VIP, phone 360 px-12) lists every language and lets the
+    // value wrap ("Česky, Rusky / Anglicky"); it never shortens to "a další 1".
     $languages = $languagesList->isEmpty()
         ? null
-        : $languagesList->take(2)->implode(', ')
-            . ($languagesExtraCount > 0 ? ' ' . __('front.profiles.detail_page.languages_more', ['count' => $languagesExtraCount]) : '');
+        : $languagesList->implode(', ');
     $aboutText = trim((string) ($profile->about ?? '')) !== '' ? $profile->about : null;
     // Weight/height live in the `content` JSON column and are exposed via
     // accessors on the Profile model, which also derive the imperial values.
@@ -103,6 +103,17 @@
     $availabilityCaption = __('front.profiles.detail_page.availability_every_day');
     $isVerifiedProfile = $profile->isVerified();
     $photoStatusLabel = $isVerifiedProfile ? __('front.profiles.photos.verified_badge') : __('front.profiles.detail_page.photos_unverified');
+    // The VIP pill used to be printed on every profile, VIP or not, and the
+    // photo pill always used the grey crossed-out camera, so a verified
+    // profile read as "not verified" on its own page while the list card
+    // showed it as verified. Figma: VIP pill only for VIP; green "FOTO
+    // OVĚŘENO" for a verified profile; the grey "FOTO NEOVĚŘENO" only beside
+    // the VIP pill (the non-VIP frame shows no pills at all).
+    $isVipProfile = $profile->isVip();
+    $showPhotoStatus = $isVerifiedProfile || $isVipProfile;
+    // One line under the rating bar: the kraj, or the city when no kraj is
+    // known. No invented fallback place.
+    $locationLabel = filled($profile->region) ? $profile->region : (filled($profile->city) ? $profile->city : null);
 
     if (!empty($availability['always_online'])) {
         $availabilityCaption = __('front.profiles.detail_page.availability_always_online');
@@ -116,8 +127,9 @@
         }
     }
 
-    // Up to three real photos; the gallery markup below handles 0, 1, 2 or 3.
-    $heroSlides = $gallerySlides->take(3)->values();
+    // Up to three real photos (four on a non-VIP profile: ne VIP.jpg shows
+    // four equal 337 px tiles instead of VIP.jpg's 337 / 537 / 337).
+    $heroSlides = $gallerySlides->take($isVipProfile ? 3 : 4)->values();
     $hasGallery = $gallerySlides->isNotEmpty();
 @endphp
 
@@ -157,6 +169,10 @@
         width: 100%;
         display: flex;
         flex-direction: column;
+    }
+
+    .vip-profile-status-bar:not(:has(span)) {
+        display: none !important;
     }
 
     .vip-profile-status-bar {
@@ -782,11 +798,13 @@
     }
 
     .vip-profile-static-favorite::after {
-        content: '{{ __('front.favorites.save') }}';
-        font-family: 'Plus Jakarta Sans', sans-serif;
+        /* VIP.jpg: „uložit", lowercase and underlined (own key, desktop only). */
+        content: '{{ __('front.profiles.detail_page.save_heart') }}';
+        font-family: 'Poppins', sans-serif;
         font-size: 12px;
-        font-weight: 600;
+        font-weight: 400;
         color: #71717A;
+        text-decoration: underline;
         margin-top: 2px;
     }
 
@@ -1036,6 +1054,24 @@
         line-height: 0.95;
         font-weight: 800;
         letter-spacing: -0.04em;
+    }
+
+    /* Figma desktop: 36px Poppins Bold, "tento měsíc" on its own pink line. */
+    .vip-slider-title {
+        margin: 0;
+        font-size: 36px;
+        line-height: 43px;
+        font-weight: 700;
+        letter-spacing: 0;
+    }
+
+    .vip-slider-title .vip-slider-kicker {
+        display: block;
+        font-size: inherit;
+        line-height: inherit;
+        font-weight: inherit;
+        letter-spacing: inherit;
+        color: #DD3888;
     }
 
     .vip-slider-note {
@@ -1455,6 +1491,15 @@
         }
     }
 
+    /* Tablet/small desktop: the fixed header is 100px tall here (96 on phones),
+       but the page only had 32px top padding, so the badges and the name sat
+       under the header. Same 12px clearance as the phone layout. */
+    @media (min-width: 840px) and (max-width: 1279px) {
+        .vip-profile-page {
+            padding-top: 112px;
+        }
+    }
+
     @media (min-width: 840px) {
         .vip-gallery-desktop {
             position: relative;
@@ -1718,23 +1763,30 @@
         }
     }
 
-    /* Mobile layout for 425px and lower */
-    @media (max-width: 425px) {
+    /* Phone layout (Figma "phone 360 px-12/-14/-24/-25/-26").
+       Used to stop at 425px, so a 430px phone (iPhone Pro Max) fell into the
+       tablet layout: the VIP / FOTO OVĚŘENO pills slid under the fixed menu,
+       the gallery ended up below the info table and the "Uložit" box sat on
+       the photo. It now covers every width below the desktop gallery (840px).
+       Values are the 360px frame's; widths are fluid (frame content = 310px =
+       viewport minus 2 × 25px). */
+    @media (max-width: 839px) {
         .vip-profile-page {
-            max-width: 425px;
-            padding: 64px 0 48px 0 !important;
+            max-width: none;
+            padding: 104px 0 48px 0 !important;
             margin: 0 auto;
             overflow: visible;
+            overflow-x: clip;
         }
 
         .vip-profile-hero {
             display: grid !important;
-            grid-template-columns: 1fr auto;
+            grid-template-columns: minmax(0, 1fr) auto;
             column-gap: 6px;
-            row-gap: 8px;
+            row-gap: 0;
             align-items: start;
-            margin-bottom: 12px !important;
-            padding: 0 25px 0 25px;
+            margin-bottom: 0 !important;
+            padding: 0 25px;
             width: 100%;
             box-sizing: border-box;
         }
@@ -1746,67 +1798,69 @@
             display: contents !important;
         }
 
-        .vip-profile-gallery-mobile {
-            position: relative !important;
-        }
-
         .vip-profile-availability-card,
-        .vip-gallery-desktop {
+        .vip-gallery-desktop,
+        .vip-profile-desktop-actions,
+        .vip-gallery-next-hint {
             display: none !important;
         }
 
+        /* Row 1: pills left, heart right (heart box 38px, pills 30px). */
         .vip-profile-status-bar {
             grid-column: 1;
             grid-row: 1;
-            gap: 6px;
-            margin: 0;
-            align-self: center;
-            justify-content: flex-start;
-            flex-wrap: nowrap;
             display: flex;
             align-items: center;
-            min-height: 30px;
+            justify-content: flex-start;
+            flex-wrap: nowrap;
+            gap: 9px;
+            margin: 0;
+            min-height: 38px;
+            min-width: 0;
+            padding-left: 1px;
         }
 
         .vip-profile-status-pill {
-            height: 30px;
-            border-radius: 8px;
-            font-size: 10px;
-            font-weight: 700;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            white-space: nowrap;
-            padding: 0 !important;
+            gap: 5px;
+            width: auto;
+            min-width: 0;
+            height: 30px;
+            padding: 0 10px !important;
+            border-radius: 8px;
             font-family: 'Poppins', sans-serif;
+            font-size: 10px;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: 0;
+            white-space: nowrap;
             flex-shrink: 0;
         }
 
+        .vip-profile-status-pill img {
+            width: 18px;
+            height: 18px;
+            flex: 0 0 18px;
+            margin: 0;
+        }
+
         .vip-profile-status-pill--primary {
-            width: 100px;
-            min-width: 100px;
+            width: 101px;
             background: #FFB700;
             color: #FFFFFF;
         }
 
-        .vip-profile-status-pill--primary img {
-            width: 18px;
-            height: 18px;
-            flex: 0 0 18px;
-        }
-
         .vip-profile-status-pill--verification {
-            width: 131px;
-            min-width: 131px;
+            width: 124px;
             background: #E8E8E8;
             color: #A4A4A4;
         }
 
-        .vip-profile-status-pill--verification img {
-            width: 18px;
-            height: 18px;
-            flex: 0 0 18px;
+        .vip-profile-status-pill--verification.is-verified {
+            background: #CCF1CF;
+            color: #00B80F;
         }
 
         .vip-profile-favorite {
@@ -1818,6 +1872,7 @@
             justify-self: end;
             align-self: center;
             z-index: 2;
+            margin: -2px 2px 0 0;
         }
 
         .vip-profile-favorite button,
@@ -1825,17 +1880,16 @@
             width: 38px !important;
             min-width: 38px !important;
             height: 38px !important;
+            padding: 0 !important;
+            border: 0 !important;
             border-radius: 0 !important;
+            background: transparent !important;
             box-shadow: none !important;
             gap: 0 !important;
-            padding: 0 !important;
-            background: transparent !important;
-            border: none;
-            display: flex;
+            display: flex !important;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            flex-shrink: 0;
         }
 
         .vip-profile-favorite button span,
@@ -1843,274 +1897,332 @@
             display: none !important;
         }
 
-        .vip-profile-static-favorite img,
-        .vip-profile-favorite button img {
-            width: 38px !important;
-            height: 38px !important;
+        .vip-profile-favorite button svg,
+        .vip-profile-static-favorite img {
+            width: 36px !important;
+            height: 36px !important;
+        }
+
+        .vip-profile-favorite .inline-block > div {
+            display: none;
+        }
+
+        /* Row 2: (online dot) name. */
+        .vip-profile-name-row {
+            grid-column: 1 / -1;
+            grid-row: 2;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 14px;
+            margin-top: 19px;
+            min-width: 0;
         }
 
         .vip-profile-name {
-            grid-column: 1 / -1;
-            grid-row: 2;
-            margin: 8px 0 0 0;
+            margin: 0;
+            min-width: 0;
             text-align: left;
+            font-family: 'Poppins', sans-serif;
             font-size: 38px;
-            line-height: 1.05;
+            line-height: 46px;
             font-weight: 800;
+            letter-spacing: -0.02em;
             color: #5C2D62;
+            overflow-wrap: anywhere;
         }
 
+        .vip-profile-online-dot {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            flex: 0 0 20px;
+            margin-left: 1px;
+            border-radius: 50%;
+            background: #00B80F;
+        }
+
+        .vip-profile-online-badge {
+            display: none;
+        }
+
+        /* Row 3: three underlined links, the report one on the right. */
         .vip-profile-links {
             grid-column: 1 / -1;
             grid-row: 3;
+            display: flex;
+            flex-wrap: wrap;
             justify-content: flex-start;
-            margin: 8px 0 0;
+            align-items: baseline;
+            gap: 4px 20px;
+            margin: 7px 0 0;
         }
 
-        /* Left at 310px on purpose. The phone frame shows the photo at x=25
-           and 310px wide, with a further slide starting at 335 and running off
-           the right edge — but widening this container to 335px widens the
-           grid column it shares with the rating bar and the action links, and
-           those then overflow to 385px. Reproducing the bleed needs the
-           carousel taken out of the grid, which is a structural change, not a
-           width. Recorded in docs/audit/2026-08-16-mobil-detail-profilu.md. */
+        .vip-profile-link {
+            color: #71717A;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 17px;
+            text-decoration: underline;
+            text-decoration-thickness: 1px;
+            text-underline-offset: 1px;
+        }
+
+        .vip-profile-link--report {
+            margin-left: auto;
+        }
+
+        /* Row 4: one photo at full content width; the next one peeks in 3px
+           to its right and runs off the screen. Arrows 45 × 45, 13px outside
+           the photo. */
         .vip-profile-gallery-mobile {
             grid-column: 1 / -1;
             grid-row: 4;
-            width: 310px;
-            margin: 12px auto 0;
-            display: flex;
-            justify-content: center;
+            position: relative !important;
+            display: block;
+            width: 100%;
+            margin: 18px 0 0;
         }
 
         .vip-profile-gallery-swiper {
-            width: 310px !important;
+            width: 100% !important;
             margin: 0 !important;
-            display: flex;
-            justify-content: center;
             overflow: visible !important;
         }
 
-        .vip-profile-gallery-swiper .swiper-wrapper {
-            display: flex !important;
-            gap: 3px !important;
-            align-items: stretch;
-        }
-
         .vip-profile-gallery-swiper .swiper-slide {
-            width: 310px !important;
-            flex: 0 0 310px !important;
+            width: 100% !important;
             opacity: 1 !important;
             transform: none !important;
-            display: flex;
-            justify-content: center;
-            margin: 0 !important;
-            padding: 0 !important;
         }
 
         .vip-gallery-slide {
-            width: 310px !important;
-            height: 443px !important;
+            display: block;
+            width: 100% !important;
+            height: auto !important;
+            aspect-ratio: 310 / 444;
             border-radius: 12px;
-            object-fit: cover;
         }
 
         .vip-gallery-nav {
-            width: 45px;
-            height: 45px;
-            border-radius: 8px;
+            position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: #DD3888;
-            border: none;
-            color: white;
-            font-size: 18px;
+            z-index: 5;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 5;
+            width: 45px;
+            height: 45px;
+            border: 0;
+            border-radius: 8px;
+            background: #DD3888;
+            box-shadow: none;
         }
 
         .vip-gallery-nav--prev {
-            left: -12px;
+            left: -13px;
         }
 
         .vip-gallery-nav--next {
-            right: -12px;
+            right: -13px;
         }
 
-        .vip-profile-rating-summary,
-        .vip-profile-meta-location,
-        .vip-profile-meta-table,
-        .vip-profile-flags,
-        .vip-profile-message,
-        .vip-profile-contacts,
-        .vip-about-card,
-        .vip-video-card-wrap,
-        .vip-pricing-card {
-            grid-column: 1 / -1;
-            width: 100%;
-            max-width: 425px;
-            margin-left: auto;
-            margin-right: auto;
+        .vip-gallery-nav.swiper-button-disabled {
+            opacity: 1;
         }
 
+        /* Row 5: rating bar, 40px; the label half is a lighter pill. */
         .vip-profile-rating-summary {
+            grid-column: 1 / -1;
             grid-row: 5;
-            margin-top: 12px;
-            margin-bottom: 0;
-            height: 40px;
-            font-size: 12px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1px;
+            grid-template-columns: 51% 1fr;
+            gap: 0;
+            height: 40px;
+            margin: 19px 0 0;
             border-radius: 8px;
             overflow: hidden;
+            background: #E8E8E8;
         }
 
-        .vip-profile-meta-location {
-            grid-row: 6;
-            margin-top: 12px;
-            margin-bottom: 0;
-            justify-content: center;
-            gap: 6px;
-            padding: 0;
-            background: transparent;
-            border-radius: 0;
+        .vip-profile-rating-summary strong {
+            min-height: 40px;
+            border-radius: 8px;
+            background: #F2F2F2;
+            color: #505050;
             font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 14px;
             font-weight: 600;
-            color: #505050;
         }
 
+        .vip-profile-rating-icons {
+            min-height: 40px;
+            background: transparent;
+            color: #505050;
+            font-size: 14px;
+        }
+
+        .vip-profile-rating-icons svg {
+            width: 19px !important;
+            height: 19px !important;
+            color: #DD3888 !important;
+        }
+
+        /* Row 6: pin + kraj, centred. */
+        .vip-profile-meta-location {
+            grid-column: 1 / -1;
+            grid-row: 6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            margin: 14px 0 0;
+            padding: 0;
+            color: #505050;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 18px;
+        }
+
+        .vip-profile-meta-location svg {
+            width: 12px;
+            height: 14px;
+            flex: 0 0 12px;
+        }
+
+        /* Row 7: the table — 36px rows between full-width #F0F0F0 rules,
+           text inset 21px. */
         .vip-profile-meta-table {
+            grid-column: 1 / -1;
             grid-row: 7;
-            gap: 0;
-            margin-top: 12px;
-            margin-bottom: 0;
-            padding: 0 12px;
-            background: white;
-            border-top: 1px solid #E6E6E6;
+            display: block;
+            margin: 13px 0 0;
+            padding: 0;
+            border-top: 1px solid #F0F0F0;
+            background: transparent;
         }
 
         .vip-profile-meta-row {
-            padding: 12px 0;
-            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             gap: 12px;
+            min-height: 36px;
+            /* Figma sets the text 2px above the row's middle. */
+            padding: 0 21px 4px !important;
+            border-bottom: 1px solid #F0F0F0;
+            box-sizing: border-box;
+        }
+
+        .vip-profile-meta-row:last-child {
+            border-bottom: 0;
         }
 
         .vip-profile-meta-row::after {
-            width: 100%;
-            height: 1px;
-            background: #E6E6E6;
+            display: none !important;
+        }
+
+        .vip-profile-meta-label,
+        .vip-profile-meta-value {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 18px;
         }
 
         .vip-profile-meta-label {
             color: #DD3888;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
         }
 
         .vip-profile-meta-value {
-            text-align: right;
             color: #505050;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
+            text-align: right;
         }
 
+        /* Row 8: InCall / OutCall. */
         .vip-profile-flags {
+            grid-column: 1 / -1;
             grid-row: 8;
-            margin-top: 12px;
-            margin-bottom: 0;
-            gap: 8px;
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 27px 0 0;
         }
 
         .vip-profile-flag {
-            flex: 1 1 calc(50% - 4px);
-            min-width: calc(50% - 4px);
-            height: 36px;
-            padding: 0 12px;
-            font-size: 12px;
-            gap: 6px;
+            width: auto;
+            min-width: 0;
+            height: 40px;
+            gap: 8px;
+            padding: 2px 8px 0;
+            border: 0 !important;
             border-radius: 8px;
-            border: 1.5px solid #F2F2F2;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
         }
 
         .vip-profile-flag--incall {
             background: #E9FFEB;
             color: #DD3888;
-            border: none !important;
-            border-color: transparent !important;
         }
 
         .vip-profile-flag--outcall {
             background: transparent;
             color: #A6A6A6;
-            border: none !important;
-            border-color: transparent !important;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
         }
 
         .vip-profile-flag-status,
         .vip-profile-flag-status img {
-            width: 16px;
-            height: 16px;
+            width: 19px;
+            height: 19px;
+            flex: 0 0 19px;
         }
 
+        /* Row 9: message button, full width, 60px. */
         .vip-profile-message {
+            grid-column: 1 / -1;
             grid-row: 9;
-            width: 310px;
-            max-width: 100%;
-            margin-top: 12px;
-            height: 60px;
-            font-size: 16px;
-            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            width: 100%;
+            max-width: none;
+            height: 60px;
+            margin: 20px 0 0;
+            border-radius: 8px;
             background: #DD3888;
-            color: white;
+            color: #FFFFFF;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
             text-decoration: none;
         }
 
+        /* Row 10: WhatsApp / Telegram circles and the number. */
         .vip-profile-contacts {
+            grid-column: 1 / -1;
             grid-row: 10;
-            margin-top: 12px;
-            gap: 5px;
-            justify-content: center;
             display: flex;
             align-items: center;
+            justify-content: center;
             flex-wrap: wrap;
-        }
-
-        .vip-video-play__inner {
-            width: 60px !important;
-            height: 60px !important;
-        }
-
-        #vip-profile-video-play-icon {
-            width: 22px !important;
-            height: 22px !important;
+            gap: 5px;
+            margin: 20px 0 0;
         }
 
         .vip-profile-contact-circle {
-            width: 40px;
-            height: 40px;
-            border-radius: 999px;
-            background: white;
-            border: none;
             display: flex;
             align-items: center;
             justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
             text-decoration: none;
-            box-shadow: none;
         }
 
         .vip-profile-contact-circle--whatsapp {
@@ -2127,14 +2239,34 @@
         }
 
         .vip-profile-phone {
+            display: flex;
+            align-items: center;
+            margin-left: 9px;
+            color: #505050;
             font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 16px;
             font-weight: 600;
-            color: #505050;
             text-decoration: none;
-            gap: 4px;
-            display: flex;
-            align-items: center;
+        }
+
+        .vip-about-card,
+        .vip-video-card-wrap,
+        .vip-pricing-card {
+            grid-column: 1 / -1;
+            width: 100%;
+            max-width: none;
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .vip-video-play__inner {
+            width: 60px !important;
+            height: 60px !important;
+        }
+
+        #vip-profile-video-play-icon {
+            width: 22px !important;
+            height: 22px !important;
         }
 
         .vip-video-card-wrap {
@@ -2428,15 +2560,22 @@
             bottom: auto;
             display: flex;
             justify-content: center;
-            gap: 6px;
+            align-items: center;
+            gap: 4px;
             margin-top: 10px;
         }
 
+        /* phone 360 px-12: 10 px #E8E8E8 dots, active 8 px. */
         .vip-rec-slider .swiper-pagination-bullet {
+            width: 10px;
+            height: 10px;
+            background: #E8E8E8 !important;
+            opacity: 1 !important;
+        }
+
+        .vip-rec-slider .swiper-pagination-bullet-active {
             width: 8px;
             height: 8px;
-            background: #E0E0E0 !important;
-            opacity: 1 !important;
         }
 
         .vip-rec-slider .swiper-pagination-bullet-active {
@@ -2446,8 +2585,8 @@
 
         .vip-video-section {
             margin: 12px auto 0 !important;
-            width: 313px !important;
-            max-width: 313px !important;
+            width: calc(100% - 47px) !important;
+            max-width: none !important;
             align-items: stretch;
             gap: 12px;
             display: flex;
@@ -2476,8 +2615,8 @@
         }
 
         .vip-video-container {
-            width: 310px !important;
-            max-width: 310px !important;
+            width: calc(100% - 3px) !important;
+            max-width: none !important;
             height: 165px !important;
             margin: 0 !important;
             border-radius: 12px;
@@ -2501,13 +2640,13 @@
         .vip-video-badges {
             display: grid;
             gap: 10px;
-            width: 313px !important;
-            max-width: 313px !important;
+            width: 100% !important;
+            max-width: none !important;
             margin: 0;
         }
 
         .vip-video-badge {
-            width: 313px !important;
+            width: 100% !important;
             min-height: 75px;
             height: 75px;
             padding: 10px 12px;
@@ -2534,8 +2673,8 @@
         }
 
         .vip-video-register-btn {
-            width: 313px !important;
-            max-width: 313px !important;
+            width: 100% !important;
+            max-width: none !important;
             height: 60px !important;
             margin: 0 !important;
             font-size: 16px !important;
@@ -2543,7 +2682,731 @@
             background: #DD3888;
             color: white;
         }
+
+        /* Lower sections (phone frame): 24px Poppins Bold headings,
+           26px body lines, 25px side margins. */
+        .vip-about-card .vip-section-title,
+        .vip-pricing-card h3 {
+            margin: 0 0 20px;
+            font-size: 24px;
+            line-height: 30px;
+            font-weight: 700;
+            letter-spacing: 0;
+        }
+
+        .vip-about-copy {
+            font-size: 14px;
+            line-height: 26px;
+        }
+
+        .vip-slider-section {
+            width: auto !important;
+            max-width: none !important;
+            margin: 0 25px 24px !important;
+        }
+
+        .vip-slider-title {
+            font-size: 28px;
+            line-height: 32px;
+        }
+
+        .vip-slider-title .vip-slider-kicker {
+            display: inline;
+        }
+
+        .vip-about-card {
+            margin-top: 52px;
+        }
+
+        .vip-pricing-card {
+            gap: 0 !important;
+        }
+
+        .vip-services-block {
+            margin-top: 48px !important;
+        }
+
+        .vip-prices-block {
+            margin-top: 60px !important;
+        }
+
+        .vip-services-grid {
+            gap: 10px !important;
+        }
+
+        .vip-service-pill {
+            height: 34px;
+        }
+
+        .vip-slider-section {
+            margin-top: 47px !important;
+        }
+
+        .vip-slider-head {
+            gap: 28px;
+        }
+
+        .vip-slider-note {
+            font-size: 12px;
+            white-space: nowrap;
+        }
     }
+
+    /* Tablets (no Figma frame): keep the phone column instead of a
+       1000px-tall photo. */
+    @media (min-width: 600px) and (max-width: 839px) {
+        .vip-profile-hero {
+            max-width: 520px;
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+    }
+
+    /* Desktop 1:1 with the Figma "VIP" / "ne VIP" frames (1920px).
+       Panel content x 392–623, gallery from x 683 (tiles 337 / 537 / 337,
+       10px gutters) and y 159, action links above it (y 122–137), right
+       aligned to x 1526. */
+    @media (min-width: 1280px) {
+        .vip-profile-hero {
+            gap: 44px;
+        }
+
+        .vip-profile-panel {
+            /* Natural top 146 (pills at 158); still sticks at 106 on scroll. */
+            margin-top: 114px;
+            padding: 12px 16px 12px 14px;
+        }
+
+        .vip-profile-status-bar {
+            gap: 5px;
+            margin: 0 0 28px;
+        }
+
+        .vip-profile-status-pill {
+            gap: 7px;
+            height: 30px;
+            padding: 0;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0;
+        }
+
+        .vip-profile-status-pill img {
+            width: 16px;
+            height: 16px;
+            flex: 0 0 16px;
+        }
+
+        .vip-profile-status-pill--primary {
+            width: 93px;
+            min-width: 93px;
+            background: #FFB700;
+        }
+
+        .vip-profile-status-pill--verification {
+            width: 131px;
+            min-width: 131px;
+        }
+
+        .vip-profile-status-pill--verification.is-verified {
+            background: #CCF1CF;
+            color: #00B80F;
+        }
+
+        .vip-profile-name {
+            margin: 0;
+            font-size: 36px;
+            line-height: 44px;
+            letter-spacing: -0.02em;
+        }
+
+        .vip-profile-online-badge {
+            margin: 10px auto -5px;
+        }
+
+        .vip-profile-rating-summary {
+            height: 40px;
+            margin: 24px 0 0;
+            gap: 0;
+            border-radius: 8px;
+            background: #E8E8E8;
+        }
+
+        .vip-profile-rating-summary strong {
+            min-height: 40px;
+            border-radius: 8px;
+            background: #F2F2F2;
+            font-size: 14px;
+        }
+
+        .vip-profile-rating-icons {
+            min-height: 40px;
+            background: transparent;
+        }
+
+        .vip-profile-rating-icons svg {
+            width: 19px !important;
+            height: 19px !important;
+            color: #DD3888 !important;
+        }
+
+        .vip-profile-meta-location {
+            gap: 7px;
+            margin: 14px 0 0;
+            font-size: 13px;
+            line-height: 17px;
+        }
+
+        .vip-profile-meta-location svg {
+            width: 14px;
+            height: 16px;
+        }
+
+        /* VIP-1, VIP-3 and "ne VIP" draw a rule above the first row (the
+           plain "VIP" frame is the odd one out). */
+        .vip-profile-meta-table {
+            margin: 14px 0 0;
+            border-top: 1px solid #E6E6E6;
+        }
+
+        .vip-profile-meta-row {
+            min-height: 36px;
+            padding: 0 21px 0 20px;
+        }
+
+        .vip-profile-meta-row::after {
+            width: 100%;
+            background-color: #E6E6E6;
+        }
+
+        .vip-profile-meta-label,
+        .vip-profile-meta-value {
+            font-size: 13px;
+        }
+
+        .vip-profile-flags {
+            flex-wrap: nowrap;
+            gap: 7px;
+            margin: 20px 0 0;
+        }
+
+        .vip-profile-flag {
+            width: 112px;
+            min-width: 112px;
+            /* VIP.jpg: green InCall box 577–617 = 41 px. */
+            height: 41px;
+            gap: 8px;
+            padding: 0;
+            font-size: 13px;
+        }
+
+        .vip-profile-flag-status,
+        .vip-profile-flag-status img {
+            width: 19px;
+            height: 19px;
+            flex: 0 0 19px;
+        }
+
+        .vip-profile-message {
+            width: 100%;
+            /* Flags end 618, button 638–687. */
+            margin: 20px 0 0;
+        }
+
+        /* VIP.jpg: button ends at y 688, circles 708–747 (20 px), WhatsApp
+           392–432, Telegram 437–477, number ink 492–622 — one row. With the
+           old 10 px + 21 px the row was 232.5 px in a 231 px column and the
+           number wrapped under the icons. */
+        .vip-profile-contacts {
+            justify-content: flex-start;
+            flex-wrap: nowrap;
+            gap: 5px;
+            margin: 20px 0 0;
+        }
+
+        .vip-profile-contact-circle {
+            flex: 0 0 40px;
+        }
+
+        .vip-profile-phone {
+            margin-left: 8px;
+            white-space: nowrap;
+        }
+
+        /* Jazyky wraps to two lines in every frame: the second line sits 20 px
+           under the first (ink 526 / 546) and the flags start at 577, so the
+           row is top-aligned with a 20 px line and no bottom padding. */
+        .vip-profile-meta-row:last-child {
+            align-items: flex-start;
+            padding-top: 8px;
+            padding-bottom: 0;
+        }
+
+        .vip-profile-meta-row:last-child .vip-profile-meta-label,
+        .vip-profile-meta-row:last-child .vip-profile-meta-value {
+            line-height: 20px;
+        }
+
+        /* "Česky, Rusky" (ink 521–602) fits, ", Anglicky" goes below. */
+        .vip-profile-meta-row:last-child .vip-profile-meta-value {
+            max-width: 110px;
+        }
+
+        .vip-profile-meta-table + .vip-profile-flags {
+            margin-top: 15px;
+        }
+
+        .vip-profile-main {
+            /* Action row 101–159, gallery from 159. */
+            padding-top: 69px;
+        }
+
+        .vip-profile-desktop-actions {
+            display: flex !important;
+            justify-content: flex-end;
+            margin: 0;
+            padding-right: 395px;
+        }
+
+        .vip-profile-desktop-actions-inner {
+            gap: 23px;
+        }
+
+        .vip-profile-desktop-action {
+            width: auto;
+            height: 58px;
+            gap: 6px;
+            text-underline-offset: 2px;
+        }
+
+        .vip-gallery-desktop-nav.vip-gallery-desktop-prev {
+            left: -22px !important;
+        }
+
+        .vip-gallery-desktop-nav {
+            top: 246px;
+            transform: none;
+        }
+
+        .vip-gallery-desktop-nav.vip-gallery-desktop-next {
+            /* x 1835 at 1920 (85 px from the window edge). Below 1920 the
+               1239 px gallery runs past the window and "right: 42px" put the
+               arrow off-screen, so it follows the window edge instead:
+               main column starts at 505 px (page < 1564) or centred. */
+            left: min(calc(100vw - 590px), calc(50vw + 192px)) !important;
+            right: auto !important;
+        }
+
+        .vip-gallery-desktop .vip-gallery-next-hint {
+            background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, #FFFFFF 80%);
+        }
+
+        /* The right tile fades into white (VIP.jpg: nothing after x ≈ 1845).
+           Its rounded right corners were still drawn as an anti-aliased
+           photo edge at x 1900–1914 under the white hint. */
+        .vip-gallery-desktop-right,
+        .vip-gallery-desktop-right img {
+            border-top-right-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
+        }
+
+        /* VIP.jpg / ne VIP.jpg: tile corners are 15 px (curve from y 681 to
+           the bottom edge at 696), not 26. */
+        .vip-gallery-desktop-card {
+            border-radius: 15px;
+        }
+
+        /* ne VIP.jpg: four 337 px tiles at x 683 / 1030 / 1377 / 1725; only
+           the fourth fades (≈ 57 % white at its left edge, white by x 1847)
+           and it is cut at the content edge instead of widening the page. */
+        .vip-gallery-desktop--four {
+            grid-template-columns: 337px 337px 337px minmax(0, 1fr);
+        }
+
+        .vip-gallery-desktop--four .vip-gallery-desktop-right,
+        .vip-gallery-desktop--four .vip-gallery-desktop-right img {
+            border-top-right-radius: 15px !important;
+            border-bottom-right-radius: 15px !important;
+        }
+
+        .vip-gallery-desktop-extra {
+            grid-column: 4;
+            grid-row: 1 / span 2;
+            position: relative;
+            height: 537px;
+            overflow: hidden;
+            border-top-right-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
+        }
+
+        .vip-gallery-desktop-extra img {
+            width: 337px !important;
+            max-width: none;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .vip-gallery-desktop--four .vip-gallery-desktop-extra .vip-gallery-next-hint {
+            background: linear-gradient(to right, rgba(255, 255, 255, 0.57) 0, #FFFFFF 122px);
+        }
+    }
+
+    .vip-gallery-desktop-extra {
+        display: none;
+    }
+
+    @media (min-width: 1280px) {
+        .vip-gallery-desktop--four .vip-gallery-desktop-extra {
+            display: block;
+        }
+    }
+</style>
+
+{{-- Lower part of the detail at desktop width, measured on VIP.jpg / ne VIP.jpg
+     (1920): everything below the gallery sits in the 844 px content column
+     that starts at x 683, like "Více o mně". Kept last so it wins over the
+     older rules above without rewriting them. --}}
+<style>
+@media (min-width: 1280px) {
+    .vip-about-card .vip-section-title { font-size: 24px; line-height: 36px; font-weight: 700; letter-spacing: 0; }
+    .vip-slider-section { margin-left: 305px; }
+    .vip-slider-head { width: 844px; margin-bottom: 31px; }
+    .vip-slider-note { font-size: 13px; font-weight: 500; gap: 11px; margin-bottom: 9px; }
+    .vip-slider-note img { width: 20px; height: 20px; }
+    .vip-rec-slider .swiper-slide { width: 214px !important; }
+    .vip-rec-slider [class*="swiper-button-prev-"] { left: -22px; }
+    /* x 1835 at 1920; follows the window edge below that (see the gallery arrow). */
+    .vip-rec-slider [class*="swiper-button-next-"] { right: auto; left: min(calc(100vw - 590px), calc(50vw + 192px)); }
+    .vip-rec-slider [class*="swiper-button-prev-"],
+    .vip-rec-slider [class*="swiper-button-next-"] { top: 137px; }
+    .vip-video-section { align-items: flex-start; margin-left: 305px; }
+    .vip-video-heading { margin-left: 0; }
+    .vip-video-container { width: 844px; height: 450px; }
+    .vip-video-badges { width: 844px; justify-content: space-between; }
+    .vip-video-register-btn { align-self: flex-start; margin-left: 192px; }
+    .vip-video-badges { gap: 20px; }
+    .vip-video-badge { width: 268px !important; min-height: 76px; height: 76px !important; }
+
+    /* Pass 1 overlay (VIP.jpg / ne VIP.jpg, 1920): "Více o mně" ink at
+       y 744, 48 px under the gallery (was 34). */
+    /* ne VIP.jpg (no pills): name ink 162 → rating box 229, 3 px more than
+       under the pills in VIP.jpg (220 → 284). */
+    .vip-profile-status-bar:not(:has(span)) ~ .vip-profile-rating-summary { margin-top: 27px; }
+    .vip-about-card { padding-top: 14px; }
+    /* Lines 26 px apart (ink 794 / 820 / 847 …), wrapping as late as x 1513. */
+    .vip-about-copy { line-height: 26px; max-width: 844px; }
+
+    /* VIP.jpg, profile with a video: video 685–939 × 1127–1587 (radius 12),
+       "Moje ceny" + table + "Služby" in one 526 px column from x 1000.
+       "Video" and "Moje ceny" share the heading line (ink y 1075). */
+    .vip-media-grid:not(.vip-media-grid--single) {
+        grid-template-columns: 256px 526px;
+        column-gap: 61px;
+        /* collapses with the about card's 34 px bottom margin */
+        margin-top: 102px;
+    }
+    .vip-video-card-wrap { width: 256px; }
+    .vip-video-card-title { padding-bottom: 25px; line-height: 30px; }
+    .vip-video-card { width: 255px; margin-left: 2px; border-radius: 12px; box-shadow: none; }
+    .vip-video-surface { width: 255px; border-radius: 12px; }
+    .vip-pricing-card { padding-top: 0; }
+    .vip-pricing-card h3 { line-height: 30px; margin-bottom: 25px; }
+    /* Header pills end 20 px above the first row (pills 1127–1166, first
+       separator 1222, row pitch 36). Time reads "0.5 h". */
+    .vip-pricing-table tbody tr:first-child td { padding-top: 27px; }
+    .vip-pricing-table th:nth-child(2) .vip-price-pill { margin-left: 9px; }
+    /* Služby: 36 px under the last separator, pills 53 px under its ink,
+       34 px tall pills with 10 px gaps. */
+    .vip-services-block { margin-top: 31px !important; }
+    .vip-services-block h3 { margin-bottom: 27px !important; }
+    .vip-services-grid { margin-top: 0; gap: 10px; }
+    .vip-service-pill { height: 34px; padding: 0 14px; display: inline-flex; align-items: center; }
+
+    /* ne VIP.jpg, no video: prices 683–1041 (pills 92 / 127 px), services in
+       a second 431 px column from x 1096, both headings at ink y 1008. */
+    .vip-media-grid--single { margin-top: 35px; }
+    .vip-media-grid--single .vip-pricing-card {
+        display: grid;
+        grid-template-columns: 358px 431px;
+        column-gap: 55px;
+        align-items: start;
+    }
+    .vip-media-grid--single .vip-services-block { margin-top: 0 !important; }
+    .vip-media-grid--single .vip-prices-block h3 { margin-bottom: 26px; }
+    .vip-media-grid--single .vip-pricing-table { width: 358px; }
+    .vip-media-grid--single .vip-pricing-table th:first-child { width: 92px; }
+    .vip-media-grid--single .vip-pricing-table th:nth-child(2) .vip-price-pill { width: 127px; margin-left: 7px; }
+    .vip-media-grid--single .vip-pricing-table th:nth-child(3) .vip-price-pill { width: 127px; }
+    .vip-media-grid--single .vip-services-grid { width: 431px; }
+
+    /* Gallery/grid bottom → slider title ink is 104 px in both frames
+       (VIP: video ends 1587, title 1692; ne VIP: table ends 1265, title 1368). */
+    .vip-media-grid { margin-bottom: 35px; }
+    /* Card row → next card row 736 px (was 728), → "Nový svět" ink 620. */
+    .vip-slider-section { margin-bottom: 79px; }
+    /* Its top margin collapses into the slider's 79 px, so the extra 5 px
+       to the frame's 620 is padding. */
+    .vip-video-section { padding-top: 5px; }
+    /* Button ends 3651, footer logo ink 3872 (was 6 px lower). */
+    .vip-profile-page { padding-bottom: 90px; }
+    /* The last visible card fades into white like the gallery's right tile
+       (VIP.jpg: white overlay 0 at x ≈ 1566 → 1 at x ≈ 1847). */
+    .vip-rec-slider { position: relative; }
+    .vip-rec-slider::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 883px;
+        width: 281px;
+        z-index: 3;
+        pointer-events: none;
+        background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, #FFFFFF 100%);
+    }
+    /* ne VIP.jpg: heading → video 122 px, video → badges 45, badges 80 px
+       tall, → button 53. Badge copy 14/20 px, icon 36 px at x + 23, text
+       at x + 81, broken exactly as the frame does. */
+    .vip-video-container { margin-top: 15px; }
+    .vip-video-badges { margin-top: 21px; }
+    .vip-video-badge { height: 80px !important; min-height: 80px; padding: 0 16px 0 23px; gap: 22px; box-shadow: 0 8px 18px rgba(92, 45, 98, 0.12); }
+    .vip-video-badge img { width: 36px !important; height: 36px !important; flex: 0 0 36px; }
+    .vip-video-badge span { font-size: 14px !important; line-height: 20px !important; flex: 0 1 auto; }
+    .vip-video-badge:nth-child(1) span { max-width: 112px; }
+    .vip-video-badge:nth-child(2) span { max-width: 125px; }
+    .vip-video-badge:nth-child(3) span { max-width: 140px; }
+    .vip-video-register-btn { margin-top: 28px; }
+}
+/* Pass 2 element measurement (VIP.jpg, VIP-1, ne VIP.jpg at 1920). */
+@media (min-width: 1280px) {
+    /* Rating box 1 px lower (VIP 285, VIP-1 312), location line unchanged;
+       ne VIP (no pills): name ink 165, box 229. */
+    .vip-profile-rating-summary { margin-top: 25px; }
+    .vip-profile-meta-location { margin-top: 13px; gap: 6px; }
+    .vip-profile-status-bar:not(:has(span)) ~ .vip-profile-name-row { margin-top: 1px; }
+    .vip-profile-status-bar:not(:has(span)) ~ .vip-profile-rating-summary { margin-top: 26px; }
+    /* Grey half ends at x 510 (118 px), "Rating:" ink 428–473 / 301–313,
+       lock stays 558–572. */
+    .vip-profile-rating-summary { grid-template-columns: 118px minmax(0, 1fr); }
+    .vip-profile-rating-summary strong { padding-top: 2px; }
+    .vip-profile-rating-icons { padding-right: 15px; }
+    /* Pin 1 px above the text line (pin 338–353, text 341–353). */
+    .vip-profile-meta-location svg { transform: translateY(-1px); }
+    /* Values end at ink x 602; the wrapped languages row starts 12 px under
+       its rule like the other rows. */
+    .vip-profile-meta-row { padding-right: 19px; }
+    .vip-profile-meta-row:last-child { padding-top: 6px; padding-bottom: 2px; }
+
+    /* "Video" / "Moje ceny" ink 1074, video card 1127–1587. */
+    .vip-media-grid:not(.vip-media-grid--single) { margin-top: 101px; }
+    .vip-video-card-title { padding-bottom: 26px; }
+    .vip-media-grid:not(.vip-media-grid--single) .vip-pricing-card h3 { margin-bottom: 26px; }
+    .vip-video-card, .vip-video-surface { height: 461px; }
+    /* Price table: Čas 134 px, pills 188 px from x 1142 and 1337; times
+       right-aligned on the widest ("0.5 h" centred), prices right-aligned
+       (ink to 1272), dash centred 5 px left of the OutCall pill; #E6E6E6
+       rules. */
+    .vip-pricing-table { table-layout: fixed; }
+    .vip-pricing-table th:first-child { width: 134px; }
+    .vip-pricing-table th:nth-child(2), .vip-pricing-table th:nth-child(3) { width: 196px; }
+    .vip-pricing-table th:nth-child(2) .vip-price-pill,
+    .vip-pricing-table th:nth-child(3) .vip-price-pill { margin-left: 8px; width: 188px; }
+    .vip-pricing-table td,
+    .vip-pricing-table td:nth-child(2),
+    .vip-pricing-table td:nth-child(3) { border-bottom-color: #E6E6E6; }
+    .vip-pricing-table td:first-child { text-align: right; padding-right: 48px; }
+    .vip-pricing-table td:nth-child(2) { text-align: right; padding-right: 56px; }
+    .vip-pricing-table td:nth-child(3) { text-align: center; padding-left: 0; padding-right: 2px; }
+    .vip-media-grid--single .vip-pricing-table th:first-child { width: 92px; }
+    .vip-media-grid--single .vip-pricing-table th:nth-child(2) { width: 134px; }
+    .vip-media-grid--single .vip-pricing-table th:nth-child(3) { width: 132px; }
+    .vip-media-grid--single .vip-pricing-table th:nth-child(2) .vip-price-pill { width: 127px; margin-left: 7px; }
+    .vip-media-grid--single .vip-pricing-table th:nth-child(3) .vip-price-pill { width: 127px; }
+    .vip-media-grid--single .vip-pricing-table td:first-child { padding-right: 27px; }
+    .vip-media-grid--single .vip-pricing-table td:nth-child(2) { padding-right: 32px; }
+    .vip-media-grid--single .vip-pricing-table td:nth-child(3) { padding-right: 2px; }
+    /* Pill contents: icon → text ink 8 px (InCall, group 2 px left of the
+       pill centre) and 6–7 px (OutCall); "Čas" 1–2 px left of centre. */
+    .vip-pricing-table th:nth-child(2) .vip-price-pill { gap: 5px; padding: 0 4px 0 0; }
+    .vip-pricing-table th:nth-child(3) .vip-price-pill { gap: 6px; padding: 0; }
+    .vip-pricing-table th:first-child { padding-right: 3px; }
+    .vip-media-grid--single .vip-pricing-table th:first-child { padding-right: 2px; }
+    .vip-media-grid--single .vip-pricing-table th:nth-child(3) .vip-price-pill { margin-left: 2px; }
+    .vip-media-grid--single .vip-pricing-table tbody tr:first-child td { padding-bottom: 8px; }
+    /* Služby pills: text 17 px from either edge, block 1 px right (VIP). */
+    .vip-service-pill { padding: 0 15px; }
+    .vip-media-grid:not(.vip-media-grid--single) .vip-services-block { margin-left: 1px; }
+
+    /* Slider heads: title ink 1691, cards 1813 (122 under), arrows 110 px
+       under the card top. Note: diamond 23 × 20 at x 1224–1246 (bottom
+       1764), 10 px to the text, baseline 1759, thin underline 3 px under. */
+    .vip-media-grid:not(.vip-media-grid--single) { margin-bottom: 36px; }
+    .vip-slider-head { margin-bottom: 33px; }
+    /* Title 1691 → 2426 (735), cards 1813 → 2549 (736). */
+    .vip-slider-section { margin-bottom: 76px; }
+    .vip-slider-section + .vip-slider-section .vip-slider-head { margin-bottom: 34px; }
+    .vip-rec-slider [class*="swiper-button-prev-"],
+    .vip-rec-slider [class*="swiper-button-next-"] { top: 138px; }
+    .vip-slider-note { gap: 10px; align-items: flex-end; }
+    /* ne VIP.jpg (no video) spaces the same block 1–2 px tighter: table
+       rule 1265 → title 1367 → cards 1487 → title 2101 → cards 2223. */
+    .vip-media-grid--single { margin-bottom: 34px; }
+    .vip-profile-page:has(.vip-media-grid--single) .vip-slider-head { margin-bottom: 31px; }
+    .vip-profile-page:has(.vip-media-grid--single) .vip-slider-section { margin-bottom: 77px; }
+    .vip-profile-page:has(.vip-media-grid--single) .vip-slider-section + .vip-slider-section .vip-slider-head { margin-bottom: 33px; }
+    /* "Nový svět" ink 619 px under the card row (ne VIP), video 740 under
+       it (741 in VIP.jpg), button 628 under the video top; footer logo 275
+       under the button (274 in VIP.jpg). */
+    .vip-video-container { margin-top: 14px; }
+    .vip-profile-page:has(.vip-media-grid:not(.vip-media-grid--single)) .vip-video-container { margin-top: 16px; }
+    .vip-video-register-btn { margin-top: 29px; }
+    .vip-profile-page:has(.vip-media-grid:not(.vip-media-grid--single)) { padding-bottom: 89px; }
+    /* Badge icons: banana / thumb 36 px ink, ice cream 29 × 32, 1 px up. */
+    .vip-video-badge:nth-child(1) img, .vip-video-badge:nth-child(2) img { transform: translateY(-1px) scale(1.125); }
+    .vip-video-badge:nth-child(3) img { transform: translate(2.5px, -1px) scale(0.889); }
+    .vip-slider-note img { width: 22px !important; height: 21px !important; transform: scale(1.09, 1); }
+    .vip-slider-note a { text-underline-offset: 2px; text-decoration-color: rgba(221, 56, 136, 0.6) !important; }
+}
+/* Pass 2 width sweep, 840–1279 px (no frame): the page kept the 1920
+   layout's 200 px left padding and the sliders/video their 315 px desktop
+   indent, so the slider titles wrapped word by word, the premium note and
+   the 850 px video ran past the right edge. One even content column. */
+@media (min-width: 840px) and (max-width: 1279px) {
+    .vip-profile-page { padding-left: 32px; padding-right: 32px; }
+    .vip-slider-section, .vip-video-section { margin-left: 0 !important; margin-right: 0 !important; width: auto !important; max-width: none !important; }
+    .vip-slider-head { width: auto; flex-wrap: wrap; gap: 12px 24px; }
+    .vip-video-section { align-items: stretch; }
+    .vip-video-heading { margin-left: 0 !important; }
+    .vip-video-container, .vip-video-badges { width: 100% !important; max-width: 100% !important; }
+    .vip-video-register-btn { align-self: center; }
+}
+/* Lightbox: lightbox.jpg / lightbox-1.jpg (1920) and lightbox-2/-3 (360).
+   Above the fixed header (the frames blur it with the page). */
+.vip-lightbox { z-index: 1000; }
+/* Frames mark the current thumbnail by full opacity only, no outline. */
+.vip-lightbox-thumbnail { border: 0; box-shadow: 0 10px 20px rgba(92, 45, 98, 0.12); }
+.vip-lightbox-thumbnail.active { border-color: transparent; }
+@media (min-width: 768px) {
+    .vip-lightbox { align-items: flex-start; padding: 70px 0 0; }
+    .vip-lightbox-stage { width: auto; gap: 27px; }
+    .vip-lightbox-main { width: auto; padding: 0 75px; }
+    .vip-lightbox .swiper-slide img { width: var(--vip-lightbox-img-w, auto); height: var(--vip-lightbox-img-h, calc(100vh - 291px)); max-height: none; max-width: 100%; object-fit: cover; border-radius: 15px; box-shadow: 0 20px 40px rgba(92, 45, 98, 0.15); }
+    .vip-lightbox-prev, .vip-lightbox-next { top: calc(50% + 21px); display: flex; align-items: center; justify-content: center; box-shadow: none; }
+    .vip-lightbox-prev { left: 0; }
+    .vip-lightbox-next { right: 0; }
+    .vip-lightbox-close { top: 0; right: 6px; width: 34px; height: 34px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; box-shadow: none; }
+    .vip-lightbox-thumbnails { gap: 12px; }
+}
+@media (max-width: 767px) {
+    .vip-lightbox { align-items: flex-start; padding: 18px; }
+    .vip-lightbox-stage { gap: 22px; }
+    .vip-lightbox-main { padding: 0; }
+    .vip-lightbox .swiper-slide { height: 512px; }
+    .vip-lightbox .swiper-slide img { width: 100%; height: 100%; max-height: none; object-fit: contain; border-radius: 15px; }
+    .vip-lightbox-close { top: 22px; right: 23px; width: 34px; height: 34px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; box-shadow: none; }
+    .vip-lightbox-thumbnails { justify-content: flex-start; gap: 12px; overflow-x: auto; scrollbar-width: none; }
+    .vip-lightbox-thumbnail { flex: 0 0 80px; }
+    /* lightbox-2: the arrows sit under the thumbnails, at both edges. */
+    .vip-lightbox-prev, .vip-lightbox-next { display: flex !important; align-items: center; justify-content: center; top: 677px; transform: none; box-shadow: none; }
+    .vip-lightbox-prev { left: 0; }
+    .vip-lightbox-next { right: 2px; }
+}
+
+/* phone 360 px-12: the three badges run the full 313 px width; the grid had
+   an auto track centred by the desktop rule and shrank them to their text. */
+@media (max-width: 767px) {
+    .vip-video-badges { grid-template-columns: minmax(0, 1fr); justify-content: stretch; }
+    .vip-video-badge { justify-content: flex-start !important; padding: 0 20px 0 23px !important; gap: 17px !important; border: 0 !important; box-shadow: 0 10px 20px rgba(92, 45, 98, 0.08); }
+    .vip-video-badge span:not(.vip-badge-icon) { width: auto !important; height: auto !important; flex: 1 1 auto; }
+    .vip-video-badge .vip-badge-icon { display: block; width: 40px !important; height: 40px !important; flex: 0 0 40px; color: #DD3888; }
+    .vip-video-badge .vip-badge-icon svg { width: 100%; height: 100%; }
+    .vip-slider-note { font-size: 13px; font-weight: 500; gap: 11px; }
+    .vip-slider-note img { width: 20px; height: 20px; }
+
+    /* Pass 1 overlay, phone 360 px-12 (no video) and -14 (video).
+       Contact row: circles 61 / 106, number ends 291 (was 3 px right). */
+    .vip-profile-contacts { padding-right: 6px; }
+    /* -24 / -25 (online): the name row sits 4 px higher than offline (-12). */
+    .vip-profile-name-row:has(.vip-profile-online-dot) { margin-top: 15px; }
+    .vip-profile-name-row:has(.vip-profile-online-dot) ~ .vip-profile-links { margin-top: 11px; }
+    /* First lower heading ink 58 px under the contact row (1185 → 1243). */
+    .vip-about-card { margin-top: 56px; }
+    .vip-video-card-wrap { margin-top: 56px; }
+    .vip-profile-main:has(.vip-video-card-wrap) .vip-about-card { margin-top: 61px; }
+    /* -14: "Video" ink 1243–1263, card 25–334 × 1297–1857. */
+    .vip-video-card-title { margin-bottom: 26px; }
+    /* "Více o mně" ink → first line ink 49 px (was 53). */
+    .vip-about-card .vip-section-title { margin-bottom: 16px; }
+    .vip-video-card, .vip-video-surface { width: 100%; border-radius: 15px; }
+    /* Služby 60 px under the copy, pills 27 px under its ink. */
+    .vip-services-block { margin-top: 51px !important; }
+    .vip-services-block h3 { margin-bottom: 26px !important; }
+    .vip-prices-block { margin-top: 63px !important; }
+    .vip-prices-block h3 { margin-bottom: 26px !important; }
+    /* Last separator → slider title ink 63 px; title → note 28, note →
+       cards 28. */
+    .vip-slider-section { margin-top: 61px !important; }
+    .vip-slider-head { gap: 18px; }
+    /* Price rows 36 px apart, first one 20 px under the header pills, no
+       rule under the header, #E9E9E9 separators. */
+    .vip-pricing-table { border-spacing: 0; }
+    .vip-pricing-table th { padding: 0 0 20px; border-bottom: 0; vertical-align: top; }
+    .vip-pricing-table th:first-child { display: table-cell; height: auto; background: transparent; }
+    .vip-pricing-table th:nth-child(2) { padding-left: 5px; }
+    .vip-pricing-table tbody tr { height: 36px; }
+    .vip-pricing-table td,
+    .vip-pricing-table td:nth-child(2),
+    .vip-pricing-table td:nth-child(3) { padding: 0 8px; height: 36px; border-bottom: 1px solid #E9E9E9; }
+
+    /* Pass 2 element measurement (phone 360 px-12 / -14).
+       Lock 16 px, 5 px left of the half's centre (ink 246–261). */
+    .vip-profile-rating-icons svg { width: 18px !important; height: 18px !important; }
+    .vip-profile-rating-icons { padding-right: 23px; }
+    .vip-profile-rating-icons svg { transform: translateY(1px); }
+    /* Pin 14 × 16 (ink 111–124 × 766–781), 6 px to the text. */
+    .vip-profile-meta-location { gap: 6px; }
+    .vip-profile-meta-location svg { flex: 0 0 14px; width: 14px; height: 16px; transform: translateY(-1px); }
+    /* Flags: icons 18 px ink, OutCall group 3 px left of centre, 7 px
+       icon → text. */
+    .vip-profile-flag img { flex: 0 0 22px; width: 22px !important; height: 22px !important; }
+    .vip-profile-flag { gap: 6px; }
+    .vip-profile-flag:nth-child(2) { padding-right: 14px; }
+    /* Times end at ink x 82, prices at 202, dash 277–282; OutCall pill
+       content from x 240. */
+    .vip-pricing-table td:first-child { text-align: right; padding-right: 22px; }
+    .vip-pricing-table td:nth-child(2) { text-align: right; padding-right: 16px; }
+    .vip-pricing-table td:nth-child(3) { padding: 0; }
+    .vip-pricing-table th:nth-child(3) .vip-price-pill { margin-left: 4px; }
+    /* -14: video card 1297–1857 (561 px), "Více o mně" ink 1922. */
+    .vip-video-card, .vip-video-surface { height: 561px; }
+    .vip-profile-main:has(.vip-video-card-wrap) .vip-about-card { margin-top: 62px; }
+    /* Slider note: diamond 22 px, 89 px under the title ink top (was 91),
+       cards stay 139 px under it. */
+    .vip-slider-head { gap: 16px; margin-bottom: 22px; }
+    .vip-slider-note a { text-underline-offset: 2px; text-decoration-color: rgba(221, 56, 136, 0.6) !important; }
+    .vip-slider-note img { width: 22px !important; height: 22px !important; }
+    /* Dots: 10 px slots 3 px apart (x 149–210), the active one 8 px. */
+    .vip-rec-slider .swiper-pagination { gap: 3px !important; }
+    .vip-rec-slider .swiper-pagination-bullet { margin: 0 !important; }
+    .vip-rec-slider .swiper-pagination-bullet-active { margin: 0 1px !important; }
+    /* Arrows → next title ink 83 px (both sliders and "Nový svět"). */
+    .vip-slider-section + .vip-slider-section { margin-top: 82px !important; }
+    /* "Nový svět" block (phone -12): heading ink from x 27, lines 32 px;
+       video 25–334 × 166, 32 px under the heading ink; badges 22–334,
+       75 px tall, 11 px apart and under the video, text 2 px below the
+       centre, shadow a 10 px band under each; button 40 px under. */
+    .vip-video-section { margin: 82px 0 0 22px !important; gap: 0 !important; }
+    .vip-video-heading { padding-left: 3px !important; }
+    .vip-video-heading-line1, .vip-video-heading-line2 { line-height: 32px !important; }
+    .vip-video-container { margin: 32px 0 0 3px !important; height: 166px !important; }
+    .vip-video-badges { margin-top: 11px !important; gap: 11px !important; }
+    .vip-video-badge { padding: 0 20px 0 21px !important; gap: 19px !important; box-shadow: 0 10px 2px rgba(92, 45, 98, 0.14), 0 0 2px rgba(92, 45, 98, 0.12) !important; }
+    .vip-video-badge span:not(.vip-badge-icon) { line-height: 20px !important; position: relative; top: 2px; }
+    .vip-video-register-btn { margin-top: 39px !important; }
+    /* Button → footer logo ink 107 px (was 86). */
+    .vip-profile-page { padding-bottom: 69px !important; }
+}
 </style>
 
 <div class="vip-profile-page">
@@ -2553,14 +3416,18 @@
     <section class="vip-profile-hero">
         <aside class="vip-profile-panel">
             <div class="vip-profile-status-bar">
+                @if($isVipProfile)
                 <span class="vip-profile-status-pill vip-profile-status-pill--primary">
-                    <img src="{{ asset('images/icons/star.svg') }}" alt="star" style="width: 18px; height: 18px; margin-right: 6px;">
-                    VIP PROFIL
+                    <img src="{{ asset('images/icons/star.svg') }}" alt="" aria-hidden="true">
+                    {{ __('front.profiles.detail_page.vip_profile_badge') }}
                 </span>
-                <span class="vip-profile-status-pill vip-profile-status-pill--verification">
-                    <img src="{{ asset('images/icons/CameraOff.svg') }}" alt="camera-off" style="width: 18px; height: 18px; margin-right: 4px;">
+                @endif
+                @if($showPhotoStatus)
+                <span class="vip-profile-status-pill vip-profile-status-pill--verification {{ $isVerifiedProfile ? 'is-verified' : '' }}">
+                    <img src="{{ asset('images/icons/' . ($isVerifiedProfile ? 'camera.svg' : 'CameraOff.svg')) }}" alt="" aria-hidden="true">
                     {{ $photoStatusLabel }}
                 </span>
+                @endif
                 @foreach($profile->allSegments()->reject(fn ($segment) => $segment['is_vip']) as $segment)
                 <span class="vip-profile-status-pill" style="background: {{ $segment['color'] }}1A; color: {{ $segment['color'] }};">
                     {{ $segment['name'] }}
@@ -2573,19 +3440,7 @@
                 @if($isOnline)
                     <span class="vip-profile-online-dot" aria-hidden="true"></span>
                 @endif
-                <h1 class="vip-profile-name">{{ $profile->display_name ?? 'Alexandrina' }}</h1>
-            </div>
-
-            <div class="vip-profile-meta-location">
-                <img src="{{ asset('images/icons/location.svg') }}" alt="" aria-hidden="true">
-                <span style="display:flex;flex-direction:column;align-items:flex-start;line-height:1.3;">
-                    @if(filled($profile->city) || filled($profile->region))
-                        @if(filled($profile->city))<span>{{ $profile->city }}</span>@endif
-                        @if(filled($profile->region))<span>{{ $profile->region }}</span>@endif
-                    @else
-                        <span>Jihomoravský kraj</span>
-                    @endif
-                </span>
+                <h1 class="vip-profile-name">{{ $profile->display_name }}</h1>
             </div>
 
             @if($isOnline)
@@ -2594,21 +3449,23 @@
             </div>
             @endif
 
-            <div class="vip-profile-links lg:hidden" aria-label="Profile actions">
+            <div class="vip-profile-links" aria-label="Profile actions">
                 {{-- Both used to be href="#". "Obnovit přístup" is password
                      recovery, "Dát hodnocení" opens the rating screen with
-                     this profile preselected; a guest gets the login modal. --}}
+                     this profile preselected; a guest gets the login modal.
+                     Figma phone frame: three plain underlined links, the
+                     report link short ("Nahlásit") and pushed to the right. --}}
                 <a href="{{ $accessUrl }}" class="vip-profile-link">{{ $accessLabel }}</a>
                 @auth
                     <a href="{{ $rateUrl }}" class="vip-profile-link">{{ __('front.profiles.detail_page.give_rating') }}</a>
                 @else
                     <a href="#" class="vip-profile-link" x-data @click.prevent="$dispatch('show-login-modal')">{{ __('front.profiles.detail_page.give_rating') }}</a>
                 @endauth
-                <a href="#" class="vip-profile-link" x-data @click.prevent="$dispatch('show-report-modal', { profileId: {{ $profile->id }} })">{{ __('front.profiles.detail_page.report_profile') }}</a>
+                <a href="#" class="vip-profile-link vip-profile-link--report" x-data @click.prevent="$dispatch('show-report-modal', { profileId: {{ $profile->id }} })" aria-label="{{ __('front.profiles.detail_page.report_profile') }}">{{ __('front.profiles.detail_page.report_short') }}</a>
             </div>
 
             <div class="vip-profile-rating-summary">
-                <strong>{{ __('front.profiles.list.rating') }}</strong>
+                <strong>{{ __('front.profiles.detail_page.rating_label') }}</strong>
                 <span class="vip-profile-rating-icons">
                     @if($ratingsVisible && $totalRatings > 0)
                         <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" style="color:#FFC107;">
@@ -2622,6 +3479,13 @@
                     @endif
                 </span>
             </div>
+
+            @if($locationLabel)
+            <div class="vip-profile-meta-location">
+                <svg width="14" height="16" viewBox="0 0 14 16" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7 0C3.13 0 0 3.05 0 6.82c0 2.2 1.3 4.33 2.63 5.86A20.6 20.6 0 0 0 6.4 15.8a1.05 1.05 0 0 0 1.2 0 20.6 20.6 0 0 0 3.77-3.12C12.7 11.15 14 9.02 14 6.82 14 3.05 10.87 0 7 0Zm0 4.2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z" fill="#DD3888"/></svg>
+                <span>{{ $locationLabel }}</span>
+            </div>
+            @endif
 
             <div class="vip-profile-meta-table">
                 <div class="vip-profile-meta-row">
@@ -2765,7 +3629,7 @@
                 {{-- The three-card desktop gallery keeps its layout whether the
                      profile has three photos, one, or none. It used to be padded
                      out with stock model images so it always looked full. --}}
-                <div class="vip-gallery-desktop">
+                <div class="vip-gallery-desktop {{ $isVipProfile ? '' : 'vip-gallery-desktop--four' }}" data-slides='@json($gallerySlides->values())'>
                     @if($hasGallery)
                         <button type="button" class="vip-gallery-desktop-card vip-gallery-desktop-left lightbox-trigger" data-index="0">
                             <img src="{{ $heroSlides->get(0, $heroSlides->first()) }}" alt="{{ $profile->display_name }}">
@@ -2775,13 +3639,19 @@
                         </button>
                         <button type="button" class="vip-gallery-desktop-card vip-gallery-desktop-right lightbox-trigger" data-index="{{ $heroSlides->count() > 2 ? 2 : 0 }}">
                             <img src="{{ $heroSlides->get(2, $heroSlides->first()) }}" alt="{{ $profile->display_name }}">
-                            @if($gallerySlides->count() > 1)
+                            @if($gallerySlides->count() > 1 && $isVipProfile)
                                 <span class="vip-gallery-next-hint" aria-hidden="true"></span>
                             @endif
                         </button>
+                        @unless($isVipProfile)
+                            <button type="button" class="vip-gallery-desktop-card vip-gallery-desktop-extra lightbox-trigger" data-index="{{ $heroSlides->count() > 3 ? 3 : 0 }}">
+                                <img src="{{ $heroSlides->get(3, $heroSlides->first()) }}" alt="{{ $profile->display_name }}">
+                                <span class="vip-gallery-next-hint" aria-hidden="true"></span>
+                            </button>
+                        @endunless
                         @if($gallerySlides->count() > 1)
-                            <button type="button" class="vip-gallery-desktop-nav vip-gallery-desktop-prev" id="vip-gallery-desktop-prev" aria-label="Previous slide">&#10094;</button>
-                            <button type="button" class="vip-gallery-desktop-nav vip-gallery-desktop-next" id="vip-gallery-desktop-next" aria-label="Next slide">&#10095;</button>
+                            <button type="button" class="vip-gallery-desktop-nav vip-gallery-desktop-prev" id="vip-gallery-desktop-prev" aria-label="Previous slide"><svg width="7" height="9" viewBox="0 0 7 9" aria-hidden="true"><path d="M0 4.5 7 0v9z" fill="#fff"/></svg></button>
+                            <button type="button" class="vip-gallery-desktop-nav vip-gallery-desktop-next" id="vip-gallery-desktop-next" aria-label="Next slide"><svg width="7" height="9" viewBox="0 0 7 9" aria-hidden="true"><path d="M7 4.5 0 9V0z" fill="#fff"/></svg></button>
                         @endif
                     @else
                         @foreach (['left', 'main', 'right'] as $slot)
@@ -2796,8 +3666,8 @@
 
                 <div class="vip-profile-gallery-mobile">
                     @if($gallerySlides->count() > 1)
-                        <button type="button" class="vip-gallery-nav vip-gallery-nav--prev" aria-label="Previous image">&#10094;</button>
-                        <button type="button" class="vip-gallery-nav vip-gallery-nav--next" aria-label="Next image">&#10095;</button>
+                        <button type="button" class="vip-gallery-nav vip-gallery-nav--prev" aria-label="Previous image"><svg width="7" height="9" viewBox="0 0 7 9" aria-hidden="true"><path d="M0 4.5 7 0v9z" fill="#fff"/></svg></button>
+                        <button type="button" class="vip-gallery-nav vip-gallery-nav--next" aria-label="Next image"><svg width="7" height="9" viewBox="0 0 7 9" aria-hidden="true"><path d="M7 4.5 0 9V0z" fill="#fff"/></svg></button>
 
                         <div class="swiper vip-profile-gallery-swiper">
                             <div class="swiper-wrapper">
@@ -2843,23 +3713,17 @@
                  invented when missing, so in practice it was always "full". The
                  section now stays put and each block states plainly when the
                  provider has not filled it in. --}}
-                <section class="vip-media-grid">
+                {{-- The video block only exists when there is a video (Figma:
+                     the "Eva" phone frame has one, "Alexandrina" does not). It
+                     used to fall back to the first photo with a play button
+                     that played nothing. --}}
+                <section class="vip-media-grid {{ $profile->hasVideo() ? '' : 'vip-media-grid--single' }}">
+                    @if($profile->hasVideo())
                     <div class="vip-video-card-wrap">
                         <h3 class="vip-video-card-title">Video</h3>
                         <div class="vip-video-card">
                             <div class="vip-video-surface">
-                                @if($profile->hasVideo())
-                                    <video id="vip-profile-video" src="{{ $profile->getVideoUrl() }}" preload="metadata" playsinline @if($videoPoster) poster="{{ $videoPoster }}" @endif></video>
-                                @elseif($videoPoster)
-                                    <img src="{{ $videoPoster }}" alt="{{ $profile->display_name }}">
-                                @else
-                                    {{-- No video and no photo to stand in for one. --}}
-                                    <div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#f6eef7;">
-                                        <svg class="h-16 w-16 text-[#d6c7dc]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                        </svg>
-                                    </div>
-                                @endif
+                                <video id="vip-profile-video" src="{{ $profile->getVideoUrl() }}" preload="metadata" playsinline @if($videoPoster) poster="{{ $videoPoster }}" @endif></video>
                                 <button type="button" class="vip-video-play" id="vip-profile-video-toggle" aria-label="Play video">
                                     <span class="vip-video-play__inner">
                                         <img id="vip-profile-video-play-icon" src="{{ asset('images/icons/arrowFilled.svg') }}" alt="" class="w-7 h-7" style="filter: brightness(0) invert(1); transform: rotate(180deg);">
@@ -2868,6 +3732,7 @@
                             </div>
                         </div>
                     </div>
+                    @endif
 
                     <div class="vip-pricing-card">
                         @if(app()->getLocale() === 'en' && $globalPrices->isNotEmpty())
@@ -2902,7 +3767,7 @@
                                     <tbody>
                                         @foreach($globalPrices as $price)
                                             <tr>
-                                                <td>{{ (float) ($price['time_hours'] ?? 0) }}h</td>
+                                                <td>{{ (float) ($price['time_hours'] ?? 0) }}&nbsp;h</td>
                                                 <td>
                                                     @if(!empty($price['incall_price']) && $profile->incall)
                                                         {{ number_format($price['incall_price'], 0, ',', ' ') }} {{ $globalCurrency }}
@@ -2954,7 +3819,7 @@
                                     <tbody>
                                         @foreach($displayPrices as $price)
                                             <tr>
-                                                <td>{{ (float) ($price['time_hours'] ?? 0) }}h</td>
+                                                <td>{{ (float) ($price['time_hours'] ?? 0) }}&nbsp;h</td>
                                                 <td>
                                                     @if(!empty($price['incall_price']) && $profile->incall)
                                                         {{ number_format($price['incall_price'], 0, ',', ' ') }} Kč
@@ -3001,8 +3866,10 @@
     <section class="vip-slider-section">
         <div class="vip-slider-head">
             <div>
-                <h2 class="vip-section-title" style="margin-bottom:4px;">{{ __('front.profiles.detail_page.top_rated_girls') }}</h2>
-                <div class="vip-slider-kicker">{{ __('front.profiles.detail_page.this_month') }}</div>
+                {{-- One heading: the phone frame runs "tento měsíc" on in pink
+                     after "dívky", the desktop frame breaks it onto a line of
+                     its own. --}}
+                <h2 class="vip-section-title vip-slider-title">{{ __('front.profiles.detail_page.top_rated_girls') }} <span class="vip-slider-kicker">{{ __('front.profiles.detail_page.this_month') }}</span></h2>
             </div>
             {{-- Looked like a link, went nowhere, and told a member who already
                  has Premium to go and get it. It now states what is true for
@@ -3025,8 +3892,10 @@
     <section class="vip-slider-section">
         <div class="vip-slider-head">
             <div>
-                <h2 class="vip-section-title" style="margin-bottom:4px;">{{ __('front.profiles.detail_page.top_rated_girls') }}</h2>
-                <div class="vip-slider-kicker">{{ __('front.profiles.detail_page.all_time') }}</div>
+                {{-- One heading: the phone frame runs "tento měsíc" on in pink
+                     after "dívky", the desktop frame breaks it onto a line of
+                     its own. --}}
+                <h2 class="vip-section-title vip-slider-title">{{ __('front.profiles.detail_page.top_rated_girls') }} <span class="vip-slider-kicker">{{ __('front.profiles.detail_page.all_time') }}</span></h2>
             </div>
             {{-- Looked like a link, went nowhere, and told a member who already
                  has Premium to go and get it. It now states what is true for
@@ -3069,7 +3938,9 @@
                 <span style="font-family:'Poppins', sans-serif;font-weight:400;font-size:13px;color:#505050;text-align:left;line-height:1.3;">{{ __('front.profiles.detail_page.community_ratings') }}</span>
             </div>
             <div class="vip-video-badge">
-                <img src="{{ asset('images/icons/icecreamPink.svg') }}" alt="" aria-hidden="true" style="width:40px;height:40px;">
+                {{-- Desktop frame: ice-cream icon; phone frame: two people. --}}
+                <img src="{{ asset('images/icons/icecreamPink.svg') }}" alt="" aria-hidden="true" class="hidden md:block" style="width:40px;height:40px;">
+                <x-icons name="users" class="vip-badge-icon md:hidden" />
                 <span style="font-family:'Poppins', sans-serif;font-weight:400;font-size:13px;color:#505050;text-align:left;line-height:1.3;">{{ __('front.profiles.detail_page.girls_database') }}</span>
             </div>
         </div>
@@ -3081,9 +3952,11 @@
     <div class="vip-lightbox" id="vip-lightbox">
         <div class="vip-lightbox-stage">
             <div class="vip-lightbox-main">
-                <button type="button" class="vip-lightbox-close" id="vip-lightbox-close" aria-label="Close">&times;</button>
-                <button type="button" class="vip-lightbox-prev" id="vip-lightbox-prev" aria-label="Previous">&#10094;</button>
-                <button type="button" class="vip-lightbox-next" id="vip-lightbox-next" aria-label="Next">&#10095;</button>
+                <button type="button" class="vip-lightbox-close" id="vip-lightbox-close" aria-label="Close">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M1.5 1.5l9 9m0-9l-9 9" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
+                <button type="button" class="vip-lightbox-prev" id="vip-lightbox-prev" aria-label="Previous"><svg width="8" height="10" viewBox="0 0 8 10" aria-hidden="true"><path d="M0 5l8-5v10z" fill="#FFFFFF"/></svg></button>
+                <button type="button" class="vip-lightbox-next" id="vip-lightbox-next" aria-label="Next"><svg width="8" height="10" viewBox="0 0 8 10" aria-hidden="true"><path d="M8 5L0 0v10z" fill="#FFFFFF"/></svg></button>
 
                 <div class="swiper vip-lightbox-swiper">
                     <div class="swiper-wrapper">
@@ -3122,29 +3995,42 @@
             if (galleryEl) {
                 gallerySwiper = new Swiper(galleryEl, {
                     loop: {{ $gallerySlides->count() > 3 ? 'true' : 'false' }},
-                    slidesPerView: window.innerWidth <= 425 ? 1 : 1.2,
-                    spaceBetween: window.innerWidth <= 425 ? 0 : 14,
-                    centeredSlides: window.innerWidth > 425,
+                    // Phone frame: one photo at full width, the next one
+                    // 3px to its right, peeking in from the edge.
+                    slidesPerView: 1,
+                    spaceBetween: 3,
+                    centeredSlides: false,
                     navigation: {
-                        nextEl: '.vip-gallery-nav--next, .vip-gallery-desktop-next',
-                        prevEl: '.vip-gallery-nav--prev, .vip-gallery-desktop-prev',
+                        nextEl: '.vip-gallery-nav--next',
+                        prevEl: '.vip-gallery-nav--prev',
                     },
-                    breakpoints: {
-                        426: {
-                            slidesPerView: 1.2,
-                            spaceBetween: 14,
-                            centeredSlides: true,
-                        },
-                        768: {
-                            slidesPerView: 2.1,
-                            spaceBetween: 18,
-                        },
-                        1100: {
-                            slidesPerView: 2.75,
-                            spaceBetween: 20,
-                        }
-                    }
                 });
+            }
+
+            // Desktop tiles: the arrows used to drive only the (hidden) phone
+            // swiper, so on desktop they did nothing. Rotate the tiles instead.
+            const desktopGallery = document.querySelector('.vip-gallery-desktop[data-slides]');
+            if (desktopGallery) {
+                let slides = [];
+                try { slides = JSON.parse(desktopGallery.dataset.slides || '[]'); } catch (e) { slides = []; }
+                const tiles = ['left', 'main', 'right', 'extra']
+                    .map(function (slot) { return desktopGallery.querySelector('.vip-gallery-desktop-' + slot); })
+                    .filter(Boolean);
+                let offset = 0;
+                function showDesktopTiles() {
+                    tiles.forEach(function (tile, i) {
+                        const index = (offset + i) % slides.length;
+                        const img = tile.querySelector('img');
+                        if (img) img.src = slides[index];
+                        tile.dataset.index = index;
+                    });
+                }
+                if (slides.length > 1) {
+                    const prev = desktopGallery.querySelector('.vip-gallery-desktop-prev');
+                    const next = desktopGallery.querySelector('.vip-gallery-desktop-next');
+                    if (prev) prev.addEventListener('click', function () { offset = (offset - 1 + slides.length) % slides.length; showDesktopTiles(); });
+                    if (next) next.addEventListener('click', function () { offset = (offset + 1) % slides.length; showDesktopTiles(); });
+                }
             }
 
             const lightboxEl = document.querySelector('.vip-lightbox-swiper');
@@ -3165,12 +4051,58 @@
                     },
                 });
 
+                // lightbox.jpg / lightbox-1.jpg: the photo is as tall as the
+                // window allows (70 px above, thumbnails below) and the arrows
+                // and the round close button hug its edges, so the stage is
+                // sized to the photo on screen, portrait or landscape.
+                const lightboxMain = lightbox.querySelector('.vip-lightbox-main');
+                // update() inside a looping swiper can emit slideChange, whose
+                // handler fits again: without this guard every arrow click
+                // ended in "Maximum call stack size exceeded" and the
+                // thumbnail strip never followed the photo.
+                let fittingLightbox = false;
+                function fitLightbox() {
+                    if (fittingLightbox) return;
+                    fittingLightbox = true;
+                    try { fitLightboxNow(); } finally { fittingLightbox = false; }
+                }
+                function fitLightboxNow() {
+                    if (!lightboxMain || window.innerWidth < 768) {
+                        if (lightboxMain) lightboxMain.style.width = '';
+                        lightboxSwiper.update();
+                        return;
+                    }
+                    const slide = lightboxSwiper.slides[lightboxSwiper.activeIndex];
+                    const img = slide ? slide.querySelector('img') : null;
+                    const h = Math.min(954, window.innerHeight - 291);
+                    let w = h;
+                    if (img && img.naturalWidth && img.naturalHeight) {
+                        w = h * img.naturalWidth / img.naturalHeight;
+                    }
+                    w = Math.min(w, window.innerWidth - 210);
+                    lightbox.style.setProperty('--vip-lightbox-img-w', Math.round(w) + 'px');
+                    lightbox.style.setProperty('--vip-lightbox-img-h', Math.round(Math.min(h, w * (img && img.naturalWidth ? img.naturalHeight / img.naturalWidth : 1))) + 'px');
+                    lightboxMain.style.width = (Math.round(w) + 150) + 'px';
+                    lightboxSwiper.update();
+                }
+                lightbox.querySelectorAll('.swiper-slide img').forEach(function (img) {
+                    img.addEventListener('load', function () { if (lightbox.classList.contains('is-open')) fitLightbox(); });
+                });
+                window.addEventListener('resize', function () { if (lightbox.classList.contains('is-open')) fitLightbox(); });
+
                 document.querySelectorAll('.lightbox-trigger').forEach(function (trigger) {
                     trigger.addEventListener('click', function () {
                         const index = Number(this.dataset.index || 0);
                         lightbox.classList.add('is-open');
                         document.body.style.overflow = 'hidden';
                         lightboxSwiper.slideToLoop(index, 0);
+                        // A jump with speed 0 while the box was hidden does
+                        // not always fire slideChange: the first thumbnail
+                        // stayed marked whichever photo was opened.
+                        document.querySelectorAll('.vip-lightbox-thumbnail').forEach(function (thumb, i) {
+                            thumb.classList.toggle('active', i === index);
+                        });
+                        fitLightbox();
                     });
                 });
 
@@ -3199,7 +4131,9 @@
                 document.querySelectorAll('.vip-lightbox-thumbnail').forEach(function (thumb) {
                     thumb.addEventListener('click', function () {
                         const slideIndex = Number(this.dataset.slide);
-                        lightboxSwiper.slideTo(slideIndex, 0);
+                        // The swiper loops, so its own indices are shifted by
+                        // the cloned slides; slideTo() opened the wrong photo.
+                        lightboxSwiper.slideToLoop(slideIndex, 0);
                         
                         // Update active state
                         document.querySelectorAll('.vip-lightbox-thumbnail').forEach(t => t.classList.remove('active'));
@@ -3209,24 +4143,20 @@
 
                 // Update thumbnail active state on slide change
                 lightboxSwiper.on('slideChange', function () {
-                    const currentIndex = lightboxSwiper.activeIndex;
+                    const currentIndex = lightboxSwiper.realIndex;
                     document.querySelectorAll('.vip-lightbox-thumbnail').forEach((thumb, index) => {
                         thumb.classList.toggle('active', index === currentIndex);
                     });
+                    if (lightbox.classList.contains('is-open')) fitLightbox();
                 });
             }
 
             const desktopNext = document.getElementById('vip-gallery-desktop-next');
 
-            if (desktopNext) {
+            // The tiles rotate on this arrow (above); it also used to open the
+            // lightbox on top of them, so one click did two things.
+            if (desktopNext && !desktopGallery) {
                 desktopNext.addEventListener('click', function () {
-                    if (lightbox && lightboxSwiper) {
-                        lightbox.classList.add('is-open');
-                        document.body.style.overflow = 'hidden';
-                        lightboxSwiper.slideToLoop(1, 0);
-                        return;
-                    }
-
                     if (gallerySwiper) {
                         gallerySwiper.slideNext();
                     }

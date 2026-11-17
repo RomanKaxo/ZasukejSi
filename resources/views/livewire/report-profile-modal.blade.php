@@ -119,7 +119,7 @@
         <div class="modal-backdrop" @click="show = false; $wire.hide()"></div>
 
         <div class="report-modal-container">
-            <button @click="show = false; $wire.hide()"
+            <button type="button" aria-label="{{ __('auth.close') }}" @click="show = false; $wire.hide()"
                 style="width:35px;height:35px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:absolute;right:35px;top:35px;background:#DD3888;border:none;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>

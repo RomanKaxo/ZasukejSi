@@ -7,27 +7,14 @@
 @endphp
 
 @section('account-content')
-    <!-- Mobile Header (shown above stat cards on mobile only) -->
-    <div class="mb-4 md:hidden">
-        <div class="relative flex items-center justify-center py-3">
-            <h1 class="w-[400px] max-w-full text-[38px] text-center" style="font-family:'Poppins',sans-serif; font-weight:700; color:#5C2D62;">
-                {{ __('front.account.dashboard.basic_info') }}
-            </h1>
-        </div>
-        <hr class="w-[312px] max-w-full mx-auto mb-4">
-        <div class="flex items-center justify-between w-[312px] max-w-full mx-auto">
-            <div class="flex items-center gap-1.5">
-                <div class="w-[14px] h-[14px] rounded-full {{ auth()->user()->isOnline() ? 'bg-[#00B80F]' : 'bg-gray-300' }}"></div>
-                <span class="text-[13px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">
-                    {{ auth()->user()->isOnline() ? __('front.account.dashboard.online') : __('front.account.dashboard.offline') }}
-                </span>
-            </div>
-            <a href="{{ route('account.dashboard') }}" class="text-[13px] text-[#505050] underline" style="font-family: 'Poppins', sans-serif; color: #DD3888;">{{ __('front.account.dashboard.settings') }}</a>
-        </div>
-    </div>
+    {{-- Mobile heading sits above the stat cards (phone 360 px-13). --}}
+    <div class="md:hidden">@include('account.partials.page-header', ['title' => __('front.account.dashboard.basic_info'), 'desktop' => false, 'mobileRule' => false])</div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-[70px]">
+    {{-- phone 360 px-13 (pass 2): cards 130.5px apart, the first 32px under the
+         online row, rule 44.5px under the last one and
+         the "Moje údaje" heading 49px under the rule; card text at +20/+55/+84. --}}
+    <div class="grid grid-cols-1 gap-[30.5px] pt-[1.5px] md:pt-0 mb-[44px] min-[1180px]:grid-cols-[272px_272px_272px] min-[1180px]:gap-x-[14.5px] min-[1180px]:-ml-px md:mb-[53px]">
         @php
             $cards = [
                 ['icon' => 'Eye', 'value' => number_format($stats['views'], 0, '', ' '), 'label' => __('front.account.statistics.total_profile_views')],
@@ -36,15 +23,15 @@
             ];
         @endphp
         @foreach($cards as $card)
-            <div class="w-[312px] max-w-full mx-auto md:w-[272px] md:mx-0 h-[100px] rounded-[8px] flex flex-col items-center justify-center bg-gradient-to-b from-[#E6E6E6] to-[#FFFFFF]">
-                <img src="{{ asset('images/icons/' . $card['icon'] . '.svg') }}" class="w-[28px] h-[28px] mb-1" alt="{{ $card['label'] }}">
+            <div class="w-[313px] max-w-full mx-auto max-md:relative max-md:-left-[1.5px] md:w-[272px] md:mx-0 h-[100px] rounded-[8px] flex flex-col items-center justify-start pt-[15px] bg-gradient-to-b from-[#E6E6E6] to-[#FFFFFF]">
+                <img src="{{ asset('images/icons/' . $card['icon'] . '.svg') }}" class="w-[28px] h-[28px] mb-1 md:mb-[5px]" alt="{{ $card['label'] }}">
                 <span class="font-bold text-[24px] text-[#5C2D62]" style="font-family: 'Poppins', sans-serif;">{{ $card['value'] }}</span>
-                <span class="text-[13px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">{{ $card['label'] }}</span>
+                <span class="text-[13px] text-[#505050] -mt-[5px] md:-mt-[4px]" style="font-family: 'Poppins', sans-serif;">{{ $card['label'] }}</span>
             </div>
         @endforeach
     </div>
 
-    <hr class="w-[312px] max-w-full mx-auto mb-4 md:hidden">
+    <hr class="w-[313px] max-w-full mx-auto relative -left-[1.5px] mb-[49px] md:hidden">
 
     {{-- Email Not Verified Warning --}}
     @if (!auth()->user()->hasVerifiedEmail())
@@ -118,23 +105,7 @@
         </div>
     @endif
 
-    <div class="hidden md:block mb-8">
-        <div class="relative flex items-center justify-center py-6">
-            <h1 class="w-[400px] max-w-full text-4xl text-center" style="font-family:'Poppins',sans-serif; font-weight:700; color:#5C2D62;">
-                {{ __('front.account.dashboard.basic_info') }}
-            </h1>
-            <div class="flex flex-col items-end gap-0.5 absolute right-0 top-1/2 -translate-y-1/2">
-                <div class="flex items-center gap-1.5">
-                    <div class="w-[14px] h-[14px] rounded-full {{ auth()->user()->isOnline() ? 'bg-[#00B80F]' : 'bg-gray-300' }}"></div>
-                    <span class="text-[13px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">
-                        {{ auth()->user()->isOnline() ? __('front.account.dashboard.online') : __('front.account.dashboard.offline') }}
-                    </span>
-                </div>
-                <a href="{{ route('account.dashboard') }}" class="text-[13px] text-[#505050] underline" style="font-family: 'Poppins', sans-serif; color: #DD3888;">{{ __('front.account.dashboard.settings') }}</a>
-            </div>
-        </div>
-        <hr class="mb-[77px]">
-    </div>
+    @include('account.partials.page-header', ['title' => __('front.account.dashboard.basic_info'), 'ruleGap' => 'mb-[79px]', 'mobile' => false])
 
     @livewire('profile-form')
 

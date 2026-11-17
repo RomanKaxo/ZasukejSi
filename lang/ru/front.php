@@ -47,6 +47,8 @@ return [
         'valid_until' => 'Ваше Premium-членство действует до :date',
         'expiring_soon' => 'Ваше Premium-членство закончится через :days – ',
         'extend_link' => 'продлить членство',
+        'upsell' => 'Сейчас вы не видите, какая девушка FAKE – ',
+        'upsell_link' => 'завершите регистрацию Premium',
         'locked_rating' => 'Рейтинг открывается с Premium-членством',
     ],
 
@@ -66,6 +68,7 @@ return [
     ],
 
     'nav' => [
+        'menu_toggle' => 'Меню',
         'home' => 'Главная',
         'vip' => 'VIP и Premium',
         'faq' => 'Вопросы и ответы',
@@ -158,6 +161,11 @@ return [
 
         'list' => [
             'detail' => 'Подробнее',
+            'a11y_photo' => 'Фото :number',
+            'a11y_prev_photo' => 'Предыдущее фото',
+            'a11y_next_photo' => 'Следующее фото',
+            'a11y_prev_page' => 'Предыдущая страница',
+            'a11y_next_page' => 'Следующая страница',
             'years' => 'лет',
             'rating' => 'Рейтинг:',
             'verified' => 'ПРОВЕРЕНО',
@@ -188,6 +196,8 @@ return [
             'lbs' => 'фунтов',
             'report_profile' => 'Пожаловаться на анкету',
             'give_rating' => 'Оценить',
+            // VIP.jpg: popisek pod srdcem v galerii (desktop), malými písmeny.
+            'save_heart' => 'сохранить',
             'refresh_access' => 'Восстановить доступ',
             'premium_unlocks_rating' => 'Premium-аккаунт откроет рейтинг',
             'top_rated_girls' => 'Лучшие по рейтингу девушки',
@@ -222,6 +232,7 @@ return [
             'messages' => 'Мои сообщения',
             'favorites' => 'Избранное',
             'ratings' => 'Оценки девушек',
+            'ratings_nav' => 'Оценки девушек',
             'girls_of_month' => 'Девушки месяца',
             'archive' => 'Архив девушек',
             'reported' => 'Жалобы',

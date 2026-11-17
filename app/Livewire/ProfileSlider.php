@@ -102,7 +102,9 @@ class ProfileSlider extends Component
         $query = Profile::with(['user:id,name,last_activity', 'media', 'segments'])
             ->approved()
             ->public()
-            ->select($this->getPublicProfileColumns());
+            ->select($this->getPublicProfileColumns())
+            ->withExists('activeSubscription as is_vip')
+            ->withCount('ratings');
 
         // Recommending the page the visitor is already on is not a
         // recommendation.
@@ -146,6 +148,11 @@ class ProfileSlider extends Component
         }
 
         $this->applySorting($query, $sortBy);
+
+        // Rating sorts already supply an average (monthly for that slider).
+        if (! in_array($sortBy, ['rating', 'rating_this_month', 'recommendation'], true)) {
+            $query->withAvg('ratings', 'percentage');
+        }
 
         return $query;
     }
@@ -202,7 +209,6 @@ class ProfileSlider extends Component
             case 'recommendation':
                 // Sort by: 1) VIP status, 2) average rating, 3) newest
                 $query->withAvg('ratings', 'percentage')
-                      ->withExists('activeSubscription as is_vip')
                       ->orderBy('is_vip', $this->sortDirection)
                       ->orderBy('ratings_avg_percentage', $this->sortDirection)
                       ->orderBy('created_at', $this->sortDirection === 'desc' ? 'asc' : 'desc');

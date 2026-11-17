@@ -1,14 +1,14 @@
-<div class="flex flex-col lg:flex-row gap-3 lg:gap-6">
+<div class="member-ratings flex flex-col gap-3">
     {{-- Left Side - Region Filter + Selected Profile with Quick Actions --}}
-    <div class="w-full mx-auto lg:mx-0" style="max-width:510px;">
+    <div class="w-full mx-auto xl:mx-0" style="max-width:510px;">
         {{-- Region Filter --}}
-        <div class="flex justify-center" style="padding-bottom:32px;">
+        <div class="flex justify-center rating-filter">
             <div class="w-full min-w-0">
-                <label for="kraj" class="block mb-2" style="font-family:'Poppins',sans-serif;font-weight:400;font-size:14px;color:#505050;">
+                <label for="kraj" class="block rating-label">
                     {{ __('front.account.member.select_region') }}
                 </label>
                 <div class="relative rating-region-select" style="width:100%;max-width:510px;">
-                    <select id="kraj" name="kraj" wire:model.live="region" class="appearance-none member-select" style="width:100%;height:60px;border-radius:8px;border:1px solid #E6E6E6;padding:0 66px 0 16px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:14px;color:#505050;background:#FFFFFF;">
+                    <select id="kraj" name="kraj" wire:model.live="region" class="appearance-none member-select" style="width:100%;height:60px;border-radius:8px;border:2px solid #E6E6E6;padding:0 66px 0 18px;font-family:'Poppins',sans-serif;font-weight:600;font-size:14px;color:#505050;background:#FFFFFF;">
                         <option value="">{{ __('front.account.member.select_region') }}</option>
                         @foreach($regions as $key => $label)
                             <option value="{{ $key }}">{{ $label }}</option>
@@ -23,7 +23,13 @@
             </div>
         </div>
 
-    <div class="w-full bg-white rounded-2xl overflow-hidden mx-auto lg:mx-0 rating-photo-card" style="max-width:510px;">
+    @php
+        // home-5 / phone 360 px-1: the next girl in the queue peeks 30 px out
+        // from under the card, 2 px below it, so the list reads as a stack.
+        $peekProfile = $selectedProfile ? $profiles->first(fn ($p) => $p->id !== $selectedProfile->id) : null;
+        $peekImage = $peekProfile?->getAllImages()->first()?->getUrl();
+    @endphp
+    <div class="w-full bg-white overflow-hidden mx-auto lg:mx-0 rating-photo-card {{ $selectedProfile ? 'rating-photo-card--stacked' : 'rounded-2xl' }}" style="max-width:510px;">
         @if($selectedProfile)
             @php
                 // Real photos only — no stock model image standing in for a
@@ -42,7 +48,7 @@
             {{-- Profile Image Container with Overlays --}}
             <div class="relative h-full" wire:key="rating-card-{{ $selectedProfile->id }}" x-data="{ currentIndex: 0, images: @js($ratingImageUrls), slideCount: {{ $ratingSlideCount }}, slideHeight: 610, updateSlideHeight() { const slide = this.$refs.track ? this.$refs.track.querySelector('.rating-photo-slide') : null; if (slide) { this.slideHeight = slide.offsetHeight; } } }" x-init="updateSlideHeight(); window.addEventListener('resize', () => updateSlideHeight())">
                 {{-- Profile Photo (vertical slide filmstrip) --}}
-                <div class="absolute inset-0" style="overflow:hidden;">
+                <div class="absolute inset-0 rating-photo-clip" style="overflow:hidden;">
                     <div class="transition-transform duration-300 ease-in-out" x-ref="track" :style="`transform:translateY(-${currentIndex * slideHeight}px);`">
                         <template x-for="(url, index) in images" :key="index">
                             <img
@@ -74,20 +80,18 @@
                 </div>
 
                 {{-- Gradient Overlay --}}
-                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" x-show="currentIndex < images.length"></div>
+                <div class="absolute inset-0 rating-photo-clip bg-gradient-to-t from-black/80 via-black/20 to-transparent" x-show="currentIndex < images.length"></div>
 
                 {{-- Vertical photo pagination dots (side) --}}
-                <div class="absolute top-1/2 -translate-y-1/2 flex flex-col z-10 rating-pagination-dots" style="right:16px;gap:6px;" x-show="slideCount > 1">
+                <div class="absolute flex flex-col z-10 rating-pagination-dots" x-show="slideCount > 1">
                     <template x-for="index in slideCount" :key="index">
                         <button
                             type="button"
                             @click="currentIndex = index - 1"
-                            class="rounded-full flex items-center justify-center transition-all duration-200 rating-pagination-dot"
-                            style="width:10px;height:10px;box-shadow:0 0 0 1px rgba(0,0,0,0.04);"
-                            x-bind:class="{ 'bg-white': true }"
-                        >
-                            <span class="rounded-full rating-pagination-dot-inner" style="width:6px;height:6px;" x-bind:class="currentIndex === (index - 1) ? 'bg-[#DD3888]' : 'bg-transparent'"></span>
-                        </button>
+                            class="rounded-full transition-colors duration-200 rating-dot"
+                            x-bind:class="currentIndex === (index - 1) ? 'is-active' : ''"
+                            x-bind:aria-label="index"
+                        ></button>
                     </template>
                 </div>
 
@@ -97,11 +101,11 @@
                     @click="currentIndex = currentIndex > 0 ? currentIndex - 1 : slideCount - 1"
                     x-show="slideCount > 1"
                     class="rating-nav-arrow absolute top-1/2 -translate-y-1/2 items-center justify-center z-10"
-                    style="left:12px;width:36px;height:36px;border-radius:8px;background:#DD3888;"
+                    style="left:-25px;"
                     aria-label="Previous"
                 >
-                    <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M7 1L1 7L7 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <svg width="11" height="14" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0 6L10 0V12L0 6Z" fill="#DD3888"/>
                     </svg>
                 </button>
                 <button
@@ -109,19 +113,19 @@
                     @click="currentIndex = currentIndex < slideCount - 1 ? currentIndex + 1 : 0"
                     x-show="slideCount > 1"
                     class="rating-nav-arrow absolute top-1/2 -translate-y-1/2 items-center justify-center z-10"
-                    style="right:12px;width:36px;height:36px;border-radius:8px;background:#DD3888;"
+                    style="right:-25px;"
                     aria-label="Next"
                 >
-                    <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M1 1L7 7L1 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <svg width="11" height="14" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 6L0 0V12L10 6Z" fill="#DD3888"/>
                     </svg>
                 </button>
 
                 {{-- Profile Info & Actions Overlay (Top) --}}
                 <div class="absolute top-3 md:top-4 left-0 right-0 py-3 md:py-5 lg:py-6 z-10 rating-overlay-top">
                     {{-- Profile Name + Action Badges (name+badges left column, close button stretched right column) --}}
-                    <div class="flex items-stretch gap-2">
-                        <div class="flex flex-col justify-between gap-2 min-w-0">
+                    <div class="flex items-stretch gap-2 rating-name-row">
+                        <div class="flex flex-col justify-between gap-2 min-w-0 rating-name-col">
                             <h2 class="truncate rating-profile-name" style="font-family:'Poppins',sans-serif;font-weight:700;color:#FFFFFF;filter:drop-shadow(0 0 8px rgba(0,0,0,0.4));">
                                 {{ $selectedProfile->display_name }}
                                 @if($selectedProfile->age)
@@ -161,13 +165,13 @@
                 </div>
 
                 {{-- Mobile-only Quick Actions overlay (Uložit / Profil / Zpráva) --}}
-                <div class="absolute left-0 right-0 flex md:hidden items-center justify-start z-10" style="bottom:16px;padding-left:20px;">
+                <div class="absolute left-0 right-0 flex md:hidden items-center justify-start z-10" style="bottom:24px;padding-left:20px;">
                     <button
                         wire:click="toggleFavorite"
                         wire:loading.attr="disabled"
                         class="flex items-center justify-center flex-shrink-0
                             {{ $isFavorited ? 'ring-2 ring-white' : '' }}"
-                        style="height:40px;padding:0 18px;border-radius:8px;background:#DD3888;margin-right:44px;"
+                        style="height:40px;padding:0 17px;border-radius:8px;background:#DD3888;margin-right:45px;"
                         title="{{ $isFavorited ? __('front.favorites.remove') : __('front.favorites.add') }}"
                     >
                         <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:#FFFFFF;">{{ __('front.member.ratings.save') }}</span>
@@ -175,7 +179,7 @@
 
                     <a href="{{ route('profiles.show', $selectedProfile) }}"
                        class="flex items-center justify-center gap-1.5 flex-shrink-0"
-                       style="height:40px;padding:0 18px;border-radius:8px;background:#FFFFFF;box-shadow:4px 4px 4px #00000040;margin-right:8px;">
+                       style="height:40px;padding:0 13px;border-radius:8px;background:#FFFFFF;box-shadow:4px 4px 4px #00000040;margin-right:10px;">
                         <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:#DD3888;">{{ __('front.member.ratings.profile_link') }}</span>
                         <x-icons name="User" class="w-6 h-6 text-[#DD3888]" :strokeWidth="3" />
                     </a>
@@ -199,14 +203,10 @@
                 @endif
 
                 {{-- Rating & Favorite Buttons (Bottom, desktop only) --}}
-                <div class="absolute left-0 right-0 hidden md:flex items-center justify-center gap-2 z-10" style="bottom:47px;">
+                <div class="absolute left-0 right-0 hidden md:flex items-center justify-center z-10 rating-actions" style="bottom:47px;">
+                    <p class="rating-actions__label">{{ __('front.member.ratings.your_rating') }}</p>
                     {{-- Favorite Button (Heart) --}}
                     <div class="relative" wire:key="rating-action-heart">
-                        @if($isFavorited)
-                            <p class="absolute left-0 right-0 text-center whitespace-nowrap" style="bottom:100%;margin-bottom:8px;font-family:'Poppins',sans-serif;font-weight:500;font-size:13px;color:#FFFFFF;text-shadow:4px 4px 4px #00000066;">
-                                {{ __('front.member.ratings.your_rating') }}
-                            </p>
-                        @endif
                         <button
                             wire:click="toggleFavorite"
                             wire:loading.attr="disabled"
@@ -223,11 +223,6 @@
 
                     {{-- 100% Rating --}}
                     <div class="relative" wire:key="rating-action-high">
-                        @if($userPercentage === $ratingOptions['high'])
-                            <p class="absolute left-0 right-0 text-center whitespace-nowrap" style="bottom:100%;margin-bottom:8px;font-family:'Poppins',sans-serif;font-weight:500;font-size:13px;color:#FFFFFF;text-shadow:4px 4px 4px #00000066;">
-                                {{ __('front.member.ratings.your_rating') }}
-                            </p>
-                        @endif
                         <button
                             wire:click="rateProfile({{ $ratingOptions['high'] }})"
                             wire:loading.attr="disabled"
@@ -243,11 +238,6 @@
 
                     {{-- 70% Rating --}}
                     <div class="relative" wire:key="rating-action-mid">
-                        @if($userPercentage === $ratingOptions['mid'])
-                            <p class="absolute left-0 right-0 text-center whitespace-nowrap" style="bottom:100%;margin-bottom:8px;font-family:'Poppins',sans-serif;font-weight:500;font-size:13px;color:#FFFFFF;text-shadow:4px 4px 4px #00000066;">
-                                {{ __('front.member.ratings.your_rating') }}
-                            </p>
-                        @endif
                         <button
                             wire:click="rateProfile({{ $ratingOptions['mid'] }})"
                             wire:loading.attr="disabled"
@@ -263,11 +253,6 @@
 
                     {{-- 30% Rating --}}
                     <div class="relative" wire:key="rating-action-low">
-                        @if($userPercentage === $ratingOptions['low'])
-                            <p class="absolute left-0 right-0 text-center whitespace-nowrap" style="bottom:100%;margin-bottom:8px;font-family:'Poppins',sans-serif;font-weight:500;font-size:13px;color:#FFFFFF;text-shadow:4px 4px 4px #00000066;">
-                                {{ __('front.member.ratings.your_rating') }}
-                            </p>
-                        @endif
                         <button
                             wire:click="rateProfile({{ $ratingOptions['low'] }})"
                             wire:loading.attr="disabled"
@@ -296,22 +281,24 @@
             </div>
         @endif
     </div>
+    @if($selectedProfile)
+        <div class="rating-peek mx-auto lg:mx-0" aria-hidden="true"
+             @if($peekImage) style="background-image:url('{{ $peekImage }}');" @endif></div>
+    @endif
 
     @if($selectedProfile)
         {{-- Mobile-only Rating Buttons (100% / 70% / 30%) --}}
-        <div class="flex md:hidden flex-col items-center" style="margin-top:14px;" wire:key="rating-mobile-rate-{{ $selectedProfile->id }}">
-            <p style="font-family:'Poppins',sans-serif;font-weight:500;font-size:13px;color:#505050;min-height:16px;">
-                @if(in_array($userPercentage, array_values($ratingOptions), true))
-                    {{ __('front.member.ratings.your_rating') }}
-                @endif
+        <div class="flex md:hidden flex-col items-center rating-mobile-rate" wire:key="rating-mobile-rate-{{ $selectedProfile->id }}">
+            <p style="font-family:'Poppins',sans-serif;font-weight:500;font-size:13px;line-height:20px;color:#A3A3A3;">
+                {{ __('front.member.ratings.your_rating') }}
             </p>
-            <div class="flex items-center justify-center gap-[6px]" style="margin-top:4px;">
+            <div class="flex w-full items-center justify-center gap-[6px]" style="margin-top:10px;">
                 <button
                     wire:click="rateProfile({{ $ratingOptions['high'] }})"
                     wire:loading.attr="disabled"
                     class="flex items-center justify-center gap-1 text-white flex-shrink-0
                         {{ $userPercentage === $ratingOptions['high'] ? 'ring-2 ring-[#00B80F]' : '' }}"
-                    style="width:96px;height:45px;border-radius:8px;background:#00B80F;"
+                    style="flex:1 1 0;height:50px;border-radius:8px;background:#00B80F;"
                     title="{{ __('front.member.ratings.rate_100') }}"
                 >
                     <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:14px;color:#FFFFFF;">{{ $ratingOptions['high'] }} %</span>
@@ -322,7 +309,7 @@
                     wire:loading.attr="disabled"
                     class="flex items-center justify-center gap-1 text-white flex-shrink-0
                         {{ $userPercentage === $ratingOptions['mid'] ? 'ring-2 ring-[#FFB700]' : '' }}"
-                    style="width:96px;height:45px;border-radius:8px;background:#FFB700;"
+                    style="flex:1 1 0;height:50px;border-radius:8px;background:#FFB700;"
                     title="{{ __('front.member.ratings.rate_70') }}"
                 >
                     <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:14px;color:#FFFFFF;">{{ $ratingOptions['mid'] }} %</span>
@@ -333,7 +320,7 @@
                     wire:loading.attr="disabled"
                     class="flex items-center justify-center gap-1 text-white flex-shrink-0
                         {{ $userPercentage === $ratingOptions['low'] ? 'ring-2 ring-[#F47216]' : '' }}"
-                    style="width:96px;height:45px;border-radius:8px;background:#F47216;"
+                    style="flex:1 1 0;height:50px;border-radius:8px;background:#F47216;"
                     title="{{ __('front.member.ratings.rate_30') }}"
                 >
                     <span style="font-family:'Poppins',sans-serif;font-weight:600;font-size:14px;color:#FFFFFF;">{{ $ratingOptions['low'] }} %</span>
@@ -345,15 +332,11 @@
     </div>
 
     {{-- Right Side - Profile List --}}
-    <div class="w-full lg:flex-1 lg:min-w-0 flex flex-col">
-    <div class="w-full bg-white rounded-2xl p-3 md:p-4 flex flex-col relative rating-history-panel">
-        {{-- Header --}}
-        <div class="mb-2 md:mb-3 flex-shrink-0">
-            <p class="text-xs md:text-sm text-gray-500">{{ __('front.member.ratings.your_history') }}</p>
-        </div>
-
+    <div class="w-full lg:flex-1 lg:min-w-0 flex flex-col rating-history-col">
+        <p class="rating-label">{{ __('front.member.ratings.your_history') }}</p>
+    <div class="w-full flex flex-col relative rating-history-panel">
         {{-- Scrollable Profile List --}}
-        <div class="flex-1 overflow-y-auto min-h-0 -ml-3 pl-3 -mr-3 pr-0 md:-ml-4 md:pl-4 md:-mr-4 md:pr-1 ratings-history-scroll">
+        <div class="flex-1 overflow-y-auto min-h-0 ratings-history-scroll">
             @forelse($profiles as $profile)
                 @php
                     // All three figures come from the eager-loaded query in
@@ -368,9 +351,8 @@
                 <button
                     wire:click="selectProfile({{ $profile->id }})"
                     wire:key="profile-{{ $profile->id }}"
-                    class="flex items-center gap-3 mx-auto hover:shadow transition-shadow duration-150 shadow-sm mb-2
-                        {{ $selectedProfileId === $profile->id ? 'ring-2 ring-primary-300' : '' }}"
-                    style="width:280px;max-width:100%;height:100px;background:#FFFFFF;border-radius:16px;padding:0 12px;"
+                    class="rating-history-item flex items-center gap-3 transition-shadow duration-150
+                        {{ $selectedProfileId === $profile->id ? 'is-selected' : '' }}"
                 >
                     {{-- Thumbnail --}}
                     <div class="overflow-hidden flex-shrink-0 bg-gradient-to-br from-primary-100 to-secondary-100" style="width:64px;height:80px;border-radius:8px;">
@@ -391,20 +373,19 @@
                     </div>
 
                     {{-- Profile Info and Rating Bars --}}
-                    <div class="flex-1 min-w-0 text-left">
+                    <div class="flex-1 min-w-0 text-left rating-history-item__body">
                         {{-- Name and Profile Link --}}
-                        <div class="flex items-center gap-2 mb-2">
-                            <h4 class="truncate" style="font-family:'Poppins',sans-serif;font-weight:700;font-size:18px;color:#505050;">{{ $profile->display_name }}</h4>
+                        <div class="flex items-start justify-between gap-2 rating-history-item__head">
+                            <h4 class="truncate rating-history-item__name">{{ $profile->display_name }}</h4>
                             <a href="{{ route('profiles.show', $profile) }}"
                                onclick="event.stopPropagation()"
-                               class="whitespace-nowrap"
-                               style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:11px;color:#DD3888;text-decoration:underline;">
+                               class="whitespace-nowrap rating-history-item__link">
                                 {{ __('front.member.ratings.profile_link') }}
                             </a>
                         </div>
 
                         {{-- Rating Bars --}}
-                        <div class="space-y-1.5">
+                        <div class="rating-history-item__bars">
                             {{-- Your Rating --}}
                             <div class="flex items-center gap-2">
                                 <div class="rounded-full overflow-hidden bg-gray-200 flex-shrink-0" style="width:70px;height:10px;">
@@ -474,16 +455,73 @@
             @endif
         </div>
 
-        {{-- Bottom fade/blur mask hinting more content below (mobile only) --}}
+        {{-- Bottom fade hinting more content below (home-5, phone 360 px-1) --}}
         <div class="rating-history-fade absolute left-0 right-0 bottom-0 pointer-events-none"></div>
     </div>
 
-    <div class="flex justify-center" style="margin-top:16px;">
+    <div class="flex rating-favorites-wrap">
         <a href="{{ route('account.member.favorites') }}"
-           class="flex items-center justify-center w-[309px] md:w-[311px] max-w-full"
+           class="flex items-center justify-center w-[310px] md:w-[311px] max-w-full"
            style="height:60px;border-radius:8px;background:#5C2D62;font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:#FFFFFF;">
             {{ __('front.member.ratings.open_favorites', ['count' => auth()->user()->favoriteProfiles()->count()]) }}
         </a>
     </div>
     </div>
+    {{-- Figma home-5 (1920) / phone 360 px-1. Scoped to .member-ratings so it
+         wins over the older rules in components.css without touching them. --}}
+    <style>
+        .member-ratings .rating-label { font-family: 'Poppins', sans-serif; font-weight: 400; font-size: 14px; line-height: 21px; color: #505050; padding: 0; margin-bottom: 7px; }
+        .member-ratings .rating-filter { padding-bottom: 30px; }
+        .member-ratings .rating-photo-card--stacked { border-radius: 16px 16px 0 0; }
+        .member-ratings .rating-peek { width: 100%; max-width: 510px; height: 30px; margin-top: 2px; border-radius: 0 0 15px 15px; background: #E8E8E8 center 30% / cover no-repeat; }
+        .member-ratings .rating-pagination-dots { right: 63px; top: 309px; gap: 9px; }
+        .member-ratings .rating-dot { display: block; width: 14px; height: 14px; background: #FFFFFF; border: 1.5px solid #FFFFFF; }
+        .member-ratings .rating-dot.is-active { background: #DD3888; }
+        .member-ratings .rating-actions { gap: 5px; }
+        .member-ratings .rating-actions__label { position: absolute; left: 0; right: 0; bottom: 100%; margin-bottom: 12px; text-align: center; font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 13px; line-height: 20px; color: #FFFFFF; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35); }
+
+        .member-ratings .rating-history-col .rating-label { margin-top: -1px; margin-bottom: 9px; }
+        .member-ratings .rating-history-panel { height: 643px; background: transparent; padding: 0; }
+        .member-ratings .ratings-history-scroll { margin-left: -4px; padding-left: 4px; scrollbar-width: auto; scrollbar-color: #5C2D62 #F4F4F4; }
+        .member-ratings .ratings-history-scroll::-webkit-scrollbar { width: 12px; }
+        .member-ratings .ratings-history-scroll::-webkit-scrollbar-track { background: #F4F4F4; border-radius: 99px; }
+        .member-ratings .ratings-history-scroll::-webkit-scrollbar-thumb { background: #5C2D62; border: 2px solid #F4F4F4; border-radius: 99px; }
+        .member-ratings .rating-history-item { width: 280px; max-width: calc(100% - 18px); height: 100px; margin-bottom: 10px; padding: 0 11px; background: #FFFFFF; border-radius: 10px; box-shadow: 0 4px 10px rgba(92, 45, 98, 0.1); }
+        .member-ratings .rating-history-item:hover { box-shadow: 0 6px 14px rgba(92, 45, 98, 0.16); }
+        .member-ratings .rating-history-item.is-selected { box-shadow: 0 0 0 2px #DD3888, 0 4px 10px rgba(92, 45, 98, 0.1); }
+        .member-ratings .rating-history-item { gap: 16px; }
+        .member-ratings .rating-history-item__head { margin-bottom: 0; }
+        .member-ratings .rating-history-item__bars { margin-top: 2px; }
+        .member-ratings .rating-history-item__bars > div { height: 21px; }
+        .member-ratings .rating-history-item__bars span { line-height: 21px; }
+        .member-ratings .rating-history-item__name { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 18px; line-height: 27px; color: #505050; }
+        .member-ratings .rating-history-item__link { font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 11px; line-height: 20px; color: #DD3888; text-decoration: underline; text-transform: lowercase; margin-top: 4px; }
+        .member-ratings .rating-history-fade { display: block; left: 0; right: 18px; height: 90px; border-radius: 0; background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.92) 85%, #FFFFFF 100%); backdrop-filter: none; -webkit-backdrop-filter: none; }
+        .member-ratings .rating-favorites-wrap { margin-top: 30px; justify-content: flex-start; }
+
+        @media (min-width: 768px) {
+            .member-ratings .rating-overlay-top { padding-top: 39px; }
+            .member-ratings .rating-name-col { gap: 6px; }
+        }
+        @media (max-width: 767px) {
+            .member-ratings .rating-label { margin-bottom: 6px; }
+            .member-ratings .rating-filter { padding-bottom: 25px; }
+            .member-ratings .rating-photo-card { overflow: visible; }
+            .member-ratings .rating-photo-clip { border-radius: inherit; }
+            .member-ratings .rating-peek { height: 23px; }
+            .member-ratings .rating-overlay-top { top: 0; padding-top: 20px; }
+            .member-ratings .rating-name-row { align-items: center; }
+            .member-ratings .rating-nav-arrow { display: flex; width: 44px; height: 44px; border-radius: 9999px; background: #FFFFFF; }
+            .member-ratings .rating-mobile-rate { margin-top: 15px; }
+            .member-ratings .rating-history-col { margin-top: 42px; }
+            .member-ratings .rating-pagination-dots { right: 33px; top: 50%; transform: translateY(-50%); gap: 7px; }
+            .member-ratings .rating-dot { width: 15px; height: 15px; }
+        }
+        @media (max-width: 1279px) {
+            .member-ratings .rating-history-col { max-width: 510px; margin-left: auto; margin-right: auto; }
+        }
+        @media (min-width: 1280px) {
+            .member-ratings { display: grid; grid-template-columns: 510px 310px; column-gap: 27px; margin-left: -4px; }
+        }
+    </style>
 </div>

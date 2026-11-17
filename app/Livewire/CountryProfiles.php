@@ -283,7 +283,10 @@ class CountryProfiles extends Component
         $query = Profile::with(['user:id,name,last_activity', 'media', 'segments'])
             ->where('status', 'approved')
             ->where('is_public', true)
-            ->whereNotNull('verified_at');
+            ->whereNotNull('verified_at')
+            ->withExists('activeSubscription as is_vip')
+            ->withCount('ratings')
+            ->withAvg('ratings', 'percentage');
 
         // Location filters
         if ($this->selectedCountryCode) {
@@ -303,9 +306,7 @@ class CountryProfiles extends Component
             // Sort by: 1) VIP status, 2) average rating, 3) newest
             $sortDirection = $this->sortRecommendation === 'desc' ? 'desc' : 'asc';
             
-            $query->withAvg('ratings', 'percentage')
-                  ->withExists('activeSubscription as is_vip')
-                  ->orderBy('is_vip', $sortDirection)
+            $query->orderBy('is_vip', $sortDirection)
                   ->orderBy('ratings_avg_percentage', $sortDirection);
         }
 
@@ -327,8 +328,7 @@ class CountryProfiles extends Component
 
         if ($this->hasRating) {
             // Filter profiles that have at least one rating and order by most rated (rating count)
-            $query->withCount('ratings')
-                  ->whereHas('ratings')
+            $query->whereHas('ratings')
                   ->orderBy('ratings_count', 'desc');
         }
 

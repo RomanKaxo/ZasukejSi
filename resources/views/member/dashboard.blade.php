@@ -1,13 +1,28 @@
 @extends('layouts.member')
 
+@section('member-heading')
+    <h1 class="member-title">{{ __('front.account.member.settings') }}</h1>
+@endsection
+
 @section('member-content')
-    <!-- Page Title -->
-    <div class="mb-8">
-        <h1 class="text-2xl md:text-4xl text-center" style="font-family:'Poppins',sans-serif; font-weight:700; color:#5C2D62;">
-            {{ __('front.account.member.settings') }}
-        </h1>
-    </div>
-    <hr class="mb-8">
+    {{-- home-8 / -9 / -10 (1920): "Moje údaje" ink 53 px under the header
+         rule, label → field 23 px, field → next label 22, last field →
+         button 31, button → rule 80, rule → "Změna hesla" ink 56. --}}
+    <style>
+        @media (min-width: 768px) {
+            .member-settings-top { margin-bottom: 50px; }
+            .member-settings-block h2 { margin-bottom: 22px; }
+            .member-settings-block form > * + *,
+            .member-settings-block form .space-y-4 > * + * { margin-top: 17px; }
+            .member-settings-block form .space-y-4 { margin-top: 17px; }
+            .member-settings-block label { line-height: 20px; margin-bottom: 5px; }
+            .member-settings-block form > button[type="submit"] { margin-top: 31px; }
+            .member-settings-rule { margin: 79px 0 52px; }
+            /* Last button → footer logo ink 158 px. */
+            .member-settings-block + .member-settings-rule + .member-settings-block { margin-bottom: 32px; }
+        }
+    </style>
+    <div class="mb-8 member-settings-top"></div>
 
     <!-- Status Messages -->
     @if (session('status') === 'settings-updated')
@@ -62,7 +77,7 @@
     @endif
 
     <!-- Moje udaje Section -->
-    <div class="profile-form-narrow max-w-[400px] mx-auto">
+    <div class="profile-form-narrow member-settings-block max-w-[400px] mx-auto">
         <h2 class="mb-4 text-left" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">
             {{ __('front.profiles.form.my_data') }}
         </h2>
@@ -107,17 +122,17 @@
 
             <!-- Submit Button -->
             <button type="submit" class="!w-[400px] max-w-full h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
-                <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px] group-hover:hidden" alt="Save">
-                <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px] hidden group-hover:block" alt="Save">
+                <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px] group-hover:hidden" alt="">
+                <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px] hidden group-hover:block" alt="">
                 <span class="text-[#A4A4A4] group-hover:text-white" style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px;">{{ __('front.profiles.form.savechanges') }}</span>
             </button>
         </form>
     </div>
 
-    <hr class="my-8">
+    <hr class="my-8 member-settings-rule">
 
     <!-- Zmena hesla Section -->
-    <div class="profile-form-narrow max-w-[400px] mx-auto">
+    <div class="profile-form-narrow member-settings-block max-w-[400px] mx-auto">
         <h2 class="mb-4 text-left" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">
             {{ __('front.profiles.form.change_password') }}
         </h2>
@@ -160,8 +175,8 @@
 
             <!-- Submit Button -->
             <button type="submit" class="!w-[400px] max-w-full h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group">
-                <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px] group-hover:hidden" alt="Save">
-                <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px] hidden group-hover:block" alt="Save">
+                <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px] group-hover:hidden" alt="">
+                <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px] hidden group-hover:block" alt="">
                 <span class="text-[#A4A4A4] group-hover:text-white" style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px;">{{ __('front.profiles.form.savechanges') }}</span>
             </button>
         </form>

@@ -19,7 +19,7 @@
 
     <!-- Desktop Header -->
     <div class="hidden md:block mb-8">
-        <div class="relative flex items-center justify-center py-6">
+        <div class="relative flex items-center justify-center pt-6 pb-[21px]">
             <h1 class="w-[400px] max-w-full text-4xl text-center" style="font-family:'Poppins',sans-serif; font-weight:700; color:#5C2D62;">
                 {{ __('front.subscription.page_title') }}
             </h1>

@@ -1,17 +1,16 @@
 @extends('layouts.member')
 
+@section('member-width', 'wide')
+
+@section('member-heading')
+    <h1 class="member-title">{{ __('front.account.member.reported') }}</h1>
+    <p class="member-lead member-lead--narrow">{{ __('front.account.member.reported_description') }}</p>
+@endsection
+
 @section('member-content')
-<!-- Page Title -->
-<div class="mb-4 md:mb-8 text-center">
-    <h1 style="font-family:'Poppins',sans-serif;font-weight:700;font-size:36px;color:#5C2D62;">{{ __('front.account.member.reported') }}</h1>
-    <p style="font-family:'Poppins',sans-serif;font-weight:400;font-size:14px;color:#505050;padding-top:33px;padding-bottom:38px;">
-        {{ __('front.account.member.reported_description') }}
-    </p>
-</div>
-<hr class="mb-8 rounded-none">
 
 @if($reports->count() > 0)
-<div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
+<div class="reported-grid">
     @foreach($reports as $report)
     @php
         $maySeeProfileImage = ($report->profile->is_public && $report->profile->status === 'approved')
@@ -26,9 +25,37 @@
 </div>
 @else
 <div class="bg-white rounded-lg border border-gray-200 p-8 md:p-12 text-center">
-    <x-icons name="TriangleAlert" class="mx-auto mb-4" style="width:48px;height:48px;color:#DD3888;" />
+    <x-icons name="TriangleAlert" class="member-empty-icon" />
     <h3 class="text-lg font-medium text-gray-900 mb-2">{{ __('front.account.member.reported') }}</h3>
     <p class="text-gray-500">{{ __('front.account.member.reported_description') }}</p>
 </div>
 @endif
+<style>
+    /* muž - záložky-3 @1920: two 440 px pairs (210 px card + 230 px case
+       panel) flush with both edges of the 902 px column, first row 62 px under
+       the divider, rows 26 px apart. phone 360 px-3: one pair per row. */
+    /* The lead box in this frame is narrower and tighter than on Archiv. */
+    @media (min-width: 768px) { .member-lead.member-lead--narrow { max-width: 780px; line-height: 24px; margin-top: 34px; margin-bottom: 9px; } }
+    .reported-grid { display: grid; grid-template-columns: 1fr; justify-items: center; row-gap: 26px; margin-top: 32px; }
+    .reported-grid .reported-pair > .reported-info-card { flex: 0 0 auto; }
+    @media (min-width: 768px) {
+        .reported-grid .reported-pair > .reported-profile-card { width: 210px !important; flex: 0 0 210px; }
+        .reported-grid .reported-pair > .reported-info-card { width: 230px !important; }
+    }
+    @media (min-width: 1280px) {
+        .reported-grid { grid-template-columns: repeat(2, 440px); justify-content: space-between; margin-top: 61px; }
+    }
+    /* muž - záložky-3, case panel: icon ink 35 px under the top, text and
+       pills on a 171 px column (29 px sides), title ink 23 px under the
+       icon, reason clamped to 7 lines of 22 px ending in "…" (the clamp
+       never applied: md:block replaced the -webkit-box it needs), pills 7 px
+       apart, button 18 px under them and 28 px above the bottom. */
+    @media (min-width: 768px) {
+        .reported-grid .reported-info-card { padding: 32px 29px 28px !important; }
+        .reported-grid .reported-info-card-title { margin-top: 17px !important; }
+        .reported-grid .reported-info-card p { display: -webkit-box !important; -webkit-box-orient: vertical; -webkit-line-clamp: 7; line-clamp: 7; overflow: hidden; line-height: 22px !important; }
+        .reported-grid .reported-info-card-badges { gap: 7px; }
+        .reported-grid .reported-info-card-button { margin-top: 11px; }
+    }
+</style>
 @endsection

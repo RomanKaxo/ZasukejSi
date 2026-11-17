@@ -1,16 +1,15 @@
 @extends('layouts.member')
 
-@section('member-content')
-<div class="w-[310px] md:w-auto mx-auto">
-<!-- Page Title -->
-<div class="mb-4 md:mb-8 text-center">
-    <h1 style="font-family:'Poppins',sans-serif;font-weight:700;font-size:36px;color:#5C2D62;">{{ __('front.account.member.favorites') }}</h1>
-</div>
-<hr class="mb-8 rounded-none">
+@section('member-width', 'wide')
 
+@section('member-heading')
+    <h1 class="member-title">{{ __('front.account.member.favorites') }}</h1>
+@endsection
+
+@section('member-content')
 <!-- Favorites Grid -->
 @if($favorites->count() > 0)
-<div class="mt-6 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+<div class="member-card-grid">
     @foreach($favorites as $profile)
     <div class="relative">
         <!-- Profile Card Component -->
@@ -28,7 +27,7 @@
 
 @else
 <!-- Empty State -->
-<div class="mt-6 bg-white rounded-lg border border-gray-200 p-12 text-center">
+<div class="member-empty bg-white rounded-lg border border-gray-200 p-12 text-center">
     <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
     </svg>
@@ -42,5 +41,4 @@
     </a>
 </div>
 @endif
-</div>
 @endsection

@@ -147,10 +147,12 @@ class ProfileStatistics extends Component
 
             $this->chartLabels[] = $day->format('j. n.');
             $this->chartValues[] = (int) ($daily[$key] ?? 0);
-            // Keeps the two-tone bar styling the design uses, now anchored to
-            // the middle of the month rather than a fixed index.
-            $this->chartColors[] = $day->day <= 15 ? '#DD3888' : '#5C2D62';
-            $this->chartVip[] = in_array($key, $vipDays, true);
+            // Figma home-18: the purple bars are the days the profile was
+            // VIP (the VIP pill sits under the first of them); the rest are
+            // pink. The colour used to flip at the middle of the month.
+            $isVip = in_array($key, $vipDays, true);
+            $this->chartColors[] = $isVip ? '#5C2D62' : '#DD3888';
+            $this->chartVip[] = $isVip;
         }
 
         $this->applyAxisScale();
@@ -205,7 +207,17 @@ class ProfileStatistics extends Component
             return;
         }
 
-        $step = (int) max(1, 10 ** floor(log10(max($max, 1))) / 2);
+        // Figma home-18/19: about six grid steps on a 1-2-5 scale
+        // (104 -> 0..120 by 20, 27 -> 0..30 by 5).
+        $raw = $max / 6;
+        $magnitude = 10 ** floor(log10(max($raw, 1)));
+        $step = 1;
+        foreach ([1, 2, 5, 10] as $multiplier) {
+            if ($multiplier * $magnitude >= $raw) {
+                $step = (int) max(1, $multiplier * $magnitude);
+                break;
+            }
+        }
         $this->yAxisMax = (int) (ceil($max / $step) * $step);
 
         if ($this->yAxisMax <= $max) {

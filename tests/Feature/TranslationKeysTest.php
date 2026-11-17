@@ -11,6 +11,17 @@ class TranslationKeysTest extends TestCase
 {
     public function test_front_translation_keys_used_in_blade_views_exist_in_czech_and_english(): void
     {
+        $this->assertKeysExist('front');
+    }
+
+    /** The registration modal showed the raw key auth.register.back (pass 3). */
+    public function test_auth_translation_keys_used_in_blade_views_exist_in_czech_and_english(): void
+    {
+        $this->assertKeysExist('auth');
+    }
+
+    private function assertKeysExist(string $group): void
+    {
         $keys = [];
 
         foreach (File::allFiles(resource_path('views')) as $file) {
@@ -20,8 +31,8 @@ class TranslationKeysTest extends TestCase
 
             $contents = $file->getContents();
 
-            preg_match_all('/(?:__|trans)\(\s*[\'\"](front\.[^\'\"]+)[\'\"]/', $contents, $functionMatches);
-            preg_match_all('/@lang\(\s*[\'\"](front\.[^\'\"]+)[\'\"]/', $contents, $directiveMatches);
+            preg_match_all('/(?:__|trans)\(\s*[\'\"]('.$group.'\.[^\'\"]+)[\'\"]/', $contents, $functionMatches);
+            preg_match_all('/@lang\(\s*[\'\"]('.$group.'\.[^\'\"]+)[\'\"]/', $contents, $directiveMatches);
 
             $keys = array_merge($keys, $functionMatches[1], $directiveMatches[1]);
         }

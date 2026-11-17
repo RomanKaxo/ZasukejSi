@@ -30,6 +30,8 @@
             .login-modal-scope .form-field { width: 100%; max-width: 460px; height:50px; }
             .login-modal-scope .modal-btn-primary, .login-modal-scope .modal-btn-outline { width: 100%; max-width: 460px; }
             .login-modal-scope .modal-btn-primary { height:60px; }
+            /* Figma field border is #E6E6E6 (a shared class painted it #E5E7EB). */
+            .login-modal-scope .form-field { border-color:#E6E6E6 !important; }
 
             @media (max-width: 480px) {
                 .login-modal-scope .form-container { width:280px !important; max-width:280px !important; height:337px !important; }
@@ -49,6 +51,64 @@
             @media (max-width: 480px) {
                 .login-modal-scope .modal-container { width:320px !important; max-width:320px !important; height:711px !important; }
             }
+            /* Figma home-23 (1920): card 600x808 at y 92 (5px right of centre),
+               close 40px in, title glyph 108px down, grey panel 350px tall
+               starting at +217, fields 94px apart, button 4px under the link,
+               "Ještě se neznáme?" glyph at +635, outline button 60px tall. */
+            @media (min-width: 768px) {
+                .login-modal-scope .modal-container { height:808px !important; transform:translate(5px,-2px); }
+                .login-modal-scope .modal-close-btn { top:40px !important; right:40px !important; }
+                .login-modal-scope .modal-header { margin-top:-45px !important; padding-bottom:7px; }
+                /* pass 2 (home-23): the "Login" line 1px lower, subtitle unchanged. */
+                .login-modal-scope .modal-title { position:relative; top:1px; }
+                .login-modal-scope form.form-container { height:350px !important; padding-top:34px !important; padding-left:35px !important; }
+                .login-modal-scope .modal-btn-primary { margin-top:6px !important; }
+                .login-modal-scope form.form-container > div.text-left { margin-top:-10px; }
+                .login-modal-scope form.form-container + div { margin-top:59px !important; }
+                .login-modal-scope .register-cta { margin-bottom:14px !important; }
+                .login-modal-scope .modal-btn-outline.register-btn { height:60px !important; }
+                /* pass 1 overlay (home-23): the grey panel is 511px wide at x+49 of the card
+                   with fields 26px in, 353px tall from y+216; labels sit 3px lower
+                   and 3px further in; the content column is centred ~4px right of
+                   the card centre; the CTA block starts 5px higher. */
+                .login-modal-scope .modal-header { padding-bottom:8px; position:relative; left:3.5px; }
+                .login-modal-scope form.form-container { width:511px !important; height:353px !important; margin-left:9px !important; padding-left:26px !important; padding-right:25px !important; }
+                .login-modal-scope form.form-container .form-label { position:relative; left:3px; top:3px; }
+                .login-modal-scope form.form-container > div.text-left { margin-top:-11px; margin-bottom:0 !important; padding-left:2px; }
+                .login-modal-scope .modal-btn-primary { margin-top:18.5px !important; }
+                .login-modal-scope form.form-container + div { margin-top:55px !important; position:relative; left:4.5px; }
+                .login-modal-scope form.form-container + div > :first-child { margin-bottom:14.5px !important; }
+            }
+            /* Figma phone 360 px-9 (360x1087): card 711 tall centred (1px up),
+               close 21px down, grey panel 181px down with 57px to the first
+               field, 240px fields 94px apart. */
+            @media (max-width: 480px) {
+                .login-modal-scope .modal-container { transform: translateY(-1px); }
+                .login-modal-scope .modal-close-btn { top:21px !important; }
+                .login-modal-scope .modal-header { margin-top:-22px !important; }
+                .login-modal-scope .modal-subtitle { margin-bottom:35px !important; }
+                .login-modal-scope form.form-container { padding:31px 20px 20px !important; }
+                .login-modal-scope form.form-container .form-label { margin-bottom:3px !important; }
+                .login-modal-scope form.form-container > div:has(> input[type=email]) { padding-bottom:10px; }
+                .login-modal-scope form.form-container .form-label { margin-left:4px !important; }
+                .login-modal-scope form.form-container > div.text-left { margin-top:-8px; }
+                .login-modal-scope .modal-btn-primary { margin-top:20px !important; }
+                .login-modal-scope .register-cta { margin-top:58px !important; margin-bottom:17px !important; }
+                /* pass 1 overlay (phone 360 px-9): subtitle 3px lower, fields
+                   4px under the label and 94px apart, button 6.5px lower, the
+                   CTA block sits 3px left of centre with its heading 1px higher. */
+                .login-modal-scope .modal-subtitle { margin-top:3px !important; margin-bottom:32px !important; }
+                .login-modal-scope form.form-container .form-label { margin-bottom:7px !important; }
+                .login-modal-scope form.form-container > div:has(> input[type=email]) { padding-bottom:8px; }
+                .login-modal-scope .modal-btn-primary { margin-top:20.5px !important; }
+                .login-modal-scope form.form-container + div { position:relative; left:-3px; }
+                .login-modal-scope .register-cta { margin-top:57px !important; margin-bottom:18px !important; }
+            }
+            /* pass 3: the card and the grey form are pinned to Figma heights; with the
+               "wrong credentials" box or a field message the button fell out of the
+               form and onto "Ještě se neznáme?". Only then let them grow. */
+            .login-modal-scope form.form-container:has(.form-alert, .form-error) { height:auto !important; }
+            .login-modal-scope .modal-container:has(.form-alert, .form-error) { height:auto !important; padding-bottom:40px; }
         </style>
 
         <!-- Modal Backdrop -->
@@ -60,8 +120,8 @@
             <!-- Close Button -->
             <button @click="closing = true; show = false; $wire.hide()"
                 class="modal-close-btn" style="width:35px;height:35px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:absolute;right:35px;top:35px;background:#DD3888;border:none">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#ffffff" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
             </button>
 
@@ -69,7 +129,7 @@
             <div style="padding-top:85px;">
             <!-- Header -->
             <div class="modal-header" style="margin-top:-30px;">
-                <h1 class="modal-title">{{ __('auth.login.title') }}</h1>
+                <h2 class="modal-title">{{ __('auth.login.title') }}</h2>
                 <h2 class="modal-subtitle">{{ __('auth.login.subtitle') }}</h2>
             </div>
 

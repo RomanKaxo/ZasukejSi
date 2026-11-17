@@ -5,8 +5,9 @@
             {{-- The wordmark was two hardcoded variants behind an
                  `@if(locale === 'en')`. Same three parts and the same colours,
                  but the words come from the admin now (Patička). --}}
-            <h2 class="text-xl md:text-2xl font-extrabold">
-                <span style="color:#5C2D62">{{ __('front.footer.logo_primary') }}</span><span style="color:#DD3888">{{ __('front.footer.logo_accent') }}</span><span style="color:#8C8C8C;opacity:0.78">{{ __('front.footer.logo_suffix') }}</span>
+            {{-- Same Bungee wordmark as the header (Figma home.jpg footer). --}}
+            <h2 class="footer-wordmark">
+                <span style="color:#5C2D62">{{ __('front.footer.logo_primary') }}</span><span style="color:#DD3888">{{ __('front.footer.logo_accent') }}</span><span style="color:#A5A5A5">{{ __('front.footer.logo_suffix') }}</span>
             </h2>
         </div>
 
@@ -139,8 +140,9 @@
             <!-- Desktop: Horizontal Layout -->
             <div class="hidden lg:flex footer-meta-row">
                 <div class="footer-meta-copy">
+                    <img src="{{ asset('images/icons/eco.svg') }}" alt="" aria-hidden="true" width="16" height="16" class="footer-meta-leaf">
                     <span class="footer-eco-title">{{ __('front.footer.ecological') }}</span>
-                    <span class="footer-eco-sub">{{ __('front.footer.verification') }}</span>
+                    <span class="footer-eco-sub">– {{ ltrim(__('front.footer.verification'), '–- ') }}</span>
                 </div>
 
                 <hr class="footer-sep">

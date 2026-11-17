@@ -52,8 +52,21 @@ class ProfileList extends Component
         'segmentId' => ['except' => '', 'as' => 'segment'],
     ];
 
-    public function mount()
+    /** Heading over the list; null shows "Nejlepší výsledky" (home.jpg). */
+    public $listTitle = null;
+
+    /**
+     * Element for the list heading. The homepage hero already carries the
+     * page's only <h1>, so it passes 'h2' here; /countries has no hero title
+     * and keeps the list heading as its <h1>.
+     */
+    public $headingTag = 'h1';
+
+    public function mount($listTitle = null, $headingTag = 'h1')
     {
+        $this->listTitle = $listTitle;
+        $this->headingTag = $headingTag === 'h2' ? 'h2' : 'h1';
+
         // Set filters from URL parameters
         $this->region = request('region', request('city', ''));
         $this->country = request('country', '');
@@ -96,12 +109,17 @@ class ProfileList extends Component
     public function resetFilters()
     {
         $this->reset(['region', 'country', 'countryCode', 'ageMin', 'ageMax', 'verified', 'ageGroup', 'sortRecommendation', 'hasVerifiedPhoto', 'hasVideo', 'isPornActress', 'sortNew', 'hasRating', 'segmentId']);
+        // /countries passes the picked region as the heading; once the region
+        // is cleared the list is no longer that region's, so the heading must
+        // not keep claiming it.
+        $this->listTitle = null;
         $this->resetPage();
     }
 
     public function clearLocation()
     {
         $this->reset(['region', 'country', 'countryCode']);
+        $this->listTitle = null;
         $this->resetPage();
     }
 
@@ -223,7 +241,10 @@ class ProfileList extends Component
         $query = Profile::with(['user:id,name,last_activity', 'media', 'segments'])
             ->approved()
             ->public()
-            ->select($this->getPublicProfileColumns());
+            ->select($this->getPublicProfileColumns())
+            ->withExists('activeSubscription as is_vip')
+            ->withCount('ratings')
+            ->withAvg('ratings', 'percentage');
 
         // Featured profiles lead the unfiltered homepage. This used to be done by
         // taking the featured profiles, repeating them until they filled six
@@ -270,9 +291,7 @@ class ProfileList extends Component
             // Sort by: 1) VIP status, 2) average rating, 3) newest
             $sortDirection = $this->sortRecommendation === 'desc' ? 'desc' : 'asc';
             
-            $query->withAvg('ratings', 'percentage')
-                  ->withExists('activeSubscription as is_vip')
-                  ->orderBy('is_vip', $sortDirection)
+            $query->orderBy('is_vip', $sortDirection)
                   ->orderBy('ratings_avg_percentage', $sortDirection);
         }
 
@@ -294,8 +313,7 @@ class ProfileList extends Component
 
         if ($this->hasRating) {
             // Filter profiles that have at least one rating and order by most rated (rating count)
-            $query->withCount('ratings')
-                  ->whereHas('ratings')
+            $query->whereHas('ratings')
                   ->orderBy('ratings_count', 'desc');
         }
 

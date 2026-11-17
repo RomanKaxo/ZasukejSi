@@ -19,14 +19,14 @@
          role="dialog" aria-modal="true" aria-labelledby="age-gate-heading">
         <div class="age-gate__backdrop"></div>
 
-        <div class="age-gate__card">
+        <div class="age-gate__card" tabindex="-1">
             {{-- Křížek v návrhu je vpravo nahoře. Vede pryč ze stránky, ne
                  k tichému zavření — brána, kterou lze odklepnout křížkem,
                  by nebyla brána. --}}
             <a href="{{ $ageGateLeaveUrl }}" class="age-gate__close" rel="noopener nofollow"
                aria-label="{{ __('front.age_gate.leave') }}">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <path d="M1 1L15 15M15 1L1 15" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"/>
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true">
+                    <path d="M1 1L10 10M10 1L1 10" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/>
                 </svg>
             </a>
 
@@ -65,10 +65,11 @@
         }
         #age-gate[hidden] { display: none; }
 
+        /* Figma phone 360 px-10: #5C2D62CC like the other modals (was 88 %). */
         .age-gate__backdrop {
             position: absolute;
             inset: 0;
-            background: rgba(92, 45, 98, 0.88);
+            background: rgba(92, 45, 98, 0.8);
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
         }
@@ -182,10 +183,45 @@
         /* Dokud brána stojí, stránka pod ní neroluje. */
         html.age-gate-open, body.age-gate-open { overflow: hidden; }
 
+        /* Figma `phone 360 px-10`: card 320 wide with 30px sides, close 35px
+           20px from the corner, a 204px "18" fading to white, 28px heading,
+           11/18.5 body copy, 12/20 bold agreement, two 260x50 buttons 10px apart. */
         @media (max-width: 480px) {
-            .age-gate__numeral { font-size: 104px; }
-            .age-gate__heading { font-size: 30px; }
+            #age-gate { padding: 0 20px; }
+            .age-gate__card { max-width: 320px; max-height: calc(100vh - 20px); border-radius: 24px; padding: 0 30px 51px; }
+            .age-gate__close { top: 19px; right: 20px; width: 35px; height: 35px; }
+            .age-gate__numeral {
+                margin: 54px 0 0; font-size: 210px; line-height: 180px; height: 155px; overflow: hidden;
+                letter-spacing: 0;
+                background: linear-gradient(180deg, #B39FB8 22%, #FFFFFF 62%);
+                -webkit-background-clip: text; background-clip: text; color: transparent;
+            }
+            .age-gate__heading { margin: 0 0 17px; font-size: 28px; line-height: 42px; }
+            .age-gate__body { margin: 0 0 15px; font-size: 11px; line-height: 18.5px; }
+            .age-gate__agreement { margin: 0 0 24px; font-size: 12px; line-height: 20px; }
+            .age-gate__actions { gap: 10px; padding-top: 0; }
+            .age-gate__enter, .age-gate__leave { height: 50px; font-size: 16px; }
+            /* pass 1 overlay (phone 360 px-10): card 921 tall (88..1009), close
+               20px down, heading 214px and body 271px into the card, body on an
+               18px grid. */
+            .age-gate__close { top: 20px; }
+            .age-gate__numeral {
+                margin-top: 64px; height: 143px;
+                background: linear-gradient(180deg, #B49DB7 8%, #BEACC2 31%, #CFC3D1 53%, #E9E2EA 75.5%, #FFFFFF 92%);
+                -webkit-background-clip: text; background-clip: text;
+            }
+            .age-gate__card { transform: translateY(5px); }
+            .age-gate__body { line-height: 18px; margin-bottom: 15px; }
+            .age-gate__agreement { margin-bottom: 22.5px; }
+            .age-gate__card { padding-bottom: 50.5px; }
+            /* pass 2 element measurement: close 1px higher, body 1px lower,
+               buttons 1px higher, card height unchanged. */
+            .age-gate__close { top: 19px; }
+            .age-gate__heading { margin-bottom: 18px; }
         }
+        /* Focus moves into the dialog without painting a ring on "Vstoupit"
+           (the frame shows none); keyboard users still get it on Tab. */
+        .age-gate__card:focus { outline: none; }
     </style>
 
     <script>
@@ -223,7 +259,8 @@
                     document.body.classList.remove('age-gate-open');
                     gate.parentNode.removeChild(gate);
                 });
-                enter.focus();
+                var card = gate.querySelector('.age-gate__card');
+                if (card) { card.focus({ preventScroll: true }); }
             }
         })();
     </script>

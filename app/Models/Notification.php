@@ -227,6 +227,55 @@ class Notification extends Model
         ]);
     }
 
+    /**
+     * A notice whose text is shown in the reader's language.
+     *
+     * The text used to be rendered when the event happened, i.e. in the
+     * language of whoever triggered it: an admin approving a profile in the
+     * English admin sent the Czech provider "Profile Approved". The keys are
+     * stored instead ("notifications.x::{params}") and translated on display.
+     */
+    public static function createTranslatedForUser($userId, string $titleKey, string $messageKey, array $params = [], string $type = 'info')
+    {
+        return static::createForUser(
+            $userId,
+            static::encodeTranslationKey($titleKey, $params),
+            static::encodeTranslationKey($messageKey, $params),
+            $type
+        );
+    }
+
+    protected static function encodeTranslationKey(string $key, array $params): string
+    {
+        return $params === [] ? $key : $key . '::' . json_encode($params, JSON_UNESCAPED_UNICODE);
+    }
+
+    /** Translate a stored key (see createTranslatedForUser); plain text passes through. */
+    public static function translateStored(?string $value): ?string
+    {
+        if ($value === null || ! str_starts_with($value, 'notifications.')) {
+            return $value;
+        }
+
+        if (! preg_match('/^(notifications\.[A-Za-z0-9_.]+)(?:::(\{.*\}))?$/s', $value, $m) || ! \Illuminate\Support\Facades\Lang::has($m[1])) {
+            return $value;
+        }
+
+        $params = isset($m[2]) ? (json_decode($m[2], true) ?: []) : [];
+
+        return __($m[1], $params);
+    }
+
+    public function getTitleAttribute($value): ?string
+    {
+        return static::translateStored($value);
+    }
+
+    public function getMessageAttribute($value): ?string
+    {
+        return static::translateStored($value);
+    }
+
     public static function createForUser($userId, $title, $message, $type = 'info')
     {
         return static::create([

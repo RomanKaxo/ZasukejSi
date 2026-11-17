@@ -205,20 +205,37 @@ label {
   @apply relative inline-block;
 }
 
+/* Figma home.jpg / home-25.jpg: a 60x60 #E8E8E8 tile (radius 8) with a 26 px
+   round flag; open, a #D0D0D0 strip of the same width hangs under it
+   (flags centred 44 px apart, rounded bottom only, no border or shadow). */
 .language-dropdown-toggle {
-  @apply inline-flex items-center justify-center p-4 bg-gray-200 border-0 rounded-lg cursor-pointer hover:bg-gray-50 transition-all duration-200 ease-in-out outline-none;
-  width: 58px;
-  height: 58px;
+  @apply inline-flex items-center justify-center border-0 cursor-pointer transition-all duration-200 ease-in-out outline-none;
+  width: 60px;
+  height: 60px;
+  padding: 0;
+  border-radius: 8px;
+  background: #E8E8E8;
 }
 
-.language-dropdown-toggle:focus {
-  box-shadow: 0 0 0 2px rgba(221,56,136,0.12);
-  border-color: var(--color-primary-500);
+.language-dropdown-toggle:hover {
+  background: #DFDFDF;
+}
+
+.language-dropdown-toggle[aria-expanded="true"] {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.language-dropdown-toggle:focus-visible {
+  box-shadow: 0 0 0 2px rgba(221,56,136,0.35);
   outline: none;
 }
 
 .language-dropdown-toggle img {
-  @apply w-full h-full object-contain;
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 999px !important;
+  object-fit: cover;
 }
 
 .language-dropdown-toggle .dropdown-arrow {
@@ -230,8 +247,17 @@ label {
 }
 
 .language-dropdown-menu {
-  @apply absolute right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50;
-  width: 58px;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  width: 60px;
+  margin: 0 !important;
+  padding: 7px 0 6px !important;
+  background: #D0D0D0 !important;
+  border: 0 !important;
+  border-radius: 0 0 8px 8px !important;
+  box-shadow: none !important;
+  z-index: 50;
 }
 
 [x-cloak] {
@@ -239,12 +265,20 @@ label {
 }
 
 .language-dropdown-item {
-  @apply flex items-center justify-center py-4 hover:bg-gray-100 cursor-pointer transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg;
-  height: 58px;
+  @apply flex items-center justify-center cursor-pointer transition-colors duration-150;
+  height: 44px;
+  margin: 0 !important;
+}
+
+.language-dropdown-item:hover {
+  background: #C6C6C6;
 }
 
 .language-dropdown-item img {
-  @apply w-full h-full object-contain;
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 999px;
+  object-fit: cover;
 }
 
 .language-dropdown-item.active {
@@ -1090,6 +1124,47 @@ body.modal-open {
 
 
 /* Footer custom layout */
+.footer-wordmark {
+  font-family: 'Bungee', cursive;
+  font-weight: 400;
+  font-size: 24.4px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Figma home.jpg footer (desktop): Registrace 141x55 with 16/400 type,
+   link columns as wide as their words, 48 px apart and 55 px after the
+   button, rows 35 px apart; eco line with a 16 px leaf and an en dash. */
+@media (min-width: 1024px) {
+  .site-footer .footer-links {
+    display: flex;
+    gap: 0 48px;
+    margin-left: 55px;
+    margin-right: auto;
+  }
+
+  .site-footer .footer-col { gap: 14px; }
+
+  .site-footer .footer-register { font-size: 16px; font-weight: 400; }
+
+  .footer-meta-leaf { width: 16px; height: 16px; margin-right: 1px; }
+
+  /* Same 1134 px column as the header and the cards (x 393–1527). */
+  .site-footer-container,
+  .site-footer .footer-main,
+  .site-footer .footer-meta-row { width: 1134px; max-width: 1134px; }
+
+  .site-footer .footer-security { margin-right: 2px; }
+
+  /* Vertical rhythm of the frame: 124 px from the last block to the
+     wordmark, 77 px to the button row, 105 px to the eco line, 81 px under
+     the copyright line to the page end. */
+  .site-footer { padding-top: 128px !important; padding-bottom: 0 !important; }
+  .site-footer .footer-wordmark { margin-top: 0; }
+  .site-footer-container > .text-center:first-child { margin-bottom: 35px !important; }
+  .site-footer .footer-meta { padding-top: 35px !important; }
+}
+
 .footer-main {
   width: 1140px;
   max-width: 1140px;
@@ -1189,6 +1264,13 @@ body.modal-open {
   font-size: 11px;
   color: #5C2D62;
   line-height: 1.05;
+}
+
+/* home.jpg footer: two lines 16 px apart, broken after "platforma s". */
+@media (min-width: 1024px) {
+  .footer-main .footer-security-text { line-height: 16px; max-width: 220px; margin-left: 11px; }
+  /* Padlock ink at x 1192, 2 px below the text's first line top. */
+  .footer-main .footer-security img { position: relative; top: 2px; margin-left: -1px; }
 }
 
 /* Footer ecological label styles */
@@ -1565,10 +1647,8 @@ body.modal-open {
 
 
 /* Phone frame (360px): the card is 146px wide with the photo filling it edge
-   to edge, two per row, 20px apart, in a 23px gutter. The 767px block above
-   sizes the card at 160px with a 145px photo centred inside it, which leaves
-   the photo inset and the columns too wide. Scoped to the same breakpoint as
-   .profile-list-cards-grid so tablets keep the wider card. */
+   to edge. Kept for the other places the card appears on a phone (favourites,
+   archive, sliders); the listing grid below sizes its own cards. */
 @media (max-width: 426px) {
   .home-profile-card,
   .home-profile-card-content {
@@ -1578,4 +1658,271 @@ body.modal-open {
   .home-profile-card-media {
     width: 146px !important;
   }
+}
+
+/* Listing grid on a phone — homepage (profile-list) and country listing.
+   Measured on the 360px frame (phone 360 px-11): two 145px columns 20px apart
+   in 25px gutters, 183px photos, rows 50px apart. This used to apply only up
+   to 426px while the wrapper is `flex flex-col` until md, so from 427 to 767px
+   (iPhone Plus / Pro Max at 430px included) the list fell back to a single
+   160px card with empty space beside it. Columns are fluid, so a wider phone
+   keeps the same gutters and the photo keeps the frame's 145:183 ratio.
+   The container already pads 16px; 9px more gives the 25px gutter. */
+@media (max-width: 767px) {
+  .profile-list-cards-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 20px !important;
+    row-gap: 50.6px !important;
+    margin-left: 9px;
+    margin-right: 9px;
+  }
+
+  /* The frame shows the eco note after three full rows (six cards). The
+     markup inserts it before the 6th card, which suits the five-column
+     desktop row, so on the phone the 6th card is moved in front of it. */
+  .profile-list-cards-grid > .profile-list-eco,
+  .profile-list-cards-grid > .profile-list-eco ~ :nth-child(n+8) {
+    order: 1;
+  }
+
+  /* Eco note as in the frame: full 310px width, 85px tall, 30px leaf 25px
+     in, text 15px after it on 16px lines; 50px from the cards around it. */
+  .profile-list-cards-grid > .profile-list-eco {
+    margin: 1px 0;
+    padding: 0;
+  }
+
+  .profile-list-eco > div {
+    max-width: none;
+    width: 100%;
+    height: 85px;
+    padding: 0 10px 0 25px;
+    gap: 14px;
+  }
+
+  .profile-list-eco > div > img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .profile-list-eco > div > div {
+    gap: 0;
+    max-width: 240px;
+  }
+
+  .profile-list-eco > div > div > span {
+    line-height: 16px;
+  }
+
+  .profile-list-cards-grid > .home-profile-card,
+  .profile-list-cards-grid .home-profile-card-content {
+    width: 100% !important;
+    min-width: 0;
+  }
+
+  .profile-list-cards-grid .home-profile-card-media {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 145 / 183;
+    margin: 0;
+  }
+
+  .profile-list-cards-grid .home-profile-card-image {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Name 20.6px under the photo, flush with its left edge; then the two
+     stat pills (30px, 6px apart) and, 6px under them, the rating bar. */
+  .profile-list-cards-grid .home-profile-card-content {
+    padding: 16.5px 0 0 !important;
+    gap: 0;
+  }
+
+  .profile-list-cards-grid .home-profile-card-header {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .profile-list-cards-grid .home-profile-card-rating-wrap {
+    width: 100%;
+    margin: 16px 0 0;
+    gap: 6px;
+  }
+
+  .profile-list-cards-grid .home-profile-card-stats {
+    width: 100%;
+    gap: 6px !important;
+  }
+
+  .profile-list-cards-grid .home-profile-card-stat {
+    flex: 1 1 0;
+    width: auto !important;
+  }
+
+  .profile-list-cards-grid .home-profile-card-rating-badge {
+    order: 2;
+    height: 30px !important;
+  }
+
+  /* An open rating ("Hodnocení: 4,7/5 ♥") is 35 px tall in the phone
+     frames (phone 360 px-17…20); only the locked one is 30. */
+  .profile-list-cards-grid .home-profile-card-rating-badge:not(.home-profile-card-rating-badge--locked) {
+    height: 35px !important;
+  }
+
+  /* Locked rating: "Hodnocení:" on #F2F2F2 over 82 of the 145px, the pink
+     padlock on #E8E8E8 beside it. */
+  .profile-list-cards-grid .home-profile-card-rating-badge--locked > div:first-child {
+    flex: 0 0 56.55% !important;
+    padding: 0 !important;
+    background: #F2F2F2 !important;
+  }
+
+  .profile-list-cards-grid .home-profile-card-rating-badge--locked > div:first-child {
+    border-radius: 8px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .profile-list-cards-grid .home-profile-card-name {
+    color: #505050 !important;
+  }
+
+  /* Badges 10px in from the photo's corner, 47x25, 6px apart; the
+     verified one is camera + tick side by side (the inline style stacks
+     them for the desktop "OVĚŘENO" label). */
+  .profile-list-cards-grid .home-profile-card-badge-stack {
+    top: 10px !important;
+    left: 10px !important;
+    gap: 6px;
+  }
+
+  .profile-list-cards-grid .home-profile-card-verified-badge,
+  .profile-list-cards-grid .home-profile-card-vip-mobile {
+    height: 25px !important;
+  }
+
+  .profile-list-cards-grid .home-profile-card-verified-badge {
+    flex-direction: row !important;
+  }
+
+  .profile-list-cards-grid .home-profile-card-verified-camera {
+    margin-top: 0 !important;
+  }
+
+  /* Photo dots 16px above the photo's bottom edge. */
+  .profile-list-cards-grid .home-profile-card-media > .bottom-3 {
+    bottom: 16px;
+  }
+
+  /* The frame's padlock is the icon at its natural 16x18 (2px stroke),
+     1.5px left of centre. */
+  .profile-list-cards-grid .home-profile-card-rating-badge--locked > div:last-child > span {
+    width: 16px !important;
+    height: 18px !important;
+    margin-right: 3px;
+  }
+
+  .profile-list-cards-grid .home-profile-card-rating-badge--locked > div:last-child svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+/* Card CTA loupe (Figma home.jpg): 2 px stroke at the 20 px icon size. */
+.home-profile-card-cta-icon svg path {
+  stroke-width: 3;
+}
+
+/* Czech desktop advert (Figma home.jpg, panel x 294–1626, y 2032–2683):
+   copy from x 488, title ink from y 2205 (35 px), 20 px #5C5C5C subtitle,
+   a 299 × 50 button at y 2343 and three 299 × 107 frosted boxes 21 px
+   apart at y 2435 with a 35 px icon 34 px in and 14 px text 101 px in.
+   The English advert keeps its own layout (vybraná země / home-24). */
+@media (min-width: 1280px) {
+  /* Photo crop fitted to the frame: 1400 × 900 from x −48, y −21. */
+  html[lang="cs"] .advert-hero .hidden.lg\:block > .absolute > img { position: absolute; width: 1400px !important; height: 900px !important; max-width: none; left: -48px; top: -21px; object-fit: fill; }
+  html[lang="cs"] .advert-desk-inner { padding: 169.5px 0 0 193.5px !important; height: 651px; }
+  html[lang="cs"] .advert-desk-copy { margin-bottom: 0 !important; max-width: none; }
+  html[lang="cs"] .advert-desk-quote { width: 38px !important; height: 38px !important; left: -58px !important; top: -24px !important; }
+  html[lang="cs"] .advert-desk-copy .advert-hero-title { font-size: 35px; line-height: 40px; letter-spacing: 0.18px; margin-bottom: 0 !important; }
+  html[lang="cs"] .advert-desk-copy .advert-hero-subtitle { font-size: 20px; line-height: 30px; color: #5C5C5C; max-width: 500px; margin-top: 14px; }
+  html[lang="cs"] .advert-desk-cta { margin: 27px 0 0 !important; }
+  html[lang="cs"] .advert-desk-cta .btn-primary { width: 299px; min-width: 0; height: 50px; padding-top: 0 !important; padding-bottom: 0 !important; justify-content: center; }
+  html[lang="cs"] .advert-desk-features { grid-template-columns: repeat(3, 299px); gap: 21px !important; margin-top: 44px; }
+  html[lang="cs"] .advert-desk-features .feature-block {
+    height: 107px; padding: 0 16px 0 34px; gap: 31px;
+    background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+    box-shadow: 0 15px 15px rgba(220, 214, 221, 0.7); border-radius: 10px;
+  }
+  html[lang="cs"] .advert-desk-features .feature-block-icon { width: 35px; height: 35px; }
+  html[lang="cs"] .advert-desk-features .feature-block-icon { overflow: visible; }
+  html[lang="cs"] .advert-desk-features .feature-block-icon > span { display: block; position: relative; top: -2px; width: 37px !important; height: 35px !important; flex: 0 0 auto; }
+  html[lang="cs"] .advert-desk-features .feature-block:nth-child(2) .feature-block-icon > span { width: 31px !important; height: 34px !important; }
+  html[lang="cs"] .advert-desk-features .feature-block:nth-child(3) .feature-block-icon > span { width: 35px !important; height: 29px !important; }
+  /* x-icons :preserveColors strips stroke-width with the size attributes;
+     the frame draws these at their native 3 px. */
+  html[lang="cs"] .advert-desk-features .feature-block-icon svg path { stroke-width: 3px; }
+  html[lang="cs"] .advert-desk-features .feature-block-text { font-size: 14px; line-height: 20px; color: #505050; }
+}
+
+/* English desktop advert (Figma home-24, panel 903 × 508 at x 624, y 1858
+   inside the list column): copy from x 704 (80 px in), title ink from
+   y 1940 on two 40 px lines with the quote mark top right of it
+   (x 1045, y 1914), 20/30 subtitle from y 2040, a 363 × 50 button at
+   y 2117 and two 363 × 87 frosted boxes 19 px apart at y 2198 with the
+   icon 35 px and the text 98 px in. Cards sit 80 px above and below it,
+   the eco strip 41 px from the card rows. */
+@media (min-width: 1280px) {
+  html[lang="en"] .profile-list-cards-grid > .profile-list-eco { margin: 20px 0 !important; }
+  html[lang="en"] .pl-pad--grid .pl-advert { margin-top: 59px !important; margin-bottom: 59px !important; }
+  /* Photo crop fitted to the frame: 933 × 600 from x −15, y −16. */
+  html[lang="en"] .advert-hero .hidden.lg\:block > .absolute > img { position: absolute; width: 933px !important; height: 600px !important; max-width: none; left: -15px; top: -16px; object-fit: fill; }
+  html[lang="en"] .advert-desk-inner { padding: 77.5px 0 0 80px !important; height: 508px; }
+  html[lang="en"] .advert-desk-copy { margin-bottom: 0 !important; max-width: none; position: relative; }
+  html[lang="en"] .advert-desk-quote { width: 38px !important; height: 38px !important; left: 341px !important; top: -26px !important; }
+  html[lang="en"] .advert-desk-copy .advert-hero-title { font-size: 35px; line-height: 40px; letter-spacing: 0.18px; margin-bottom: 0 !important; max-width: 330px; }
+  html[lang="en"] .advert-desk-copy .advert-hero-subtitle { font-size: 20px; line-height: 30px; color: #5C5C5C; max-width: 500px; margin-top: 14px; }
+  html[lang="en"] .advert-desk-cta { margin: 27.5px 0 0 !important; }
+  html[lang="en"] .advert-desk-cta .btn-primary { width: 363px; min-width: 0; height: 50px; padding-top: 0 !important; padding-bottom: 0 !important; justify-content: center; gap: 14px; }
+  html[lang="en"] .advert-desk-cta__icon { width: 22px; height: 22px; }
+  html[lang="en"] .advert-desk-features--en { grid-template-columns: repeat(2, 363px) !important; gap: 19px !important; justify-items: start !important; margin-top: 31px; }
+  html[lang="en"] .advert-desk-features--en .feature-block {
+    width: 363px; height: 87px; min-height: 0; padding: 0 16px 0 35px !important; gap: 0;
+    border-radius: 10px; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+  }
+  html[lang="en"] .advert-desk-features--en .feature-block-icon { width: 63px; height: 34px; flex: 0 0 63px; justify-content: flex-start; display: flex; align-items: center; }
+  html[lang="en"] .advert-desk-features--en .feature-block-icon > span { width: 31px !important; height: 34px !important; flex: 0 0 auto; position: relative; left: -1px; top: 1px; }
+  html[lang="en"] .advert-desk-features--en .feature-block:nth-child(2) .feature-block-icon > span { width: 35px !important; height: 29px !important; left: -2px; top: 1.5px; }
+  html[lang="en"] .advert-desk-features--en .feature-block-icon svg path { stroke-width: 3px; }
+  html[lang="en"] .advert-desk-features--en .feature-block-text { font-size: 14px !important; line-height: 20px !important; color: #5C5C5C !important; }
+}
+
+/* Advert panel corners (home.jpg, home-24): ~15 px, not the 24 px rounded-3xl. */
+@media (min-width: 1280px) {
+  .advert-hero { border-radius: 15px; }
+}
+
+/* English phone listing (phone 360 px-17…20): under the name a 145 × 30
+   #F2F2F2 location pill (12 × 15 pink pin, 11 px label) instead of the
+   cm / years pair, then the rating 5 px below it. */
+@media (max-width: 767px) {
+  html[lang="en"] .profile-list-cards-grid .home-profile-card-stats { display: none !important; }
+  html[lang="en"] .profile-list-cards-grid .home-profile-card-location {
+    display: flex !important;
+    order: 1;
+    width: 100%;
+    height: 30px;
+    padding: 0 6px !important;
+    gap: 7px !important;
+    margin-top: 1px;
+    background: #F2F2F2;
+    border-radius: 8px;
+  }
+  html[lang="en"] .profile-list-cards-grid .home-profile-card-location > img { width: 12px !important; height: 15px !important; flex: 0 0 12px; }
+  html[lang="en"] .profile-list-cards-grid .home-profile-card-location > h5 { line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  html[lang="en"] .profile-list-cards-grid .home-profile-card-rating-wrap { gap: 5px; }
+  html[lang="en"] .profile-list-cards-grid .home-profile-card-rating-badge { order: 2; }
 }

@@ -14,17 +14,27 @@
     // page nobody had listed here (archived notifications) sat 170px too low.
     // The outlier is the exception now, not the rule.
     $sidebarOffsetClass = match($activeItem) {
-        'dashboard' => 'md:mt-[258px]', // heading carries the stats row
-        'reviews' => 'md:mt-[89px]',
-        default => 'md:mt-[88px]',
+        'dashboard' => 'md:mt-[238px]', // heading carries the stats row (Figma home-2: 238px)
+        'reviews' => 'md:mt-[88px]',
+        default => 'md:mt-[85px]',
     };
 @endphp
+{{-- Figma home-2/11/17: items 210x50, 1px #E6E6E6 border (crisp in home-17;
+     home-2 draws it on a half pixel, which reads as 2px #F0F0F0), radius 8, 10px
+     apart, icon 18px from the border and 10px before the label; the column
+     sits 1px right of the notice bar (x 394) and 79px left of the content. --}}
+<style>
+    .account-sidebar .nav-button { width: 210px; max-width: 100%; height: 50px; padding: 0 16px 0 18px; border-width: 1px; border-color: #E6E6E6; border-radius: 8px; }
+    .account-sidebar .nav-button.active, .account-sidebar .nav-button:hover { border-color: var(--color-primary-500); }
+    .account-sidebar .nav-button > svg, .account-sidebar .nav-button > span { margin-right: 10px; }
+    .account-sidebar .nav-list > li + li { margin-top: 10px; }
+</style>
 <aside
-    class="hidden md:block w-full h-full md:w-[211px] md:relative bg-white overflow-y-auto {{ $sidebarOffsetClass }}"
+    class="account-sidebar hidden md:block w-full h-full md:w-[211px] md:ml-px md:relative bg-white overflow-y-auto {{ $sidebarOffsetClass }}"
 >
     <!-- Navigation Menu -->
     <nav>
-        <ul class="space-y-3">
+        <ul class="nav-list">
             <li>
                 <a href="{{ route('account.dashboard') }}" 
                    class="nav-button {{ $activeItem === 'dashboard' ? 'active' : '' }}">
@@ -72,9 +82,8 @@
                      controller action and the ratings data all exist. --}}
                 <a href="{{ route('account.reviews') }}"
                    class="nav-button {{ $activeItem === 'reviews' ? 'active' : '' }}">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                    </svg>
+                    {{-- Figma home-2 draws this item with the thumbs-up icon. --}}
+                    <x-icons name="ThumbsUp" class="w-5 h-5 mr-3" />
                     {{ __('front.account.sidebar.reviews') }}
                 </a>
             </li>
@@ -85,9 +94,13 @@
         @php
             $vipOwnPhotoUrl = auth()->user()?->profile?->getFirstImageUrl('medium');
         @endphp
-        <div class="mt-6 relative hidden md:block">
+        {{-- Figma home-2: card 30px under the last item, photo 313 tall, gold
+             panel 159 tall incl. the 4px gold rule overlapping the photo by 3px
+             (pass 2 measurement: panel top 310px under the card top), title 24/700, button
+             174x46 with 18px side padding, star 57px reaching 37px up. --}}
+        <div class="mt-[30px] relative hidden md:block w-[210px]">
             <!-- VIP Image (own profile photo) -->
-            <div class="relative w-full aspect-[210/334] overflow-hidden rounded-t-xl">
+            <div class="relative w-full h-[313px] overflow-hidden rounded-t-[8px]">
                 @if ($vipOwnPhotoUrl)
                     <img
                         src="{{ $vipOwnPhotoUrl }}"
@@ -104,12 +117,12 @@
             </div>
 
             <!-- Golden Background Section -->
-            <div class="relative p-5 rounded-b-xl border-b-3 border-gold-light" style="background: linear-gradient(180deg, #F5E4B8 0%, #FFFFFF 100%);">
+            <div class="relative -mt-[3px] h-[159px] px-[18px] pt-[33px] rounded-[8px] border-b-4 border-[#F6E5BA]" style="background: linear-gradient(180deg, #F5E4B8 0%, #FFFFFF 100%);">
             <!-- Gold Star - Absolutely Positioned -->
-            <img src="{{ asset('images/gold-star.png') }}" alt="Gold Star" class="absolute -top-10 left-1/2 -translate-x-1/2 w-16 h-16">
-            
-            <h3 class="text-3xl py-3font-bold text-gold mb-2 text-center">{{ __('front.account.sidebar.vip_title') }}</h3>
-            <a href="{{ route('account.subscription.index') }}" class="btn-gold w-full text-center">
+            <img src="{{ asset('images/gold-star.png') }}" alt="Gold Star" class="absolute -top-[35px] left-[calc(50%-4px)] -translate-x-1/2 w-[57px] h-[57px]">
+
+            <h3 class="text-[24px] leading-[36px] font-bold text-[#A07613] text-center whitespace-nowrap" style="font-family: 'Poppins', sans-serif;">{{ __('front.account.sidebar.vip_title') }}</h3>
+            <a href="{{ route('account.subscription.index') }}" class="btn-gold w-full text-center !h-[46px] !py-0 !text-[16px] mt-[14px]">
                 {{ __('front.account.sidebar.vip_button') }}
             </a>
             </div>

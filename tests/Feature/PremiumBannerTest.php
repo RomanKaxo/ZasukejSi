@@ -59,6 +59,15 @@ class PremiumBannerTest extends TestCase
             ->assertDontSee('E6FEE8', false);
     }
 
+    /** home-6 / phone 360 px-2: without Premium the member gets the pink bar selling it. */
+    public function test_a_member_without_a_membership_is_offered_premium(): void
+    {
+        $this->actingAs($this->member())
+            ->get('/account/member/ratings')
+            ->assertSee('FFE0E5', false)
+            ->assertSee(__('front.membership.upsell_link'), false);
+    }
+
     public function test_the_countdown_and_the_link_show_when_the_end_is_near(): void
     {
         $member = $this->member();

@@ -6,13 +6,12 @@
     $activeItem = 'settings';
 @endphp
 
+@section('member-heading')
+    <h1 class="member-title">{{ __('front.account.password.title') }}</h1>
+@endsection
+
 @section('member-content')
-    <div class="mb-8">
-        <h1 class="text-4xl font-semibold text-secondary py-6 text-center">
-            {{ __('front.account.password.title') }}
-        </h1>
-        <hr>
-    </div>
+    <div class="mb-8"></div>
 
     @if (session('status'))
     <div class="alert alert-success flex items-center justify-between my-3">

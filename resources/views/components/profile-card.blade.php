@@ -68,7 +68,7 @@
 
 <div class="{{ $isReported ? 'h-[510px] reported-profile-card' : '' }} {{ $showRemoveButton ? '' : 'overflow-hidden' }} bg-white rounded-lg transition-all duration-300 {{ $canOpenDetail ? 'cursor-pointer' : '' }} group relative z-10 home-profile-card"
      style="width: 214px; {{ !$isReported ? 'height: ' . ($simpleMode ? '340px' : $cardHeight) . ';' : '' }} {{ $isReported ? 'border-top-left-radius:15px;border-bottom-left-radius:15px;border-top-right-radius:0;border-bottom-right-radius:0;' : 'border-radius: 15px;' }} box-shadow: 0 15px 15px 0 rgba(92, 45, 98, 0.1);"
-     x-cloak x-data="{ removed: false, removeError: false, showBtn: false, currentIndex: 0, imageUrls: [] }" data-image-urls='@json($imageUrls)' x-init="imageUrls = JSON.parse($el.getAttribute('data-image-urls') || '[]')" x-show="!removed" @mouseenter="showBtn = true" @mouseleave="showBtn = false">
+     x-cloak x-data="{ removed: false, removeError: false, showBtn: false, currentIndex: 0, imageUrls: [], touchX: null, touchY: null }" data-image-urls='@json($imageUrls)' x-init="imageUrls = JSON.parse($el.getAttribute('data-image-urls') || '[]')" x-show="!removed" @mouseenter="showBtn = true" @mouseleave="showBtn = false">
     @if($showRemoveButton)
     <!-- Remove Button - Hidden by default, shown on hover -->
     <button
@@ -110,19 +110,27 @@
     @endif
 
     <!-- Profile Image -->
-    <div class="relative overflow-hidden home-profile-card-media" style="width: 214px; height: {{ $imageHeight }}; border-radius: 15px;">
+    {{-- Phones have no hover arrows, only 10 px dots: a horizontal swipe on
+         the photo moves between photos too. A moved touch does not fire the
+         click, so a swipe never opens the detail; a tap still does. --}}
+    <div class="relative overflow-hidden home-profile-card-media" style="width: 214px; height: {{ $imageHeight }}; border-radius: 15px;"
+        @if(!$simpleMode && !$shouldBlur && $hasMultiplePhotos)
+        @touchstart.passive="touchX = $event.changedTouches[0].clientX; touchY = $event.changedTouches[0].clientY"
+        @touchend="if (touchX !== null) { const dx = $event.changedTouches[0].clientX - touchX, dy = $event.changedTouches[0].clientY - touchY; if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) { currentIndex = (currentIndex + (dx < 0 ? 1 : imageUrls.length - 1)) % imageUrls.length } } touchX = null"
+        @endif
+    >
 
         {{-- Odznaky zůstávají ostré i přes rozostřenou fotku, jak je v návrhu:
              rozostřuje se fotka a jméno, ne to, čím se profil vyznačuje.
              Dřív se skrývaly spolu s fotkou, což při přepnutí na Premium bránu
              znamenalo karty úplně bez odznaků. --}}
         @if(($isVerified || $isVip || $isOnline || $extraSegments->isNotEmpty()) && !$simpleMode)
-        <div class="absolute {{ $isReported ? 'top-1' : 'top-3' }} left-3 z-20 home-profile-card-badge-stack">
+        <div class="absolute {{ $isReported ? 'top-1' : 'top-[10px]' }} left-[10px] z-20 home-profile-card-badge-stack">
             <!-- Verified Badge -->
             @if($isVerified && !$isReported)
             <div class="home-profile-card-badge">
                 <div class="home-profile-card-verified-badge" style="width:62px;height:40px;border-radius:10px;background:#CDEFD0;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;">
-                    <x-icons name="camera" class="home-profile-card-verified-camera" style="width:18px;height:18px;color:#00B80F;margin-top:4px;" />
+                    <x-icons name="camera" class="home-profile-card-verified-camera" style="width:18px;height:18px;color:#00B80F;margin-top:3px;" />
                     <p class="home-profile-card-verified-copy" style="margin:-3px 0 0;font-family:'Poppins',sans-serif;font-weight:900;font-size:9px;line-height:18px;letter-spacing:0;color:#00B80F;text-align:center;white-space:nowrap;">
                         {{ __('front.profiles.list.verified') }}
                     </p>
@@ -168,7 +176,7 @@
             @php $firstImageUrl = $imageUrls[0] ?? null; @endphp
             @if($firstImageUrl)
                 @foreach($imageUrls as $i => $url)
-                    <img src="{{ $url }}" alt="{{ $profileName }}"
+                    <img src="{{ $url }}" alt="{{ $profileName }}" loading="lazy" decoding="async"
                         class="w-[214px] h-[265px] object-cover home-profile-card-image absolute inset-0 transition-all duration-500 ease-in-out {{ $i === 0 ? 'opacity-100 scale-100' : 'opacity-0 scale-105' }}"
                         x-bind:class="{ 'opacity-100 scale-100': currentIndex === {{ $i }}, 'opacity-0 scale-105': currentIndex !== {{ $i }} }" />
                 @endforeach
@@ -189,17 +197,17 @@
 
         @if(!$simpleMode && !$shouldBlur && $hasMultiplePhotos)
         <!-- Prev/Next Arrows (visible on hover) -->
-        <button type="button" @click.stop.prevent="currentIndex = (currentIndex - 1 + imageUrls.length) % imageUrls.length" x-show="showBtn" class="absolute top-1/2 -translate-y-1/2 left-2 z-30 flex items-center justify-center" style="width:32px;height:32px;border-radius:9999px;border:1px solid #E4E4E7;background:#FFFFFF;">
+        <button type="button" aria-label="{{ __('front.profiles.list.a11y_prev_photo') }}" @click.stop.prevent="currentIndex = (currentIndex - 1 + imageUrls.length) % imageUrls.length" x-show="showBtn" class="absolute top-1/2 -translate-y-1/2 left-2 z-30 flex items-center justify-center" style="width:32px;height:32px;border-radius:9999px;border:1px solid #E4E4E7;background:#FFFFFF;">
             <img src="{{ asset('images/icons/ArrowLeft.svg') }}" alt="" style="width:16px;height:16px;transform:rotate(180deg);" />
         </button>
-        <button type="button" @click.stop.prevent="currentIndex = (currentIndex + 1) % imageUrls.length" x-show="showBtn" class="absolute top-1/2 -translate-y-1/2 right-2 z-30 flex items-center justify-center" style="width:32px;height:32px;border-radius:9999px;border:1px solid #E4E4E7;background:#FFFFFF;">
+        <button type="button" aria-label="{{ __('front.profiles.list.a11y_next_photo') }}" @click.stop.prevent="currentIndex = (currentIndex + 1) % imageUrls.length" x-show="showBtn" class="absolute top-1/2 -translate-y-1/2 right-2 z-30 flex items-center justify-center" style="width:32px;height:32px;border-radius:9999px;border:1px solid #E4E4E7;background:#FFFFFF;">
             <img src="{{ asset('images/icons/ArrowLeft.svg') }}" alt="" style="width:16px;height:16px;" />
         </button>
 
         <!-- Photo count dots -->
         <div class="absolute left-0 right-0 bottom-3 flex justify-center z-30" style="gap:3px;">
             @foreach($imageUrls as $i => $url)
-                <button type="button" @click.prevent="currentIndex = {{ $i }}" class="w-2.5 h-2.5 rounded-full bg-white flex items-center justify-center transition-transform duration-300 ease-in-out" :class="{ 'scale-110': currentIndex === {{ $i }} }" style="box-shadow: 0 0 0 1px rgba(0,0,0,0.04);">
+                <button type="button" aria-label="{{ __('front.profiles.list.a11y_photo', ['number' => $i + 1]) }}" :aria-current="currentIndex === {{ $i }} ? 'true' : 'false'" @click.prevent="currentIndex = {{ $i }}" class="w-2.5 h-2.5 rounded-full bg-white flex items-center justify-center transition-transform duration-300 ease-in-out" :class="{ 'scale-110': currentIndex === {{ $i }} }" style="box-shadow: 0 0 0 1px rgba(0,0,0,0.04);">
                     <span class="w-1.5 h-1.5 rounded-full transition-colors duration-300 ease-in-out" :class="{ 'bg-transparent': currentIndex !== {{ $i }}, 'bg-[#DD3888]': currentIndex === {{ $i }} }" style="display:block;"></span>
                 </button>
             @endforeach
@@ -224,7 +232,7 @@
                 </h4>
             </div>
             @if($isVip && !$simpleMode)
-            <div class="home-profile-card-vip home-profile-card-vip-desktop" style="width:50px;height:26px;border-radius:999px;background:#FFB700;display:flex;align-items:center;justify-content:center;gap:6px;">
+            <div class="home-profile-card-vip home-profile-card-vip-desktop" style="width:50px;height:26px;border-radius:999px;background:#FFB700;display:flex;align-items:center;justify-content:center;gap:2px;">
                 <x-icons name="star" class="inline-block" :preserveColors="true" style="width:14px;height:14px;color:#FFFFFF;" />
                 <span style="font-family:'Poppins', sans-serif; font-weight:900; font-size:10px; color:#FFFFFF; line-height:1;">VIP</span>
             </div>
@@ -235,9 +243,10 @@
         <!-- Details Button -->
             <a href="{{ $profileUrl }}"
             class="flex items-center justify-between home-profile-card-cta"
-            style="width:170px;height:45px;border-radius:8px;background:#5C2D62;color:#FFFFFF; display:inline-flex; align-items:center; justify-content:space-between; padding:0 16px; font-family:'Poppins', sans-serif; font-weight:600; font-size:16px; text-decoration:none;">
+            style="width:170px;height:45px;border-radius:8px;background:#5C2D62;color:#FFFFFF; display:inline-flex; align-items:center; justify-content:space-between; padding:0 19px 0 17px; font-family:'Poppins', sans-serif; font-weight:600; font-size:16px; text-decoration:none;">
             <span>{{ __('front.profiles.list.detail') }}</span>
-            <x-icons name="search" class="inline-block" style="width:24px;height:24px;color:#FFFFFF;" />
+            {{-- home.jpg: 16 px loupe ring with a 2 px stroke in a 20 px box. --}}
+            <x-icons name="search" class="inline-block home-profile-card-cta-icon" style="width:20px;height:20px;color:#FFFFFF;" />
         </a>
         @endif
 

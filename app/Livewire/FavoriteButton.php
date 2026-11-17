@@ -56,10 +56,11 @@ class FavoriteButton extends Component
 
                 // Notify profile owner
                 if ($this->profile->user_id) {
-                    Notification::createForUser(
+                    Notification::createTranslatedForUser(
                         $this->profile->user_id,
-                        __('notifications.favorite.added_title'),
-                        __('notifications.favorite.added_message'),
+                        'notifications.favorite.added_title',
+                        'notifications.favorite.added_message',
+                        [],
                         'info'
                     );
                 }

@@ -7,18 +7,21 @@
 @endphp
 
 @section('account-content')
-    <div class="mb-8">
-        <h1 class="text-4xl font-semibold text-secondary py-6 text-center">
-            {{ __('front.account.password.title') }}
-        </h1>
-        <hr>
-    </div>
+    {{-- Figma home-8..10 ("Základní nastavení" › "Změna hesla"): the same
+         400px column, 13/400 labels and 50px fields as the profile form, the
+         password rule in grey after the label, one grey "Uložit změny" button.
+         The tips box and the cancel link are not in the design. --}}
+    <style>
+        .account-password label { padding-left: 8px; padding-bottom: 0; }
+        .account-password .input-control { margin-top: 0; padding-left: 17px; }
+    </style>
+
+    @include('account.partials.page-header', ['title' => __('front.account.member.basic_settings'), 'ruleGap' => 'mb-[80px]'])
 
     @if (session('status'))
-    <div class="alert alert-success flex items-center justify-between my-3">
-        <div class="flex items-center font-semibold">
-            <x-icons name="bell" class="w-5 h-5 mr-2.5" />
-            <span>
+        <div role="status" class="relative mx-auto mb-6 flex min-h-[50px] w-[310px] max-w-full items-center justify-center gap-3 rounded-[8px] bg-[#01B810] px-10 py-3 md:w-full">
+            <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="h-[20px] w-[20px]" alt="">
+            <span class="text-center text-[14px] font-medium text-white" style="font-family: 'Poppins', sans-serif;">
                 @if(session('status') === 'password-updated')
                     {{ __('front.account.password.success') }}
                 @else
@@ -26,83 +29,41 @@
                 @endif
             </span>
         </div>
-        <button type="button" class="flex items-center ml-2 text-gray-400 hover:text-gray-600" onclick="this.parentElement.remove()">
-            <x-icons name="cross" class="text-green-800 w-3 h-3" />
-        </button>
-    </div>
     @endif
 
-    <form method="POST" action="{{ route('account.password.update') }}" class="space-y-8">
+    <form method="POST" action="{{ route('account.password.update') }}" class="account-password profile-form-narrow mx-auto w-[312px] max-w-full md:w-[400px]">
         @csrf
         @method('PATCH')
-        
-        <!-- Password Section -->
-        <div class="space-y-6">
 
-            <!-- Current Password -->
+        <h3 style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62; margin-bottom:15px;">{{ __('front.account.password.title') }}</h3>
+
+        <div class="grid grid-cols-1 gap-[10px]">
             <div>
-                <label for="current_password" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.account.password.current') }}</label>
-                <input
-                    type="password"
-                    name="current_password" 
-                    id="current_password" 
-                    autocomplete="current-password"
-                    class="input-control mt-1 @error('current_password') border-red-500 @enderror">
+                <label for="current_password" class="block">{{ __('front.profiles.form.current_password') }}</label>
+                <input type="password" name="current_password" id="current_password" autocomplete="current-password"
+                    class="input-control @error('current_password') border-red-500 @enderror">
                 @error('current_password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
-            <!-- New Password -->
             <div>
-                <label for="password" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.account.password.new') }}</label>
-                <input
-                    type="password"
-                    name="password" 
-                    id="password" 
-                    autocomplete="new-password"
-                    class="input-control mt-1 @error('password') border-red-500 @enderror">
+                <label for="password" class="block">{{ __('front.profiles.form.new_password') }} <span class="text-[#A4A4A4]">{{ __('front.profiles.form.new_password_hint') }}</span></label>
+                <input type="password" name="password" id="password" autocomplete="new-password"
+                    class="input-control @error('password') border-red-500 @enderror">
                 @error('password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
-            <!-- Confirm Password -->
             <div>
-                <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">{{ __('front.account.password.confirm') }}</label>
-                <input
-                    type="password"
-                    name="password_confirmation" 
-                    id="password_confirmation" 
-                    autocomplete="new-password"
-                    class="input-control mt-1 @error('password_confirmation') border-red-500 @enderror">
+                <label for="password_confirmation" class="block">{{ __('front.profiles.form.confirm_password') }}</label>
+                <input type="password" name="password_confirmation" id="password_confirmation" autocomplete="new-password"
+                    class="input-control @error('password_confirmation') border-red-500 @enderror">
                 @error('password_confirmation') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
-
-            <p class="text-xs text-gray-500">{{ __('front.account.password.requirements') }}</p>
         </div>
 
-        <!-- Password Tips -->
-        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-            <h4 class="font-medium text-gray-900 mb-2">{{ __('front.account.password.tips_title') }}</h4>
-            <ul class="list-disc list-inside text-sm text-gray-700 space-y-1 ml-2">
-                <li>{{ __('front.account.password.tips.unique') }}</li>
-                <li>{{ __('front.account.password.tips.mix') }}</li>
-                <li>{{ __('front.account.password.tips.length') }}</li>
-                <li>{{ __('front.account.password.tips.manager') }}</li>
-                <li>{{ __('front.account.password.tips.share') }}</li>
-            </ul>
-        </div>
-
-        <!-- Submit Button -->
-        <div class="flex justify-end space-x-4">
-            <a href="{{ route('account.dashboard') }}" class="btn-secondary btn-small justify-center">
-                {{ __('front.account.password.cancel') }}
-            </a>
-            <button
-                type="submit"
-                class="btn-primary btn-small justify-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                {{ __('front.account.password.save') }}
-            </button>
-        </div>
+        <button type="submit" class="mt-[31px] flex h-[50px] w-full items-center justify-center gap-2 rounded-[8px] bg-[#E8E8E8] transition-colors duration-200 hover:bg-[#5C2D62] group">
+            <img src="{{ asset('images/icons/Save.svg') }}" class="h-[20px] w-[20px] group-hover:hidden" alt="">
+            <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="hidden h-[20px] w-[20px] group-hover:block" alt="">
+            <span class="text-[#A4A4A4] group-hover:text-white" style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px;">{{ __('front.profiles.form.save_changes') }}</span>
+        </button>
     </form>
 @endsection

@@ -1,4 +1,31 @@
-<div x-data="{ verifyModalOpen: false }">
+{{-- pass 1 overlay (home-11): the save button ends 216px above the footer
+     logo glyph, i.e. 90px above the footer edge. --}}
+<div x-data="{ verifyModalOpen: false }" class="photos-manager lg:pb-[50px]">
+    {{-- pass 1 overlay (phone 360 px): a 310px column; photo 31px above the
+         save button, the verification card 50px under it, sized to its
+         content: title (26px lines) 52px in, 240px text, a 252x45 button,
+         30px bottom padding. --}}
+    <style>
+        @media (max-width: 767px) {
+            .photos-manager { width: 310px; max-width: 100%; margin-left: auto; margin-right: auto; }
+            .photos-manager .photos-main-save { margin-top: 29px !important; }
+            .photos-manager .photos-main-row { row-gap: 50px !important; }
+            .photos-manager .photos-verify-card { height: auto !important; padding: 50px 27.5px 29px !important; }
+            .photos-manager .photos-verify-card h3 { line-height: 26px; margin-bottom: 15px !important; }
+            .photos-manager .photos-verify-card p { max-width: 240px !important; }
+            .photos-manager .photos-verify-card button, .photos-manager .photos-verify-card [role=status] { width: 253px !important; max-width: 100% !important; height: 45px !important; margin-top: 20px !important; }
+            /* pass 2 (phone 360 px): "Ověřit moje fotografie" stays on one line in a 253px button. */
+            .photos-manager .photos-verify-card button { white-space: nowrap; }
+            .photos-manager .photos-main-heading { margin-bottom: 26px !important; margin-top: -1px; } /* pass 2: glyph at y 331 */
+            .photos-manager label[for=video-upload-input] { aspect-ratio: auto !important; height: 493px; }
+            .photos-manager .photos-video-heading { margin-bottom: 22px !important; }
+            .photos-manager .photos-video-text { margin-top: 8.6px; }
+            .photos-manager .photos-video-save { margin-top: 7px; }
+            .photos-manager { padding-bottom: 33px; }
+            /* pass 2: icon circle 2px and label 5px lower than centred (phone 360 px; padding via max-md:!pt-[7px] on the tile). */
+            .photos-manager label[for=video-upload-input] > span { margin-top: 15px !important; }
+        }
+    </style>
     @if (session()->has('message'))
         <div class="alert alert-success flex items-center justify-between mb-6">
             <div class="flex items-center font-semibold">
@@ -28,16 +55,20 @@
 
     <!-- Main Photo Section -->
     <div class="mb-10">
-        <h2 class="mb-6" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">{{ __('front.profiles.photos.main_photo') }}</h2>
+        {{-- Figma home-11: photo 240x383 starts 29px under the heading box,
+             verification card 50px to its right, save button 43px below. --}}
+        <h2 class="photos-main-heading mb-[29px]" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">{{ __('front.profiles.photos.main_photo') }}</h2>
 
-        <div class="flex flex-col lg:flex-row gap-6 items-start">
+        <div class="photos-main-row flex flex-col min-[1180px]:flex-row gap-6 min-[1180px]:gap-x-[50px] items-start">
             <!-- Main Photo Display -->
-            <div class="shrink-0">
+            {{-- phone 360 px: on a phone the main photo, its save button and the
+                 video tile take the full 312px column. --}}
+            <div class="shrink-0 w-full lg:w-auto">
                 @if ($mainPhoto)
-                    <div class="relative w-[240px] h-[382px]">
+                    <div class="relative w-full aspect-[310/494] lg:aspect-auto lg:w-[240px] lg:h-[383px]">
                         <img src="{{ $mainPhoto->hasGeneratedConversion('medium') ? $mainPhoto->getUrl('medium') : $mainPhoto->getUrl() }}"
                             alt="{{ __('front.profiles.photos.main_photo') }}"
-                            class="w-[240px] h-[382px] object-cover rounded-[15px]">
+                            class="w-full h-full lg:w-[240px] lg:h-[383px] object-cover rounded-[15px]">
                         <button type="button" wire:click="removeExistingImage({{ $mainPhoto->id }})"
                             wire:confirm="{{ __('front.profiles.photos.delete_confirm') }}"
                             class="absolute top-[10px] right-[10px] w-[35px] h-[35px] rounded-full bg-[#DD3888] hover:bg-[#CA2474] transition-colors duration-200 flex items-center justify-center">
@@ -63,34 +94,43 @@
                 <!-- Save Changes Button (under main photo) -->
                 @if ($mainPhoto)
                     <button type="button"
-                        class="mt-[44px] w-[240px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group"
+                        class="photos-main-save mt-[43px] w-full lg:w-[240px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group"
                         wire:click="$refresh">
-                        <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px] group-hover:hidden" alt="Save">
-                        <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px] hidden group-hover:block" alt="Save">
+                        <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px] group-hover:hidden" alt="">
+                        <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px] hidden group-hover:block" alt="">
                         <span class="text-[#A4A4A4] group-hover:text-white" style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px;">{{ __('front.profiles.photos.save_changes') }}</span>
                     </button>
                 @endif
             </div>
 
             <!-- Verification Panel -->
-            <div class="w-[553px] max-w-full h-[475px] rounded-[15px] flex flex-col items-center justify-center px-8 text-center {{ $this->isProfileVerified() ? 'bg-[#E6FEE8]' : 'border border-[#E6E6E6]' }}">
+            <div class="photos-verify-card w-[553px] max-w-full h-[475px] rounded-[15px] flex flex-col items-center {{ $this->isProfileVerified() ? 'justify-start pt-[79px]' : 'justify-center' }} px-8 text-center {{ $this->isProfileVerified() ? 'bg-[#E6FEE8]' : 'border border-[#E6E6E6]' }} {{ ! $this->isProfileVerified() && ! $this->isVerificationRejected() && $mainPhoto ? 'pt-[13px]' : '' }}">
                 @if ($this->isProfileVerified())
                     <!-- Verified Status -->
                     <img src="{{ asset('images/icons/BadgeCheckBig.svg') }}" class="w-[123px] h-[123px]" alt="">
 
-                    <div class="mt-4 w-[123px] h-[30px] rounded-[8px] bg-[#CDEFD0] flex items-center justify-center gap-1.5">
+                    {{-- Figma home-14: icon 79px from the top, badge 24px under
+                         it, title 24px lower, then 14/24 text 350px wide. --}}
+                    <div class="mt-[24px] w-[123px] h-[30px] rounded-[8px] bg-[#CDEFD0] flex items-center justify-center gap-1.5">
                         <img src="{{ asset('images/icons/camera.svg') }}" class="w-[18px] h-[18px]" alt="">
                         <span style="font-family:'Poppins',sans-serif; font-weight:900; font-size:10px; color:#00B80F;">{{ __('front.profiles.photos.verified_badge') }}</span>
                     </div>
 
-                    <h3 class="mt-4 mb-2" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">
+                    <h3 class="mt-[24px] mb-[16.5px]" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">
                         {{ __('front.profiles.photos.verified_title') }}</h3>
-                    <p style="font-family:'Poppins',sans-serif; font-weight:400; font-size:14px; color:#505050;">{{ __('front.profiles.photos.verified_desc') }}</p>
+                    <p class="w-[350px] max-w-full leading-6" style="font-family:'Poppins',sans-serif; font-weight:400; font-size:14px; color:#505050;">{{ __('front.profiles.photos.verified_desc') }}</p>
                 @elseif($this->isVerificationPending())
-                    <h3 class="mb-4" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">
-                        {{ __('front.profiles.photos.pending_title') }}
-                    </h3>
-                    <p role="status" class="text-sm text-gray-600 max-w-full">{{ __('front.profiles.photos.verification_pending') }}</p>
+                    {{-- Figma home-13: the card keeps its title and text; the
+                         button turns into a grey 401x45 status pill with an
+                         hourglass and "Probíhá ověření (obvykle 72 h)". --}}
+                    <h3 class="mb-[16px]" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">
+                        {{ __('front.profiles.photos.verify_title') }}</h3>
+                    <p class="w-[350px] max-w-full text-[14px] leading-6 text-[#505050]" style="font-family:'Poppins',sans-serif;">{{ __('front.profiles.photos.verify_desc') }}</p>
+                    <div role="status" title="{{ __('front.profiles.photos.verification_pending') }}"
+                        class="mt-[21px] w-[401px] max-w-full h-[45px] pl-[24px] pr-5 rounded-lg bg-[#E8E8E8] flex items-center justify-center gap-[4px]">
+                        <img src="{{ asset('images/icons/Hourglass.svg') }}" class="w-[24px] h-[24px]" alt="">
+                        <span style="font-family:'Poppins',sans-serif; font-weight:600; font-size:16px; color:#5C2D62;">{{ __('front.profiles.photos.verification_pending_badge') }}</span>
+                    </div>
                 @elseif($this->isVerificationRejected())
                     <!-- Rejected Status -->
                     <h3 class="mb-2" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">
@@ -103,11 +143,11 @@
                     </button>
                 @elseif($mainPhoto)
                     <!-- Not Verified - Can Request -->
-                    <h3 class="mb-6" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">
+                    <h3 class="mb-[16px]" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">
                         {{ __('front.profiles.photos.verify_title') }}</h3>
-                    <p class="text-sm text-gray-600 mb-6 w-[399px] max-w-full h-[54px]">{{ __('front.profiles.photos.verify_desc') }}</p>
+                    <p class="w-[350px] max-w-full text-[14px] leading-6 text-[#505050]" style="font-family:'Poppins',sans-serif;">{{ __('front.profiles.photos.verify_desc') }}</p>
                     <button type="button" @click="verifyModalOpen = true"
-                        class="mt-8 w-[401px] max-w-full h-[45px] px-6 rounded-lg bg-[#5C2D62] hover:bg-[#4a2450] transition-colors flex items-center justify-between gap-2">
+                        class="mt-[21px] w-[401px] max-w-full h-[46px] px-5 rounded-lg bg-[#5C2D62] hover:bg-[#4a2450] transition-colors flex items-center justify-between gap-2">
                         <span style="font-family:'Poppins',sans-serif; font-weight:600; font-size:16px; color:#FFFFFF;">{{ __('front.profiles.photos.verify_button') }}</span>
                         <img src="{{ asset('images/icons/BadgeCheck.svg') }}" class="w-[24px] h-[24px]" alt="">
                     </button>
@@ -189,15 +229,17 @@
         </div>
     </div>
 
-    <hr class="w-[843px] max-w-full relative left-1/2 -translate-x-1/2 mt-[80px] mb-[50px]">
+    <hr class="w-[843px] max-w-full relative left-1/2 -translate-x-1/2 mt-[50px] md:mt-[80px] mb-[47px] md:mb-[51px]">
 
     <!-- Other Photos Section -->
     <div class="mb-10">
-        <h2 class="mb-6" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">{{ __('front.profiles.photos.other_photos') }}</h2>
+        {{-- Figma home-11: five 150x240 tiles across the 843px column
+             (23.25px apart), rows 25px apart, 32px under the heading box. --}}
+        <h2 class="mb-[26px] md:mb-[32px]" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">{{ __('front.profiles.photos.other_photos') }}</h2>
 
-        <div class="flex flex-wrap gap-4" x-data="{ modalOpen: false }">
+        <div class="flex flex-wrap gap-[10px] md:gap-x-[22.75px] md:gap-y-[25px]" x-data="{ modalOpen: false }" x-on:photos-uploaded.window="modalOpen = false">
             @forelse ($otherPhotos as $photo)
-                <div class="relative w-[150px] h-[240px]" wire:key="other-photo-{{ $photo->id }}">
+                <div class="group relative w-[150px] h-[240px]" wire:key="other-photo-{{ $photo->id }}">
                     <img src="{{ $photo->hasGeneratedConversion('thumb') ? $photo->getUrl('thumb') : $photo->getUrl() }}"
                         alt="{{ $photo->name }}"
                         class="w-[150px] h-[240px] object-cover rounded-[15px]">
@@ -212,7 +254,7 @@
                         </svg>
                     </button>
                     <button type="button" wire:click="setAsMainPhoto({{ $photo->id }})" wire:loading.attr="disabled"
-                        class="absolute bottom-2 inset-x-2 rounded-lg bg-[#5C2D62] px-2 py-2 text-xs font-semibold text-white">
+                        class="absolute bottom-2 inset-x-2 rounded-lg bg-[#5C2D62] px-2 py-2 text-xs font-semibold text-white transition-opacity md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100">
                         {{ __('front.profiles.photos.set_main') }}
                     </button>
                 </div>
@@ -224,14 +266,14 @@
 
             <!-- Add Photo Button (opens upload modal) -->
             <button type="button" @click="modalOpen = true"
-                class="relative w-[150px] h-[240px] border-2 border-dashed border-gray-300 rounded-[15px] flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary-50 transition-colors">
+                class="relative w-[150px] h-[240px] border-2 border-dashed border-[#A4A4A4] rounded-[15px] flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary-50 transition-colors">
                 <div>
                     <div
-                        class="w-[70px] h-[70px] mx-auto mb-2 bg-white rounded-full flex items-center justify-center"
+                        class="w-[70px] h-[70px] mx-auto mb-[15px] bg-white rounded-full flex items-center justify-center"
                         style="box-shadow: 0 4px 10px 0 #00000040;">
                         <img src="{{ asset('images/icons/ImagePlus.svg') }}" class="w-[32px] h-[32px]" alt="">
                     </div>
-                    <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 16px; color: #5C2D62;">{{ __('front.profiles.photos.add_more') }}</span>
+                    <span class="block max-w-[70px] mx-auto text-center leading-[21px]" style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 16px; color: #5C2D62;">{{ __('front.profiles.photos.add_more') }}</span>
                 </div>
             </button>
 
@@ -240,10 +282,22 @@
             <div x-show="modalOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center" style="display: none;">
                 <div class="fixed inset-0" style="background-color: #5C2D62CC; backdrop-filter: blur(30px);" @click="modalOpen = false"></div>
 
+                {{-- pass 1 overlay (home-15 / home-16): title glyph 100px under
+                     the top, 200px tiles ~90px under the title, the 200x50 button
+                     50px under the tiles and 81px above the bottom; close 40px in;
+                     the card sits 11px right of centre in both frames. --}}
+                <style>
+                    @media (min-width: 1100px) {
+                        .photo-upload-dialog { padding: 95px 40px 81px !important; transform: translateX(11px); }
+                        .photo-upload-dialog > .photo-upload-close { top: 40px !important; right: 40px !important; }
+                        .photo-upload-dialog > h2 { margin-bottom: 50px !important; }
+                        .photo-upload-dialog .photo-upload-actions { margin-top: 50px !important; }
+                    }
+                </style>
                 <div class="photo-upload-dialog relative w-[1000px] max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-2rem)] min-h-[400px] rounded-[24px] bg-[#FFFFFF] px-5 py-16 sm:p-10 overflow-y-auto"
                     style="box-shadow: 0 10px 25px 0 #00000033;">
                     <button type="button" @click="modalOpen = false"
-                        class="absolute top-6 right-6 w-[35px] h-[35px] rounded-full bg-[#DD3888] hover:bg-[#CA2474] transition-colors duration-200 flex items-center justify-center">
+                        class="photo-upload-close absolute top-6 right-6 w-[35px] h-[35px] rounded-full bg-[#DD3888] hover:bg-[#CA2474] transition-colors duration-200 flex items-center justify-center">
                         <svg class="w-[10px] h-[10px]" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M1 1L9 9M9 1L1 9" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
@@ -252,12 +306,14 @@
                     <h2 class="text-center mb-8" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:36px; color:#5C2D62;">{{ __('front.profiles.photos.upload_modal_title') }}</h2>
 
                     <div class="w-full">
-                        <div class="flex flex-wrap justify-center gap-4">
+                        {{-- home-16: previews keep their own aspect ratio at 200px
+                             tall, 20px apart in a centred wrap. --}}
+                        <div class="flex flex-wrap justify-center" style="column-gap: 20px; row-gap: 20px;">
                             @foreach ($images as $index => $image)
                                 @if ($image)
-                                    <div class="relative w-[150px] h-[240px]">
-                                        <img src="{{ $image->temporaryUrl() }}" alt="Preview"
-                                            class="w-[150px] h-[240px] object-cover rounded-[15px]">
+                                    <div class="relative h-[200px]">
+                                        <img src="{{ $image->temporaryUrl() }}" alt=""
+                                            class="h-[200px] w-auto max-w-[400px] object-cover rounded-[15px]">
                                         <button type="button" wire:click="removeUploadedImage({{ $index }})"
                                             class="absolute top-[10px] right-[10px] w-[35px] h-[35px] rounded-full bg-[#DD3888] hover:bg-[#CA2474] transition-colors duration-200 flex items-center justify-center">
                                             <svg class="w-[10px] h-[10px]" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -269,7 +325,7 @@
                             @endforeach
 
                             <label
-                                class="relative w-[200px] h-[200px] bg-white border-2 border-dashed border-gray-300 rounded-[15px] cursor-pointer hover:border-primary transition-colors !flex !flex-col !items-center !justify-center !p-0">
+                                class="relative w-[200px] h-[200px] bg-white border-2 border-dashed border-[#A4A4A4] rounded-[15px] cursor-pointer hover:border-primary transition-colors !flex !flex-col !items-center !justify-center !p-0">
                                 <input id="photo-upload-input" type="file" wire:model="images" multiple accept="image/*"
                                     class="!hidden">
                                 <div
@@ -277,7 +333,7 @@
                                     style="box-shadow: 0 4px 10px 0 #00000040;">
                                     <img src="{{ asset('images/icons/ImagePlus.svg') }}" class="w-[32px] h-[32px]" alt="">
                                 </div>
-                                <span class="text-center" style="margin-top: 12px; margin-bottom: 37px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 16px; color: #5C2D62;">{{ __('front.profiles.photos.add_photo_line1') }}<br>{{ __('front.profiles.photos.add_photo_line2') }}</span>
+                                <span class="text-center" style="margin-top: 13px; margin-bottom: 1px; line-height: 23px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 16px; color: #5C2D62;">{{ __('front.profiles.photos.add_photo_line1') }}<br>{{ __('front.profiles.photos.add_photo_line2') }}</span>
                                 <div wire:loading wire:target="images" class="absolute inset-0 bg-white/80 rounded-[15px] z-10 flex items-center justify-center">
                                     <svg class="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -290,12 +346,16 @@
                         </div>
                     </div>
 
-                    <div class="mt-8 flex justify-center">
+                    {{-- home-15: with nothing picked yet the button is the grey
+                         inactive one; home-16: purple once photos are queued. --}}
+                    @php $hasQueuedImages = collect($images)->filter()->isNotEmpty(); @endphp
+                    <div class="photo-upload-actions mt-8 flex justify-center">
                         <button type="button" wire:click="uploadImages" wire:loading.attr="disabled"
                             wire:loading.class="opacity-50 cursor-not-allowed"
-                            class="w-[200px] h-[50px] rounded-lg bg-[#5C2D62] flex items-center justify-center gap-2">
-                            <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px]" alt="">
-                            <span wire:loading.remove style="font-family:'Poppins',sans-serif; font-weight:600; font-size:16px; color:#FFFFFF;">{{ __('front.profiles.photos.save_changes') }}</span>
+                            @disabled(! $hasQueuedImages)
+                            class="w-[200px] h-[50px] rounded-lg {{ $hasQueuedImages ? 'bg-[#5C2D62]' : 'bg-[#E8E8E8] cursor-not-allowed' }} flex items-center justify-center gap-2">
+                            <img src="{{ asset('images/icons/' . ($hasQueuedImages ? 'SaveWhite.svg' : 'Save.svg')) }}" class="w-[20px] h-[20px]" alt="">
+                            <span wire:loading.remove style="font-family:'Poppins',sans-serif; font-weight:600; font-size:16px; color:{{ $hasQueuedImages ? '#FFFFFF' : '#A4A4A4' }};">{{ __('front.profiles.photos.save_changes') }}</span>
                             <span wire:loading style="font-family:'Poppins',sans-serif; font-weight:600; font-size:16px; color:#FFFFFF;">{{ __('front.profiles.photos.uploading') }}</span>
                         </button>
                     </div>
@@ -309,7 +369,7 @@
         @enderror
     </div>
 
-    <hr class="w-[843px] max-w-full relative left-1/2 -translate-x-1/2 mt-[80px] mb-[50px]">
+    <hr class="w-[843px] max-w-full relative left-1/2 -translate-x-1/2 mt-[50px] md:mt-[80px] mb-[43px] md:mb-[52px]">
 
     <!-- Video Upload Section -->
     <div id="profile-video-section" class="mb-10 scroll-mt-24">
@@ -317,12 +377,16 @@
             accept="video/mp4,video/webm,video/quicktime" class="!hidden"
             @change="if (verifyModalOpen && $event.target.files.length) { verifyModalOpen = false; $nextTick(() => document.getElementById('profile-video-section').scrollIntoView({ block: 'start', behavior: 'smooth' })); }"
             x-on:livewire-upload-error="$dispatch('video-upload-error')">
-        <h2 class="mb-6 text-center lg:text-left" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">{{ __('front.profiles.photos.video_title') }}</h2>
+        {{-- Figma home-11 (pass 2 measurement): 240x382 dashed (#AAAAAA) tile
+             35px under the heading box, its icon + label 4px below centre,
+             text 50px to its right on 24px lines (first glyph level with the
+             tile top), save 43px below the tile. --}}
+        <h2 class="photos-video-heading mb-6 md:mb-[32px] text-left" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">{{ __('front.profiles.photos.video_title') }}</h2>
 
-        <div class="flex flex-col lg:flex-row gap-6 items-center lg:items-start">
-          <div class="shrink-0">
+        <div class="flex flex-col lg:flex-row gap-6 lg:gap-x-[50px] items-stretch lg:items-start">
+          <div class="shrink-0 w-full lg:w-auto">
             <!-- Video Display/Upload Area -->
-            <div class="shrink-0">
+            <div class="shrink-0 w-full lg:w-auto">
                 @if ($existingVideo)
                     <div class="relative w-[240px] h-[381px]">
                         <div class="w-[240px] h-[381px] bg-black rounded-[15px] overflow-hidden">
@@ -353,7 +417,7 @@
                     </div>
                 @else
                     <label for="video-upload-input"
-                        class="relative w-[240px] h-[381px] bg-white border-2 border-dashed border-gray-300 rounded-[15px] cursor-pointer hover:border-primary transition-colors !flex !flex-col !items-center !justify-center !p-0">
+                        class="relative w-full aspect-[240/376] lg:aspect-auto lg:w-[240px] lg:h-[382px] bg-white border-2 border-dashed border-[#AAAAAA] rounded-[15px] cursor-pointer hover:border-primary transition-colors !flex !flex-col !items-center !justify-center !p-0 max-md:!pt-[7px] lg:!pt-[8px]">
 
                         <div
                             class="w-[70px] h-[70px] bg-white rounded-full flex items-center justify-center"
@@ -376,16 +440,24 @@
 
             <!-- Save Button (under video placeholder) -->
             <button type="button"
-                class="mt-4 w-[240px] h-[50px] rounded-[8px] flex items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group"
+                class="hidden lg:flex mt-4 md:mt-[43px] w-[240px] h-[50px] rounded-[8px] items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group"
                 wire:click="$refresh">
-                <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px] group-hover:hidden" alt="Save">
-                <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px] hidden group-hover:block" alt="Save">
+                <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px] group-hover:hidden" alt="">
+                <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px] hidden group-hover:block" alt="">
                 <span class="text-[#A4A4A4] group-hover:text-white" style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px;">{{ __('front.profiles.photos.save_changes') }}</span>
             </button>
           </div>
 
             <!-- Description beside placeholder -->
-            <p class="w-[250px] h-[54px]" style="font-family:'Poppins',sans-serif; font-weight:400; font-size:14px; color:#505050;">{{ __('front.profiles.photos.video_verify_desc') }}</p>
+            <p class="photos-video-text w-full lg:w-[250px] leading-6 lg:-mt-[5px]" style="font-family:'Poppins',sans-serif; font-weight:400; font-size:14px; color:#505050;">{{ __('front.profiles.photos.video_verify_desc') }}</p>
+            {{-- phone 360 px: the text sits between the tile and the save button --}}
+            <button type="button"
+                class="photos-video-save lg:hidden flex w-full h-[50px] rounded-[8px] items-center justify-center gap-2 bg-[#E8E8E8] hover:bg-[#5C2D62] transition-colors duration-200 group"
+                wire:click="$refresh">
+                <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px] group-hover:hidden" alt="">
+                <img src="{{ asset('images/icons/SaveWhite.svg') }}" class="w-[20px] h-[20px] hidden group-hover:block" alt="">
+                <span class="text-[#A4A4A4] group-hover:text-white" style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px;">{{ __('front.profiles.photos.save_changes') }}</span>
+            </button>
         </div>
 
         <!-- Video Upload Error Message -->

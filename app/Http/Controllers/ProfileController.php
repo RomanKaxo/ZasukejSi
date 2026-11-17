@@ -94,6 +94,9 @@ class ProfileController extends Controller
             })
             ->with(['user:id,name,last_activity,phone', 'services', 'media', 'segments'])
             ->select($this->getProfileDetailColumns())
+            ->withExists('activeSubscription as is_vip')
+            ->withCount('ratings')
+            ->withAvg('ratings', 'percentage')
             ->findOrFail($id);
         
         // Record profile click view (don't track own profile views)

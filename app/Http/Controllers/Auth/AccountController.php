@@ -20,8 +20,10 @@ class AccountController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $user->load(['profile', 'roles', 'permissions']);
+        $user->loadMissing(['profile' => fn ($query) => $query
+            ->withCount('ratings')->withAvg('ratings', 'percentage'), 'roles', 'permissions']);
         $profile = $user->profile;
+        $profile?->setRelation('user', $user);
         $ratingCount = $profile?->getTotalRatings() ?? 0;
         $stats = [
             'views' => $profile ? \App\Models\ProfileView::getTotalStats($profile->id) : 0,

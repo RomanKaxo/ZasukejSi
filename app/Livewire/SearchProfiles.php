@@ -148,6 +148,36 @@ class SearchProfiles extends Component
         ];
     }
 
+    /**
+     * Region labels as the design writes them (Figma home.jpg / home-25.jpg):
+     * "Hlavní město Praha", lower-case "kraj", listed alphabetically. The
+     * stored values above stay untouched because profiles are filtered by
+     * them; only the text shown in the picker changes.
+     */
+    public function getRegionLabelsProperty(): array
+    {
+        return collect($this->allRegions)
+            ->mapWithKeys(fn (string $region) => [
+                $region => $region === 'Praha'
+                    ? 'Hlavní město Praha'
+                    : ($region === 'Vysočina' ? 'Kraj Vysočina' : str_replace(' Kraj', ' kraj', $region)),
+            ])
+            ->all();
+    }
+
+    /** Region values ordered by their displayed label (Czech alphabet). */
+    public function getRegionOptionsProperty(): array
+    {
+        $order = ['Praha', 'Jihočeský Kraj', 'Jihomoravský Kraj', 'Karlovarský Kraj', 'Vysočina',
+            'Královéhradecký Kraj', 'Liberecký Kraj', 'Moravskoslezský Kraj', 'Olomoucký Kraj',
+            'Pardubický Kraj', 'Plzeňský Kraj', 'Středočeský Kraj', 'Ústecký Kraj', 'Zlínský Kraj'];
+
+        return array_values(array_unique(array_merge(
+            array_values(array_intersect($order, $this->allRegions)),
+            $this->allRegions
+        )));
+    }
+
     public function updatedRegion()
     {
         $this->showRegionDropdown = true;

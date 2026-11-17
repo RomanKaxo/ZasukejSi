@@ -38,15 +38,15 @@
             <!-- Close Button -->
             <button @click="closing = true; show = false; $wire.hide()"
                 class="modal-close-btn" style="width:35px;height:35px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:absolute;right:35px;top:35px;background:#DD3888;border:none">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#ffffff" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
             </button>
 
             @if(!$emailSent)
             <!-- Header -->
             <div class="modal-header">
-                <h1 class="modal-title">{{ __('auth.reset.subtitle') }}</h1>
+                <h2 class="modal-title">{{ __('auth.reset.subtitle') }}</h2>
             </div>
 
             <!-- Form -->
@@ -92,7 +92,7 @@
                 </div>
 
                 <!-- Success Message -->
-                <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-secondary mb-2 sm:mb-3 md:mb-4">{{ __('auth.reset.success_title') }}</h1>
+                <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-secondary mb-2 sm:mb-3 md:mb-4">{{ __('auth.reset.success_title') }}</h2>
                 <p class="text-gray-600 mb-4 sm:mb-6 md:mb-8 text-xs sm:text-sm md:text-base lg:text-lg leading-relaxed">{{ __('auth.reset.success_message') }}</p>
 
                 <!-- Action Buttons -->

@@ -16,7 +16,8 @@
     wants to renew early should not have to go looking for it.
 --}}
 @php
-    $membershipEndsAt = auth()->user()?->membershipEndsAt();
+    $bannerUser = auth()->user();
+    $membershipEndsAt = $bannerUser?->membershipEndsAt();
 
     // Below this the bar counts down instead of naming a date.
     $expiringSoonDays = 7;
@@ -26,33 +27,57 @@
         : null;
 
     $isExpiringSoon = $daysLeft !== null && $daysLeft <= $expiringSoonDays;
+
+    // home-6 / phone 360 px-2: a member without Premium gets the pink bar
+    // that sells it. Admins browse these pages too but are not customers.
+    $showUpsell = ! $membershipEndsAt && $bannerUser && $bannerUser->isMale() && ! $bannerUser->hasRole('admin');
 @endphp
 
-@if($membershipEndsAt)
+{{-- Geometry from home-5 / muž - záložky (1920): 50 px tall, full width of
+     the content column, radius 8, 13 px Poppins 500 #505050, 20 px icon,
+     close cross 16 px from the right edge. Phone (phone 360 px-1): the text
+     wraps left-aligned next to the icon, cross top-right. --}}
+@if($membershipEndsAt || $showUpsell)
     <div x-data="{ show: true }" x-show="show" x-cloak
-         class="relative flex items-center justify-center gap-3 mx-auto mb-6"
-         style="width:902px;max-width:100%;min-height:50px;background:#E6FEE8;border-radius:8px;padding:8px 40px 8px 16px;box-sizing:border-box;">
-        <img src="{{ asset('images/icons/diamond.svg') }}" alt="" style="width:20px;height:20px;flex:0 0 auto;" />
+         class="member-banner {{ $membershipEndsAt ? 'member-banner--premium' : 'member-banner--upsell' }}"
+         style="background: {{ $membershipEndsAt ? '#E6FEE8' : '#FFE0E5' }};"
+         role="status">
+        <img src="{{ asset($membershipEndsAt ? 'images/icons/diamond.svg' : 'images/icons/OctagonAlert.svg') }}" alt="" class="member-banner__icon" />
 
-        <span style="font-family:'Poppins',sans-serif;font-weight:500;font-size:13px;color:#505050;">
-            @if($isExpiringSoon)
+        <span class="member-banner__text">
+            @if($membershipEndsAt && $isExpiringSoon)
                 {{ __('front.membership.expiring_soon', [
                     'days' => trans_choice('front.membership.period_days', $daysLeft, ['count' => $daysLeft]),
-                ]) }}
-            @else
+                ]) }}<a href="{{ route('account.member.membership.index') }}">{{ __('front.membership.extend_link') }}</a>
+            @elseif($membershipEndsAt)
+                {{-- muž - záložky*: the plain date, no link. --}}
                 {{ __('front.membership.valid_until', ['date' => $membershipEndsAt->translatedFormat('j. n. Y')]) }}
-                &ndash;
+            @else
+                {{ __('front.membership.upsell') }}<a href="{{ route('account.member.membership.index') }}">{{ __('front.membership.upsell_link') }}</a>
             @endif
-            <a href="{{ route('account.member.membership.index') }}"
-               style="color:#505050;text-decoration:underline;">{{ __('front.membership.extend_link') }}</a>
         </span>
 
-        <button type="button" @click="show = false"
-                class="absolute right-4 top-1/2 -translate-y-1/2"
+        <button type="button" @click="show = false" class="member-banner__close"
                 aria-label="{{ __('front.notifications.archive') }}">
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1 1L9 9M9 1L1 9" stroke="#DD3888" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M1 1L9 9M9 1L1 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
             </svg>
         </button>
     </div>
+    <style>
+        .member-banner { position: relative; display: flex; align-items: flex-start; gap: 8px; width: 100%; min-height: 50px; border-radius: 8px; padding: 12px 40px 12px 16px; box-sizing: border-box; }
+        .member-banner__icon { width: 20px; height: 20px; flex: 0 0 auto; margin-top: 2px; }
+        .member-banner__text { font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 13px; line-height: 21px; letter-spacing: -0.07px; color: #505050; }
+        .member-banner__text a { color: #505050; text-decoration: underline; }
+        .member-banner__close { position: absolute; right: 19px; top: 17px; width: 12px; height: 12px; display: flex; align-items: center; justify-content: center; }
+        .member-banner--premium .member-banner__close { color: #DD3888; }
+        .member-banner--upsell .member-banner__close { color: #DD3888; }
+        @media (min-width: 768px) {
+            .member-banner { align-items: center; justify-content: center; padding: 0 40px 0 30px; }
+            .member-banner__icon { margin-top: 0; }
+            .member-banner__close { top: 50%; transform: translateY(-50%); }
+            /* Desktop (home-5) draws the cross dark on green; phone 360 px-1 pink. */
+            .member-banner--premium .member-banner__close { color: #505050; }
+        }
+    </style>
 @endif

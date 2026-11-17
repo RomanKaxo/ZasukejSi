@@ -48,6 +48,8 @@ return [
         'valid_until' => 'Your Premium membership is valid until :date',
         'expiring_soon' => 'Your Premium membership has only :days left – ',
         'extend_link' => 'extend it here',
+        'upsell' => 'Right now you cannot see which girl is FAKE – ',
+        'upsell_link' => 'complete your Premium registration',
         'locked_rating' => 'Ratings are unlocked by Premium membership',
         'page_title' => 'Premium membership',
         'page_description' => 'Unlocks profile ratings, the archive and more.',
@@ -71,6 +73,7 @@ return [
         'fucking_keyword' => 'sex',
         'girlsregisternow' => 'Girls, sign up today<br>and gain new clients.',
         'advert' => [
+            'cta_desktop' => 'Register',
             'title' => 'Earn while you are still young...',
             'subtitle' => 'Gentlemen are waiting who truly appreciate the time and care you devote to your body!',
             'features' => [
@@ -84,6 +87,7 @@ return [
         'gents_registered' => 'gents registered',
     ],
     'nav' => [
+        'menu_toggle' => 'Menu',
         'language' => 'Language',
         'home' => 'About',
         'countries' => 'Countries',
@@ -168,6 +172,7 @@ return [
             'settings_description' => 'Manage your account settings and preferences.',
             'settings_saved' => 'Settings saved successfully!',
             'ratings' => 'Ratings',
+            'ratings_nav' => 'Girl ratings',
             'ratings_description' => 'View and manage your ratings.',
             'welcome' => 'Welcome,',
             'ratings_heading' => 'Check out girls nearby and rate them',
@@ -208,7 +213,7 @@ return [
             'title' => 'Profile',
             'basic_info' => 'Basic Information',
             'online' => 'You are online',
-            'offline' => 'You are Offline',
+            'offline' => 'You are offline',
             'settings' => 'settings'
         ],
         'photos' => [
@@ -281,6 +286,8 @@ return [
         ],
 
         'statistics' => [
+            'previous_month' => 'Previous month',
+            'next_month' => 'Next month',
             'page_title' => 'Statistics',
             'no_profile' => 'Statistics will appear once you have created a profile.',
             'profile_views_title' => 'Number of Profile Views on the Homepage',
@@ -296,7 +303,7 @@ return [
             'no_profile' => 'You need to create a profile to see statistics.',
             'total_profile_views' => 'Total Profile Views',
             'my_rating' => 'My Rating',
-            'my_reviews' => 'my reviews',
+            'my_reviews' => 'My reviews',
         ],
         'weekdays' => [
             'monday' => 'Monday',
@@ -476,6 +483,8 @@ return [
             'photos_unverified' => 'PHOTOS UNVERIFIED',
             'call' => 'Call',
             'give_rating' => 'Give Rating',
+            // VIP.jpg: popisek pod srdcem v galerii (desktop), malými písmeny.
+            'save_heart' => 'save',
             'refresh_access' => 'Refresh Access',
             'access_valid_until' => 'Access valid until :date',
             'report_profile' => 'Report Profile',
@@ -528,16 +537,25 @@ return [
             'swingers_events' => 'Swingers events for members',
             'community_ratings' => 'Girl ratings from the community',
             'girls_database' => 'A database of girls in one place',
+            'vip_profile_badge' => 'VIP PROFILE',
+            'report_short' => 'Report',
+            'rating_label' => 'Rating:',
         ],
         'search' => [
             'title' => 'Find your company...',
             'girls' => 'girls',
+            // Desktop hero pill of home-24.jpg writes the singular.
+            'girls_desktop' => 'girl',
             'men' => 'gents',
             'registered' => 'registered',
             'country_and_town' => 'Country and town',
             'select_country' => 'Select country',
             'select_town' => 'Select town',
             'search_country_placeholder' => 'Search country...',
+            // Placeholders of the phone pickers (phone 360 px-22, -23).
+            'choose_country' => 'Choose country',
+            'all_countries' => 'All Countries',
+            'choose_town' => 'Choose town',
             'open_mobile_search' => 'Open country search',
             'clear_mobile_search' => 'Clear search',
             'close_mobile_search' => 'Close country search',
@@ -563,6 +581,11 @@ return [
             'verified' => 'VERIFIED',
             'online' => 'ONLINE',
             'detail' => 'Detail',
+            'a11y_photo' => 'Photo :number',
+            'a11y_prev_photo' => 'Previous photo',
+            'a11y_next_photo' => 'Next photo',
+            'a11y_prev_page' => 'Previous page',
+            'a11y_next_page' => 'Next page',
             'detail_visit' => 'View Profile',
             'rating' => 'Rating:',
             'years' => 'years',
@@ -594,7 +617,30 @@ return [
             'filters_active' => ':count filter(s) active',
             'rating' => 'Rating',
             'eco_friendly' => 'Our project is eco-friendly',
-            'eco_friendly_desc' => '– Thanks to the girl verification system, you won\'t travel anywhere unnecessarily.'
+            'eco_friendly_desc' => '– Thanks to the girl verification system, you won\'t travel anywhere unnecessarily.',
+            // Phone filter row labels (phone 360 px-11); the desktop row keeps its own.
+            'filter_all' => 'All Girls',
+            'filter_recommendation' => 'Recommendation',
+            'filter_verified_photo' => 'Verified photo',
+            'filter_porn_actress' => 'Porno actress',
+            'filter_rating' => 'Rating',
+            // Desktop filter row wording, exactly as the 1920 frame (home.jpg)
+            // writes it; the phone row uses filter_* above (phone 360 px-11).
+            'desk_filter_all' => 'All Girls',
+            'desk_age_18_25' => '18-25 yo',
+            'desk_age_26_30' => '26-30 yo',
+            'desk_age_31_35' => '31-35 yo',
+            'desk_age_36_40' => '36-40 yo',
+            'desk_age_40_50' => '40-50 yo',
+            'desk_age_50_plus' => '50 yo +',
+            'desk_filter_recommendation' => 'Recommendation',
+            'desk_filter_verified_photo' => 'Verified photo',
+            'desk_filter_video' => 'Video',
+            'desk_filter_porn_actress' => 'Porno actress',
+            'desk_filter_new' => 'New',
+            'desk_filter_rating' => 'Rating',
+            'desk_clear_filter' => 'zrušit filtr',
+            'clear_filter' => 'clear filter',
         ],
         'form' => [
             'personal' => 'Personal Information',
@@ -620,6 +666,7 @@ return [
             'required_field' => 'Required Field',
             'country' => 'Country',
             'selectcountry' => 'Select country',
+            'city_placeholder' => 'select',
             'searchcountry' => 'Search country...',
             'nocountries' => 'No countries found',
             'address' => 'Address',
@@ -748,6 +795,7 @@ return [
             'processing' => 'Processing...',
             'verification_requested' => 'Verification request has been submitted.',
             'verification_pending' => 'Your verification request has already been submitted and is awaiting approval.',
+            'verification_pending_badge' => 'Verification in progress (usually 72 h)',
             'already_verified' => 'Your photo is already verified.',
             // Status badges
             'verified_badge' => 'PHOTO VERIFIED',
@@ -867,6 +915,18 @@ return [
         'bank' => 'Bank',
         'amount' => 'Amount',
         'reference' => 'Reference',
+    ],
+
+    // Shown above every provider account page: whether her profile is in the
+    // public listing and, if not, why — plus a link to her own preview.
+    'account_visibility' => [
+        'title' => 'Profile visibility',
+        'pending' => 'Your profile is not in the public listing yet – it is waiting for approval by an administrator. Until then only you can see it.',
+        'rejected' => 'Your profile was rejected by an administrator, so it is not shown in the listing. Please contact support for details.',
+        'hidden' => 'Your profile is approved but an administrator has not published it yet, so it is not shown in the listing. Please contact support.',
+        'live' => 'Your profile is published in the listing. Changes to photos, languages, services and text show up as soon as you save them.',
+        'preview_hint' => 'Changes you save appear on your profile right away – see it the way visitors will.',
+        'preview' => 'View my profile',
     ],
 
 ];

@@ -93,10 +93,11 @@ class MessageController extends Controller
         ]);
 
         // Let the recipient know, consistent with ratings/favorites behaviour.
-        Notification::createForUser(
+        Notification::createTranslatedForUser(
             $user->id,
-            __('notifications.message.received_title'),
-            __('notifications.message.received_message', ['name' => Auth::user()->name]),
+            'notifications.message.received_title',
+            'notifications.message.received_message',
+            ['name' => Auth::user()->name],
             'info'
         );
 

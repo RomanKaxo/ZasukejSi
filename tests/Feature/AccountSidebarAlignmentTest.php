@@ -15,6 +15,10 @@ use Tests\TestCase;
  * dashboard's — much taller than every other heading. A page nobody had listed
  * (archived notifications) therefore sat 170px too low. The default is the
  * ordinary heading now, so a page added later lines up without being listed.
+ *
+ * Values re-measured against Figma home-2 / home-11 (17. 11. 2026): the title
+ * glyph sits 60px above its rule, so the ordinary heading is 85px tall and
+ * the dashboard rule is 238px under the top of the stat cards.
  */
 class AccountSidebarAlignmentTest extends TestCase
 {
@@ -52,19 +56,19 @@ class AccountSidebarAlignmentTest extends TestCase
 
     public function test_archived_notifications_use_the_ordinary_offset(): void
     {
-        $this->assertSame('88', $this->offset('/notifications/archived'));
+        $this->assertSame('85', $this->offset('/notifications/archived'));
     }
 
     public function test_the_ordinary_pages_share_one_offset(): void
     {
         foreach (['/account/photos', '/account/services', '/account/statistics'] as $url) {
-            $this->assertSame('88', $this->offset($url), "Jiné odsazení na {$url}.");
+            $this->assertSame('85', $this->offset($url), "Jiné odsazení na {$url}.");
         }
     }
 
     /** The dashboard's heading carries the stats row, so it stays the outlier. */
     public function test_the_dashboard_keeps_its_taller_offset(): void
     {
-        $this->assertSame('258', $this->offset('/account'));
+        $this->assertSame('238', $this->offset('/account'));
     }
 }

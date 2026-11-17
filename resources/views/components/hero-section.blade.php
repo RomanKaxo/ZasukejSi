@@ -2,8 +2,57 @@
     'title' => '',
     'subtitle' => '',
     'showSearch' => false,
-    'backgroundImage' => '/images/header.png',
+    // JPEG q95 4:4:4 of the former 3.6 MB header.png (mean channel difference < 0.5 of 255): 337 KB.
+    'backgroundImage' => '/images/header.jpg',
+    'compact' => false,
 ])
+
+@if($compact)
+{{-- Results state after a search (Figma home-1.jpg / home-21.jpg): no photo
+     or claim, just a #F9F9F9 1331x278 panel under the header with the
+     search card on y 100 (x 393–1526). On a phone the card simply follows
+     the 96 px header. --}}
+<style>
+    .hero-compact {
+        width: min(1331px, calc(100% - 24px));
+        height: 278px;
+        margin: 0 auto;
+        background: #F9F9F9;
+        border-bottom-left-radius: 24px;
+        border-bottom-right-radius: 24px;
+        position: relative;
+        z-index: 30;
+    }
+
+    .hero-compact__card {
+        position: absolute;
+        top: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(1134px, calc(100vw - 48px));
+        z-index: 60;
+    }
+
+    @media (max-width: 1024px) {
+        .hero-compact { height: auto; padding: 120px 0 24px; }
+        .hero-compact__card { position: static; transform: none; margin: 0 auto; }
+    }
+
+    @media (max-width: 767px) {
+        .hero-compact { width: 100%; padding: 96px 0 0; background: #FFFFFF; border-radius: 0; }
+        .hero-compact__card { width: 100%; }
+        /* phone 360 px-15: no counter pills over the results card. */
+        .hero-compact .search-hero-badges { display: none !important; }
+        /* phone 360 px-15: heading ink 33 px under the card's top edge. */
+        .hero-compact .search-hero-card { padding-top: 32px !important; }
+    }
+</style>
+<div class="hero-compact">
+    <div class="hero-compact__card">
+        <livewire:search-profiles />
+    </div>
+</div>
+@else
 
 <style>
     .hero-bg {
@@ -12,7 +61,9 @@
         margin: 0 auto;
         border-bottom-left-radius: 24px;
         border-bottom-right-radius: 24px;
-        background-position: center;
+        /* Figma home.jpg crops the photo 77 px further left than a centred
+           cover (the "BIG" watermarks sit at x 788 / 1056 / 1326). */
+        background-position: calc(50% - 77px) center;
         background-size: cover;
         background-repeat: no-repeat;
         overflow: visible;
@@ -40,7 +91,10 @@
         font-family: 'Poppins', sans-serif;
         font-weight: 800;
         font-size: 50px;
-        line-height: 1.08;
+        /* Figma home.jpg: lines 59 px apart, "Jsme komunita lidí," inks
+           489 px wide (-1.2 px tracking). */
+        line-height: 58px;
+        letter-spacing: -1.2px;
         color: #5C2D62;
     }
 
@@ -56,15 +110,27 @@
     .hero-subtitle {
         font-family: 'Poppins', sans-serif;
         font-weight: 400;
-        font-size: 26px;
-        line-height: 1.3;
+        font-size: 20px;
+        line-height: 30px;
         color: #5C5C5C;
         max-width: 430px;
         margin-bottom: 0;
     }
 
     .hero-copy-block {
-        transform: translateX(15px) translateY(45px);
+        /* The reveal animation owns `transform`, so the offset is positional:
+           title ink starts at x 443 / y 181 in the 1920 frame. */
+        position: relative;
+        left: 42px;
+        top: -2px;
+    }
+
+    @media (min-width: 768px) {
+        /* Subtitle cap line at y 319, 30 px leading (Figma home.jpg). */
+        .hero-subtitle { margin-top: -2px; }
+        /* The reveal animation overrides the translate above on desktop, so
+           the card is placed by offset: top edge on y 424 (Figma home.jpg). */
+        .hero-search-wrap { top: -14px; }
     }
 
     .hero-text-block {
@@ -115,7 +181,12 @@
         .hero-bg { width: calc(100% - 12px); height: auto; min-height: 520px; }
     }
 
-    @media (max-width: 640px) {
+    /* Phone layout, up to the tablet breakpoint (md = 768px). It used to stop
+       at 640px (photo, gutters) and 425px (room for the counter pills), so an
+       iPhone Plus / Pro Max at 430px — and anything up to 767px — got a
+       half-tablet hero with no counters. Measured against the 360px phone
+       frame (phone 360 px-11), 1:1. */
+    @media (max-width: 767px) {
         .hero-bg {
             width: 100%;
             height: 463px;
@@ -126,37 +197,50 @@
             overflow: visible !important;
         }
 
+        /* The frame's photo: 488x463, starting under the 96px header and
+           hanging 76px past the right edge (x = -52 at 360px). The design shows
+           it lightly blurred under a 50% white veil — registered against the
+           export it is 0.5 x photo + 0.5 x white with a ~2.5px blur. It runs
+           on under the search card, which covers its lower edge. */
         .hero-bg::before {
             content: '';
             position: absolute;
-            inset: 0;
-            background-image: url('/images/icons/mobile/mobile.png');
+            top: 96px;
+            left: 0;
+            right: 0;
+            height: 463px;
+            background-image: linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)), url('/images/icons/mobile/mobile.jpg'); /* was a 1.1 MB PNG */
             background-repeat: no-repeat;
-            background-size: 488px 463px;
-            background-position: center top;
-            filter: blur(5px);
-            clip-path: inset(0 round 0 0 24px 24px);
+            background-size: 100% 100%, 488px 463px;
+            background-position: 0 0, right -76px top 0;
+            filter: blur(2.5px);
+            clip-path: inset(0);
             z-index: 0;
             pointer-events: none;
         }
 
-        .hero-main-title { font-size: 36px; }
-        /* Phone frame: three subtitle lines 28px apart, not the 1.3 ratio. */
-        .hero-subtitle { font-size: 18px; line-height: 28px; }
+        /* The animated sheen is a desktop flourish; on the phone it lightened
+           the photo away from the design's tone. */
+        .homepage-hero::after { display: none; }
+        .homepage-hero { box-shadow: none; }
+
+        /* Four lines in the frame: "Jsme / komunita / lidí, co rádi /
+           šukají." The <br> is a desktop line break, so it is hidden here and
+           the 250px measure does the wrapping. Baselines are 41-42px apart. */
+        .hero-main-title { font-size: 36px; line-height: 41.67px; letter-spacing: 0; max-width: 250px; padding-top: 14.6px !important; }
+        .hero-main-title br,
+        .hero-subtitle br { display: none; }
+        /* Three subtitle lines, 28px apart, 20px type, wrapping at the same
+           words as the frame ("…ještě / dnes a … nové / zákazníky."). */
+        .hero-subtitle { font-size: 20px; line-height: 28px; max-width: 250px; margin-top: 4px; margin-left: 1px; }
         .hero-inner { display: flex !important; flex-direction: column !important; }
         /* 16px from .hero-inner + 9px here = the 25px gutter the phone frame
            uses for the heading, subtitle and counter pills alike. */
-        .hero-copy-block { order: 1 !important; transform: none !important; padding-bottom: 0 !important; padding-left: 9px !important; padding-right: 9px !important; }
+        .hero-copy-block { order: 1 !important; transform: none !important; left: 0; top: 0; padding-bottom: 0 !important; padding-left: 9px !important; padding-right: 9px !important; }
         .hero-text-block { width: 100%; min-height: auto; }
-        .hero-search-wrap { order: 2 !important; transform: translateY(40px) !important; margin-top: 0 !important; }
-    }
-
-    /* Same breakpoint as the counter pills in search-profiles. They are shown
-       only below 426px, so only there does the card need to clear the subtitle
-       by the space they occupy (31 + 76 + 33). Above it the gap stays 40px,
-       otherwise 426-640px would show an empty band where no pills render. */
-    @media (max-width: 425px) {
-        .hero-search-wrap { transform: translateY(140px) !important; }
+        /* The counter pills hang above the card (search-profiles), so the card
+           clears the subtitle by the space they occupy. */
+        .hero-search-wrap { order: 2 !important; transform: translateY(136px) !important; margin-top: 0 !important; }
     }
 </style>
 
@@ -165,11 +249,11 @@
         <div class="max-w-2xl px-4 md:pl-16 py-10 md:py-16 hero-copy-block hero-animate hero-animate-delay-1">
             <div class="hero-text-block">
                 <h1 class="hero-main-title py-4 md:py-5">
-                    {!! $title !!}
+                    {!! str_replace('<br>', ' <br>', $title) !!}
                 </h1>
 
                 <p class="hero-subtitle">
-                    {!! $subtitle !!}
+                    {!! str_replace('<br>', ' <br>', $subtitle) !!}
                 </p>
             </div>
         </div>
@@ -183,3 +267,4 @@
         @endif
     </div>
 </div>
+@endif

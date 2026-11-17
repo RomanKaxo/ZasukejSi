@@ -24,7 +24,7 @@
                         id="email" 
                         type="email" 
                         name="email" 
-                        value="{{ old('email', $email ?? '') }}" 
+                        value="{{ old('email', $email ?? request()->query('email', '')) }}" 
                         required 
                         autocomplete="email" 
                         class="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary @error('email') border-red-500 @else border-gray-300 @enderror"

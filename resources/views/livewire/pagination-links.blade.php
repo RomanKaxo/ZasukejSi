@@ -2,13 +2,13 @@
     <div class="flex items-center justify-center gap-3 mt-16 md:mt-20 lg:mt-24">
         {{-- Previous Page Link --}}
         @if ($paginator->onFirstPage())
-            <button type="button" disabled aria-disabled="true" class="flex items-center justify-center" style="width:45px;height:45px;border-radius:8px;background:#F2F2F2;">
+            <button type="button" disabled aria-disabled="true" aria-label="{{ __('front.profiles.list.a11y_prev_page') }}" class="flex items-center justify-center" style="width:45px;height:45px;border-radius:8px;background:#F2F2F2;">
                 <span class="inline-block text-[#5C2D62]">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10.6667 12.6668V3.3335L3.33335 8.00016L10.6667 12.6668Z"/></svg>
                 </span>
             </button>
         @else
-            <button type="button" wire:click="previousPage" wire:loading.attr="disabled" class="flex items-center justify-center" style="width:45px;height:45px;border-radius:8px;background:#5C2D62;">
+            <button type="button" aria-label="{{ __('front.profiles.list.a11y_prev_page') }}" wire:click="previousPage" wire:loading.attr="disabled" class="flex items-center justify-center" style="width:45px;height:45px;border-radius:8px;background:#5C2D62;">
                 <span class="inline-block text-white">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10.6667 12.6668V3.3335L3.33335 8.00016L10.6667 12.6668Z"/></svg>
                 </span>
@@ -36,13 +36,13 @@
 
         {{-- Next Page Link --}}
         @if ($paginator->hasMorePages())
-            <button type="button" wire:click="nextPage" wire:loading.attr="disabled" class="flex items-center justify-center" style="width:45px;height:45px;border-radius:8px;background:#5C2D62;">
+            <button type="button" aria-label="{{ __('front.profiles.list.a11y_next_page') }}" wire:click="nextPage" wire:loading.attr="disabled" class="flex items-center justify-center" style="width:45px;height:45px;border-radius:8px;background:#5C2D62;">
                 <span class="inline-block transform rotate-180 text-white">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10.6667 12.6668V3.3335L3.33335 8.00016L10.6667 12.6668Z"/></svg>
                 </span>
             </button>
         @else
-            <button type="button" disabled aria-disabled="true" class="flex items-center justify-center" style="width:45px;height:45px;border-radius:8px;background:#F2F2F2;">
+            <button type="button" disabled aria-disabled="true" aria-label="{{ __('front.profiles.list.a11y_next_page') }}" class="flex items-center justify-center" style="width:45px;height:45px;border-radius:8px;background:#F2F2F2;">
                 <span class="inline-block transform rotate-180 text-[#5C2D62]">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10.6667 12.6668V3.3335L3.33335 8.00016L10.6667 12.6668Z"/></svg>
                 </span>

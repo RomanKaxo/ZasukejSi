@@ -6,9 +6,11 @@
         height: 218px;
         background: #FFFFFF;
         border-radius: 24px;
-        border: 1px solid #EDE7EE;
+        /* Figma home.jpg: no outline, white straight into the shadow; content
+           48 px in from the left (field at x 441), 49 px from the right. */
+        border: 0;
         box-shadow: 0 10px 25px 0 rgba(220, 214, 221, 0.95);
-        padding: 30px 42px;
+        padding: 49px 49px 0 48px;
         box-sizing: border-box;
         margin: 0 auto;
         position: relative;
@@ -49,13 +51,13 @@
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: 16px;
+        margin-bottom: 20px;
     }
 
     .search-hero-title {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 9px;
         font-family: 'Poppins', sans-serif;
         font-weight: 700;
         font-size: 18px;
@@ -64,8 +66,8 @@
     }
 
     .search-hero-heart {
-        width: 20px;
-        height: 20px;
+        width: 23px;
+        height: 23px;
         stroke: #DD3888;
         transition: transform 240ms ease, filter 240ms ease;
         animation: heartBeat 3.8s ease-in-out infinite;
@@ -76,37 +78,35 @@
         filter: drop-shadow(0 6px 12px rgba(221, 56, 136, 0.25));
     }
 
+    /* Figma home.jpg: content-wide pills 25 px tall on y 468, 13 px apart,
+       dot 8 px from the left edge, 12 px type, ~13 px right padding. */
     .search-hero-badges {
         display: flex;
-        gap: 10px;
+        gap: 13px;
+    }
+
+    @media (min-width: 768px) {
+        .search-hero-badges { position: relative; top: -2px; }
+        /* Heading ink on y 473, labels on y 519 (Figma home.jpg). */
+        .search-hero-top { margin-top: -3px; }
+        .search-hero-heart { position: relative; top: -2px; left: 1px; }
     }
 
     .search-badge {
-            width: 167px;
-            height: 26px;
+            width: auto;
+            height: 25px;
             border-radius: 999px;
             background: #F2F2F2;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 6px;
+            justify-content: flex-start;
+            gap: 0;
             box-sizing: border-box;
-            padding: 0 10px;
+            padding: 0 13px 0 8px;
             transition: transform 220ms ease, box-shadow 220ms ease, background-color 220ms ease;
         }
 
-        @media (max-width: 425px) {
-            .search-hero-badges {
-                display: none !important;
-            }
 
-            .search-badge {
-                width: 310px !important;
-                height: 35px !important;
-                background: rgba(242, 242, 242, 0.8) !important;
-                backdrop-filter: blur(4px);
-            }
-        }
     .search-badge:hover {
         transform: translateY(-2px);
         background: #FFF4F9;
@@ -119,12 +119,13 @@
         border-radius: 50%;
         background: #00B80F;
         flex: 0 0 10px;
+        margin-right: 7px;
     }
 
     .search-badge-strong {
         font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif;
-        font-weight: 600;
-        font-size: 11px;
+        font-weight: 500;
+        font-size: 12px;
         color: #505050;
         line-height: 1;
         white-space: nowrap;
@@ -132,26 +133,33 @@
 
     .search-badge-soft {
         font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif;
-        font-weight: 600;
-        font-size: 11px;
+        font-weight: 400;
+        font-size: 12px;
         color: #A6A6A6;
         line-height: 1;
         white-space: nowrap;
+        margin-left: 4px;
     }
 
     .search-hero-form-row {
         display: flex;
         align-items: flex-end;
-        gap: 12px;
+        gap: 10px;
     }
 
     .search-hero-field {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 5px;
     }
 
-    .search-hero-field.region { width: 601px; }
+    @media (min-width: 768px) {
+        /* Label ink on y 519, field outline on y 542 (Figma home.jpg). */
+        .search-hero-label { padding-top: 1px; padding-left: 7px; }
+    }
+
+    /* Figma: region 602, age 205, button 210, 10 px apart. */
+    .search-hero-field.region { width: 602px; }
     .search-hero-field.age { width: 205px; }
     .search-hero-field.country,
     .search-hero-field.town { width: 394px; }
@@ -196,7 +204,7 @@
         border: 0;
         outline: 0;
         background: transparent;
-        padding: 0 64px 0 16px;
+        padding: 0 64px 0 19.5px;
         font-family: 'Poppins', sans-serif;
         font-weight: 700;
         font-size: 14px;
@@ -207,14 +215,18 @@
         align-items: center;
     }
 
+    /* Grey tile with a pink chevron, chosen value or not (home.jpg, home-1);
+       it turns pink with a white chevron only while the list is open
+       (home-25.jpg). 3 px inside the 2 px border. */
     .search-arrow-box {
         position: absolute;
-        right: 4px;
-        top: 4px;
+        right: 3px;
+        top: 3px;
         width: 50px;
         height: 50px;
         border-radius: 6px;
         background: #F2F2F2;
+        color: #DD3888;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -228,16 +240,8 @@
     }
 
     .search-select-wrap.is-open .search-arrow-box {
-        background: #FBE7F2;
-    }
-
-    .search-arrow-box.is-selected {
-        background: #DD3888 !important;
-        color: #FFFFFF !important;
-    }
-
-    .search-arrow-box.is-selected svg {
-        stroke: #FFFFFF !important;
+        background: #DD3888;
+        color: #FFFFFF;
     }
 
     .search-select-wrap.is-open .search-arrow-box svg {
@@ -324,13 +328,52 @@
         display: none;
     }
 
+    /* home-25.jpg, region list open (desktop): the select itself does not
+       change (grey 2 px frame, no lift), only its chevron tile turns pink.
+       Under it hangs a borderless white panel with a soft shadow, 317 px
+       tall and scrolling, rows 35 px apart (14 px text, 518 px #ECECEC
+       rules centred, first label 31 px under the select). The chosen
+       region is not highlighted; the hovered row is pink. */
+    @media (min-width: 1024px) {
+        .search-hero-field.region .search-select-wrap.is-open,
+        .search-hero-field.age .search-select-wrap.is-open {
+            border-color: #E6E6E6;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            transform: none;
+            box-shadow: none;
+        }
+        /* The frame has the pointer on the list and nothing lifted. */
+        .search-hero-card:has(.search-select-wrap.is-open),
+        .search-hero-card:has(.search-select-wrap.is-open):hover,
+        .search-hero-field .search-select-wrap.is-open:hover { transform: none; }
+        .search-hero-field.region .search-dropdown-panel--region {
+            top: calc(100% + 1px);
+            max-height: 317px;
+            border: 0;
+            border-radius: 0 0 16px 16px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14);
+            padding: 20px 0 0;
+        }
+        .search-hero-field.region .search-dropdown-item--region {
+            display: block;
+            /* 35.15 px pitch: rules at y 655, 690, 725 … 901 in the frame. */
+            padding: 8px 0 9.15px;
+            line-height: 18px;
+        }
+        .search-hero-field.region .search-dropdown-item--region::after { background: #ECECEC; }
+        .search-hero-field.region .search-dropdown-item--region.is-active { color: #505050; }
+        .search-hero-field.region .search-dropdown-item--region.is-active:hover { color: #DD3888; }
+    }
+
     .search-mobile-picker {
         position: fixed;
-        top: 56px;
+        top: 96px;
         right: 0;
         bottom: 0;
         left: 0;
         z-index: 180;
+        font-family: 'Poppins', sans-serif;
         background: #FFFFFF;
         overflow-y: auto;
     }
@@ -510,6 +553,48 @@
         color: #B8B8B8;
     }
 
+    /* phone 360 px-21…23: 40 px close ring from y 92, x 293; a 308 × 60
+       search box 27 px under it (2 px #E6E6E6, 14 px loupe 21 px in, 15 px
+       semibold text 47 px in); rows 44 px apart from y 243 — 30 px flag,
+       15 px name 14 px after it, #A6A6A6 count on the right, a 1 px rule
+       from the name to the edge. */
+    .search-mobile-picker { top: 92px; }
+    .search-country-mobile-picker__inner { padding: 0 26px 32px; }
+    .search-country-mobile-picker__actions { margin-bottom: 27px; }
+    .search-country-mobile-picker__close { width: 40px; height: 40px; }
+    .search-country-mobile-picker__close svg { width: 17px; height: 17px; }
+    .search-country-mobile-picker__close svg path { stroke-width: 3; }
+    .search-country-mobile-picker__search { margin-bottom: 24px; }
+    .search-country-mobile-picker__search-input { padding-left: 44px; font-size: 15px; }
+    .search-country-mobile-picker__search-input::placeholder { color: #A5A5A5; opacity: 1; }
+    .search-country-mobile-picker__search-icon { left: 19px; }
+    /* -21: the ✕ that empties the query, 9 px, ink 26 px from the right. */
+    .search-country-mobile-picker__clear { right: 21px; }
+    .search-country-mobile-picker__clear svg { width: 16px; height: 16px; }
+    .search-country-mobile-picker__clear svg path { stroke-width: 3; }
+    /* The frames keep the search box grey while typing (-21, -23). */
+    .search-country-mobile-picker__search-input:focus { border-color: #E6E6E6; }
+    /* -23: the picked country above the town search — 60 px, 2 px pink,
+       loupe ink 22 px in, 15 px semibold name, ✕ 26 px from the right,
+       10 px above the town box. */
+    .search-mobile-country-chip { height: 60px; padding: 0 14px 0 17px; gap: 10px; margin-bottom: 10px; }
+    .search-mobile-country-chip__text { font-size: 15px; }
+    .search-mobile-country-chip__clear svg { width: 17px; height: 17px; }
+    .search-mobile-country-chip__clear svg path { stroke-width: 2.8; }
+    .search-town-pin { width: 22px; height: 27px; }
+    .search-town-mobile-picker .search-country-mobile-picker__search { margin-bottom: 23px; }
+    .search-town-mobile-picker .search-country-mobile-picker__flag { overflow: visible; border-radius: 0; }
+    .search-country-mobile-picker__item {
+        padding: 7px 0 6px;
+        gap: 13px;
+        border-bottom: 0;
+        background: linear-gradient(#EAEAEA, #EAEAEA) no-repeat right bottom / calc(100% - 44px) 1px;
+        padding-bottom: 7px;
+    }
+    .search-country-mobile-picker__name,
+    .search-country-mobile-picker__count { font-size: 15px; line-height: 20px; }
+    .search-country-mobile-picker__count { color: #A6A6A6; }
+
     .search-country-mobile-picker__empty {
         padding: 18px 0;
         font-family: 'Poppins', sans-serif;
@@ -603,12 +688,23 @@
         }
     }
 
-    @media (max-width: 425px) {
-        /* The phone frame shows both counters stacked on the hero photo just
-           above the white search card — 310x35 each, 6px apart, 33px clear of
-           the card. They were display:none, so mobile lost them entirely
-           while the CSS below still sized badges that never rendered. */
-        /* Static so the card, not the title row, becomes the containing block
+    /* Phone layout up to the tablet breakpoint (md = 768px). Was 425px, so at
+       430px (iPhone Plus / Pro Max) and up to 767px the counters vanished and
+       the card fell back to the tablet layout. Every value below is measured
+       on the 360px phone frame (phone 360 px-11); widths are fluid so the
+       same 25px gutters hold on wider phones. */
+    /* home.jpg / home-1.jpg at 1920: the 60 px fields start 1 px lower
+       (2 px #E6E6E6 border from y 542.5) and the picked value's cap sits
+       at y 568, 2 px under the line box's centred position. */
+    @media (min-width: 1280px) {
+        .search-hero-card .search-select-wrap { margin-top: 1px; }
+        .search-hero-card .search-select-trigger > span { position: relative; top: 2px; }
+    }
+
+    @media (max-width: 767px) {
+        /* Both counters stacked on the hero photo just above the white search
+           card: 35px tall, 5px apart, 32px clear of the card, 25px gutters.
+           Static so the card, not the title row, becomes the containing block
            the badges are positioned against. */
         .search-hero-top {
             position: static !important;
@@ -617,35 +713,58 @@
         .search-hero-badges {
             display: flex !important;
             flex-direction: column !important;
-            gap: 6px !important;
+            gap: 5px !important;
             position: absolute !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
+            left: 24px !important;
+            right: 24px !important;
+            transform: none !important;
             bottom: 100% !important;
             margin: 0 0 33px 0 !important;
-            width: 310px !important;
+            width: auto !important;
             z-index: 26 !important;
         }
 
         .search-badge {
-            width: 310px !important;
-            max-width: 310px !important;
+            width: 100% !important;
+            max-width: none !important;
             height: 35px !important;
-            background: rgba(242, 242, 242, 0.9) !important;
+            background: #F2F2F2 !important;
+            backdrop-filter: none !important;
             border-radius: 999px !important;
             padding: 0 12px !important;
+            /* Centred in the phone pill (desktop pills are content-wide). */
+            justify-content: center !important;
+            gap: 0 !important;
         }
 
+        .search-badge-dot {
+            margin-right: 6px;
+        }
+
+        /* 13px counters in the frame ("<count> dívek registrováno"), the
+           number and the word one space apart. Comments here reach the page
+           source, so the frame's sample numbers are not quoted. */
+        .search-badge-strong,
+        .search-badge-soft {
+            font-size: 13px !important;
+        }
+
+        .search-badge-soft {
+            margin-left: 4px;
+        }
+
+        /* Edge to edge: 360 wide at 360px, as in the frame. 42px to the
+           heading, 29px under the button = 385px tall. */
         .search-hero-card {
-            width: 360px !important;
-            min-width: 360px !important;
-            max-width: 360px !important;
-            height: 386px !important;
-            min-height: 386px !important;
-            max-height: 386px !important;
-            padding: 24px !important;
+            width: 100vw !important;
+            min-width: 0 !important;
+            max-width: 100vw !important;
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            padding: 43px 24px 30px !important;
             box-sizing: border-box !important;
-            margin: 0 auto !important;
+            margin: 0 !important;
             border-radius: 16px !important;
             position: relative !important;
             display: flex !important;
@@ -657,56 +776,98 @@
         }
 
         .search-hero-top {
+            flex-direction: row !important;
+            gap: 0 !important;
             margin-bottom: 20px !important;
         }
 
         .search-hero-title {
             font-size: 18px !important;
+            line-height: 22px !important;
             display: flex !important;
             align-items: center !important;
-            gap: 10px !important;
+            gap: 7px !important;
+            position: relative;
+            top: -1px;
         }
 
         .search-hero-heart {
-            width: 20px !important;
-            height: 20px !important;
+            width: 22px !important;
+            height: 22px !important;
+            margin-left: 1px;
+            position: relative;
+            top: -1px;
         }
 
         .search-hero-form-row {
             display: flex !important;
             flex-direction: column !important;
-            gap: 15px !important;
-            align-items: center !important;
+            gap: 20px !important;
+            align-items: stretch !important;
             width: 100% !important;
+        }
+
+        .search-hero-field {
+            gap: 5px !important;
+        }
+
+        .search-hero-label {
+            padding: 0 0 0 10px !important;
+            line-height: 20px !important;
+            position: relative;
+            top: -1px;
         }
 
         .search-hero-field.region,
         .search-hero-field.age,
         .search-hero-field.country,
         .search-hero-field.town {
-            width: 310px !important;
-            max-width: 310px !important;
-            margin: 0 auto !important;
+            width: 100% !important;
+            max-width: none !important;
+            margin: 0 !important;
         }
 
         .search-select-wrap {
-            width: 310px !important;
+            width: 100% !important;
             height: 60px !important;
-            margin: 0 auto !important;
+            margin: 0 !important;
         }
 
         .search-select-trigger {
-            width: 310px !important;
-            height: 60px !important;
-            padding: 0 64px 0 16px !important;
+            width: 100% !important;
+            height: 100% !important;
+            padding: 0 64px 0 19px !important;
             font-size: 14px !important;
         }
 
-        .search-submit {
-            width: 310px !important;
-            height: 60px !important;
-            margin-top: 5px !important;
+        /* The frame keeps the chevron box grey with a pink chevron even with
+           a value chosen; the solid pink box is a desktop state. 3px inside
+           the 2px border on every side: 50x50 in the 56px inner height. */
+        .search-arrow-box {
+            top: 3px !important;
+            right: 3.5px !important;
+            color: #DD3888;
         }
+
+        .search-arrow-box.is-selected {
+            background: #F2F2F2 !important;
+            color: #DD3888 !important;
+        }
+
+        .search-arrow-box.is-selected svg {
+            stroke: #DD3888 !important;
+        }
+
+
+        .search-submit {
+            width: 100% !important;
+            height: 60px !important;
+            margin-top: 1px !important;
+        }
+
+        /* phone 360 px-11: heading ink at y 570 (43 + 2 px under the card's
+           top), the picked values' cap 2 px under the centred line box. */
+        .search-hero-card:not(.search-hero-card--english) .search-select-trigger > span { position: relative; top: 2px; }
 
         .search-hero-card--english {
             background: transparent !important;
@@ -731,6 +892,15 @@
             display: none !important;
         }
 
+        /* The English card is transparent and padless; its fields keep their
+           310px phone width, centred, as before the breakpoint moved. */
+        .search-hero-card--english .search-hero-field.country,
+        .search-hero-card--english .search-hero-field.town {
+            width: 310px !important;
+            max-width: 100% !important;
+            margin: 0 auto !important;
+        }
+
         .search-hero-card--english .search-hero-title,
         .search-hero-card--english .search-hero-heart {
             display: none !important;
@@ -752,17 +922,69 @@
         .search-hero-card--english .search-country-mobile-picker {
             display: block;
         }
-    }
 
-    @media (max-width: 359px) {
-        .search-hero-card {
-            width: calc(100vw - 16px) !important;
-            min-width: 0 !important;
-            max-width: calc(100vw - 16px) !important;
-            left: auto !important;
-            transform: none !important;
+        /* phone 360 px-18/-20: picked country / town — 34 px pink ring with
+           a ✕, 12 px left of a solid pink 50 px box with a white chevron. */
+        /* No stacking context of its own on the phone: the full-screen
+           pickers (z 180) inside must rise above the hero (z 30), which
+           otherwise covered their search field and close button. */
+        .search-hero-card--english {
+            z-index: auto !important;
         }
 
+        /* phone 360 px-19/-20: label 2 px above, fields 10 px apart. */
+        .search-hero-card--english .search-hero-form-row {
+            gap: 10px !important;
+        }
+
+        .search-hero-card--english .search-hero-field.country {
+            gap: 6px !important;
+        }
+
+        .search-hero-card--english .search-arrow-box {
+            right: 4.5px !important;
+        }
+
+        .search-hero-card--english .search-select-placeholder {
+            color: #A5A5A5;
+        }
+
+        .search-hero-card--english .search-arrow-box.is-picked {
+            background: #DD3888 !important;
+            color: #FFFFFF !important;
+        }
+
+        .search-hero-card--english .search-arrow-box.is-picked svg {
+            stroke: #FFFFFF !important;
+        }
+
+        .search-hero-card--english .search-field-clear {
+            position: absolute;
+            top: 50%;
+            right: 65.5px;
+            width: 34px;
+            height: 34px;
+            margin-top: -17px;
+            border: 2px solid #DD3888;
+            border-radius: 50%;
+            color: #DD3888;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #FFFFFF;
+            z-index: 2;
+        }
+
+        .search-hero-card--english .search-field-clear svg {
+            width: 10px;
+            height: 10px;
+        }
+    }
+
+    .search-field-clear { display: none; }
+    .search-field-clear[x-cloak] { display: none !important; }
+
+    @media (max-width: 359px) {
         .search-hero-field.region,
         .search-hero-field.age,
         .search-hero-field.country,
@@ -804,6 +1026,19 @@
             countryValue: @js($country ?: ($this->englishCountries[0]['name'] ?? '')),
             countryCodeValue: @js($country_code ?: ($this->englishCountries[0]['code'] ?? '')),
             townValue: @js($region ?: ''),
+            {{-- A country is "picked" once it came in the URL or was chosen;
+                 the default first country is only a placeholder value. --}}
+            countryPicked: @js(filled(request('country')) || filled(request('country_code'))),
+            clearCountry() {
+                this.countryPicked = false;
+                this.clearCountrySelection();
+                this.runSearch();
+            },
+            clearTown() {
+                this.townValue = '';
+                $wire.set('region', '', false);
+                this.runSearch();
+            },
             shouldAutoSearch() {
                 return window.innerWidth <= 425;
             },
@@ -894,9 +1129,16 @@
                 this.countryCodeValue = '';
                 this.serverTowns = [];
                 this.townValue = '';
-                $wire.set('country', '');
-                $wire.set('country_code', '');
-                $wire.set('region', '');
+                // Livewire 3.8 drops every other queued update in a request
+                // once one of them is an empty string (mergeQueuedUpdates
+                // compares keys with the *value*, and '' prefixes every key):
+                // clearing the country only ever cleared the town. Setting
+                // the values without `live` and committing once sends them as
+                // a plain diff instead.
+                $wire.set('country', '', false);
+                $wire.set('country_code', '', false);
+                $wire.set('region', '', false);
+                $wire.$commit();
             },
             runSearch() {
                 $wire.search();
@@ -925,6 +1167,7 @@
                 return this.serverTowns || [];
             },
             selectCountry(country) {
+                this.countryPicked = true;
                 this.countryValue = country.name;
                 this.countryCodeValue = country.code;
                 this.townValue = '';
@@ -933,12 +1176,17 @@
                 this.openCountry = false;
                 this.openTown = false;
                 this.closeCountryPicker();
-                $wire.set('country', country.name);
-                $wire.set('country_code', country.code);
-                $wire.set('region', '');
+                // Not `live`: see clearCountrySelection(). The trailing
+                // set('region', '') used to discard the country, so picking
+                // e.g. Germany searched the default first country (Albania).
+                $wire.set('country', country.name, false);
+                $wire.set('country_code', country.code, false);
+                $wire.set('region', '', false);
 
                 if (this.shouldAutoSearch() && (!country.regions || country.regions.length === 0)) {
                     this.runSearch();
+                } else {
+                    $wire.$commit();
                 }
             },
             selectTown(town) {
@@ -960,7 +1208,7 @@
             @keydown.escape.window="if (fullscreenTownSearch) { closeTownPicker() } else if (fullscreenCountrySearch) { closeCountryPicker() } else { openCountry = false; openTown = false }">
 @else
 <div class="search-hero-card"
-        x-data="{ openRegion: false, openAge: false, regionValue: @js($region ?: ($this->allRegions[0] ?? '')), ageValue: @js($age_range ?: '18-25'), ages: @js($this->ageRangeOptions) }"
+        x-data="{ openRegion: false, openAge: false, regionValue: @js($region ?: ($this->allRegions[0] ?? '')), regionLabels: @js($this->regionLabels), ageValue: @js($age_range ?: '18-25'), ages: @js($this->ageRangeOptions) }"
         @click.outside="openRegion = false; openAge = false"
         @keydown.escape.window="openRegion = false; openAge = false">
 @endif
@@ -993,11 +1241,16 @@
                     <label class="search-hero-label" for="country-select">{{ __('front.profiles.search.country_and_town') }}</label>
                     <div class="search-select-wrap" x-bind:class="{ 'is-open': openCountry }">
                         <button id="country-select" type="button" class="search-select-trigger" @click="openCountryPicker()">
-                            <span x-text="countryValue || @js(__('front.profiles.search.select_country'))"></span>
+                            {{-- phone 360 px-16: nothing picked yet reads "All Countries" in grey. --}}
+                            <span x-text="countryPicked ? (countryValue || @js(__('front.profiles.search.select_country'))) : @js(__('front.profiles.search.all_countries'))" x-bind:class="{ 'search-select-placeholder': !countryPicked }"></span>
                         </button>
-                        <span class="search-arrow-box" x-bind:class="{ 'is-selected': countryValue }">
-                            <svg width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path d="M1 1L5 4L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        {{-- phone 360 px-18/-20: a picked value gets a pink ✕ ring and a solid pink chevron box. --}}
+                        <button type="button" class="search-field-clear" x-show="countryPicked" x-cloak @click.stop="clearCountry()" aria-label="{{ __('front.profiles.list.clear_all_filters') }}">
+                            <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2 2L10 10M10 2L2 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                        </button>
+                        <span class="search-arrow-box" x-bind:class="{ 'is-selected': countryValue, 'is-picked': countryPicked }">
+                            <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </span>
 
@@ -1009,15 +1262,19 @@
                     </div>
                 </div>
 
-                <div class="search-hero-field town">
+                {{-- phone 360 px-16: no town field until a country is picked. --}}
+                <div class="search-hero-field town" x-show="countryPicked" x-cloak>
                     <label class="sr-only" for="town-select">{{ __('front.profiles.search.select_town') }}</label>
                     <div class="search-select-wrap" x-bind:class="{ 'is-open': openTown }">
                         <button id="town-select" type="button" class="search-select-trigger" @click="openTownPicker()">
                             <span x-text="townValue || @js(__('front.profiles.search.select_town'))"></span>
                         </button>
-                        <span class="search-arrow-box" x-bind:class="{ 'is-selected': townValue }">
-                            <svg width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path d="M1 1L5 4L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <button type="button" class="search-field-clear" x-show="townValue" x-cloak @click.stop="clearTown()" aria-label="{{ __('front.profiles.list.clear_all_filters') }}">
+                            <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2 2L10 10M10 2L2 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                        </button>
+                        <span class="search-arrow-box" x-bind:class="{ 'is-selected': townValue, 'is-picked': townValue }">
+                            <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </span>
 
@@ -1038,17 +1295,17 @@
                     <label class="search-hero-label" for="region-select">{{ __('front.profiles.search.select_region') }}</label>
                     <div class="search-select-wrap" x-bind:class="{ 'is-open': openRegion }">
                         <button id="region-select" type="button" class="search-select-trigger" @click="openRegion = !openRegion; openAge = false">
-                            <span x-text="regionValue"></span>
+                            <span x-text="regionLabels[regionValue] || regionValue"></span>
                         </button>
                         <span class="search-arrow-box" x-bind:class="{ 'is-selected': regionValue }">
-                            <svg width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path d="M1 1L5 4L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </span>
 
                         <div class="search-dropdown-panel search-dropdown-panel--region" x-show="openRegion" x-cloak x-transition:enter="transition ease-out duration-220" x-transition:enter-start="opacity-0 -translate-y-2 scale-95" x-transition:enter-end="opacity-100 translate-y-0 scale-100" x-transition:leave="transition ease-in duration-160" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0 -translate-y-1">
-                            @foreach($this->allRegions as $regionOption)
-                                <button type="button" class="search-dropdown-item search-dropdown-item--region" x-bind:class="{ 'is-active': regionValue === @js($regionOption) }" @click="regionValue = @js($regionOption); openRegion = false; $wire.set('region', @js($regionOption))">{{ $regionOption }}</button>
+                            @foreach($this->regionOptions as $regionOption)
+                                <button type="button" class="search-dropdown-item search-dropdown-item--region" x-bind:class="{ 'is-active': regionValue === @js($regionOption) }" @click="regionValue = @js($regionOption); openRegion = false; $wire.set('region', @js($regionOption))">{{ $this->regionLabels[$regionOption] ?? $regionOption }}</button>
                             @endforeach
                         </div>
                     </div>
@@ -1061,8 +1318,8 @@
                             <span x-text="ages[ageValue] || ''"></span>
                         </button>
                         <span class="search-arrow-box" x-bind:class="{ 'is-selected': ageValue }">
-                            <svg width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path d="M1 1L5 4L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </span>
 
@@ -1087,6 +1344,10 @@
     </form>
 
     @if($isEnglishLocationSearch)
+        {{-- Teleported to <body>: inside the page's z-0 wrapper the fixed
+             pickers sat under the 96 px header (z 100), which cut the top
+             of the close ring at y 92 (phone 360 px-21…23). --}}
+        <template x-teleport="body">
         <div class="search-mobile-picker search-town-mobile-picker" x-show="fullscreenTownSearch" x-cloak x-transition.opacity.duration.180ms>
             <div class="search-country-mobile-picker__inner">
                 <div class="search-country-mobile-picker__actions">
@@ -1128,7 +1389,7 @@
                         x-model="townQuery"
                         type="text"
                         class="search-country-mobile-picker__search-input"
-                        placeholder="{{ __('front.profiles.search.select_town') }}"
+                        placeholder="{{ __('front.profiles.search.choose_town') }}"
                         autocomplete="off"
                     >
                     <button type="button" class="search-country-mobile-picker__clear" x-show="townQuery.length" x-cloak @click="clearTownQuery()" aria-label="{{ __('front.profiles.search.clear_mobile_search') }}">
@@ -1139,28 +1400,21 @@
                     </button>
                 </div>
 
+                {{-- Pass 3: a "server-side fallback" list of anchors used to sit
+                     here and in the country picker. Inside x-teleport it only
+                     ever rendered once Alpine ran, so every town and country
+                     was listed twice and the copies ignored the search box. --}}
                 <div class="search-country-mobile-picker__list">
                     <template x-for="town in filteredTowns" :key="town">
                         <button type="button" class="search-country-mobile-picker__item" @click="selectTown(town)">
                             <span class="search-country-mobile-picker__flag">
-                                <img src="{{ asset('images/icons/location.svg') }}" alt="">
+                                <svg class="search-town-pin" viewBox="0 0 22 27" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M21 11c0 7.5-10 15-10 15S1 18.5 1 11a10 10 0 0 1 20 0Z" stroke="#DD3888" stroke-width="2" stroke-linejoin="round"/><circle cx="11" cy="11" r="3.5" stroke="#DD3888" stroke-width="2"/></svg>
                             </span>
                             <span class="search-country-mobile-picker__name" x-text="town"></span>
                             <span class="search-country-mobile-picker__count"></span>
                         </button>
                     </template>
 
-                    <div class="search-country-mobile-picker__list-server" x-cloak>
-                        @foreach($this->countryTowns ?? [] as $townOption)
-                            <a href="{{ route('countries.index', ['locale' => app()->getLocale(), 'country' => $country ?? $this->country, 'country_code' => $country_code ?? $this->country_code, 'region' => $townOption]) }}" class="search-country-mobile-picker__item">
-                                <span class="search-country-mobile-picker__flag">
-                                    <img src="{{ asset('images/icons/location.svg') }}" alt="">
-                                </span>
-                                <span class="search-country-mobile-picker__name">{{ $townOption }}</span>
-                                <span class="search-country-mobile-picker__count"></span>
-                            </a>
-                        @endforeach
-                    </div>
 
                     <div class="search-country-mobile-picker__empty" x-show="filteredTowns.length === 0" x-cloak>
                         {{ __('front.profiles.search.no_mobile_countries_found') }}
@@ -1168,7 +1422,9 @@
                 </div>
             </div>
         </div>
+        </template>
 
+        <template x-teleport="body">
         <div class="search-mobile-picker search-country-mobile-picker" x-show="fullscreenCountrySearch" x-cloak x-transition.opacity.duration.180ms>
             <div class="search-country-mobile-picker__inner">
                 <div class="search-country-mobile-picker__actions">
@@ -1192,7 +1448,7 @@
                         x-model="countryQuery"
                         type="text"
                         class="search-country-mobile-picker__search-input"
-                        placeholder="{{ __('front.profiles.search.search_country_placeholder') }}"
+                        placeholder="{{ __('front.profiles.search.choose_country') }}"
                         autocomplete="off"
                     >
                     <button type="button" class="search-country-mobile-picker__clear" x-show="countryQuery.length" x-cloak @click="clearCountryQuery()" aria-label="{{ __('front.profiles.search.clear_mobile_search') }}">
@@ -1214,18 +1470,6 @@
                         </button>
                     </template>
 
-                    {{-- Server-side fallback (anchors) so mobile works even if Alpine isn't initialized yet --}}
-                    <div class="search-country-mobile-picker__list-server" x-cloak>
-                        @foreach($this->englishCountries as $countryOption)
-                            <a href="{{ route('countries.index', ['locale' => app()->getLocale(), 'country' => $countryOption['name'], 'country_code' => $countryOption['code']]) }}" class="search-country-mobile-picker__item">
-                                <span class="search-country-mobile-picker__flag">
-                                    <img src="https://flagcdn.com/{{ $countryOption['code'] }}.svg" alt="{{ $countryOption['name'] }}">
-                                </span>
-                                <span class="search-country-mobile-picker__name">{{ $countryOption['name'] }}</span>
-                                <span class="search-country-mobile-picker__count">{{ $countryOption['count'] ?? '' }}</span>
-                            </a>
-                        @endforeach
-                    </div>
 
                     <div class="search-country-mobile-picker__empty" x-show="filteredCountries.length === 0" x-cloak>
                         {{ __('front.profiles.search.no_mobile_countries_found') }}
@@ -1233,6 +1477,7 @@
                 </div>
             </div>
         </div>
+        </template>
     @endif
     <script>
         (function () {

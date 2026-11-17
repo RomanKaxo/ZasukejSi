@@ -15,7 +15,38 @@
          'vip' => $chartVip,
          'yAxisMax' => $yAxisMax,
          'yAxisStep' => $yAxisStep,
-     ]) }}">
+     ]) }}"
+     {{-- home-18 (a month with VIP days) vs home-19 (none): without the VIP
+          pill row the month arrows sit 35px higher and the next block starts
+          50px sooner. The page passes the spacing per variant. --}}
+     @php $statsHasVip = in_array(true, $chartVip, true); @endphp
+     class="profile-stats {{ $statsHasVip ? 'profile-stats--vip' : 'profile-stats--novip' }} profile-stats--{{ $variant }}">
+    <style>
+        @media (max-width: 426px) {
+            .profile-stats-mobile { width: 310px; max-width: 100%; margin-left: auto; margin-right: auto; }
+            .profile-stats-mobile > h3 { line-height: 34px; margin-top: -2.5px; margin-bottom: 41.5px !important; }
+            .profile-stats-mobile .space-y-\[7px\] > * + * { margin-top: 9.6px !important; }
+            .profile-stats-mobile .stats-day-label { width: 41px !important; }
+            .profile-stats-mobile .stats-day-value { margin-left: 8px; }
+            /* A rule 41px under the month arrows closes each chart; the next
+               heading's glyph is 86px under it, the footer wordmark 143px. */
+            .profile-stats-mobile .stats-mobile-rule { margin-top: 20px; margin-bottom: 34px; border-color: #E9E9E9; }
+            .profile-stats--detail .profile-stats-mobile .stats-mobile-rule { margin-bottom: 80px; }
+        }
+        @media (min-width: 768px) {
+            .profile-stats--novip .profile-stats-box { height: 522px !important; }
+            .profile-stats--novip .profile-stats-box [data-chart-viewport] { bottom: 8px !important; }
+            /* The second chart's arrows sit 3px lower than the first's in both frames. */
+            .profile-stats--detail.profile-stats--vip .profile-stats-box { height: 560px !important; }
+            .profile-stats--detail.profile-stats--novip .profile-stats-box { height: 525px !important; }
+            .profile-stats--detail .profile-stats-box [data-chart-viewport] { bottom: 46px !important; }
+            .profile-stats--detail.profile-stats--novip .profile-stats-box [data-chart-viewport] { bottom: 11px !important; }
+            .profile-stats--homepage.profile-stats--vip { padding-bottom: 153px; }
+            .profile-stats--homepage.profile-stats--novip { padding-bottom: 103px; }
+            .profile-stats--detail.profile-stats--vip { padding-bottom: 24px; }
+            .profile-stats--detail.profile-stats--novip { margin-bottom: -24px; }
+        }
+    </style>
     @php
         $chartId = 'profileStatsChart-' . $instanceId;
         $badgesId = 'profileStatsBadges-' . $instanceId;
@@ -24,7 +55,10 @@
         $mobileMaxValue = max($chartValues ?: [1]);
     @endphp
 
-    <h3 class="mb-4 text-left max-[426px]:hidden" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">
+    {{-- Figma home-18: heading box 4px above its glyph, top grid line 81px
+         below the glyph, baseline at +437, month arrows 45px tall ending at
+         +585. The chart area is 47.6px per day with 30px bars. --}}
+    <h3 class="mb-4 md:mb-0 text-left max-[426px]:hidden" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">
         {{ $variant === 'detail' ? __('front.account.statistics.detail_views_title') : __('front.account.statistics.profile_views_title') }}
     </h3>
 
@@ -36,8 +70,11 @@
         </div>
     @else
 
-    <div class="w-full h-[510px] rounded-[15px] relative mx-auto max-[426px]:hidden">
-    <div class="absolute inset-x-0 top-0 bottom-[65px] overflow-x-auto" data-chart-viewport tabindex="0" aria-label="{{ $variant === 'detail' ? __('front.account.statistics.detail_views_title') : __('front.account.statistics.profile_views_title') }}">
+    <div class="profile-stats-box w-full h-[510px] md:h-[557px] rounded-[15px] relative mx-auto max-[426px]:hidden">
+    {{-- pass 1: the scroll viewport reaches 30px into the gutter on the left
+         so a wide three-digit y label ("250", "300") is not clipped; the
+         y scale is 30px wider (Chart.js clips labels to it), so the bars stay put. --}}
+    <div class="absolute inset-x-0 top-0 bottom-[65px] md:bottom-[43px] overflow-x-auto" style="left:-30px;" data-chart-viewport tabindex="0" aria-label="{{ $variant === 'detail' ? __('front.account.statistics.detail_views_title') : __('front.account.statistics.profile_views_title') }}">
         <div class="relative h-full" data-chart-content>
             <div class="absolute inset-0 z-10" wire:ignore>
                 <canvas id="{{ $chartId }}" class="w-full h-full block"></canvas>
@@ -48,13 +85,13 @@
 
     <!-- Month controls stay visible while the date range scrolls. -->
     <div id="{{ $controlsId }}" class="absolute bottom-0 left-1/2 transform -translate-x-1/2 z-30 max-[426px]:hidden" style="pointer-events:auto; display:block; width:100%; max-width:843px;">
-        <div class="w-full mx-auto flex items-center justify-center gap-6">
-            <div class="w-[255px] h-px bg-[#E6E6E6]"></div>
+        <div class="w-full mx-auto flex items-center justify-center gap-6 min-[1180px]:grid min-[1180px]:grid-cols-[256px_minmax(0,1fr)_256px] min-[1180px]:gap-0">
+            <div class="min-w-0 flex-1 min-[1180px]:w-auto h-px bg-[#E9E9E9]"></div>
 
-            <div class="flex items-center gap-4">
+            <div class="flex shrink-0 items-center gap-4 min-[1180px]:justify-between min-[1180px]:px-[30px]">
                 {{-- These two arrows were inert markup with no handler at all,
                      so the chart could only ever show the current month. --}}
-                <button id="stats-prev" type="button" wire:click="previousMonth" aria-label="Previous month" class="w-[45px] h-[45px] rounded-[8px] bg-[#DD3888] flex items-center justify-center text-white transition">
+                <button id="stats-prev" type="button" wire:click="previousMonth" aria-label="{{ __('front.account.statistics.previous_month') }}" class="w-[45px] h-[45px] rounded-[8px] bg-[#DD3888] flex items-center justify-center text-white transition">
                     <svg width="7" height="9" viewBox="0 0 7 9" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M6 0L0 4.5L6 9V0Z" fill="currentColor"/>
                     </svg>
@@ -64,20 +101,25 @@
                     {{ $this->currentMonth->locale(app()->getLocale())->translatedFormat('F Y') }}
                 </div>
 
-                <button id="stats-next" type="button" wire:click="nextMonth" @disabled($this->isCurrentMonth) aria-label="Next month" class="w-[45px] h-[45px] rounded-[8px] bg-[#FFF4F9] flex items-center justify-center text-[#DD3888] transition @if($this->isCurrentMonth) opacity-40 cursor-not-allowed @endif">
+                {{-- home-18: on the current month the next arrow is the pale #FFF4F9 tile
+                     at full strength; home-19: on a past month it is filled pink like
+                     the previous arrow. --}}
+                <button id="stats-next" type="button" wire:click="nextMonth" @disabled($this->isCurrentMonth) aria-label="{{ __('front.account.statistics.next_month') }}" class="w-[45px] h-[45px] rounded-[8px] flex items-center justify-center transition @if($this->isCurrentMonth) bg-[#FFF4F9] text-[#DD3888] cursor-not-allowed @else bg-[#DD3888] text-white @endif">
                     <svg width="7" height="9" viewBox="0 0 7 9" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M1 0L7 4.5L1 9V0Z" fill="currentColor"/>
                     </svg>
                 </button>
             </div>
 
-            <div class="w-[255px] h-px bg-[#E6E6E6]"></div>
+            <div class="min-w-0 flex-1 min-[1180px]:w-auto h-px bg-[#E9E9E9]"></div>
         </div>
     </div>
 
     </div>
 
-    <div class="hidden max-[426px]:block">
+    {{-- pass 1 overlay (phone 360 px-5): a 310px column, 34px heading lines,
+         20px bars 29.6px apart starting 49px in, the value 14px after the bar. --}}
+    <div class="profile-stats-mobile hidden max-[426px]:block">
         <h3 class="mb-4 text-left" style="font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; color:#5C2D62;">
             {{ $variant === 'detail' ? __('front.account.statistics.detail_views_title') : __('front.account.statistics.profile_views_title') }}
         </h3>
@@ -91,7 +133,7 @@
                 @endphp
                 <div>
                     <div class="flex items-center gap-[8px]">
-                        <div class="w-[38px] shrink-0 text-[14px] leading-[14px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">
+                        <div class="stats-day-label w-[38px] shrink-0 text-[14px] leading-[14px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">
                             {{ $label }}
                         </div>
 
@@ -110,7 +152,7 @@
                                     </div>
                                 @endif
 
-                                <div class="absolute top-1/2 -translate-y-1/2 text-[14px] leading-none" style="left: calc(var(--bar-width) + 6px); font-family: 'Poppins', sans-serif; color: {{ $barColor }};">
+                                <div class="stats-day-value absolute top-1/2 -translate-y-1/2 text-[14px] leading-none" style="left: calc(var(--bar-width) + 6px); font-family: 'Poppins', sans-serif; color: {{ $barColor }};">
                                     {{ $value }}
                                 </div>
                             </div>
@@ -120,8 +162,9 @@
             @endforeach
         </div>
 
-        <div class="mt-6 flex h-[85px] items-center justify-between rounded-[15px] bg-[#FFF8FB] px-[16px]">
-            <button type="button" wire:click="previousMonth" aria-label="Previous month" class="h-[45px] w-[45px] rounded-[8px] bg-[#DD3888] flex items-center justify-center text-white transition">
+        {{-- phone 360 px-5: plain row, no tinted panel behind the arrows --}}
+        <div class="mt-6 flex h-[85px] items-center justify-between">
+            <button type="button" wire:click="previousMonth" aria-label="{{ __('front.account.statistics.previous_month') }}" class="h-[45px] w-[45px] rounded-[8px] bg-[#DD3888] flex items-center justify-center text-white transition">
                 <svg width="7" height="9" viewBox="0 0 7 9" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <path d="M6 0L0 4.5L6 9V0Z" fill="currentColor"/>
                 </svg>
@@ -131,12 +174,13 @@
                 {{ $this->currentMonth->locale(app()->getLocale())->translatedFormat('F Y') }}
             </div>
 
-            <button type="button" wire:click="nextMonth" @disabled($this->isCurrentMonth) aria-label="Next month" class="h-[45px] w-[45px] rounded-[8px] bg-[#FFF4F9] flex items-center justify-center text-[#DD3888] transition">
+            <button type="button" wire:click="nextMonth" @disabled($this->isCurrentMonth) aria-label="{{ __('front.account.statistics.next_month') }}" class="h-[45px] w-[45px] rounded-[8px] bg-[#FFF4F9] flex items-center justify-center text-[#DD3888] transition">
                 <svg width="7" height="9" viewBox="0 0 7 9" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <path d="M1 0L7 4.5L1 9V0Z" fill="currentColor"/>
                 </svg>
             </button>
         </div>
+        <hr class="stats-mobile-rule">
     </div>
 
 <!-- VIP badges grid under the chart (one column per label) -->
@@ -176,7 +220,9 @@
         // Keep approximately 15 legible days in the desktop viewport. Longer
         // months scroll horizontally without skipping dates or inventing data.
         const content = canvas.closest('[data-chart-content]');
-        content.style.minWidth = `${labels.length * 52 + 40}px`;
+        // Figma home-18: 54px axis column, 47.6px per day, 27px right margin
+        // (16 days fill the 843px column exactly).
+        content.style.minWidth = `${Math.round(labels.length * 47.6 + 54 + 27 + 30)}px`;
 
         // Ensure canvas has explicit pixel size so Chart.js can draw correctly
         const parentRect = canvas.parentElement.getBoundingClientRect();
@@ -202,21 +248,18 @@
                     const ctx = chart.ctx;
                     ctx.save();
                     const dataset = chart.data.datasets[0];
-                    ctx.font = '600 14px Poppins';
+                    ctx.font = '500 14px Poppins';
                     ctx.textAlign = 'center';
 
                     chart.getDatasetMeta(0).data.forEach((bar, index) => {
                         const value = dataset.data[index];
                         if (value === undefined || value === null) return;
                         const x = bar.x;
-                        const y = (bar.y || 0) - 8; // slightly above the bar
+                        const y = (bar.y || 0) - 12; // Figma: glyph bottom 12px above the bar
                         // pick label color from dataset.backgroundColor per-bar if provided
-                        try {
-                            const bg = Array.isArray(dataset.backgroundColor) ? dataset.backgroundColor[index] : dataset.backgroundColor;
-                            ctx.fillStyle = bg || '#DD3888';
-                        } catch (e) {
-                            ctx.fillStyle = '#DD3888';
-                        }
+                        // Figma home-18 prints every value in pink, also
+                        // above the purple VIP bars.
+                        ctx.fillStyle = '#DD3888';
                         ctx.fillText(value, x, y);
                     });
 
@@ -238,7 +281,7 @@
         // We'll rely on Chart.js to draw the horizontal grid lines so they align
         // perfectly with bar values. Increase bottom padding to move the
         // x-axis date labels further down so badges can sit below them.
-        const bottomPadding = 70;
+        const bottomPadding = 39;
 
         // plugin to draw baseline at y=0 (horizontal) so we don't rely on axis borders
         const baselinePlugin = {
@@ -252,13 +295,37 @@
                     ctx.beginPath();
                     ctx.strokeStyle = '#E8E8E8';
                     ctx.lineWidth = 3;
-                    ctx.moveTo(chart.chartArea.left, yPixel + 0.5);
-                    ctx.lineTo(chart.chartArea.right, yPixel + 0.5);
+                    // Starts at the column edge, not in the 30px label gutter.
+                    ctx.moveTo(30, yPixel - 1);
+                    ctx.lineTo(chart.width, yPixel - 1);
                     ctx.stroke();
                     ctx.restore();
                 } catch (e) {
                     console.warn('baseline plugin error', e);
                 }
+            }
+        };
+
+        // Figma grid: 1px #E8E8E8 hairlines (home-19 second chart; the first
+        // chart draws them on half pixels) from 15px left of the bars to the
+        // right edge of the column, no line at zero (the baseline covers it).
+        const gridPlugin = {
+            id: 'zsGrid',
+            beforeDatasetsDraw(chart) {
+                const yScale = chart.scales.y;
+                const g = chart.ctx;
+                g.save();
+                g.strokeStyle = '#E8E8E8';
+                g.lineWidth = 1;
+                yScale.ticks.forEach((tick) => {
+                    if (!tick.value) return;
+                    const y = Math.round(yScale.getPixelForValue(tick.value)) + 0.5;
+                    g.beginPath();
+                    g.moveTo(chart.chartArea.left - 15, y);
+                    g.lineTo(chart.width, y);
+                    g.stroke();
+                });
+                g.restore();
             }
         };
 
@@ -269,9 +336,7 @@
                 datasets: [{
                     data: values,
                     backgroundColor: barColors,
-                    categoryPercentage: 0.9,
-                    barPercentage: 0.6,
-                    maxBarThickness: 30,
+                    barThickness: 30,
                     borderRadius: { topLeft: 8, topRight: 8, bottomLeft: 0, bottomRight: 0 },
                     borderSkipped: false
                 }]
@@ -287,15 +352,16 @@
                             stepSize: yAxisStep,
                             callback: function(value) { return value === 0 ? '' : value; },
                             color: '#505050',
-                            font: { family: 'Poppins', size: 14, weight: '500' }
+                            font: { family: 'Poppins', size: 14, weight: '400' },
+                            padding: 33
                         },
-                        grid: {
-                            display: true,
-                            color: '#E8E8E8',
-                            lineWidth: 1,
-                            drawBorder: false,
-                            drawTicks: false
-                        }
+                        // Fixed axis column so the bars start at the same x
+                        // whatever the widest tick label is.
+                        // 54px column + the 30px the viewport reaches into the gutter:
+                        // Chart.js clips tick labels to the scale box.
+                        afterFit(scale) { scale.width = 84; },
+                        border: { display: false },
+                        grid: { display: false, drawTicks: false }
                     },
                     x: {
                         ticks: {
@@ -304,17 +370,18 @@
                             minRotation: 0,
                             maxRotation: 0,
                             color: '#505050',
-                            font: { family: 'Poppins', size: 12, weight: '500' },
-                            padding: 8
+                            font: { family: 'Poppins', size: 14, weight: '400' },
+                            padding: 24
                         },
-                        grid: { display: false, drawBorder: false, drawTicks: false },
+                        border: { display: false },
+                        grid: { display: false, drawTicks: false },
                         offset: true
                     }
                 },
                 plugins: { legend: { display: false }, tooltip: { enabled: true } },
-                layout: { padding: { top: 0, bottom: bottomPadding, left: 0, right: 0 } }
+                layout: { padding: { top: 53, bottom: bottomPadding, left: 0, right: 27 } }
             },
-            plugins: [valueLabelPlugin, baselinePlugin]
+            plugins: [gridPlugin, valueLabelPlugin, baselinePlugin]
         });
 
         // VIP flags from server
@@ -332,14 +399,16 @@
             if (!meta || !meta.data) return;
 
             meta.data.forEach((bar, i) => {
-                if (!vipFlags[i]) return;
+                // One pill where a VIP period starts (Figma home-18), not
+                // one under every VIP day.
+                if (!vipFlags[i] || vipFlags[i - 1]) return;
 
                 const wrapper = document.createElement('div');
                 wrapper.className = 'zs-vip-wrapper';
                 wrapper.style.position = 'absolute';
                 wrapper.style.left = `${Math.round(bar.x)}px`;
                 // position badge relative to chart bottom; increase offset to move it down by ~15px
-                const badgeOffset = 43;
+                const badgeOffset = 57; // Figma: badge top 57px under the baseline
                 const topPx = (chart.chartArea && chart.chartArea.bottom) ? Math.round(chart.chartArea.bottom + badgeOffset) : (canvas.height + badgeOffset);
                 wrapper.style.top = `${topPx}px`;
                 wrapper.style.transform = 'translateX(-50%)';

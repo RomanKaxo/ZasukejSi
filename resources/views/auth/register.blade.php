@@ -7,9 +7,9 @@
 <div class="pt-28 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="p-10 rounded-3xl max-w-2xl w-full space-y-8 border-2 border-gray-200">
         <div class="text-center">
-            <h2 class="text-3xl font-extrabold text-text-default">
+            <h1 class="text-3xl font-extrabold text-text-default">
                 {{ __('front.auth.register.create') }}
-            </h2>
+            </h1>
             <p class="mt-2 text-sm text-gray-600">
                 {{ __('front.auth.register.join') }}
             </p>

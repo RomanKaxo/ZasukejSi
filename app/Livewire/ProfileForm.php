@@ -6,6 +6,7 @@ use App\Models\Profile;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Rule;
 
 class ProfileForm extends Component
@@ -149,10 +150,26 @@ class ProfileForm extends Component
     // Profile state
     public $hasProfile = false;
 
+    /**
+     * Languages and opening hours as they were when the form was opened.
+     *
+     * Both are edited on the services page, not here. This form still has to
+     * write the `content` JSON and the hours column, so without knowing what
+     * it started from it put its stale copy back on every save — a language
+     * picked on the services page vanished as soon as the settings form (open
+     * in another tab, or restored by the browser's back button) was saved.
+     * A value is only written when it differs from this snapshot.
+     */
+    #[Locked]
+    public $mountedLanguages = '';
+
+    #[Locked]
+    public $mountedAvailabilityHours = '';
+
     public function mount()
     {
         // Get user with profile relationship loaded
-        $user = \App\Models\User::with('profile')->find(Auth::id());
+        $user = Auth::user()->loadMissing('profile');
         $profile = $user->profile;
 
         // Set profile state
@@ -208,6 +225,8 @@ class ProfileForm extends Component
                 : [];
             $this->status = $profile->status ?? '';
             $this->is_public = $profile->is_public ?? false;
+            $this->mountedLanguages = $this->languages;
+            $this->mountedAvailabilityHours = $this->availability_hours;
         }
 
         // Load dropdown options
@@ -317,15 +336,12 @@ class ProfileForm extends Component
         // Same countries as shown in the homepage "browse by country" sidebar
         $allowedCodes = ['al', 'ad', 'am', 'be', 'by', 'ba', 'bg', 'me', 'cz'];
 
-        $codes = include base_path('lang/en/codes.php');
-        $this->countries = collect($codes)
-            ->filter(fn ($name, $code) => in_array(strtolower($code), $allowedCodes, true))
-            ->map(function ($name, $code) {
-                return [
-                    'code' => strtolower($code),
-                    'name' => $name,
-                ];
-            })->sortBy('name')->values()->toArray();
+        // Names in the visitor's language (the list used to be English on the Czech site).
+        $this->countries = collect($allowedCodes)
+            ->map(fn (string $code) => [
+                'code' => $code,
+                'name' => \App\Models\Country::isoName($code),
+            ])->sortBy(fn (array $country) => \Illuminate\Support\Str::ascii($country['name']))->values()->toArray();
     }
 
     /**
@@ -507,16 +523,10 @@ class ProfileForm extends Component
      */
     public function durationOptions(mixed $current = null): array
     {
+        // Figma home-2 labels the field "časová dotace v hodinách" and shows
+        // plain hours (0.5, 1, 2), so the options read the same way.
         $format = function (float $hours): string {
-            $minutes = (int) round($hours * 60);
-
-            if ($minutes < 60) {
-                return $minutes . ' min';
-            }
-
-            return $minutes % 60 === 0
-                ? intdiv($minutes, 60) . ' h'
-                : intdiv($minutes, 60) . ':' . str_pad((string) ($minutes % 60), 2, '0', STR_PAD_LEFT) . ' h';
+            return rtrim(rtrim(number_format($hours, 2, '.', ''), '0'), '.');
         };
 
         $options = [];
@@ -628,8 +638,9 @@ class ProfileForm extends Component
     {
         $user = \App\Models\User::find(Auth::id());
 
-        // Guard: only users without a profile can create one
-        if ($user->profile) {
+        // Guard: only users without a profile can create one, and only
+        // providers — profile pages are `gender:female` (admins bypass).
+        if ($user->profile || ($user->gender !== 'female' && ! $this->isAdmin())) {
             return;
         }
 
@@ -684,7 +695,11 @@ class ProfileForm extends Component
         }
 
         session()->flash('message', __('front.profiles.form.profile_created'));
-        $this->js('window.scrollTo({top: 0, behavior: "smooth"})');
+
+        // A full reload, so the account layout picks up the new profile: the
+        // visibility notice ("waiting for approval") and the photo/services
+        // sections that need a profile.
+        $this->redirectRoute('account.dashboard');
     }
 
     public function save()
@@ -833,7 +848,9 @@ class ProfileForm extends Component
                     'card_height_cm' => $this->height_cm ?: null,
                     'nationality' => $this->nationality ? strtolower($this->nationality) : null,
                     'bust_size' => $this->bust_size ?: null,
-                    'languages' => $this->languages ?: null,
+                    'languages' => $this->languages !== $this->mountedLanguages
+                        ? ($this->languages ?: null)
+                        : ($user->profile->content['languages'] ?? null),
                     'local_currency' => $this->local_currency ?: 'Kč',
                     'global_currency' => $this->global_currency ?: 'EUR',
                     'has_whatsapp' => (bool) $this->has_whatsapp,
@@ -846,9 +863,11 @@ class ProfileForm extends Component
                 // expects — every save from this form undid the canonical one.
                 // fromText() parses the same text back into it and carries
                 // `always_online` over, since a text field cannot express it.
-                'availability_hours' => $this->availability_hours
-                    ? \App\Support\Availability::fromText($this->availability_hours, $user->profile->availability_hours ?? null)
-                    : null,
+                'availability_hours' => $this->availability_hours === $this->mountedAvailabilityHours
+                    ? $user->profile->availability_hours
+                    : ($this->availability_hours
+                        ? \App\Support\Availability::fromText($this->availability_hours, $user->profile->availability_hours ?? null)
+                        : null),
                 'local_prices' => $this->buildPriceRows(
                     $this->local_price_30_incall,
                     $this->local_price_30_outcall,
@@ -864,7 +883,10 @@ class ProfileForm extends Component
                     $this->global_prices
                 ) ?: null,
                 'contacts' => $this->contacts ?: null,
-                'is_public' => $this->is_public,
+                // `is_public` is not written here. The form has no control for
+                // it, and admins use it to take a profile off the site (report
+                // "block"); writing back the value loaded when the form opened
+                // silently re-published a profile an admin had just hidden.
             ];
 
             if ($isAdmin) {

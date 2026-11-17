@@ -6,20 +6,18 @@
     $activeItem = 'membership';
 @endphp
 
-@section('member-content')
-    {{-- Premium membership plans for members.
+{{-- Premium membership plans for members.
 
-         The checkout, the webhook and the admin side existed already; this is
-         the page that lets a member actually buy one. Until now the sidebar's
-         "Začít PRÉMIUM" button had nowhere to go. --}}
-    <div class="mb-4 md:mb-8 text-center">
-        <h1 style="font-family:'Poppins',sans-serif;font-weight:700;font-size:36px;color:#5C2D62;">
-            {{ __('front.membership.page_title') }}
-        </h1>
-        <p style="font-family:'Poppins',sans-serif;font-weight:400;font-size:14px;color:#505050;padding-top:16px;">
-            {{ __('front.membership.page_description') }}
-        </p>
-    </div>
+     The checkout, the webhook and the admin side existed already; this is
+     the page that lets a member actually buy one. Until now the sidebar's
+     "Začít PRÉMIUM" button had nowhere to go. --}}
+@section('member-heading')
+    <h1 class="member-title">{{ __('front.membership.page_title') }}</h1>
+    <p class="member-lead">{{ __('front.membership.page_description') }}</p>
+@endsection
+
+@section('member-content')
+    <div class="mb-8"></div>
 
     @if (session('status'))
         <div class="mb-6 rounded-lg border border-primary-200 bg-primary-50 px-4 py-3 text-sm text-primary-700" style="font-family:'Poppins',sans-serif;">

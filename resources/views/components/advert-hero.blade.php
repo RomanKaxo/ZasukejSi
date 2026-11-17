@@ -13,13 +13,21 @@
             'iconClass' => 'w-8 h-8 lg:w-10 lg:h-10',
             'text' => __('front.landing.advert.features.icecream'),
         ],
-    ];
-
-    if (! $isEnglishAdvert) {
-        $advertFeatures[] = [
+        [
             'icon' => 'laptop',
             'iconClass' => 'w-9 h-9 lg:w-10 lg:h-10',
             'text' => __('front.landing.advert.features.laptop'),
+        ],
+    ];
+
+    // English panel (home-24): two boxes. Both English frames give them the
+    // first and the third text; home-24 draws the ice cream and the laptop
+    // icon (vybrané město v zemi draws hand-heart and ice cream instead —
+    // the homepage frame wins).
+    if ($isEnglishAdvert) {
+        $advertFeatures = [
+            ['icon' => 'icecream'] + $advertFeatures[0],
+            $advertFeatures[2],
         ];
     }
 @endphp
@@ -31,6 +39,7 @@
                 <img
                     src="{{ asset('images/icons/mobile/mobile2.png') }}"
                     alt="Advert background"
+                    loading="lazy" decoding="async"
                     class="h-full w-full object-cover"
                 >
                 <div class="absolute inset-0 bg-gradient-to-r from-white/96 via-white/82 to-white/8"></div>
@@ -81,14 +90,19 @@
         <div class="absolute inset-0">
             <img 
                 src="{{ asset('images/dvert.png') }}"
-                alt="Advert background" 
+                alt="Advert background"
+                {{-- Lazy: the block sits far below the fold, and a lazy image in
+                     a display:none parent (this desktop copy on phones, the
+                     phone copy above on desktop) is never fetched; phones used
+                     to download this 0.8 MB picture without showing it. --}}
+                loading="lazy" decoding="async"
                 class="w-full h-full object-cover"
             >
         </div>
 
-        <div class="relative z-10 px-8 py-12 md:px-14 md:py-16 lg:px-36 lg:py-40">
-            <div class="max-w-2xl mb-8 md:mb-7 relative">
-                <x-icons name="quote" :preserveColors="true" class="absolute -left-14 -top-6 w-10 h-10 text-[#DD3888]" />
+        <div class="relative z-10 px-8 py-12 md:px-14 md:py-16 lg:px-36 lg:py-40 advert-desk-inner">
+            <div class="max-w-2xl mb-8 md:mb-7 relative advert-desk-copy">
+                <x-icons name="quote" :preserveColors="true" class="absolute -left-14 -top-6 w-10 h-10 text-[#DD3888] advert-desk-quote" />
                 <h2 class="advert-hero-title text-[#5C2D62] mb-3">
                     {{ __('front.landing.advert.title') }}
                 </h2>
@@ -98,15 +112,17 @@
             </div>
 
             @guest
-            <div class="mb-10 md:mb-10">
+            <div class="mb-10 md:mb-10 advert-desk-cta">
+                {{-- Desktop wording of home.jpg ("Založit účet"); the phone keeps its own. --}}
                 <button @click="$dispatch('show-register-modal')" class="btn-primary !py-3 inline-flex items-center gap-3 min-w-[304px]">
-                    {{ __('front.nav.register') }}
-                    <x-icons name="heart" class="w-5 h-5" />
+                    {{ __('front.landing.advert.cta_desktop') }}
+                    {{-- home-24 draws a clipboard-plus in the English button, home.jpg a heart. --}}
+                    <x-icons :name="$isEnglishAdvert ? 'ClipboardPlus' : 'heart'" :preserveColors="$isEnglishAdvert" class="w-5 h-5 advert-desk-cta__icon" />
                 </button>
             </div>
             @endguest
 
-            <div class="grid grid-cols-1 {{ $isEnglishAdvert ? 'md:grid-cols-2 justify-items-center gap-4 md:gap-5' : 'md:grid-cols-3 gap-4 md:gap-6' }}">
+            <div class="grid grid-cols-1 {{ $isEnglishAdvert ? 'md:grid-cols-2 justify-items-center gap-4 md:gap-5 advert-desk-features--en' : 'md:grid-cols-3 gap-4 md:gap-6 advert-desk-features' }}">
                 @foreach ($advertFeatures as $feature)
                     <div class="feature-block {{ $isEnglishAdvert ? 'w-full max-w-[363px] min-h-[87px] backdrop-blur-[15px] lg:w-[363px] lg:h-[87px] lg:px-6 lg:py-5' : '' }}" @if($isEnglishAdvert) style="background: rgba(255, 255, 255, 0.40); box-shadow: 0 15px 15px rgba(220, 214, 221, 0.70);" @endif>
                         <div class="feature-block-icon">

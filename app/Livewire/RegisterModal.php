@@ -133,6 +133,14 @@ class RegisterModal extends Component
             'password' => ['required', 'string', Rules\Password::defaults()],
             'password_confirmation' => ['required', 'string', 'same:password'],
             'gender' => ['required', 'in:male,female'],
+        ], [
+            // Short messages: the modal prints them on the label line (Figma home-22),
+            // the default sentences ran over the label.
+            'email.email' => __('auth.register.form.email_invalid'),
+            'email.unique' => __('auth.register.form.email_taken'),
+            'phone.unique' => __('auth.register.form.phone_taken'),
+            'password.min' => __('auth.register.form.password_too_short'),
+            'password_confirmation.same' => __('auth.register.form.password_mismatch'),
         ]);
 
         try {

@@ -7,50 +7,16 @@
 @endphp
 
 @section('account-content')
-    <!-- Mobile Header -->
-    <div class="mb-4 md:hidden">
-        <div class="relative flex items-center justify-center py-3">
-            <h1 class="w-[400px] max-w-full text-[38px] text-center" style="font-family:'Poppins',sans-serif; font-weight:700; color:#5C2D62;">
-                {{ __('front.account.statistics.page_title') }}
-            </h1>
-        </div>
-        <hr class="w-[312px] mx-auto mb-4">
-        <div class="flex items-center justify-between w-[312px] mx-auto">
-            <div class="flex items-center gap-1.5">
-                <div class="w-[14px] h-[14px] rounded-full {{ auth()->user()->isOnline() ? 'bg-[#00B80F]' : 'bg-gray-300' }}"></div>
-                <span class="text-[13px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">
-                    {{ auth()->user()->isOnline() ? __('front.account.dashboard.online') : __('front.account.dashboard.offline') }}
-                </span>
-            </div>
-            <a href="{{ route('account.dashboard') }}" class="text-[13px] text-[#505050] underline" style="font-family: 'Poppins', sans-serif; color: #DD3888;">{{ __('front.account.dashboard.settings') }}</a>
-        </div>
-    </div>
+    @include('account.partials.page-header', ['title' => __('front.account.statistics.page_title'), 'ruleGap' => 'mb-[43px]'])
 
-    <!-- Desktop Header -->
-    <div class="hidden md:block mb-8">
-        <div class="relative flex items-center justify-center py-6">
-            <h1 class="w-[400px] max-w-full text-4xl text-center" style="font-family:'Poppins',sans-serif; font-weight:700; color:#5C2D62;">
-                {{ __('front.account.statistics.page_title') }}
-            </h1>
-            <div class="flex flex-col items-end gap-0.5 absolute right-0 top-1/2 -translate-y-1/2">
-                <div class="flex items-center gap-1.5">
-                    <div class="w-[14px] h-[14px] rounded-full {{ auth()->user()->isOnline() ? 'bg-[#00B80F]' : 'bg-gray-300' }}"></div>
-                    <span class="text-[13px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">
-                        {{ auth()->user()->isOnline() ? __('front.account.dashboard.online') : __('front.account.dashboard.offline') }}
-                    </span>
-                </div>
-                <a href="{{ route('account.dashboard') }}" class="text-[13px] text-[#505050] underline" style="font-family: 'Poppins', sans-serif; color: #DD3888;">{{ __('front.account.dashboard.settings') }}</a>
-            </div>
-        </div>
-        <hr class="mb-[77px]">
-    </div>
-
-    <!-- Statistics Content -->
-    <div class="py-6">
+    <!-- Statistics Content (Figma home-18: second heading glyph 155px under the first month arrows) -->
+    {{-- The gap under each chart depends on whether the month has a VIP
+         row (home-18) or not (home-19), so the component sets it. --}}
+    <div class="pb-6 md:pb-0">
         @livewire('profile-statistics', ['variant' => 'homepage'])
     </div>
 
-    <div class="py-6">
+    <div class="py-6 md:pt-0 md:pb-0">
         @livewire('profile-statistics', ['variant' => 'detail'])
     </div>
 @endsection

@@ -3,11 +3,12 @@
 
 {{-- Sidebar --}}
 <aside
-    class="hidden md:block w-full h-full md:w-[220px] md:relative bg-white overflow-y-auto md:mt-[75px]"
+    class="hidden md:block w-full md:w-[210px] md:relative bg-white"
 >
     <!-- Navigation Menu -->
     <nav class="p-6 md:p-0">
-        <ul class="space-y-3">
+        {{-- Figma: 210×50 buttons on a 60 px pitch (10 px gap). --}}
+        <ul class="space-y-[10px]">
             {{-- Ratings Section --}}
             <li>
                 <a href="{{ route('account.member.ratings') }}"
@@ -15,7 +16,7 @@
                     <svg class="w-[20px] h-[20px] mr-3" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M5.83464 17.5H14.168M10.0013 2.5V17.5M2.5013 5.83333H4.16797C5.83464 5.83333 8.33464 5 10.0013 4.16667C11.668 5 14.168 5.83333 15.8346 5.83333H17.5013M13.3346 13.3333L15.8346 6.66667L18.3346 13.3333C17.6096 13.875 16.7346 14.1667 15.8346 14.1667C14.9346 14.1667 14.0596 13.875 13.3346 13.3333ZM1.66797 13.3333L4.16797 6.66667L6.66797 13.3333C5.94297 13.875 5.06797 14.1667 4.16797 14.1667C3.26797 14.1667 2.39297 13.875 1.66797 13.3333Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    {{ __('front.account.member.ratings') }}
+                    {{ __('front.account.member.ratings_nav') }}
                 </a>
             </li>
 
@@ -98,7 +99,9 @@
         </ul>
 
         <!-- Advert for Premium (hidden on mobile) -->
-        @unless(request()->routeIs('preview.*'))
+        {{-- home-6 (no membership) shows the advert, home-5 (active Premium)
+             does not: selling Premium to someone who already has it is noise. --}}
+        @unless(request()->routeIs('preview.*') || auth()->user()?->hasActiveMembership())
         <div class="relative hidden md:flex flex-col items-center" style="width:210px;height:224px;margin-top:80px;border-radius:15px;background:linear-gradient(180deg, #E6FEE6 0%, #FFFFFF 100%);box-shadow:0 4px 0 0 #DFF1E1;padding-top:20px;box-sizing:border-box;">
             <img src="{{ asset('images/wallet-front-premium 1.png') }}" alt="" width="78" height="78" class="absolute left-1/2 -translate-x-1/2" style="top:-40px;">
 

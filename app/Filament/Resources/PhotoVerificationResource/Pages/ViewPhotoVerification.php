@@ -119,10 +119,11 @@ class ViewPhotoVerification extends ViewRecord
                         
                         // Send notification to the user
                         if ($record->model->user_id) {
-                            UserNotification::createForUser(
+                            UserNotification::createTranslatedForUser(
                                 $record->model->user_id,
-                                __('notifications.profile.verified_title'),
-                                __('notifications.profile.verified_message'),
+                                'notifications.profile.verified_title',
+                                'notifications.profile.verified_message',
+                                [],
                                 'success'
                             );
                         }
@@ -159,10 +160,11 @@ class ViewPhotoVerification extends ViewRecord
                         
                         // Send notification to the user
                         if ($record->model->user_id) {
-                            UserNotification::createForUser(
+                            UserNotification::createTranslatedForUser(
                                 $record->model->user_id,
-                                __('notifications.profile.unverified_title'),
-                                __('notifications.profile.unverified_message'),
+                                'notifications.profile.unverified_title',
+                                'notifications.profile.unverified_message',
+                                [],
                                 'danger'
                             );
                         }

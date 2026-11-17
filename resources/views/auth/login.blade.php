@@ -18,9 +18,9 @@
                 </span>
             </a>
             
-            <h2 class="text-3xl font-extrabold text-text-default">
+            <h1 class="text-3xl font-extrabold text-text-default">
                 {{ __('front.auth.login.signin') }}
-            </h2>
+            </h1>
             <p class="mt-2 text-sm text-gray-600">
                 {{ __('front.auth.login.welcome') }}
             </p>
@@ -88,6 +88,14 @@
                     <button type="submit" class="btn-primary btn-small justify-center">
                         {{ __('front.auth.login.signinbutton') }}
                     </button>
+                </div>
+
+                {{-- pass 3: the verification link and a finished password reset both
+                     land here, and a wrong password left no way to reset it. --}}
+                <div class="text-center">
+                    <a href="{{ route('password.request') }}" class="text-sm underline text-gray-600 hover:text-primary-500">
+                        {{ __('auth.login.forgot_password') }}
+                    </a>
                 </div>
 
                 <!-- Register Link -->

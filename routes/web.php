@@ -19,7 +19,13 @@ Route::get('/profiles/{id}', [ProfileController::class, 'show'])->name('profiles
 Route::get('/countries', function () {
     $girlsCount = \App\Models\User::where('gender', 'female')->count();
     $gentsCount = \App\Models\User::where('gender', 'male')->count();
-    
+
+    // English search results are the English homepage with the country or
+    // town picked in its sidebar (Figma "vybraná země", "vybrané město v zemi").
+    if (app()->getLocale() === 'en') {
+        return view('profiles.index', compact('girlsCount', 'gentsCount'));
+    }
+
     return view('countries.index', compact('girlsCount', 'gentsCount'));
 })->name('countries.index');
 

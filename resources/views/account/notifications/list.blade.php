@@ -1,8 +1,10 @@
 <div class="mb-8">
-    <h1 class="text-2xl md:text-4xl font-semibold text-secondary py-6 text-center">
+    {{-- Same heading style as the other account pages (Poppins 700, #5C2D62)
+         and the Figma divider colour. --}}
+    <h1 class="text-2xl md:text-4xl py-6 md:pt-6 md:pb-[21px] text-center" style="font-family:'Poppins',sans-serif;font-weight:700;color:#5C2D62;">
         {{ $archived ? __('front.notifications.archived_title') : __('front.nav.notifications') }}
     </h1>
-    <hr>
+    <hr style="border:0;border-top:1px solid #E6E6E6;border-radius:0;">
     <nav class="flex flex-wrap justify-center gap-4 mt-4" aria-label="{{ __('front.nav.notifications') }}">
         <a href="{{ route('notifications.index') }}"
            class="text-primary hover:underline {{ ! $archived ? 'font-semibold' : '' }}"

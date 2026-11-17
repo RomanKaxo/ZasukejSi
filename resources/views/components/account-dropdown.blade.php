@@ -18,11 +18,19 @@
     <div
         x-show="open"
         x-cloak
-        class="absolute left-1/2 -translate-x-1/2 mt-0 shadow-lg z-50 flex flex-col items-center pt-6 pb-3"
-        style="width: 270px; border-radius: 8px; background-color: #DD3888;"
+        class="absolute mt-0 z-50 flex flex-col items-center"
+        {{-- Figma home-12: 270px wide, spanning the bell button's left edge
+             to the language button's right edge (140px left of this button). --}}
+        style="left: -140px; width: 270px; margin-top: 10px; padding: 20px 0 21px; border-radius: 8px; background-color: #DD3888;"
     >
+        {{-- home-12: the open button runs down into the panel as a tab — the
+             panel starts 10px under the button and the gap is bridged by a
+             60px pink strip with 13x10px concave corners on both sides. --}}
+        <span aria-hidden="true" class="absolute" style="top: -10px; left: 127px; width: 13px; height: 10px; background: radial-gradient(13px 10px at 0 0, transparent 98%, #DD3888 100%);"></span>
+        <span aria-hidden="true" class="absolute" style="top: -10px; left: 140px; width: 60px; height: 10px; background-color: #DD3888;"></span>
+        <span aria-hidden="true" class="absolute" style="top: -10px; left: 200px; width: 13px; height: 10px; background: radial-gradient(13px 10px at 100% 0, transparent 98%, #DD3888 100%);"></span>
         <nav class="w-full px-5">
-            <ul class="space-y-2">
+            <ul>
                 @php
                     // Podle pohlaví, ne podle „není muž".
                     //
@@ -53,6 +61,8 @@
                                 ['url' => route('account.dashboard'), 'label' => __('front.account.sidebar.basic'), 'icon' => 'User.svg'],
                                 ['url' => route('account.photos'), 'label' => __('front.account.sidebar.photos'), 'icon' => 'Images.svg'],
                                 ['url' => route('account.services'), 'label' => __('front.account.sidebar.services'), 'icon' => 'List.svg'],
+                                // Figma home-12 lists Recenze (thumbs-up) before Statistiky.
+                                ['url' => route('account.reviews'), 'label' => __('front.account.sidebar.reviews'), 'icon' => 'ThumbsUp.svg'],
                                 ['url' => route('account.statistics'), 'label' => __('front.account.sidebar.statistics'), 'icon' => 'BarChart4.svg'],
                             ]
                             : [
@@ -65,28 +75,33 @@
 
                 @foreach($links as $link)
                     <li>
+                        {{-- Figma home-12: 230x50 rows with no gap, icon 20px in and
+                             10px before 14/500 text; the current page sits on a
+                             #5C2D62 pill. --}}
+                        @php $isCurrent = url()->current() === $link['url']; @endphp
                         <a href="{{ $link['url'] }}"
-                           class="flex items-center px-4 gap-3 transition-colors duration-200"
-                           style="width: 230px; height: 50px; border-radius: 8px; font-family: 'Poppins', sans-serif; font-variant-ligatures: none; font-weight: 600; color: #FFFFFF; text-decoration: none; background-color: transparent;"
+                           @if($isCurrent) aria-current="page" @endif
+                           class="flex items-center transition-colors duration-200"
+                           style="width: 230px; height: 50px; padding: 0 20px; gap: 10px; border-radius: 8px; font-family: 'Poppins', sans-serif; font-variant-ligatures: none; font-size: 14px; font-weight: 500; color: #FFFFFF; text-decoration: none; background-color: {{ $isCurrent ? '#5C2D62' : 'transparent' }};"
                            onmouseover="this.style.backgroundColor='#5C2D62'; this.style.color='#FFFFFF';"
-                           onmouseout="this.style.backgroundColor='transparent'; this.style.color='#FFFFFF';">
+                           onmouseout="this.style.backgroundColor='{{ $isCurrent ? '#5C2D62' : 'transparent' }}'; this.style.color='#FFFFFF';">
                             <img src="{{ asset('images/icons/' . $link['icon']) }}" class="w-[20px] h-[20px]" alt="" aria-hidden="true" style="filter: brightness(0) invert(1);">
                             {{ $link['label'] }}
                         </a>
                     </li>
                 @endforeach
                 <li>
-                    <hr class="rounded-none" style="width:230px;border-color:#E6E6E6;border-radius:0;padding-top:2px;padding-bottom:0px;margin-bottom:4px;">
+                    <hr class="rounded-none" style="width:230px;border:0;border-top:1px solid #E6E6E6;border-radius:0;margin:12px 0 18px;">
                 </li>
                 <li>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit"
-                           class="flex items-center px-4 gap-3 transition-colors duration-200"
-                           style="width: 230px; height: 50px; border-radius: 8px; font-family: 'Poppins', sans-serif; font-variant-ligatures: none; font-weight: 600; color: #FFFFFF; text-decoration: none; background-color: transparent;"
+                           class="flex items-center transition-colors duration-200"
+                           style="width: 230px; height: 50px; padding: 0 20px; gap: 10px; border-radius: 8px; font-family: 'Poppins', sans-serif; font-variant-ligatures: none; font-size: 14px; font-weight: 500; color: #FFFFFF; text-decoration: none; background-color: transparent;"
                            onmouseover="this.style.backgroundColor='#5C2D62'; this.style.color='#FFFFFF';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#FFFFFF';">
-                            <img src="{{ asset('images/icons/User.svg') }}" class="w-[20px] h-[20px]" alt="" aria-hidden="true" style="filter: brightness(0) invert(1);">
+                            <img src="{{ asset('images/icons/LogOut.svg') }}" class="w-[20px] h-[20px]" alt="" aria-hidden="true" style="filter: brightness(0) invert(1);">
                             {{ __('front.nav.logout') }}
                         </button>
                     </form>

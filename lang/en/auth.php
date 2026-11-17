@@ -20,6 +20,7 @@ return [
         'title' => 'Registration',
         'subtitle_female' => 'for women',
         'subtitle_male' => 'for men',
+        'back' => 'Back',
         'gender_selection' => [
             'female_title' => 'I am a woman',
             'female_subtitle' => 'and I want to earn money...',
@@ -34,6 +35,10 @@ return [
             'password_confirmation_label' => 'Confirm password',
             'phone_label' => 'Phone',
             'email_invalid' => 'Invalid email format',
+            'email_taken' => 'Email already registered',
+            'phone_taken' => 'Phone already registered',
+            'password_too_short' => 'At least 8 characters',
+            'password_mismatch' => 'Passwords do not match',
         ],
         'register_button' => 'Register for FREE',
         'creating' => 'Creating...',

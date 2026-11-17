@@ -23,6 +23,15 @@
             .register-modal-scope .form-field:focus, .register-modal-scope .form-field:focus-visible { border-color:#DD3888 !important; box-shadow:none !important; outline:none !important; }
             .register-modal-scope .form-field-error { border-color: #D80027 !important; }
             .register-modal-scope .form-error { font-family:'Poppins',sans-serif; font-weight:400; font-size:13px; color:#D80027; position:absolute; right:8px; top:8px; margin:0; }
+            /* pass 3: on a phone the label line has no room for the message (it ran over
+               "Vymyslete si heslo do platformy"), so it goes under the field. */
+            @media (max-width: 767px) { .register-modal-scope .form-error { position:static; margin:4px 0 0 8px; text-align:left; } }
+            @media (max-width: 480px) {
+                /* the phone layout pins rows and the card to Figma heights; only while a message shows let them grow */
+                .register-modal-scope .form-container.inline-register form > div:has(> .form-error:not([x-cloak]):not([style*="none"])) { height:auto !important; min-height:84px; }
+                .register-modal-scope .form-container.inline-register:has(.form-error:not([x-cloak]):not([style*="none"])) { height:auto !important; }
+                .register-modal-scope .modal-container.register-step1.expanded:has(.form-error:not([x-cloak]):not([style*="none"])) { height:auto !important; }
+            }
             .register-modal-scope .modal-btn-primary, .register-modal-scope .modal-btn-outline { width:100%; max-width:460px; }
             .register-modal-scope .modal-btn-primary { height:60px; }
             .register-modal-scope .modal-container { width:600px !important; max-width:600px !important; height:810px !important; border-radius:24px; overflow:hidden; background:white; box-sizing:border-box; transition: width 200ms ease, height 200ms ease; }
@@ -34,6 +43,17 @@
             /* Expanded desktop register modal */
             .register-modal-scope .modal-container.register-step1.expanded { width:600px !important; max-width:600px !important; height:947px !important; }
             .register-modal-scope .modal-container.register-step1 .modal-header { margin-top:44px !important; }
+            /* Figma home-22 (1920): title glyph 3px higher, cards 4px lower,
+               card text 29px in, close 40px from the top/right edge. */
+            @media (min-width: 768px) {
+                .register-modal-scope .modal-container.register-step1 .modal-header { margin-top:41px !important; }
+                .register-modal-scope .modal-container.register-step1 .gender-options { padding-top:7px; }
+                .register-modal-scope .gender-option { padding:21px 20px 15px 29px !important; }
+                /* pass 1: chevron circle 30px from the card's right edge, centred on the card (home-22). */
+                .register-modal-scope .modal-container.register-step1 .gender-option { padding-right:29px !important; }
+                .register-modal-scope .modal-container.register-step1 .gender-icon { position:relative; top:-3px; }
+                .register-modal-scope .modal-close-btn { top:40px !important; right:40px !important; }
+            }
 
             /* Register success step */
             .register-modal-scope .modal-container.register-success {
@@ -169,6 +189,77 @@
             @media (max-width:480px) {
                 .register-modal-scope .form-container.inline-register { width:280px !important; max-width:280px !important; height:520px !important; }
                 .register-modal-scope .form-container.inline-register > form { margin-top:12px !important; }
+                .register-modal-scope .form-container.inline-register { height:633px !important; }
+                .register-modal-scope .modal-container.register-step1.expanded .modal-header { margin-top:57px !important; }
+                .register-modal-scope .gender-icon svg { width:20px !important; height:20px !important; } /* pass 2: chevron 12x7 like desktop (phone 360 px-6, -8) */
+            }
+                    /* Figma phone 360 px-6 (360x730): card 7px above centre, close 21px
+               from the top, title glyph 89px and card text 177px down, text 31px in. */
+            @media (max-width: 480px) {
+                .register-modal-scope .modal-container.register-step1:not(.expanded) { transform: translateY(-7px); }
+                .register-modal-scope .modal-container.register-step1 .modal-header { margin-top:64px !important; margin-bottom:38px !important; }
+                .register-modal-scope .modal-container.register-step1 .gender-option { padding-left:29px !important; }
+                .register-modal-scope .modal-container.register-step1 .modal-close-btn { top:20px !important; }
+                /* pass 1 overlay (phone 360 px-6): card top at 188 (6px above
+                   centre), cards start 340, 18px option titles. */
+                .register-modal-scope .modal-container.register-step1:not(.expanded) { transform: translateY(-6px); }
+                .register-modal-scope .modal-container.register-step1 .modal-header { margin-top:63px !important; margin-bottom:35.6px !important; }
+                .register-modal-scope .modal-container.register-step1 .gender-title { font-size:18px; }
+                .register-modal-scope .modal-container.register-step1:not(.expanded) .gender-option .text-left { position:relative; top:1.5px; }
+            }
+            /* Expanded choice (phone 360 px-8): back arrow in a grey 35px
+               circle 20px from the corner, chevron stays a grey circle. */
+            .register-modal-scope .register-expanded-back { position:absolute; left:20px; top:21px; width:35px; height:35px; border-radius:999px; background:#F2F2F2; display:flex; align-items:center; justify-content:center; border:none; z-index:60; }
+            .register-modal-scope .register-expanded-subtitle { color:#DD3888; }
+            .register-modal-scope .modal-container.register-step1.expanded .gender-icon.active { background:#F2F2F2 !important; }
+            .register-modal-scope .modal-container.register-step1.expanded .gender-icon.active svg { stroke:#DD3888 !important; transform:none !important; }
+            /* phone 360 px-8 (expanded "Jsem žena", 360x1087): card 886 tall,
+               fields 94px apart with the label flush at 11px from the field
+               edge, 10/15 consent text, 240x50 button with 16px text. */
+            @media (max-width: 480px) {
+                .register-modal-scope .modal-container.register-step1.expanded { height:886px !important; max-height:calc(100vh - 20px) !important; }
+                .register-modal-scope .form-container.inline-register > form { margin-top:12px !important; }
+                .register-modal-scope .form-container.inline-register { height:633px !important; }
+                .register-modal-scope .modal-container.register-step1.expanded .modal-header { margin-top:57px !important; }
+                .register-modal-scope .gender-icon svg { width:20px !important; height:20px !important; } /* pass 2: chevron 12x7 like desktop (phone 360 px-6, -8) */
+                .register-modal-scope .form-container.inline-register .form-label { margin-left:4px !important; }
+                .register-modal-scope .form-container.inline-register > form { height:auto !important; }
+                .register-modal-scope .form-container.inline-register form > div { height:84px !important; }
+                .register-modal-scope .form-container.inline-register form > div.consent-text, .register-modal-scope .form-container.inline-register form > div.pt-2 { height:auto !important; }
+                .register-modal-scope .form-container.inline-register > form > * { flex-shrink:0; }
+                .register-modal-scope .form-container.inline-register { padding-left:20px !important; padding-right:20px !important; }
+                .register-modal-scope .consent-text { font-size:10px !important; line-height:15px !important; width:222px !important; height:auto !important; margin-left:11px !important; }
+                .register-modal-scope .modal-container.register-step1.expanded .form-container.inline-register .modal-btn-primary { font-size:16px !important; height:50px !important; margin-top:9px !important; }
+                .register-modal-scope .form-container.inline-register form > div.consent-text { width:222px !important; max-width:222px !important; }
+            }
+            /* pass 1 overlay (phone 360 px-8): card 895 tall (96..991), close and
+               back 20px down, subtitle 3px lower, the form block 6px lower with
+               labels 1.5px further from the field and the button 2px closer. */
+            @media (max-width: 480px) {
+                .register-modal-scope .modal-container.register-step1.expanded { height:895px !important; }
+                .register-modal-scope .modal-container.register-step1.expanded .modal-close-btn,
+                .register-modal-scope .register-expanded-back { top:19px !important; }
+                /* pass 2: card 1.5px higher (Figma 278..357), its text 1px lower, form unchanged, subtitle and close 1px higher. */
+                .register-modal-scope .modal-container.register-step1.expanded .modal-header { margin-top:62px !important; margin-bottom:35.1px !important; }
+                .register-modal-scope .modal-container.register-step1.expanded .gender-option .text-left { position:relative; top:1px; }
+                .register-modal-scope .modal-container.register-step1.expanded .register-expanded-subtitle { margin-top:2px; }
+                .register-modal-scope .form-container.inline-register { height:639px !important; }
+                .register-modal-scope .form-container.inline-register > form { margin-top:20.5px !important; }
+                .register-modal-scope .form-container.inline-register .form-label { margin-bottom:1.5px; }
+                .register-modal-scope .form-container.inline-register form > div.consent-text { width:224px !important; max-width:224px !important; }
+                .register-modal-scope .modal-container.register-step1.expanded .form-container.inline-register .modal-btn-primary { margin-top:8.5px !important; }
+            }
+            /* pass 1 overlay (phone 360 px-7, success): card 7px below centre,
+               close 20px in with the 20px cross, title 86px down, subtitle 3px
+               lower, green card at +184 with the icon 33px into it. */
+            @media (max-width: 480px) {
+                .register-modal-scope .modal-container.register-success { transform: translateY(7px); }
+                .register-modal-scope .modal-container.register-success .modal-close-btn { top:20px !important; right:20px !important; }
+                .register-modal-scope .modal-container.register-success .modal-header { margin-top:62px !important; margin-bottom:36.2px !important; }
+                .register-modal-scope .modal-container.register-success .modal-subtitle { margin-top:3px; margin-bottom:0 !important; }
+                .register-modal-scope .register-success-card { padding-top:32.8px !important; }
+                .register-modal-scope .register-success-title { margin-top:-7.5px !important; line-height:23px !important; }
+                .register-modal-scope .register-success-message { margin-top:-2px !important; line-height:17px !important; height:auto !important; }
             }
         </style>
 
@@ -188,15 +279,15 @@
             @if($currentStep !== 3)
             <button @click="expanded = false; closing = true; show = false; $wire.hide()"
                 class="modal-close-btn" style="width:35px;height:35px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:absolute;right:35px;top:35px;background:#DD3888;border:none">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#ffffff" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
             </button>
             @else
             <button @click="expanded = false; closing = true; show = false; $wire.hide()"
                 class="modal-close-btn" style="width:35px;height:35px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:absolute;right:35px;top:35px;background:#DD3888;border:none">
-                <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#ffffff" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
             </button>
             @endif
@@ -206,8 +297,18 @@
             <div class="text-center">
                 <!-- Header -->
                 <div class="modal-header">
-                    <h1 class="modal-title">{{ __('auth.register.title') }}</h1>
+                    <h2 class="modal-title">{{ __('auth.register.title') }}</h2>
+                    {{-- phone 360 px-8: once a choice is open the heading gets
+                         its pink second line and a back arrow top-left. --}}
+                    <h2 class="modal-subtitle register-expanded-subtitle" x-show="expanded && selectedGender === 'female'" x-cloak>{{ __('auth.register.subtitle_female') }}</h2>
+                    <h2 class="modal-subtitle register-expanded-subtitle" x-show="expanded && selectedGender === 'male'" x-cloak>{{ __('auth.register.subtitle_male') }}</h2>
                 </div>
+                <button type="button" x-show="expanded" x-cloak
+                    @click="expanded = false; selectedGender = null"
+                    aria-label="{{ __('auth.register.back') }}"
+                    class="register-expanded-back">
+                    <svg width="7" height="11" viewBox="0 0 7 11" fill="none" aria-hidden="true"><path d="M6 1L1.5 5.5L6 10" stroke="#DD3888" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
 
                 <!-- Gender Options -->
                 <div class="gender-options">
@@ -248,7 +349,7 @@
                                 <input wire:model="email" type="email" required
                                     @input="emailValue = $event.target.value; emailHasAt = emailValue.includes('@')"
                                     class="form-field {{ $errors->has('email') ? 'form-field-error' : '' }}" x-bind:class="{ 'form-field-error': (emailValue.length > 0 && !emailHasAt) || {{ $errors->has('email') ? 'true' : 'false' }} }">
-                                <p x-show="(emailValue.length > 0 && !emailHasAt) || {{ $errors->has('email') ? 'true' : 'false' }}" class="form-error" x-cloak>{{ __('auth.register.form.email_invalid') }}</p>
+                                @error('email')<p class="form-error">{{ $message }}</p>@else<p x-show="emailValue.length > 0 && !emailHasAt" class="form-error" x-cloak>{{ __('auth.register.form.email_invalid') }}</p>@enderror
                             </div>
                             <div>
                                 <label class="form-label">{{ __('auth.register.form.password_create_label') }}</label>
@@ -314,7 +415,7 @@
                                 <input wire:model="email" type="email" required
                                     @input="emailValue = $event.target.value; emailHasAt = emailValue.includes('@')"
                                     class="form-field {{ $errors->has('email') ? 'form-field-error' : '' }}" x-bind:class="{ 'form-field-error': (emailValue.length > 0 && !emailHasAt) || {{ $errors->has('email') ? 'true' : 'false' }} }">
-                                <p x-show="(emailValue.length > 0 && !emailHasAt) || {{ $errors->has('email') ? 'true' : 'false' }}" class="form-error" x-cloak>{{ __('auth.register.form.email_invalid') }}</p>
+                                @error('email')<p class="form-error">{{ $message }}</p>@else<p x-show="emailValue.length > 0 && !emailHasAt" class="form-error" x-cloak>{{ __('auth.register.form.email_invalid') }}</p>@enderror
                             </div>
                             <div>
                                 <label class="form-label">{{ __('auth.register.form.password_create_label') }}</label>
@@ -349,7 +450,7 @@
             <div>
                 <!-- Header -->
                 <div class="modal-header">
-                    <h1 class="modal-title">{{ __('auth.register.title') }}</h1>
+                    <h2 class="modal-title">{{ __('auth.register.title') }}</h2>
                     <h2 class="modal-subtitle">
                         @if($gender === 'female')
                             {{ __('auth.register.subtitle_female') }}
@@ -387,7 +488,7 @@
                             required
                             @input="emailValue = $event.target.value; emailHasAt = emailValue.includes('@')"
                             class="form-field {{ $errors->has('email') ? 'form-field-error' : '' }}" x-bind:class="{ 'form-field-error': (emailValue.length > 0 && !emailHasAt) || {{ $errors->has('email') ? 'true' : 'false' }} }">
-                        <p x-show="(emailValue.length > 0 && !emailHasAt) || {{ $errors->has('email') ? 'true' : 'false' }}" class="form-error" x-cloak>{{ __('auth.register.form.email_invalid') }}</p>
+                        @error('email')<p class="form-error">{{ $message }}</p>@else<p x-show="emailValue.length > 0 && !emailHasAt" class="form-error" x-cloak>{{ __('auth.register.form.email_invalid') }}</p>@enderror
                     </div>
 
                     <!-- Password -->
@@ -437,7 +538,7 @@
             <!-- Step 3: Success Message -->
             <div class="text-center">
                 <div class="modal-header">
-                    <h1 class="modal-title">{{ __('auth.register.title') }}</h1>
+                    <h2 class="modal-title">{{ __('auth.register.title') }}</h2>
                     <h2 class="modal-subtitle">
                         @if($gender === 'female')
                             {{ __('auth.register.subtitle_female') }}

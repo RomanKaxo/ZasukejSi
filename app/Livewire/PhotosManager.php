@@ -252,6 +252,10 @@ class PhotosManager extends Component
             $this->loadImages($profile->fresh());
             
             session()->flash('message', __('front.profiles.photos.success'));
+
+            // The upload dialog stayed open and empty after a successful save,
+            // hiding the new photos and the success message.
+            $this->dispatch('photos-uploaded');
         }
     }
 

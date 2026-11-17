@@ -121,7 +121,7 @@
 
     <!-- Save Button -->
     <button class="w-[400px] max-[426px]:!w-[310px] h-[50px] bg-[#E8E8E8] rounded-[8px] flex items-center justify-center gap-2 mt-8">
-        <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px]" alt="Save">
+        <img src="{{ asset('images/icons/Save.svg') }}" class="w-[20px] h-[20px]" alt="">
         <span style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px; color: #A4A4A4;">{{ __('front.account.services.save_changes') }}</span>
     </button>
 </div>

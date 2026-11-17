@@ -94,9 +94,10 @@ class ProfilePricePersistenceTest extends TestCase
         // An anonymous HTTP request uses the public table, including the
         // locale-specific choice between local and international prices.
         $response = $this->get('/profiles/'.$profile->id.'?locale='.$locale)->assertOk();
-        preg_match_all('/<td>([\d.]+h)<\/td>/', $response->getContent(), $matches);
-        $this->assertContains($hours.'h', $matches[1]);
-        $this->assertNotContains(($hours / 10).'h', $matches[1]);
+        // Figma writes the duration as "0.5 h" (non-breaking space before h).
+        preg_match_all('/<td>([\d.]+)(?:&nbsp;|\s)?h<\/td>/', $response->getContent(), $matches);
+        $this->assertContains((string) $hours, $matches[1]);
+        $this->assertNotContains((string) ($hours / 10), $matches[1]);
     }
 
     public function test_czech_public_ten_hour_duration_stays_ten(): void

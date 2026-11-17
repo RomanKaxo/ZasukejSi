@@ -20,7 +20,7 @@ return [
         'numeral' => '18',
         'heading' => 'Vítejte',
         'brand' => 'ZašukejSi.cz',
-        'body' => ', včetně všech webových stránek, odkazů a obrázků, zobrazuje sexuálně explicitní materiál. Mimo tuto stránku jsou oprávněni pouze dospělí se souhlasem. Pokud jste nezletilí (mladší 18 let nebo 21 let v případě, že 18 let není zákonem stanovený věk plnoletosti), pokud vás sexuálně explicitní materiál uráží nebo pokud je prohlížení takového materiálu ve vaší komunitě nezákonné, MUSÍTE opustit tyto stránky kliknutím na tlačítko „ODEJÍT" níže. Kliknutím na tlačítko „VSTOUPIT" vyjadřujete souhlas s prohlášením v dolní části této stránky. ZašukejSi.cz uplatňuje politiku nulové tolerance vůči dětské pornografii nebo nezletilým osobám inzerujícím nebo využívajícím naše stránky. Souhlasím s tím, že nahlásím veškeré nelegální služby nebo činnosti, které porušují podmínky používání. Souhlasím také s tím, že podezření na zneužívání nezletilých a/nebo obchodování s lidmi nahlásím příslušným orgánům.',
+        'body' => ', včetně všech webových stránek, odkazů a obrázků , zobrazuje sexuálně explicitní materiál. Mimo tuto stránku jsou oprávněni pouze dospělí se souhlasem. Pokud jste nezletilí (mladší 18 let nebo 21 let v případě, že 18 let není zákonem stanovený věk plnoletosti), pokud vás sexuálně explicitní materiál uráží nebo pokud je prohlížení takového materiálu ve vaší komunitě nezákonné, MUSÍTE opustit tyto stránky kliknutím na tlačítko "ODEJÍT" níže. Kliknutím na tlačítko "VSTUP" vyjadřujete souhlas s prohlášením v dolní části této stránky. ZašukejSi.cz uplatňuje politiku nulové tolerance vůči dětské pornografii nebo nezletilým osobám inzerujícím nebo využívajícím naše stránky. Souhlasím s tím, že nahlásím veškeré nelegální služby nebo činnosti, které porušují podmínky používání. Souhlasím také s tím, že podezření na zneužívání nezletilých a/nebo obchodování s lidmi nahlásím příslušným orgánům.',
         'agreement' => 'Přečetli jste si tuto smlouvu, porozuměli jste jí a souhlasíte s tím, že se jí budete řídit.',
         'enter' => 'Vstoupit',
         'leave' => 'Odejít',
@@ -56,6 +56,9 @@ return [
         // odpočítává dny a nabídne prodloužení.
         'expiring_soon' => 'Máte aktivní členství Premium už jen :days – ',
         'extend_link' => 'prodloužení členství zde',
+        // home-6 / phone 360 px-2: člen bez Premium.
+        'upsell' => 'Nyní nevidíte, jaká dívka je FAKE – ',
+        'upsell_link' => 'dokončete registraci k Premium účtu',
         'locked_rating' => 'Hodnocení odemkne Premium členství',
         'page_title' => 'Premium členství',
         'page_description' => 'Odemkne hodnocení dívek, archiv a další funkce.',
@@ -73,12 +76,13 @@ return [
     ],
 
     'landing' => [
-        'wearecommunity' => 'Jsme komunita lidí',
+        'wearecommunity' => 'Jsme komunita lidí,',
         'fucking' => 'co rádi šukají.',
         'fucking_prefix' => 'co rádi',
         'fucking_keyword' => 'šukají',
-        'girlsregisternow' => 'Dívky, zaregistrujte se dnes<br>a získejte nové klienty.',
+        'girlsregisternow' => 'Dívky, registrujte se ještě dnes<br>a získej nové zákazníky.',
         'advert' => [
+            'cta_desktop' => 'Založit účet',
             'title' => 'Vydělávej, dokud jsi mladá...',
             'subtitle' => 'Čekají gentlemani, kteří čas a péči, kterou věnuješ svému tělu, náležitě ocení!',
             'features' => [
@@ -92,6 +96,7 @@ return [
         'gents_registered' => 'registrovaných pánů',
     ],
     'nav' => [
+        'menu_toggle' => 'Menu',
         'language' => 'Jazyk',
         'home' => 'Úvod',
         'countries' => 'Země',
@@ -180,6 +185,7 @@ return [
             'settings_description' => 'Spravujte nastavení a preference svého účtu.',
             'settings_saved' => 'Nastavení bylo úspěšně uloženo!',
             'ratings' => 'Hodnocení',
+            'ratings_nav' => 'Hodnocení dívek',
             'ratings_description' => 'Zobrazte a spravujte svá hodnocení.',
             'welcome' => 'Vítejte,',
             'ratings_heading' => 'Podívejte se na dívky v okolí a dejte jim hodnocení',
@@ -221,7 +227,7 @@ return [
             'title' => 'Profil',
             'basic_info' => 'Základní údaje',
             'online' => 'Nyní jsi online',
-            'offline' => 'Jsi Offline',
+            'offline' => 'Nyní jsi offline',
             'settings' => 'nastavení'
         ],
         'photos' => [
@@ -294,6 +300,8 @@ return [
         ],
 
         'statistics' => [
+            'previous_month' => 'Předchozí měsíc',
+            'next_month' => 'Další měsíc',
             'page_title' => 'Statistiky',
             'no_profile' => 'Statistiky se zobrazí, jakmile budete mít vytvořený profil.',
             'profile_views_title' => 'Počet zobrazení profilu na hlavní stránce',
@@ -310,7 +318,7 @@ return [
             'views' => 'Zobrazení',
             'total_profile_views' => 'Celkové zobrazení profilu',
             'my_rating' => 'Moje hodnocení',
-            'my_reviews' => 'moje recenze',
+            'my_reviews' => 'Moje recenze',
         ],
         'weekdays' => [
             'monday' => 'Pondělí',
@@ -486,6 +494,8 @@ return [
             'photos_unverified' => 'FOTO NEOVĚŘENO',
             'call' => 'Zavolat',
             'give_rating' => 'Dát hodnocení',
+            // VIP.jpg: popisek pod srdcem v galerii (desktop), malými písmeny.
+            'save_heart' => 'uložit',
             'refresh_access' => 'Obnovit přístup',
             'access_valid_until' => 'Přístup platí do :date',
             'report_profile' => 'Nahlásit profil',
@@ -538,16 +548,24 @@ return [
             'swingers_events' => 'Swingers akce pro členy',
             'community_ratings' => 'Hodnocení dívek od komunity',
             'girls_database' => 'Databáze dívek na jednom místě',
+            'vip_profile_badge' => 'VIP PROFIL',
+            'report_short' => 'Nahlásit',
+            'rating_label' => 'Rating:',
         ],
         'search' => [
             'title' => 'Najděte si společnost...',
             'girls' => 'dívek',
+            'girls_desktop' => 'dívek',
             'men' => 'mužů',
             'registered' => 'registrováno',
             'country_and_town' => 'Země a město',
             'select_country' => 'Vyberte zemi',
             'select_town' => 'Vyberte město',
             'search_country_placeholder' => 'Hledat zemi...',
+            // Placeholders of the phone pickers (phone 360 px-22, -23).
+            'choose_country' => 'Vyberte zemi',
+            'all_countries' => 'Všechny země',
+            'choose_town' => 'Vyberte město',
             'open_mobile_search' => 'Otevřít hledání zemí',
             'clear_mobile_search' => 'Vymazat hledání',
             'close_mobile_search' => 'Zavřít hledání zemí',
@@ -573,6 +591,11 @@ return [
             'verified' => 'OVĚŘENO',
             'online' => 'ONLINE',
             'detail' => 'Detail',
+            'a11y_photo' => 'Fotka :number',
+            'a11y_prev_photo' => 'Předchozí fotka',
+            'a11y_next_photo' => 'Další fotka',
+            'a11y_prev_page' => 'Předchozí stránka',
+            'a11y_next_page' => 'Další stránka',
             'detail_visit' => 'Přejít na profil',
             'rating' => 'Hodnocení:',
             'years' => 'let',
@@ -604,7 +627,30 @@ return [
             'filters_active' => ':count filtr(ů) aktivních',
             'rating' => 'Hodnocení',
             'eco_friendly' => 'Our project is eco-friendly',
-            'eco_friendly_desc' => '– Thanks to the girl verification system, you won\'t travel anywhere unnecessarily.'
+            'eco_friendly_desc' => '– Thanks to the girl verification system, you won\'t travel anywhere unnecessarily.',
+            // Phone filter row labels (phone 360 px-11); the desktop row keeps its own.
+            'filter_all' => 'Všechny',
+            'filter_recommendation' => 'Doporučujeme',
+            'filter_verified_photo' => 'Ověřené foto',
+            'filter_porn_actress' => 'Porno herečky',
+            'filter_rating' => 'Rating',
+            // Desktop filter row wording, exactly as the 1920 frame (home.jpg)
+            // writes it; the phone row uses filter_* above (phone 360 px-11).
+            'desk_filter_all' => 'All Girls',
+            'desk_age_18_25' => '18-25 yo',
+            'desk_age_26_30' => '26-30 yo',
+            'desk_age_31_35' => '31-35 yo',
+            'desk_age_36_40' => '36-40 yo',
+            'desk_age_40_50' => '40-50 yo',
+            'desk_age_50_plus' => '50 yo +',
+            'desk_filter_recommendation' => 'Recommendation',
+            'desk_filter_verified_photo' => 'Verified photo',
+            'desk_filter_video' => 'Video',
+            'desk_filter_porn_actress' => 'Porno actress',
+            'desk_filter_new' => 'New',
+            'desk_filter_rating' => 'Rating',
+            'desk_clear_filter' => 'zrušit filtr',
+            'clear_filter' => 'zrušit filtr',
         ],
         'form' => [
             'personal' => 'Osobní údaje',
@@ -627,9 +673,10 @@ return [
             'city_must_be_selected' => 'Prosím vyberte město ze seznamu návrhů',
             'city_no_results' => 'Žádná města nenalezena. Zkuste jiný hledaný výraz.',
             'select_country_first' => 'Nejprve vyberte zemi',
-            'required_field' => 'Povinná položka',
+            'required_field' => 'povinná položka',
             'country' => 'Země',
             'selectcountry' => 'Vyberte zemi',
+            'city_placeholder' => 'vyberte',
             'searchcountry' => 'Hledat zemi...',
             'nocountries' => 'Žádné země nenalezeny',
             'address' => 'Adresa',
@@ -700,12 +747,12 @@ return [
             'global_prices' => 'Moje ceny pro zahraničí',
             'time_hours' => 'Časová dotace',
             'time_hours_full' => 'Časová dotace v hodinách',
-            'time_30min' => '30 minut',
-            'time_60min' => '60 minut',
+            'time_30min' => '0.5',
+            'time_60min' => '1',
             'incall_price' => 'InCall',
-            'incall_price_full' => 'InCall v Kč',
+            'incall_price_full' => 'InCall v KČ',
             'incall_price_full_intl' => 'InCall v EUR',
-            'outcall_price' => 'OutCall v Kč',
+            'outcall_price' => 'OutCall v KČ',
             'outcall_price_intl' => 'OutCall v EUR',
             'local_currency' => 'Měna pro ČR',
             'global_currency' => 'Měna pro zahraničí',
@@ -758,6 +805,7 @@ return [
             'processing' => 'Zpracovávám...',
             'verification_requested' => 'Žádost o ověření byla odeslána.',
             'verification_pending' => 'Vaše žádost o ověření již byla odeslána a čeká na schválení.',
+            'verification_pending_badge' => 'Probíhá ověření (obvykle 72 h)',
             'already_verified' => 'Vaše fotografie je již ověřena.',
             // Status badges
             'verified_badge' => 'FOTO OVĚŘENO',
@@ -881,6 +929,18 @@ return [
         'bank' => 'Banka',
         'amount' => 'Částka',
         'reference' => 'Variabilní symbol',
+    ],
+
+    // Shown above every provider account page: whether her profile is in the
+    // public listing and, if not, why — plus a link to her own preview.
+    'account_visibility' => [
+        'title' => 'Viditelnost profilu',
+        'pending' => 'Váš profil zatím není zveřejněný ve výpisu – čeká na schválení administrátorem. Do té doby ho vidíte jen vy.',
+        'rejected' => 'Váš profil administrátor zamítl, a proto se ve výpisu nezobrazuje. Pro více informací kontaktujte podporu.',
+        'hidden' => 'Váš profil je schválený, ale administrátor ho zatím nezveřejnil, takže se ve výpisu nezobrazuje. Kontaktujte prosím podporu.',
+        'live' => 'Váš profil je zveřejněný ve výpisu. Změny fotek, jazyků, služeb i textu se projeví hned po uložení.',
+        'preview_hint' => 'Změny, které uložíte, se projeví ve vašem profilu hned – podívejte se na něj tak, jak ho uvidí návštěvníci.',
+        'preview' => 'Zobrazit můj profil',
     ],
 
 ];

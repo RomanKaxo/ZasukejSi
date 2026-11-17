@@ -4,7 +4,8 @@
 
 @section('content')
     @if ($page->type === 'blog')
-        <div class="w-full mt-20">
+        {{-- The fixed header is 96 px tall below 1024 px and 100 px above; mt-20 (80 px) hid the top of the header image under it. --}}
+        <div class="w-full mt-24 lg:mt-[100px]">
             <div class="mb-8 sm:rounded-lg overflow-hidden relative">
                 @if ($page->hasMedia('header-image'))
                     <img src="{{ $page->getFirstMediaUrl('header-image') }}" alt="{{ $page->title }}"

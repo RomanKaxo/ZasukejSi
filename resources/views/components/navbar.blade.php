@@ -45,11 +45,15 @@
                přesně u loga, ale kousek před ním. Proto je pole širší
                přesně o ta odsazení. */
             --navbar-gutter: 24px;
-            width: calc(1140px + 2 * var(--navbar-gutter));
+            /* Figma home.jpg: logo ink starts at x 393, flag box ends at
+               x 1527, so the content row is 1134 px wide (= search card). */
+            width: calc(1134px + 2 * var(--navbar-gutter));
             max-width: calc(100% - 32px);
             padding-left: var(--navbar-gutter);
             padding-right: var(--navbar-gutter);
-            height: 80px;
+            /* Figma: 60 px buttons at y 20–79, logo and links centred on
+               y ≈ 50, so the row is 100 px tall; the active tab is 80 px. */
+            height: 100px;
             margin: 0 auto;
             box-sizing: border-box;
             display: flex;
@@ -68,13 +72,18 @@
         .brand-mark {
             font-family: 'Bungee', cursive;
             font-weight: 400;
-            font-size: 24px;
+            font-size: 24.4px;
             line-height: 1;
             white-space: nowrap;
         }
 
         #nav-logo {
-            padding-right: 97px;
+            /* Úvod tab starts at x 661 in Figma (logo ends at 582 + 12 gap). */
+            padding-right: 67px;
+            /* Bungee's side bearing: ink at x 393 / y 35 as in Figma. */
+            margin-left: -1px;
+            position: relative;
+            top: 2px;
         }
 
         #nav-logo.nav-logo-en {
@@ -83,17 +92,17 @@
 
         .brand-mark .brand-main { color: #5C2D62; }
         .brand-mark .brand-si { color: #DD3888; }
-        .brand-mark .brand-cz { color: rgba(50, 50, 50, 0.78); }
+        .brand-mark .brand-cz { color: #A5A5A5; }
 
         .navbar-links {
             width: 440px;
-            height: 100%;
-            align-self: stretch;
+            height: 80px;
+            align-self: start;
             display: flex;
             align-items: stretch;
             justify-content: flex-start;
-            gap: 20px;
-            margin-left: 18px;
+            gap: 0;
+            margin-left: 0;
         }
 
         .navbar-links .nav-link {
@@ -103,10 +112,11 @@
             font-weight: 500;
             font-size: 16px;
             line-height: 1;
-            color: #323232;
+            color: #505050;
             text-decoration: none;
             height: 80px;
-            padding: 0 10px;
+            /* Text sits on y ≈ 50 in the 80 px tab (Figma), tab = text + 2×20. */
+            padding: 24px 18.5px 0;
             white-space: nowrap;
             border-bottom-left-radius: 8px;
             border-bottom-right-radius: 8px;
@@ -119,11 +129,45 @@
             background: #FFFFFF;
         }
 
+        /* Figma: Registrace 133×60, Login 86×60 (1 px border), 10 px apart,
+           Poppins 16/500, radius 8. */
+        .nav-auth-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 60px;
+            min-width: 133px;
+            padding: 0 12px;
+            border-radius: 8px;
+            border: 1px solid #DD3888;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            font-size: 16px;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .nav-auth-btn--outline { min-width: 86px; }
+
         .navbar-actions {
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            gap: 8px;
+            gap: 10px;
+            /* Flag tile's right edge on x 1527 inclusive (Figma). */
+            margin-right: -1px;
+        }
+
+        /* Below the 1280 container the 1134 px row does not fit (1024 px
+           laptops, more so signed in with three extra icons): tighter
+           logo gap and tabs instead of spilling past the right edge. */
+        @media (min-width: 1024px) and (max-width: 1279px) {
+            #nav-logo { padding-right: 12px; }
+            .navbar-desktop-grid { grid-template-columns: auto auto 1fr; }
+            .navbar-links { width: auto; }
+            .navbar-links .nav-link { padding-left: 10px; padding-right: 10px; }
+            .navbar-actions { gap: 8px; }
+            .nav-auth-btn { min-width: 0; padding: 0 16px; }
         }
 
         @media (max-width: 1023px) {
@@ -134,7 +178,10 @@
             .navbar-shell {
                 width: 100%;
                 max-width: 100%;
-                height: 56px;
+                /* Phone frames (phone 360 px-11, menu default): a 96 px white
+                   header, logo ink on y 34–57 at x 26, the 40 px bars ending
+                   on x 334, the close cross 30 px. */
+                height: 96px;
                 padding-left: 25px;
                 padding-right: 25px;
                 position: relative;
@@ -155,13 +202,28 @@
             }
 
             #nav-logo-mobile .brand-mark {
-                font-size: 24px !important;
+                font-size: 24.4px !important;
             }
+
+            /* phone 360 px-18…23: the longer English wordmark is 22 px
+               (ink x 25–261, y 42–57), clear of the burger at x 294. */
+            html[lang="en"] #nav-logo-mobile .brand-mark {
+                font-size: 21.6px !important;
+            }
+            html[lang="en"] #nav-logo-mobile { margin-left: -2px; top: 2.5px; }
+
+            #nav-logo-mobile {
+                position: relative;
+                top: 1px;
+            }
+
+            #mobile-menu-button { position: relative; top: 1px; }
 
             #mobile-menu-button {
                 flex: 0 0 auto;
-                width: 32px;
-                min-width: 32px;
+                width: 40px;
+                min-width: 40px;
+                height: 40px;
             }
         }
     </style>
@@ -237,7 +299,8 @@
                         @php
                             $normalizedSlug = trim($page->slug, '/');
                             $isHomeSlug = $normalizedSlug === '';
-                            $isActive = $isHomeSlug ? request()->path() === '/' : request()->is($normalizedSlug);
+                            // Search results (/countries) are still "Úvod" in home-1.jpg.
+                            $isActive = $isHomeSlug ? (request()->path() === '/' || request()->routeIs('countries.index')) : request()->is($normalizedSlug);
                         @endphp
                         <a href="{{ url('/' . $page->slug) }}" class="nav-link {{ $isActive ? 'active' : '' }}" id="nav-link-{{ $page->id }}">
                             {{ $page->title }}
@@ -246,7 +309,7 @@
                 </div>
 
                 <!-- Right Side: Register, Login, Language Switcher -->
-                <div class="navbar-actions justify-self-end flex items-center space-x-3">
+                <div class="navbar-actions justify-self-end flex items-center">
                     
                     @auth
                     <!-- Custom Icon Buttons - Auth Only -->
@@ -266,11 +329,11 @@
                     </div>
                     @else
                     <!-- Auth Buttons - Guest Only -->
-                    <div class="flex items-center space-x-3">
-                        <button @click="$dispatch('show-register-modal')" type="button" class="px-6 py-3 bg-[#DD3888] text-white rounded-lg font-semibold hover:opacity-90 transition{{ app()->getLocale() === 'en' ? ' flex items-center justify-center' : '' }}" @if(app()->getLocale() === 'en') style="width:133px;height:60px;padding:0;" @endif>
+                    <div class="flex items-center" style="gap:10px;">
+                        <button @click="$dispatch('show-register-modal')" type="button" class="nav-auth-btn bg-[#DD3888] text-white hover:opacity-90 transition">
                             {{ __('front.nav.register') }}
                         </button>
-                        <button @click="$dispatch('show-login-modal')" type="button" class="px-6 py-3 border-2 border-[#DD3888] bg-white text-[#DD3888] rounded-lg font-semibold hover:bg-[#DD3888] hover:text-white transition{{ app()->getLocale() === 'en' ? ' flex items-center justify-center' : '' }}" @if(app()->getLocale() === 'en') style="width:86px;height:60px;padding:0;" @endif>
+                        <button @click="$dispatch('show-login-modal')" type="button" class="nav-auth-btn nav-auth-btn--outline bg-white text-[#DD3888] hover:bg-[#DD3888] hover:text-white transition">
                             {{ __('front.nav.login') }}
                         </button>
                     </div>
@@ -331,15 +394,15 @@
                 </a>
                 <!-- Mobile menu button -->
                 <div class="lg:hidden">
-                    <button @click="mobileMenuOpen = !mobileMenuOpen" type="button" class="flex items-center justify-center text-text-default hover:text-primary-600 focus:outline-none focus:text-primary-600" id="mobile-menu-button" :aria-expanded="mobileMenuOpen.toString()" aria-controls="mobile-menu">
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" type="button" class="flex items-center justify-center text-text-default hover:text-primary-600 focus:outline-none focus:text-primary-600" id="mobile-menu-button" aria-label="{{ __('front.nav.menu_toggle') }}" :aria-expanded="mobileMenuOpen.toString()" aria-controls="mobile-menu">
                         <span x-show="!mobileMenuOpen" class="inline-flex flex-col justify-between" style="width:40px;height:17px;">
                             <svg width="40" height="17" viewBox="0 0 40 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M0.0678711 1.5H39.9997" stroke="#5C2D62" stroke-width="3" stroke-linecap="round"/>
                                 <path d="M0 15.5L40 15.5" stroke="#5C2D62" stroke-width="3" stroke-linecap="round"/>
                             </svg>
                         </span>
-                        <span x-show="mobileMenuOpen" style="display:none;width:28px;height:28px;">
-                            <svg width="28" height="28" viewBox="0 0 31 31" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <span x-show="mobileMenuOpen" style="display:none;width:30px;height:30px;">
+                            <svg width="30" height="30" viewBox="0 0 31 31" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M1.06055 29.3449L29.3448 1.06066" stroke="#DD3888" stroke-width="3" stroke-linecap="round"/>
                                 <path d="M29.3821 29.3449L1.09781 1.06066" stroke="#DD3888" stroke-width="3" stroke-linecap="round"/>
                             </svg>
@@ -359,8 +422,13 @@
              fixed box also kept Safari from compositing the backdrop blur
              behind it. --}}
         <div class="lg:hidden" id="mobile-menu" x-show="mobileMenuOpen" x-cloak x-transition.opacity.duration.180ms
-             style="max-height:calc(100vh - 56px);max-height:calc(100dvh - 56px);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;">
-            <div class="flex flex-col items-center p-4 py-5 pt-6 bg-white" style="border-radius:0 0 24px 24px;">
+             style="max-height:calc(100vh - 96px);max-height:calc(100dvh - 96px);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;">
+            {{-- Figma `menu default`: rows from y 99 (3 px under the 96 px
+                 header), 305x60, no gaps, text 24 px in; 2 px #F2F2F2 rules
+                 17 px under the rows and 28 px under the buttons; 311x60
+                 buttons 10 px apart; 96x94 language tiles, the inactive ones
+                 at half strength; 20 px bottom padding. --}}
+            <div class="flex flex-col items-start bg-white mobile-menu-panel" style="border-radius:0 0 24px 24px;padding:3px 24px 20px;">
 
                 @php
                     // Real unread count, matching the desktop badge. This was a
@@ -393,21 +461,22 @@
                     @php
                         $mobileNormalizedSlug = trim($page->slug, '/');
                         $mobileIsHomeSlug = $mobileNormalizedSlug === '';
-                        $mobileIsActive = $mobileIsHomeSlug ? request()->path() === '/' : request()->is($mobileNormalizedSlug);
+                        $mobileIsActive = $mobileIsHomeSlug ? (request()->path() === '/' || request()->routeIs('countries.index')) : request()->is($mobileNormalizedSlug);
                     @endphp
                     {{-- Phone frame: 310px wide rows 2px apart, which puts them
                          in the same 25px gutter as the buttons below. Was 304px
                          with mb-2, so the rows sat 3px in and 6px too far apart. --}}
                     <a href="{{ url('/' . $page->slug) }}"
                        class="flex items-center w-full"
-                       style="width:310px;max-width:100%;height:60px;margin-bottom:2px;padding:0 16px;border-radius:8px;font-family:'Poppins',sans-serif;font-weight:500;font-size:18px;
+                       style="width:305px;max-width:100%;height:60px;margin-bottom:0;padding:0 0 0 24px;border-radius:8px;font-family:'Poppins',sans-serif;font-weight:500;font-size:18px;
                            background:{{ $mobileIsActive ? '#F2F2F2' : 'transparent' }};
                            color:{{ $mobileIsActive ? '#DD3888' : '#505050' }};">
                         {{ $page->title }}
                     </a>
                 @endforeach
 
-                <hr class="rounded-none" style="width:310px;max-width:100%;height:2px;border:none;background:#F2F2F2;border-radius:0;padding-top:27px;padding-bottom:17px;background-clip:content-box;">
+                {{-- `menu logged-in muž` has the rule 27 px under the rows, `menu default` 17 px. --}}
+                <div aria-hidden="true" style="width:310px;max-width:100%;height:2px;background:#F2F2F2;margin:{{ auth()->check() ? '27px' : '17px' }} 0 29px;"></div>
 
                 @auth
                     @php
@@ -464,7 +533,7 @@
                         @endphp
                         <a href="{{ $tab['url'] ?? route($tab['route']) }}"
                            class="relative flex items-center w-full"
-                           style="width:304px;max-width:100%;height:60px;margin-bottom:10px;padding:0 16px;gap:12px;border-radius:8px;font-family:'Poppins',sans-serif;font-weight:500;font-size:18px;
+                           style="width:311px;max-width:100%;height:60px;margin-bottom:10px;margin-left:1px;padding:0 16px 0 22px;gap:8px;border-radius:8px;font-family:'Poppins',sans-serif;font-weight:500;font-size:18px;
                                background:{{ $mobileTabActive ? '#DD3888' : 'transparent' }};
                                border:1px solid {{ $mobileTabActive ? '#DD3888' : '#E6E6E6' }};
                                color:{{ $mobileTabActive ? '#FFFFFF' : '#505050' }};">
@@ -480,7 +549,8 @@
                         </a>
                     @endforeach
 
-                    <form method="POST" action="{{ route('logout') }}" class="w-full flex justify-center">
+                    <div aria-hidden="true" style="width:310px;max-width:100%;height:2px;background:#F2F2F2;margin:20px 0 29px;"></div>
+                    <form method="POST" action="{{ route('logout') }}" class="w-full flex" style="margin-bottom:1px;">
                         @csrf
                         <button type="submit" class="flex items-center justify-center" style="width:311px;max-width:100%;height:60px;border-radius:8px;border:1px solid #DD3888;gap:7px;background:transparent;">
                             <x-icons name="User" style="width:24px;height:24px;color:#DD3888;" />
@@ -489,7 +559,7 @@
                     </form>
                 @else
                     <!-- Auth Buttons -->
-                    <button @click="$dispatch('show-register-modal')" type="button" class="flex items-center justify-center mb-3" style="width:311px;max-width:100%;height:60px;border-radius:8px;background:#DD3888;font-family:'Poppins',sans-serif;font-weight:600;font-size:18px;color:#FFFFFF;">
+                    <button @click="$dispatch('show-register-modal')" type="button" class="flex items-center justify-center" style="margin-bottom:10px;width:311px;max-width:100%;height:60px;border-radius:8px;background:#DD3888;font-family:'Poppins',sans-serif;font-weight:600;font-size:18px;color:#FFFFFF;">
                         {{ __('front.nav.register') }}
                     </button>
                     <button @click="$dispatch('show-login-modal')" type="button" class="flex items-center justify-center" style="width:311px;max-width:100%;height:60px;border-radius:8px;border:1px solid #DD3888;background:transparent;gap:7px;font-family:'Poppins',sans-serif;font-weight:600;font-size:18px;color:#DD3888;">
@@ -501,9 +571,10 @@
                 {{-- Language switcher — the design shows three (Česky, English,
                      Русский). Driven by config/locales.php, so a new language
                      appears here without touching this markup. --}}
-                <div class="w-full flex justify-center gap-3 mt-4">
+                <div aria-hidden="true" style="width:310px;max-width:100%;height:2px;background:#F2F2F2;margin:28px 0 29px;"></div>
+                <div class="w-full flex justify-center" style="gap:11.5px;">
                     @foreach(\App\Support\Locales::all() as $code => $meta)
-                        <a href="{{ url()->current() }}?locale={{ $code }}" class="flex flex-col items-center justify-center gap-1" style="width:96px;height:94px;border-radius:8px;background:{{ app()->getLocale() === $code ? '#F2F2F2' : '#FFFFFF' }};">
+                        <a href="{{ url()->current() }}?locale={{ $code }}" class="flex flex-col items-center justify-center gap-1" style="width:96px;height:94px;border-radius:8px;background:{{ app()->getLocale() === $code ? '#F2F2F2' : '#FFFFFF' }};{{ app()->getLocale() === $code ? '' : 'opacity:.5;' }}">
                             <img src="{{ asset($meta['flag']) }}" alt="{{ $meta['native'] }}" style="width:35px;height:35px;border-radius:999px;object-fit:cover;">
                             <span style="font-family:'Poppins',sans-serif;font-weight:400;font-size:13px;color:#505050;">{{ $meta['native'] }}</span>
                         </a>

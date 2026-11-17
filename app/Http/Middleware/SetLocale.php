@@ -29,7 +29,9 @@ class SetLocale
         if (Locales::isSupported($locale)) {
             App::setLocale($locale);
             // Store in session for consistency
-            session()->put('locale', $locale);
+            if (session()->get('locale') !== $locale) {
+                session()->put('locale', $locale);
+            }
             
             // Set Carbon locale for date formatting
             Carbon::setLocale($locale);
