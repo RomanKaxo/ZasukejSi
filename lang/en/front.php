@@ -121,7 +121,7 @@ return [
         'discreet' => 'We are a 100% discreet platform with professional personal data protection',
         'ecological' => 'Our project is eco-friendly',
         'verification' => 'Thanks to the girl verification system you won\'t travel anywhere unnecessarily',
-        'copyright' => '© 2025 ZasukejSi.cz',
+        'copyright' => '© :year ZasukejSi.cz',
         // The wordmark used to be three hardcoded <span>s chosen by an
         // `@if(locale === 'en')`. Same output, now editable per language.
         'logo_primary' => 'ESCORT',

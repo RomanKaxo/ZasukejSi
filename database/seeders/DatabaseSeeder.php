@@ -165,7 +165,7 @@ class DatabaseSeeder extends Seeder
             [
                 'display_name' => 'Premium Zena Praha',
                 'age' => 27,
-                'city' => 'Prague',
+                'city' => 'Praha',
                 'address' => 'Praha 1',
                 'about' => 'Testovaci premium profil pro kontrolu VIP zobrazeni a filtrovani.',
                 'availability_hours' => [

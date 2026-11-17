@@ -132,7 +132,7 @@ return [
         'discreet' => 'Jsme 100% diskrétní platforma s profesionální ochranou osobních údajů',
         'ecological' => 'Náš projekt je Ekologický',
         'verification' => 'Díky systému ověření dívek nepojedete nikam zbytečně',
-        'copyright' => '© 2025 ZasukejSi.cz',
+        'copyright' => '© :year ZasukejSi.cz',
         // The wordmark used to be three hardcoded <span>s chosen by an
         // `@if(locale === 'en')`. Same output, now editable per language.
         'logo_primary' => 'ZAŠUKEJ',

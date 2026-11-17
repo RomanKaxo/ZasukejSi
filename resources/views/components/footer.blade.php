@@ -133,7 +133,7 @@
 
                 <!-- Copyright -->
                 <div class="footer-copyright footer-copyright-mobile text-center leading-relaxed pt-5 px-4">
-                    {{ __('front.footer.copyright') }}
+                    {{ __('front.footer.copyright', ['year' => now()->year]) }}
                 </div>
             </div>
 
@@ -148,7 +148,7 @@
                 <hr class="footer-sep">
 
                 <div class="footer-copyright">
-                    {{ __('front.footer.copyright') }}
+                    {{ __('front.footer.copyright', ['year' => now()->year]) }}
                 </div>
             </div>
         </div>

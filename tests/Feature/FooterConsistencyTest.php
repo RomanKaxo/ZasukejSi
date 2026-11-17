@@ -91,7 +91,7 @@ class FooterConsistencyTest extends TestCase
         $response->assertSee('site-footer', false);
         $response->assertSee('footer-register', false);
         $response->assertSee('footer-security', false);
-        $response->assertSee(__('front.footer.copyright'));
+        $response->assertSee(__('front.footer.copyright', ['year' => now()->year]));
         $response->assertSee(__('front.footer.discreet'));
     }
 
@@ -105,6 +105,6 @@ class FooterConsistencyTest extends TestCase
         $response->assertSuccessful();
         $response->assertSee('footer-register', false);
         $response->assertSee('footer-security', false);
-        $response->assertSee(__('front.footer.copyright'));
+        $response->assertSee(__('front.footer.copyright', ['year' => now()->year]));
     }
 }
