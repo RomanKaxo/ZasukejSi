@@ -70,6 +70,9 @@
         .member-banner__text { font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 13px; line-height: 21px; letter-spacing: -0.07px; color: #505050; }
         .member-banner__text a { color: #505050; text-decoration: underline; }
         .member-banner__close { position: absolute; right: 19px; top: 17px; width: 12px; height: 12px; display: flex; align-items: center; justify-content: center; }
+        /* Pass 5: 12 px is too small to hit with a finger; an invisible 44 px
+           touch area around the cross, the drawing stays as in the frame. */
+        .member-banner__close::before { content: ''; position: absolute; inset: -16px; }
         .member-banner--premium .member-banner__close { color: #DD3888; }
         .member-banner--upsell .member-banner__close { color: #DD3888; }
         @media (min-width: 768px) {

@@ -182,6 +182,16 @@
         .hero-bg { width: calc(100% - 12px); height: auto; min-height: 520px; }
     }
 
+    /* Tablet (768–1024, e.g. iPad, iPad Pro, unfolded Galaxy Fold): the search
+       card stacks its fields and grows to ~330 px, but it was still pushed
+       76 px below the hero like the one-row desktop card, so it covered the
+       "Nejlepší výsledky" heading and the first row of filter pills. Here the
+       card stays in the hero's flow and the hero grows around it. */
+    @media (min-width: 768px) and (max-width: 1024px) {
+        .hero-bg .hero-inner { height: auto; }
+        .hero-search-wrap { transform: none !important; top: 0; margin-top: 8px; }
+    }
+
     /* Phone layout, up to the tablet breakpoint (md = 768px). It used to stop
        at 640px (photo, gutters) and 425px (room for the counter pills), so an
        iPhone Plus / Pro Max at 430px — and anything up to 767px — got a

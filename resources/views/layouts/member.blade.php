@@ -57,9 +57,11 @@
     @media (min-width: 768px) { .member-subtitle { margin-top: 58px; margin-bottom: 42px; } }
 
     /* Card grids (favorites, archive, girls of the month). Phone: two columns
-       of the 160 px phone card. Desktop: four cards flush with both edges of
+       of the 145 px listing card 20 px apart, as in phone 360 px-11 (two
+       fixed 155 px columns touched at 360 px and ran 22 px off a 320 px
+       screen); they shrink on narrower phones. Desktop: four cards flush with both edges of
        the 902 px column, like the frames. */
-    .member-card-grid { display: grid; grid-template-columns: repeat(2, 155px); justify-content: space-between; justify-items: center; row-gap: 24px; margin-top: 32px; }
+    .member-card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 145px)); column-gap: 20px; justify-content: space-between; justify-items: center; row-gap: 24px; margin-top: 32px; }
     .member-empty { margin-top: 32px; }
     .member-empty-icon { display: block; width: 48px; height: 48px; margin: 0 auto 16px; color: #DD3888; }
     .member-empty-icon svg { width: 100%; height: 100%; }

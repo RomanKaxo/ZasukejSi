@@ -1004,9 +1004,13 @@ body.modal-open {
     background: #F2F2F2 !important;
   }
 
+  /* phone 360 px-3: case panel flush against the 146 px card (button on
+     x 190–315), the pair exactly fills the 310 px column. A 12 px gap pushed
+     it 13 px past the right edge at 360 px and ~35 px at 320 px. */
   .reported-pair {
-    gap: 12px !important;
+    gap: 0 !important;
     align-items: flex-start !important;
+    max-width: 100%;
   }
 
   .reported-info-card {
@@ -1028,6 +1032,20 @@ body.modal-open {
   .reported-info-card-title {
     font-size: 16px !important;
     padding-bottom: 15px !important;
+  }
+
+  /* Narrower than the 360 px frame (iPhone SE 1st gen 320, Galaxy Fold
+     cover 344): the panel gives up width and side padding instead of
+     running off the screen. */
+  @media (max-width: 359px) {
+    .reported-info-card {
+      flex: 1 1 auto !important;
+      min-width: 0;
+      width: auto !important;
+      padding-left: 8px !important;
+      padding-right: 8px !important;
+    }
+    .reported-info-card-title { font-size: 15px !important; }
   }
 
   .reported-info-card-badges {
@@ -1164,10 +1182,11 @@ body.modal-open {
 
   .footer-meta-leaf { width: 16px; height: 16px; margin-right: 1px; }
 
-  /* Same 1134 px column as the header and the cards (x 393–1527). */
+  /* Same 1134 px column as the header and the cards (x 393–1527); on
+     1024–1197 px screens it keeps a 32 px margin instead of overflowing. */
   .site-footer-container,
   .site-footer .footer-main,
-  .site-footer .footer-meta-row { width: 1134px; max-width: 1134px; }
+  .site-footer .footer-meta-row { width: 1134px; max-width: calc(100vw - 64px); }
 
   .site-footer .footer-security { margin-right: 2px; }
 
@@ -1182,6 +1201,18 @@ body.modal-open {
   .site-footer .footer-wordmark { position: relative; left: 2px; top: 1px; }
   .site-footer-container > .text-center:first-child { margin-bottom: 35px !important; }
   .site-footer .footer-meta { padding-top: 35px !important; }
+}
+
+/* Pass 5: 1024–1279 px — tighter link columns so button, links and the
+   security box fit the narrower column. */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .site-footer .footer-links { gap: 0 28px; margin-left: 28px; }
+  .site-footer .footer-links .footer-link { white-space: nowrap; }
+  .site-footer .footer-security { width: 300px; }
+}
+
+@media (min-width: 1024px) {
+  .site-footer .site-footer-container { max-width: calc(100vw - 64px); }
 }
 
 .footer-main {
@@ -1200,10 +1231,15 @@ body.modal-open {
   height: 275px;
 }
 
-/* Fixed-width separator in footer */
+/* Separator between the eco line and the copyright. It was a fixed 463 px,
+   so with the longer English eco line (and by 28 px even in Czech at 1920)
+   the copyright ran past the 1134 px column, off-screen at 1280 px. It now
+   takes the space left over and the copyright closes the column on the
+   right, as in home.jpg. */
 .footer-sep {
-  width: 463px;
-  flex: 0 0 auto;
+  width: auto;
+  flex: 1 1 auto;
+  min-width: 40px;
   margin: 0 12px;
 }
 
@@ -1360,7 +1396,10 @@ body.modal-open {
   background-color: transparent !important;
 }
 
-@media (max-width: 1024px) {
+/* Pass 5: 1023, not 1024 — at exactly 1024 px (iPad Pro portrait,
+   landscape iPad) this phone footer and the lg desktop footer both applied
+   and the link columns, languages and security box piled on each other. */
+@media (max-width: 1023px) {
   .site-footer {
     padding-top: 40px;
     padding-bottom: 32px;
@@ -1524,6 +1563,29 @@ body.modal-open {
     padding-top: 20px;
     font-size: 11px;
   }
+}
+
+/* Phones narrower than the 360 px frame (iPhone SE 1st gen 320, Galaxy Fold
+   cover 344): the fixed 312 px footer column left 4 px gutters at 320 px.
+   It keeps the 16 px page gutter instead and its blocks follow its width. */
+@media (max-width: 359px) {
+  .site-footer-container,
+  .footer-main,
+  .footer-mobile-languages,
+  .footer-mobile-meta {
+    width: calc(100vw - 32px);
+    max-width: calc(100vw - 32px);
+  }
+
+  .footer-register { width: calc(100vw - 35px); }
+
+  .footer-security-mobile,
+  .footer-eco-card {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .footer-lang-card { width: 100%; }
 }
 
 .ratings-history-scroll {

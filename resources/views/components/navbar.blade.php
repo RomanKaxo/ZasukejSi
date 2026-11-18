@@ -212,7 +212,9 @@
             /* phone 360 px-18…23: the longer English wordmark is 22 px
                (ink x 25–261, y 42–57), clear of the burger at x 294. */
             html[lang="en"] #nav-logo-mobile .brand-mark {
-                font-size: 21.6px !important;
+                /* 21.6 px from 360 px up; narrower phones (iPhone SE 1st gen,
+                   320 px) scale it down so it does not run under the burger. */
+                font-size: min(21.6px, 6vw) !important;
             }
             html[lang="en"] #nav-logo-mobile { margin-left: -2px; top: 2.5px; }
 

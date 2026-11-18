@@ -13,6 +13,8 @@
         @media (min-width: 1180px) { .pf-shift-2 { left: calc(50% - 2px) !important; } }
         /* pass 2 (phone 360 px-13): section rules span x 22..335 while the fields sit at 25..335. */
         @media (max-width: 767px) { .profile-form-narrow hr { width: 313px !important; max-width: none !important; margin-left: -3px; } }
+        /* pass 5: under 360 px the 313 px rule ran 22 px past a 320 px screen. */
+        @media (max-width: 359px) { .profile-form-narrow hr { width: calc(100% + 3px) !important; } }
     </style>
 
     @if (session()->has('message'))

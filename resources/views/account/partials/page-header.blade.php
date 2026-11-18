@@ -61,12 +61,22 @@
 
 @if($desktop ?? true)
 <!-- Desktop Header -->
+{{-- Pass 5: between 768 and 1023 px (iPad, unfolded Fold) the content
+     column is only ~450–700 px wide, so the absolutely placed online state
+     sat on top of the 400 px centred title ("ceny" under "Nyní jsi online").
+     There it drops under the title, right-aligned. --}}
+<style>
+    @media (min-width: 768px) and (max-width: 1023px) {
+        .account-desktop-head { flex-direction: column; align-items: center; }
+        .account-desktop-head .account-desktop-status { position: static; transform: none; translate: none; margin-top: 10px; align-self: flex-end; }
+    }
+</style>
 <div class="hidden md:block">
-    <div class="relative flex items-center justify-center pt-6 pb-[21px]">
+    <div class="account-desktop-head relative flex items-center justify-center pt-6 pb-[21px]">
         <h1 class="w-[400px] max-w-full text-4xl text-center" style="font-family:'Poppins',sans-serif; font-weight:700; color:#5C2D62;">
             {{ $title }}
         </h1>
-        <div class="flex flex-col items-start absolute right-0 top-1/2 -translate-y-1/2 -mt-[4px]">
+        <div class="account-desktop-status flex flex-col items-start absolute right-0 top-1/2 -translate-y-1/2 -mt-[4px]">
             <div class="flex items-center gap-1.5">
                 <div class="w-[14px] h-[14px] rounded-full {{ $statusDot }}"></div>
                 <span class="text-[13px] text-[#505050]" style="font-family: 'Poppins', sans-serif;">{{ $statusText }}</span>

@@ -533,9 +533,10 @@
     <div id="imageModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-75 p-4"
         style="display: none; align-items: center; justify-content: center;">
         <div class="relative max-w-4xl max-h-full">
-            <img id="modalImage" src="" alt="Full size image"
+            {{-- No src until opened: src="" makes WebKit (Safari) request the page itself as an image and fire an error. --}}
+            <img id="modalImage" alt="Full size image"
                 class="max-w-full max-h-full object-contain rounded-lg">
-            <button onclick="closeImageModal()"
+            <button type="button" onclick="closeImageModal()" aria-label="{{ __('auth.close') }}"
                 class="absolute top-4 right-4 bg-white text-gray-800 rounded-full p-2 hover:bg-gray-100">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />

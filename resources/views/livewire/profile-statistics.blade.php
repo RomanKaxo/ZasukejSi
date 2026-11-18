@@ -271,8 +271,7 @@
             }
         };
 
-        // defensive checks and logs
-        console.log('initChart labels/values', labels.length, values.length);
+        // defensive checks
         if (!Array.isArray(labels) || !Array.isArray(values) || labels.length !== values.length) {
             console.warn('labels/values mismatch or invalid - skipping chart init', labels, values);
             return;

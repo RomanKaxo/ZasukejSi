@@ -1,7 +1,9 @@
 @php
     $isEnglishHomepage = app()->getLocale() === 'en';
     $profileGridClasses = $isEnglishHomepage
-        ? 'flex flex-col md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 profile-list-cards-grid'
+        // EN has the 208 px country sidebar: from 1024 to 1279 px only three
+        // 214 px cards fit beside it (four overlapped by up to 46 px).
+        ? 'flex flex-col md:grid md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 profile-list-cards-grid'
         : 'flex flex-col md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 profile-list-cards-grid';
     $ecoBadgeInsertAt = $isEnglishHomepage ? 5 : 6;
     $advertInsertAt = $isEnglishHomepage ? 9 : 11;

@@ -1518,7 +1518,13 @@
         .vip-gallery-nav {
             display: none;
         }
+    }
 
+    /* Pass 5: the panel links (Obnovit přístup / Dát hodnocení / Nahlásit)
+       were hidden from 840 px but their desktop replacement only appears at
+       lg (1024 px), so an unfolded Fold or a landscape tablet had no way to
+       rate or report a profile. */
+    @media (min-width: 1024px) {
         .vip-profile-links {
             display: none;
         }
@@ -3280,6 +3286,26 @@
     .vip-video-heading { margin-left: 0 !important; }
     .vip-video-container, .vip-video-badges { width: 100% !important; max-width: 100% !important; }
     .vip-video-register-btn { align-self: center; }
+    /* Pass 5: the 231 px rule under each attribute belongs to the 261 px
+       desktop panel; in this ~500 px panel it stopped halfway under "Věk". */
+    .vip-profile-meta-row::after { width: 100%; }
+}
+/* Pass 5, under 360 px (iPhone SE 1st gen): the one-line 13 px premium
+   note under the slider title ran 4 px off the screen. */
+@media (max-width: 359px) {
+    .vip-slider-note { font-size: 12px !important; }
+}
+/* Pass 5, 768–839 px (iPad portrait, no frame): the phone rules still fixed
+   the badge text to one 15 px line, so two-line labels ("Hodnocení dívek od
+   komunity") hung 16 px below their centred row; the three badges stacked in
+   a narrow centred column, and the video was a 718 × 165 strip. Three
+   columns and the desktop 844 : 450 video like 840 px+, text box sized by
+   its lines. */
+@media (min-width: 768px) and (max-width: 839px) {
+    .vip-video-container { height: auto !important; aspect-ratio: 844 / 450; }
+    .vip-video-badges { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .vip-video-badge { justify-content: flex-start !important; }
+    .vip-video-badge span:not(.vip-badge-icon) { width: auto !important; height: auto !important; flex: 1 1 auto; min-width: 0; }
 }
 /* Lightbox: lightbox.jpg / lightbox-1.jpg (1920) and lightbox-2/-3 (360).
    Above the fixed header (the frames blur it with the page). */

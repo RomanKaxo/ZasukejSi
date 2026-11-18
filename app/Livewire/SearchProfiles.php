@@ -32,7 +32,7 @@ class SearchProfiles extends Component
             ) ?? $defaultCountry;
 
             $this->country = request('country', $resolvedCountry['name'] ?? '');
-            $this->country_code = request('country_code', $resolvedCountry['code'] ?? '');
+            $this->country_code = strtolower((string) request('country_code', $resolvedCountry['code'] ?? ''));
             $this->region = request('region', '');
 
             if ($this->country === '' && isset($resolvedCountry['name'])) {
@@ -82,7 +82,11 @@ class SearchProfiles extends Component
     protected function resolveEnglishCountry(?string $name, ?string $code): ?array
     {
         foreach ($this->englishCountriesData() as $country) {
-            if ($code !== null && $code !== '' && $country['code'] === $code) {
+            // Links and the country sidebar use upper-case ISO codes
+            // (?country_code=CZ) while the options carry lower-case ones for
+            // flagcdn; an exact match missed every link and fell back to the
+            // first option, so the field read "Albania" over Czech results.
+            if ($code !== null && $code !== '' && $country['code'] === strtolower($code)) {
                 return $country;
             }
 

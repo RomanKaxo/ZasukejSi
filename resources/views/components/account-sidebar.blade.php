@@ -29,8 +29,11 @@
     .account-sidebar .nav-button > svg, .account-sidebar .nav-button > span { margin-right: 10px; }
     .account-sidebar .nav-list > li + li { margin-top: 10px; }
 </style>
+{{-- Pass 5: no h-full — with the top offset (md:mt-[238px]) a full-height
+     aside hung 238 px below its column, a white box over the top of the
+     footer (in WebKit/Safari it covered "VIP & Premium" and "FAQ"). --}}
 <aside
-    class="account-sidebar hidden md:block w-full h-full md:w-[211px] md:ml-px md:relative bg-white overflow-y-auto {{ $sidebarOffsetClass }}"
+    class="account-sidebar hidden md:block w-full md:w-[211px] md:ml-px md:relative bg-white overflow-y-auto {{ $sidebarOffsetClass }}"
 >
     <!-- Navigation Menu -->
     <nav>

@@ -14,7 +14,7 @@
                 {{ __('front.subscription.page_title') }}
             </h1>
         </div>
-        <hr class="w-[312px] mx-auto mb-4">
+        <hr class="w-[312px] max-w-full mx-auto mb-4">
     </div>
 
     <!-- Desktop Header -->

@@ -8,7 +8,9 @@
 /* Figma home-11..20 (no notice bar): the page heading's rule sits at y 258,
    38px lower than where it lands when the content simply starts at the
    135px used under a notice bar (home-2). */
-@media (min-width: 768px) { .account-shell:not(:has(.account-notice-sticky, [data-profile-visibility])) { padding-top: 173px; } }</style>
+@media (min-width: 768px) { .account-shell:not(:has(.account-notice-sticky, [data-profile-visibility])) { padding-top: 173px; } }
+/* Pass 5: invisible 44 px touch area around the 20 px notice cross. */
+.account-notice-close::before { content: ''; position: absolute; inset: -12px; }</style>
 <div class="account-shell container mx-auto pt-[98px] md:pt-[135px] min-h-screen px-4 min-[1180px]:px-0">
     @php
         // The banner used to carry a fixed line of filler text and showed on
@@ -60,7 +62,7 @@
                 <button type="button"
                     @click="show = false"
                     aria-label="{{ __('front.notifications.archive') }}"
-                    class="absolute right-[15px] top-[14px] md:top-1/2 md:-translate-y-1/2 flex w-[20px] h-[20px] items-center justify-center">
+                    class="account-notice-close absolute right-[15px] top-[14px] md:top-1/2 md:-translate-y-1/2 flex w-[20px] h-[20px] items-center justify-center">
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M1 1L9 9M9 1L1 9" stroke="#DD3888" stroke-width="2" stroke-linecap="round"/></svg>
                 </button>
             </div>

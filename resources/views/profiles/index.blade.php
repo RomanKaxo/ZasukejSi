@@ -147,12 +147,12 @@
                 <div class="search-badge" style="flex-wrap: nowrap;">
                     <span style="width:10px; height:10px; border-radius:50%; background:#00B80F; margin-right:6px; flex-shrink:0; display:inline-block;"></span>
                     <span style="font-family:'Plus Jakarta Sans', 'Poppins', sans-serif; font-weight:600; font-size:11px; color:#505050; line-height:1; white-space:nowrap;">{{ number_format($girlsCount, 0, ',', ' ') }} {{ __('front.profiles.search.girls_desktop') }}</span>
-                    <span style="font-family:'Plus Jakarta Sans', 'Poppins', sans-serif; font-weight:600; font-size:11px; color:#A6A6A6; line-height:1; white-space:nowrap;">{{ __('front.profiles.search.registered') }}</span>
+                    <span style="font-family:'Plus Jakarta Sans', 'Poppins', sans-serif; font-weight:600; font-size:11px; color:#A6A6A6; line-height:1; white-space:nowrap; margin-left:2px;">{{ __('front.profiles.search.registered') }}</span>
                 </div>
                 <div class="search-badge" style="flex-wrap: nowrap;">
                     <span style="width:10px; height:10px; border-radius:50%; background:#00B80F; margin-right:6px; flex-shrink:0; display:inline-block;"></span>
                     <span style="font-family:'Plus Jakarta Sans', 'Poppins', sans-serif; font-weight:600; font-size:11px; color:#505050; line-height:1; white-space:nowrap;">{{ number_format($gentsCount, 0, ',', ' ') }} {{ __('front.profiles.search.men') }}</span>
-                    <span style="font-family:'Plus Jakarta Sans', 'Poppins', sans-serif; font-weight:600; font-size:11px; color:#A6A6A6; line-height:1; white-space:nowrap;">{{ __('front.profiles.search.registered') }}</span>
+                    <span style="font-family:'Plus Jakarta Sans', 'Poppins', sans-serif; font-weight:600; font-size:11px; color:#A6A6A6; line-height:1; white-space:nowrap; margin-left:2px;">{{ __('front.profiles.search.registered') }}</span>
                 </div>
             </div>
         @endif
