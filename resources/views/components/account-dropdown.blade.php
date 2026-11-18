@@ -68,7 +68,7 @@
                             : [
                                 // Pohlaví nevyplněné: nabídnout jde jedině to,
                                 // co platí pro každého.
-                                ['url' => route('account.edit'), 'label' => __('front.account.sidebar.basic'), 'icon' => 'User.svg'],
+                                ['url' => route('account.edit'), 'label' => __('front.account.member.settings'), 'icon' => 'Settings.svg'],
                             ]);
                     $links[] = ['url' => route('notifications.index'), 'label' => __('front.nav.notifications'), 'icon' => 'bell.svg'];
                 @endphp

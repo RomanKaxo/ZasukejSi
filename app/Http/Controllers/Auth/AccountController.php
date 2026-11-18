@@ -61,9 +61,20 @@ class AccountController extends Controller
         if ($emailChanged) {
             $rules['email_change_password'] = ['required', 'current_password'];
         }
+        // An account created outside registration (admin, import) has no
+        // gender, so it can reach neither the listing nor membership and the
+        // plans page sends it here. It may pick one exactly once; after that
+        // the field is ignored and only an administrator can change it.
+        $canSetGender = $user->gender === null;
+        if ($canSetGender) {
+            $rules['gender'] = ['nullable', 'in:male,female'];
+        }
         $request->validate($rules);
 
         $user->fill($request->only(['name', 'email', 'phone']));
+        if ($canSetGender && $request->filled('gender')) {
+            $user->gender = $request->input('gender');
+        }
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;

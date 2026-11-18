@@ -929,4 +929,11 @@ return [
         'preview' => 'View my profile',
     ],
 
+    // /account/profile (Basic settings for every account).
+    'account_settings' => [
+        'phone_hint' => 'Optional. Include the country code for an international number.',
+        'gender_hint' => 'You choose your gender once. It decides whether you have a provider account (listing) or a member account (ratings). Later only support can change it.',
+        'password_text' => 'Change your password regularly and do not reuse one from elsewhere.',
+    ],
+
 ];

@@ -943,4 +943,11 @@ return [
         'preview' => 'Zobrazit můj profil',
     ],
 
+    // /account/profile („Základní nastavení“ pro všechny účty).
+    'account_settings' => [
+        'phone_hint' => 'Nepovinné. U zahraničního čísla uveďte i předvolbu.',
+        'gender_hint' => 'Pohlaví zvolíte jen jednou. Určuje, jestli máte účet dívky (inzerát), nebo člena (hodnocení). Později ho změní jen podpora.',
+        'password_text' => 'Heslo měňte pravidelně a nepoužívejte stejné jako jinde.',
+    ],
+
 ];
